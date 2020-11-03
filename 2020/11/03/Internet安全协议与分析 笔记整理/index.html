@@ -1,248 +1,306 @@
-<?xml version="1.0" encoding="utf-8"?>
-<search>
-  <entry>
-    <title>Hello World</title>
-    <url>/2020/11/01/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<link rel="stylesheet" href="/css/main.css">
 
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>/2020/11/03/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF%E8%A7%A3%E6%9E%90%E4%B8%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<p>[toc]</p>
-<h1 id="上篇-技术解析篇"><a href="#上篇-技术解析篇" class="headerlink" title="上篇 技术解析篇"></a>上篇 技术解析篇</h1><p>第1、2章技术对应第8、9章开发实践</p>
-<p>第3、4、5章技术对应第10-13章开发实践</p>
-<p>第6章技术对应第14、15章开发实践</p>
-<p>第7章技术对应第16、17章开发实践</p>
-<h3 id="第一章-Linux内核级安全开发基础"><a href="#第一章-Linux内核级安全开发基础" class="headerlink" title="第一章 Linux内核级安全开发基础"></a>第一章 Linux内核级安全开发基础</h3><ul>
-<li><p>应用程序只能通过OS的服务接口——系统调用、API——访问文件、网络数据、设备等系统资源。</p>
-</li>
-<li><p>OS接收到请求时需要先进行访问控制判断。</p>
-</li>
-<li><p>可以下载并修改Linux源码，以丰富资源访问监视与控制功能；或将其实现为一个单独的Linux内核模块，运行时动态加载即可。</p>
-</li>
-</ul>
-<h4 id="1-1-操作系统体系结构概述"><a href="#1-1-操作系统体系结构概述" class="headerlink" title="1.1 操作系统体系结构概述"></a>1.1 操作系统体系结构概述</h4><h5 id="1-1-1-OS体系结构——单体式"><a href="#1-1-1-OS体系结构——单体式" class="headerlink" title="1.1.1 OS体系结构——单体式"></a>1.1.1 OS体系结构——单体式</h5><ul>
-<li>整个系统就是一堆 procedure 的集合，各个 procedure 可以调用任意其他 procedure，每一个 procedure 都有一个完好的接口（入口参数与返回值）</li>
-<li>运行效率高</li>
-<li>缺点：<ul>
-<li>模块间没有清晰的调用关系</li>
-<li>系统不容易扩充</li>
-<li>系统运行时以一个单独的目标程序存在，其中的冗余模块占用系统资源</li>
-</ul>
-</li>
-</ul>
-<h5 id="1-1-2-OS体系结构——微内核"><a href="#1-1-2-OS体系结构——微内核" class="headerlink" title="1.1.2 OS体系结构——微内核"></a>1.1.2 OS体系结构——微内核</h5><ul>
-<li>内核只存放最基本的内核OS功能，其他服务与应用在用户模式下运行</li>
-<li>优点：<ul>
-<li>交互接口一致性</li>
-<li>可扩充</li>
-<li>可移植：所有与特定CPU有关的代码都在内核中</li>
-</ul>
-</li>
-</ul>
-<h4 id="1-2-Linux的动态内核模块机制"><a href="#1-2-Linux的动态内核模块机制" class="headerlink" title="1.2 Linux的动态内核模块机制"></a>1.2 Linux的动态内核模块机制</h4><h5 id="1-2-1-动态内核模块机制"><a href="#1-2-1-动态内核模块机制" class="headerlink" title="1.2.1 动态内核模块机制"></a>1.2.1 动态内核模块机制</h5><ul>
-<li>Linux内核为单体式结构内核，但引入了支持内核模块动态加载的机制，通过内核模块扩展和动态加载实现OS功能的扩充</li>
-<li>基本内核+内核模块 = Linux内核</li>
-<li>内核模块应当与所运行的内核在接口约定上保持一致</li>
-</ul>
-<h5 id="1-2-2-Linux内核模块的加载和卸载"><a href="#1-2-2-Linux内核模块的加载和卸载" class="headerlink" title="1.2.2 Linux内核模块的加载和卸载"></a>1.2.2 Linux内核模块的加载和卸载</h5><ul>
-<li>通过 insmod 命令手工加载或通过请求加载</li>
-<li>请求加载的内核模块保存在 /lib/modules/2.6.18（内核版本为2.6.18）</li>
-<li>模块中定义的资源被OS以内核输出符号表来同一管理。加载时首先查找该表。若加载成功，模块的输出符号添加到该表</li>
-<li>通过 rmmod 命令卸载内核模块，但该内核模块不能被其他模块引用——B模块使用了A模块的输出符号</li>
-<li>支持自动卸载：引用的计数为0时才自动卸载。自动卸载由内核进程 kerneld 设置定时器到期完成</li>
-</ul>
-<h4 id="1-3-Linux内核模块开发方法"><a href="#1-3-Linux内核模块开发方法" class="headerlink" title="1.3 Linux内核模块开发方法"></a>1.3 Linux内核模块开发方法</h4><h5 id="1-3-1-源代码组成"><a href="#1-3-1-源代码组成" class="headerlink" title="1.3.1 源代码组成"></a>1.3.1 源代码组成</h5><ul>
-<li>动态内核模块包含：<ul>
-<li>模块初始化：模块注册、数据与变量初始化。模块加载到内核时系统自动调用目标模块的初始化函数</li>
-<li>注销：资源释放，以注销函数形式出现</li>
-<li>主体功能：一组函数。需要时通过系统调用或其他功能模块调用</li>
-</ul>
-</li>
-<li>内核模块编程无需 main 函数</li>
-</ul>
-<h5 id="1-3-2-外部符号引用"><a href="#1-3-2-外部符号引用" class="headerlink" title="1.3.2 外部符号引用"></a>1.3.2 外部符号引用</h5><ul>
-<li>应用程序的外部资源是库函数或系统调用，内核模块的外部资源为Linux基本内核或其他内核模块中定义的资源（函数、全局变量等）</li>
-<li>ksyms 工具可列出当前系统所能使用的所有外部符号</li>
-</ul>
-<h5 id="1-3-3-编译与运行模式"><a href="#1-3-3-编译与运行模式" class="headerlink" title="1.3.3 编译与运行模式"></a>1.3.3 编译与运行模式</h5><ul>
-<li>编译时要告知编译的是内核模块代码——在 gcc 或 cc 选项中添加 D_MODULE 生成适合在系统态运行的内核模块</li>
-<li>利用Linux内核提供的编译内核模块工程模板，以及 make 工具来编译</li>
-</ul>
-<h5 id="1-3-4-调试和信息输出"><a href="#1-3-4-调试和信息输出" class="headerlink" title="1.3.4 调试和信息输出"></a>1.3.4 调试和信息输出</h5><ul>
-<li>定义格式化输出的全局函数 printk()，内核模块可调用该函数将进程信息输出到控制台或日志文件</li>
-<li>函数在 /linux/printk.h 中声明</li>
-</ul>
-<h4 id="1-4-Linux系统调用概述"><a href="#1-4-Linux系统调用概述" class="headerlink" title="1.4 Linux系统调用概述"></a>1.4 Linux系统调用概述</h4><ul>
-<li>OS实现系统调用对应的代码段时，不会也不允许调用C语言函数库</li>
-</ul>
-<h4 id="1-5-Linux系统调用的实现"><a href="#1-5-Linux系统调用的实现" class="headerlink" title="1.5 Linux系统调用的实现"></a>1.5 Linux系统调用的实现</h4><h5 id="1-5-1-系统调用入口地址表"><a href="#1-5-1-系统调用入口地址表" class="headerlink" title="1.5.1 系统调用入口地址表"></a>1.5.1 系统调用入口地址表</h5><ul>
-<li>按编号将每个系统调用的处理函数入口地址保存在一个内存数组中——系统调用入口地址表</li>
-<li>数组下标对应系统调用号，元素存储对应入口地址</li>
-<li>2.6.18版本中，入口地址表在源码文件 syscall_table.S 中</li>
-</ul>
-<h5 id="1-5-2-中断机制和系统调用实现"><a href="#1-5-2-中断机制和系统调用实现" class="headerlink" title="1.5.2 中断机制和系统调用实现"></a>1.5.2 中断机制和系统调用实现</h5><ul>
-<li>根据中断源不同对中断编号，并设计不同的处理函数，并将处理函数入口地址保存在数组中（下标为编号）——中断向量表</li>
-<li>系统调用发生时通过执行机器码产生中断信号，即借助系统自陷实现</li>
-</ul>
-<h5 id="1-5-3-Linux系统调用的实现过程"><a href="#1-5-3-Linux系统调用的实现过程" class="headerlink" title="1.5.3 Linux系统调用的实现过程"></a>1.5.3 Linux系统调用的实现过程</h5><ul>
-<li>Linux实现自陷的机器指令：int x80，编译出的目标程序执行到此位置时，CPU 切换到系统态，并执行内核代码。内核代码查找中断向量表</li>
-<li>对应中断处理函数为系统调用总入口函数：<ul>
-<li>保存寄存器现场</li>
-<li>从相应寄存器获得系统调用号</li>
-<li>由入口地址表获得入口地址</li>
-<li>调用处理函数并保存结果到相应寄存器</li>
-<li>完成系统调用，并返回结果给用户进程</li>
-</ul>
-</li>
-</ul>
-<h4 id="1-6-应用程序和内核模块信息交互方式"><a href="#1-6-应用程序和内核模块信息交互方式" class="headerlink" title="1.6  应用程序和内核模块信息交互方式"></a>1.6  应用程序和内核模块信息交互方式</h4><h5 id="1-6-1-Netlink机制"><a href="#1-6-1-Netlink机制" class="headerlink" title="1.6.1 Netlink机制"></a>1.6.1 Netlink机制</h5><ul>
-<li>套接字为网络通信常用接口形式</li>
-<li>在内核模块和应用程序分别建立 Netlink 协议类型的套接字，初始化后即可通信</li>
-<li>Netlink 协议簇，分别支持各种形式与用途的通信。支持范围为0-31，0-16支持Linux本身或知名应用，其余供用户定义使用</li>
-</ul>
-<h5 id="1-6-2-创建设备文件"><a href="#1-6-2-创建设备文件" class="headerlink" title="1.6.2 创建设备文件"></a>1.6.2 创建设备文件</h5><h5 id="1-6-3-添加系统调用"><a href="#1-6-3-添加系统调用" class="headerlink" title="1.6.3 添加系统调用"></a>1.6.3 添加系统调用</h5><ul>
-<li>新添加一个带参数的系统调用。参数即为应用程序与内核交换的数据</li>
-<li>分配系统调用号、实现处理函数、入口地址写入系统调用入口地址表对应位置</li>
-<li>实现方式：<ul>
-<li>静态实现：直接修改Linux源码</li>
-<li>动态实现：运行过程时加载新的内核模块（过程同上）</li>
-</ul>
-</li>
-<li>2.6版本后内核模块无法直接访问入口地址表</li>
-</ul>
-<h3 id="第二章-Linux内核级安全机制实现解析"><a href="#第二章-Linux内核级安全机制实现解析" class="headerlink" title="第二章 Linux内核级安全机制实现解析"></a>第二章 Linux内核级安全机制实现解析</h3><ul>
-<li>访问控制功能，安全日志功能</li>
-<li>需要Linux内核操作前告知内核模块要产生操作的信息</li>
-<li>系统调用重载/基于钩子函数的LSM（Linux Security Modules）机制</li>
-</ul>
-<h4 id="2-1-安全模块（LSM）机制"><a href="#2-1-安全模块（LSM）机制" class="headerlink" title="2.1 安全模块（LSM）机制"></a>2.1 安全模块（LSM）机制</h4><h4 id="2-2-基于LSM的Linux内核级安全机制实现"><a href="#2-2-基于LSM的Linux内核级安全机制实现" class="headerlink" title="2.2 基于LSM的Linux内核级安全机制实现"></a>2.2 基于LSM的Linux内核级安全机制实现</h4><h4 id="2-3-Linux系统调用重载技术"><a href="#2-3-Linux系统调用重载技术" class="headerlink" title="2.3 Linux系统调用重载技术"></a>2.3 Linux系统调用重载技术</h4><ul>
-<li>1.4与1.5是基础</li>
-</ul>
-<h5 id="2-3-1-概念"><a href="#2-3-1-概念" class="headerlink" title="2.3.1 概念"></a>2.3.1 概念</h5><ul>
-<li>修改系统调用入口地址表某一表项，将另一个新函数的入口地址写入该表项</li>
-<li>动态与静态两种方式实现<ul>
-<li>动态：在内核模块初始化的过程中，从入口地址表中找到对应表项，写入新函数的入口地址</li>
-<li>静态：直接修改内核源码</li>
-</ul>
-</li>
-</ul>
-<h5 id="2-3-2-系统调用重载实现技术"><a href="#2-3-2-系统调用重载实现技术" class="headerlink" title="2.3.2 系统调用重载实现技术"></a>2.3.2 系统调用重载实现技术</h5><ul>
-<li><p>间接获得入口地址表：</p>
-<ul>
-<li><p>获得中断向量表起始地址：访问CPU中的IDT寄存器</p>
-</li>
-<li><p>获得系统调用总入口函数（x80中断处理函数）地址：<code>上述地址+x80*8的偏移量</code></p>
-</li>
-<li><p>在总入口函数代码段中查找入口地址表首地址：访问的汇编语句为 </p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">call * sys_call_table(, %eax, 4)</span><br></pre></td></tr></table></figure>
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
 
-<p>根据系统调用号调用对应的系统调用处理函数。变量 <code>sys_call_table</code>即为系统调用入口地址表的起始地址，寄存器<code>eax</code>保存了当前要调用的系统调用号，<code>call</code>的指令码为十六进制的FF1485</p>
-</li>
-<li><p>重载系统调用处理函数入口地址：根据系统调用编号，计算表项位置并写入新的处理函数入口地址</p>
-</li>
-</ul>
-</li>
-</ul>
-<h5 id="2-3-3-参数传递"><a href="#2-3-3-参数传递" class="headerlink" title="2.3.3 参数传递"></a>2.3.3 参数传递</h5><ul>
-<li><p>OS有固定的参数约定，例如读文件：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">read</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">char</span> *buf, <span class="keyword">int</span> len)</span></span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>重载时形式参数要在数量、类型、次序上完全一致，形式参数的符号名可以不一致</p>
-</li>
-</ul>
-<h4 id="2-4-基于系统调用重载的内核级安全机制实现"><a href="#2-4-基于系统调用重载的内核级安全机制实现" class="headerlink" title="2.4 基于系统调用重载的内核级安全机制实现"></a>2.4 基于系统调用重载的内核级安全机制实现</h4><h5 id="2-4-1-概述"><a href="#2-4-1-概述" class="headerlink" title="2.4.1 概述"></a>2.4.1 概述</h5><ul>
-<li>实际上是基于系统调用重载技术，来实现包含相应安全机制的内核模块，同样包含三个部分<ul>
-<li>模块主体函数：Linux将系统调用的实际参数传入，实现具体的安全机制</li>
-<li>模块初始化函数：将设计好的一组处理函数入口地址写入系统调用入口地址表相应位置</li>
-<li>模块注销函数：重新修改系统调用入口地址表，将重载后的表项恢复为原有的入口地址</li>
-</ul>
-</li>
-<li>必须先实现原有的系统调用功能，再添加安全机制</li>
-<li>三类安全机制：<ul>
-<li>访问监视类</li>
-<li>访问控制类</li>
-<li>数据转换类</li>
-</ul>
-</li>
-</ul>
-<h5 id="2-4-2-访问监视类安全机制实现"><a href="#2-4-2-访问监视类安全机制实现" class="headerlink" title="2.4.2 访问监视类安全机制实现"></a>2.4.2 访问监视类安全机制实现</h5><ul>
-<li>通过解析传递的参数（重载的系统调用函数），可以知道是做什么操作</li>
-<li>通过解析原处理函数（还要调用原处理函数以实现系统服务）的返回值，知道是否被成功执行</li>
-<li>以上形成日志</li>
-</ul>
-<h5 id="2-4-3-访问控制类安全机制实现"><a href="#2-4-3-访问控制类安全机制实现" class="headerlink" title="2.4.3 访问控制类安全机制实现"></a>2.4.3 访问控制类安全机制实现</h5><ul>
-<li>根据参数得知操作，基于请求的上下文，按照既定的安全规则形成访问判决，执行不同措施</li>
-<li>要注意原处理函数返回值的含义——这是访问判决的依据</li>
-</ul>
-<h5 id="2-4-4-数据转换类安全机制实现"><a href="#2-4-4-数据转换类安全机制实现" class="headerlink" title="2.4.4 数据转换类安全机制实现"></a>2.4.4 数据转换类安全机制实现</h5><ul>
-<li>例如文件的加解密</li>
-<li>加密在write操作之前进行，解密在读取之后的重载函数中进行</li>
-</ul>
-<h4 id="2-5-基于LSM的文件访问控制实现解析"><a href="#2-5-基于LSM的文件访问控制实现解析" class="headerlink" title="2.5 基于LSM的文件访问控制实现解析"></a>2.5 基于LSM的文件访问控制实现解析</h4><h4 id="2-6-基于系统调用重载的文化访问日志实现解析"><a href="#2-6-基于系统调用重载的文化访问日志实现解析" class="headerlink" title="2.6 基于系统调用重载的文化访问日志实现解析"></a>2.6 基于系统调用重载的文化访问日志实现解析</h4><h5 id="2-6-1-Linux的日志系统"><a href="#2-6-1-Linux的日志系统" class="headerlink" title="2.6.1 Linux的日志系统"></a>2.6.1 Linux的日志系统</h5><ul>
-<li>日志记录系统中发生的操作</li>
-<li>实现系统审计和监测功能</li>
-<li>三类日志：<ul>
-<li>系统层日志：Linux内核产生，记录系统异常状况、启动过程、设备变更情况。记录在<code>/var/log/messages</code></li>
-<li>应用层日志：管理工具执行一些操作时调用库函数接口</li>
-<li>第三方应用软件也会向Linux日志子系统汇报日志</li>
-</ul>
-</li>
-<li>Linux日志子系统只能被动记录应用发来的日志信息</li>
-</ul>
-<h5 id="2-6-2-基于系统调用重载的文件访问日志"><a href="#2-6-2-基于系统调用重载的文件访问日志" class="headerlink" title="2.6.2 基于系统调用重载的文件访问日志"></a>2.6.2 基于系统调用重载的文件访问日志</h5><ul>
-<li>当应用程序进行任何形式的文件操作时，均会对行为进行记录追踪</li>
-<li>还要实现一个文件访问日志管理程序，借助Netlink机制从内核的日志缓冲区读出临时存放的日志记录</li>
-<li>管理程序预处理：<ul>
-<li>相似日志合并</li>
-<li>不同信息类型的转换：日志信息中的UID（用户标识）转换为用户名，将PID（进程标识符）转换为可执行程序名</li>
-</ul>
-</li>
-</ul>
-<p>![image-20201011170529259](信息安全技术解析与开发实践 阅读笔记.assets/image-20201011170529259.png)</p>
-<h1 id="下篇-开发实践篇"><a href="#下篇-开发实践篇" class="headerlink" title="下篇 开发实践篇"></a>下篇 开发实践篇</h1><h3 id="第九章-基于系统调用重载的文件访问日志原型实现"><a href="#第九章-基于系统调用重载的文件访问日志原型实现" class="headerlink" title="第九章 基于系统调用重载的文件访问日志原型实现"></a>第九章 基于系统调用重载的文件访问日志原型实现</h3><h4 id="9-1-原型系统总体设计"><a href="#9-1-原型系统总体设计" class="headerlink" title="9.1 原型系统总体设计"></a>9.1 原型系统总体设计</h4><h4 id="9-2-内核日志模块的实现"><a href="#9-2-内核日志模块的实现" class="headerlink" title="9.2 内核日志模块的实现"></a>9.2 内核日志模块的实现</h4><h4 id="9-3-内核应用程序的实现"><a href="#9-3-内核应用程序的实现" class="headerlink" title="9.3 内核应用程序的实现"></a>9.3 内核应用程序的实现</h4><h4 id="9-4-编译、运行与测试"><a href="#9-4-编译、运行与测试" class="headerlink" title="9.4 编译、运行与测试"></a>9.4 编译、运行与测试</h4><h4 id="9-5-扩展开发实践"><a href="#9-5-扩展开发实践" class="headerlink" title="9.5 扩展开发实践"></a>9.5 扩展开发实践</h4><h5 id="9-5-1-基于系统调动重载的系统级资源访问审计"><a href="#9-5-1-基于系统调动重载的系统级资源访问审计" class="headerlink" title="9.5.1 基于系统调动重载的系统级资源访问审计"></a>9.5.1 基于系统调动重载的系统级资源访问审计</h5><ul>
-<li>日志范围扩展<ul>
-<li>资源访问类操作：文件访问类操作。各类文件的创建、打开、读、写、执行</li>
-<li>通信类操作：一个进程与外界的交互。进程间的数据通信、进程间的控制通信、网络类通信——日志覆盖重点</li>
-<li>管理类操作：重启、关机、内核模块加载、设备添加等</li>
-</ul>
-</li>
-<li>日志项确定<ul>
-<li>举例：write操作</li>
-<li>尽量避免记录动态日志项</li>
-<li>记录能够理解的静态项：文件名替代文件描述符</li>
-</ul>
-</li>
-<li>日志处理的扩展<ul>
-<li>合并日志信息等</li>
-<li>日志查看与检索手段</li>
-</ul>
-</li>
-<li>日志系统的灵活性扩展：<ul>
-<li>管理员能对日志系统自行配置</li>
-<li>指定重要目录进行文件访问日志记录</li>
-</ul>
-</li>
-</ul>
-<h5 id="9-5-2-基于系统调用重载的访问控制类开发实践"><a href="#9-5-2-基于系统调用重载的访问控制类开发实践" class="headerlink" title="9.5.2 基于系统调用重载的访问控制类开发实践"></a>9.5.2 基于系统调用重载的访问控制类开发实践</h5><h5 id="9-5-3-基于系统调用重载的加密型文件保险箱"><a href="#9-5-3-基于系统调用重载的加密型文件保险箱" class="headerlink" title="9.5.3 基于系统调用重载的加密型文件保险箱"></a>9.5.3 基于系统调用重载的加密型文件保险箱</h5><h5 id="9-5-4-基于系统调用重载的日志原型系统的移植"><a href="#9-5-4-基于系统调用重载的日志原型系统的移植" class="headerlink" title="9.5.4 基于系统调用重载的日志原型系统的移植"></a>9.5.4 基于系统调用重载的日志原型系统的移植</h5>]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90%20%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</url>
-    <content><![CDATA[<p>[toc]</p>
+  <meta name="description" content="[toc] 第一部分 安全协议基础第一章 概述1.1 Internet协议与安全需求 信息系统安全范围：物理安全，计算机安全，网络安全 信息安全的目标：保密性，完整性，可用性——CIA 攻击类型：Interruption（拦截），Interception（窃听），Modification（篡改），Fabrication（伪造） 网络安全需求： 身份鉴别 访问控制 可用性（3A） 数据机密性 数据完">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Thomas_Li">
+<meta property="og:url" content="http://example.com/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90%20%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="Thomas_Li">
+<meta property="og:description" content="[toc] 第一部分 安全协议基础第一章 概述1.1 Internet协议与安全需求 信息系统安全范围：物理安全，计算机安全，网络安全 信息安全的目标：保密性，完整性，可用性——CIA 攻击类型：Interruption（拦截），Interception（窃听），Modification（篡改），Fabrication（伪造） 网络安全需求： 身份鉴别 访问控制 可用性（3A） 数据机密性 数据完">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201012204907765.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013150520624.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013150856843.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013151033528.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013151143515.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013151349786.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013151855016.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013152012692.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013152202433.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013152357602.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013151223521.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013113528569.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013114915578.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013123444314.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013123807139.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013130941976.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013132006596.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013133058590.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013140540214.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201013135833727.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015143841205.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015144214229.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015145119308.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015145422765.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015150655248.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015165548517.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015165822110.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015170239100.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015171707201.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015185725856.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201015190358715.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016121144602.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016121208560.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201101111418188.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016143101520.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016144005838.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016150306151.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016150802399.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016151506417.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016152727036.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201016152949310.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019221040569.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019222513232.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019223340498.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019223619292.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019223823832.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019223723107.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019225151611.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019230230856.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201019230209912.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201020111309276.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201020112626105.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201020112801696.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201020112858644.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201020113041176.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201020113413379.png">
+<meta property="og:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201020113652271.png">
+<meta property="article:published_time" content="2020-11-03T07:50:22.604Z">
+<meta property="article:modified_time" content="2020-11-02T14:09:01.070Z">
+<meta property="article:author" content="Thomas-Li-sjtu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:/Users/ASUS/AppData/Roaming/Typora/typora-user-images/image-20201012204907765.png">
+
+<link rel="canonical" href="http://example.com/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90%20%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | Thomas_Li</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Thomas_Li</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90%20%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Thomas-Li-sjtu">
+      <meta itemprop="description" content="Blogs and Notes">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Thomas_Li">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-03 15:50:22" itemprop="dateCreated datePublished" datetime="2020-11-03T15:50:22+08:00">2020-11-03</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>[toc]</p>
 <h2 id="第一部分-安全协议基础"><a href="#第一部分-安全协议基础" class="headerlink" title="第一部分 安全协议基础"></a>第一部分 安全协议基础</h2><h3 id="第一章-概述"><a href="#第一章-概述" class="headerlink" title="第一章 概述"></a>第一章 概述</h3><h4 id="1-1-Internet协议与安全需求"><a href="#1-1-Internet协议与安全需求" class="headerlink" title="1.1 Internet协议与安全需求"></a>1.1 Internet协议与安全需求</h4><ul>
 <li>信息系统安全范围：物理安全，计算机安全，网络安全</li>
 <li>信息安全的目标：保密性，完整性，可用性——CIA</li>
@@ -960,6 +1018,292 @@
 <p>大多在第一部分第二部分</p>
 <p>第三部分不超过10分</p>
 <p>常见安全协议的工作原理</p>
-]]></content>
-  </entry>
-</search>
+
+    </div>
+
+    
+    
+    
+      
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li-sjtu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://example.com/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90%20%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" title="">http://example.com/2020/11/03/Internet安全协议与分析 笔记整理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/03/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF%E8%A7%A3%E6%9E%90%E4%B8%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86-%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">第一部分 安全协议基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%AB%A0-%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">第一章 概述</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Internet%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%AE%89%E5%85%A8%E9%9C%80%E6%B1%82"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 Internet协议与安全需求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E5%AF%86%E7%A0%81%E5%AD%A6%E5%9B%9E%E9%A1%BE"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 密码学回顾</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-%E9%80%BB%E8%BE%91%E5%AD%A6%E5%9B%9E%E9%A1%BE"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.3 逻辑学回顾</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.2.</span> <span class="nav-text">第二章 安全协议</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="nav-number">1.2.1.</span> <span class="nav-text">基础概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.2.2.</span> <span class="nav-text">协议实例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86-%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.</span> <span class="nav-text">第二部分 常见的安全协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E7%AB%A0-Kerberos"><span class="nav-number">2.1.</span> <span class="nav-text">第三章 Kerberos</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Kerberos-%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86"><span class="nav-number">2.1.1.</span> <span class="nav-text">Kerberos 协议原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Kerberos-v5"><span class="nav-number">2.1.2.</span> <span class="nav-text">Kerberos v5</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Kerberos-%E5%8D%8F%E8%AE%AE%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">2.1.3.</span> <span class="nav-text">Kerberos 协议优缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0-PGP-amp-CSP"><span class="nav-number">2.2.</span> <span class="nav-text">第四章 PGP&amp;CSP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#PGP"><span class="nav-number">2.2.1.</span> <span class="nav-text">PGP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CSP%EF%BC%88%E4%B8%8D%E8%80%83%EF%BC%89"><span class="nav-number">2.2.2.</span> <span class="nav-text">CSP（不考）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E7%AB%A0-SET"><span class="nav-number">2.3.</span> <span class="nav-text">第五章 SET</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SET%E7%AE%80%E4%BB%8B"><span class="nav-number">2.3.1.</span> <span class="nav-text">SET简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8C%E9%87%8D%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="nav-number">2.3.2.</span> <span class="nav-text">双重数字签名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SET%E6%B5%81%E7%A8%8B"><span class="nav-number">2.3.3.</span> <span class="nav-text">SET流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E7%AB%A0-IPSEC"><span class="nav-number">2.4.</span> <span class="nav-text">第六章 IPSEC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#IPsec%E6%A6%82%E5%BF%B5"><span class="nav-number">2.4.1.</span> <span class="nav-text">IPsec概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPsec%E6%9C%BA%E7%90%86"><span class="nav-number">2.4.2.</span> <span class="nav-text">IPsec机理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPsec%E5%BA%94%E7%94%A8"><span class="nav-number">2.4.3.</span> <span class="nav-text">IPsec应用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%83%E7%AB%A0-SSL"><span class="nav-number">2.5.</span> <span class="nav-text">第七章 SSL</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SSL%E6%A6%82%E5%BF%B5"><span class="nav-number">2.5.1.</span> <span class="nav-text">SSL概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%BF%87%E7%A8%8B"><span class="nav-number">2.5.2.</span> <span class="nav-text">基本过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86-%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">第三部分 安全协议分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%85%AB%E7%AB%A0-BAN"><span class="nav-number">3.1.</span> <span class="nav-text">第八章 BAN</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#BAN%E9%80%BB%E8%BE%91%E6%A6%82%E5%BF%B5"><span class="nav-number">3.1.1.</span> <span class="nav-text">BAN逻辑概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BAN%E9%80%BB%E8%BE%91%E6%A1%86%E6%9E%B6"><span class="nav-number">3.1.2.</span> <span class="nav-text">BAN逻辑框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90"><span class="nav-number">3.1.3.</span> <span class="nav-text">案例分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B9%9D%E7%AB%A0-Commsp"><span class="nav-number">3.2.</span> <span class="nav-text">第九章 Commsp</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CSP%E5%9F%BA%E7%A1%80"><span class="nav-number">3.2.1.</span> <span class="nav-text">CSP基础</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">案例分析</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Thomas-Li-sjtu</p>
+  <div class="site-description" itemprop="description">Blogs and Notes</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5656824337" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5656824337" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://yoursite.com/" title="http:&#x2F;&#x2F;yoursite.com" rel="noopener" target="_blank">Title</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.baidu.com/" title="https:&#x2F;&#x2F;www.baidu.com&#x2F;" rel="noopener" target="_blank">Baidu</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/" title="https:&#x2F;&#x2F;github.com&#x2F;" rel="noopener" target="_blank">Github</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li-sjtu</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">15k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">13 分钟</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+</body>
+</html>
