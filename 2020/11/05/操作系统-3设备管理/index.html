@@ -24,17 +24,24 @@
 
   <meta name="description" content="操作系统的设备管理功能。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="操作系统_3设备管理">
+<meta property="og:title" content="操作系统 （3）设备与文件系统">
 <meta property="og:url" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/index.html">
 <meta property="og:site_name" content="More Than Code">
 <meta property="og:description" content="操作系统的设备管理功能。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104221511040.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104222043834.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104223053175.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104223317610.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104223852751.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104224406936.png">
 <meta property="article:published_time" content="2020-11-05T01:37:56.000Z">
-<meta property="article:modified_time" content="2020-11-04T12:41:55.273Z">
+<meta property="article:modified_time" content="2020-11-04T14:48:42.225Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104221511040.png">
 
 <link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/">
 
@@ -49,7 +56,7 @@
   };
 </script>
 
-  <title>操作系统_3设备管理 | More Than Code</title>
+  <title>操作系统 （3）设备与文件系统 | More Than Code</title>
   
 
 
@@ -207,7 +214,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          操作系统_3设备管理
+          操作系统 （3）设备与文件系统
         </h1>
 
         <div class="post-meta">
@@ -242,7 +249,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>35</span>
+              <span>1.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -264,10 +271,136 @@
         <p>操作系统的设备管理功能。</p>
 <a id="more"></a>
 
-<h3 id="设备管理"><a href="#设备管理" class="headerlink" title="设备管理"></a>设备管理</h3><h3 id="中断"><a href="#中断" class="headerlink" title="中断"></a>中断</h3><ul>
-<li><h4 id="设备管理数据结构"><a href="#设备管理数据结构" class="headerlink" title="设备管理数据结构"></a>设备管理数据结构</h4></li>
+<h2 id="设备"><a href="#设备" class="headerlink" title="设备"></a>设备</h2><h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><ul>
+<li>根据数据组织方式分为块设备与字符设备</li>
+<li>I/O驱动软件层次分为：中断处理程序，设备驱动程序，I/O原语，用户软件</li>
 </ul>
-<h4 id="Unix的设备管理"><a href="#Unix的设备管理" class="headerlink" title="Unix的设备管理"></a>Unix的设备管理</h4>
+<h3 id="中断"><a href="#中断" class="headerlink" title="中断"></a>中断</h3><ul>
+<li><p>内部中断：计算机本身在工作过程中出现的需要紧急处理的事务，如出错中断、程序中断，多采用程序陷入的方式</p>
+</li>
+<li><p>外部中断：主要来自I/O设备</p>
+</li>
+<li><p>I/O中断，时钟中断，系统请求中断，报警中断，程序错误中断，机器错误中断</p>
+</li>
+<li><p>中断机构处理外设的I/O中断，陷入机构处理</p>
+</li>
+<li><p>响应</p>
+<ul>
+<li><p>响应中断后，根据中断源找到对应中断处理程序入口地址</p>
+</li>
+<li><p>中断矢量结构：一类地址指针的集合。中断发生后在固定位置找到指针，之后获得对应程序入口地址</p>
+</li>
+<li><p>核心态：进行中断处理，返回，继续执行核心态程序（核心态运行中断处理程序，而核心态返回核心态，不发生进程的切换调度）</p>
+<p>用户态：中断处理之后，检查标志runrun是否设置（进程强迫调度标志是否置位，即是否有优先级更高的进程产生）</p>
+</li>
+</ul>
+</li>
+<li><p>驱动程序接口<br><img src="/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104221511040.png" alt="image-20201104221511040"></p>
+</li>
+<li><p>时钟</p>
+<ul>
+<li>系统时钟：硬件时钟，晶片震动产生的方波，控制处理器执行指令速率</li>
+<li>日历时钟：产生精确的时间计数</li>
+<li>实时时钟：每秒提供若干脉冲，每个脉冲产生一个时钟中断</li>
+</ul>
+</li>
+</ul>
+<h3 id="设备管理数据结构"><a href="#设备管理数据结构" class="headerlink" title="设备管理数据结构"></a>设备管理数据结构</h3><ul>
+<li>设备控制表<ul>
+<li>抽象的I/O操作将用户与复杂的I/O设备操作隔离</li>
+<li>记录每一个抽象设备描述、对应的实际设备地址和设备驱动程序，进程的设备调用通过控制表映射到物理设备</li>
+<li>每个表项对应一个设备，表中包含若干I/O系统调用指针<br><img src="/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104222043834.png" alt="image-20201104222043834"></li>
+</ul>
+</li>
+<li>设备开关表<ul>
+<li>针对设备的物理特性，设置一套子程序，如打开、关闭、启动</li>
+<li>存放以上程序入口地址的数据结构——设备开关。各类设备开关构成设备开关表</li>
+</ul>
+</li>
+</ul>
+<h3 id="Unix的设备管理"><a href="#Unix的设备管理" class="headerlink" title="Unix的设备管理"></a>Unix的设备管理</h3><ul>
+<li><p>磁盘调度</p>
+<ul>
+<li>先来先服务</li>
+<li>最短寻道法：磁头移到远处为另外的请求服务之前，先将接近当前磁头位置的所有请求服务完</li>
+<li>扫描法：磁头从磁盘的一端出发，遇到所需的磁道时服务，直到磁盘的另一端，从一端扫到另一端；或者到达另一端之后就立刻返回到磁盘的开头，返回过程中不进行服务（C-Scan）</li>
+</ul>
+</li>
+<li><p>块设备管理</p>
+<ul>
+<li><p>缓冲控制块 buf</p>
+<ul>
+<li>缓冲区由存放数据的结构和控制块组成</li>
+<li>自由缓存队列控制块</li>
+</ul>
+</li>
+<li><p>块设备表 iobuf，为管理块设备而设置</p>
+</li>
+<li><p>块设备开关表</p>
+</li>
+<li><p>缓冲队列</p>
+<ul>
+<li><p>自由buf队列</p>
+<ul>
+<li>不针对一个具体设备，供任何设备使用</li>
+<li>FIFO管理</li>
+<li>双向链表结构<br><img src="/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104223053175.png" alt="image-20201104223053175"></li>
+</ul>
+</li>
+<li><p>设备缓冲区队列</p>
+<ul>
+<li><p>与具体设备相关联，连接所有使用过的或正在使用的缓冲区</p>
+</li>
+<li><p>一个缓冲区被分配后，对应buf进入设备buf队列，并一直保留在该设备buf队列，除非其他设备也要使用<br><img src="/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104223317610.png" alt="image-20201104223317610"></p>
+</li>
+</ul>
+</li>
+<li><p>空设备队列（NODEV）</p>
+<ul>
+<li>系统需要缓存，但不与特定的设备相关</li>
+<li>进程执行一个目标程序的开始阶段，用缓存存放传给该程序的参数；缓存存放文件系统的资源管理块</li>
+<li>系统初启时，所有空闲缓冲区的buf在自由buf队列和NODEV队列</li>
+</ul>
+</li>
+<li><p>设备I/O请求队列</p>
+<ul>
+<li><p>每一个块设备都有一个队列</p>
+</li>
+<li><p>单向链接</p>
+</li>
+<li><p>需要I/O时，生成I/O请求块，并挂在对应设备的请求队列尾。同时位于该设备buf队列中。设备空闲时，从队首（或根据优先级）取出一个请求块，依据请求进行I/O操作<br><img src="/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104223852751.png" alt="image-20201104223852751"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>管理算法</p>
+<ul>
+<li>请求分配<ul>
+<li>从自由buf队列取出一个空闲buf，并从原设备buf队列取出，插入申请该缓冲区的设备buf队列</li>
+</ul>
+</li>
+<li>读写完成<ul>
+<li>立刻释放缓冲区，加入自由buf队列尾</li>
+<li>读：将字符块从设备读入缓冲区并传入指定内存区</li>
+<li>写：指定内存区信息传入缓冲区，写入指定物理设备。若一次写操作没有写满缓冲区，则延迟写——放到自由buf队列尾，并留在设备buf队列。若移到队首，不应当做一般的buf，而是提出I/O请求，将数据写到块设备。因此将它抽离自由buf队列，只留在设备buf队列。写操作结束后，清空延迟写的flag，挪到自由buf队尾并留在原设备buf队列中</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>读盘块</p>
+<ul>
+<li>基本读入：<code>bread()</code><br><img src="/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/image-20201104224406936.png" alt="image-20201104224406936"></li>
+<li>预读：检查第一块在不在缓冲区，如果不在则读，如果第二块也不在，则异步读。第一块读完后返回。第二块读完后产生I/O中断，进程直接取走第二块的数据。若第二块在缓冲区，则检查第二块是否在缓冲区，之后类似</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h2><h3 id="系统调用与标准子例程"><a href="#系统调用与标准子例程" class="headerlink" title="系统调用与标准子例程"></a>系统调用与标准子例程</h3><ul>
+<li><h3 id="Unix文件系统"><a href="#Unix文件系统" class="headerlink" title="Unix文件系统"></a>Unix文件系统</h3></li>
+</ul>
+<h3 id="管道与管道通信"><a href="#管道与管道通信" class="headerlink" title="管道与管道通信"></a>管道与管道通信</h3>
     </div>
 
     
@@ -283,6 +416,10 @@
     <li class="popular-posts-item">
       <div class="popular-posts-title"><a href="\2020\11\04\操作系统-2进程\" rel="bookmark">操作系统 （2）进程</a></div>
         <div class="popular-posts-excerpt"><p><p>操作系统的进程管理与进程通信功能。</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\05\操作系统-3设备与文件\" rel="bookmark">操作系统 （3）设备与文件系统</a></div>
+        <div class="popular-posts-excerpt"><p><p>操作系统的设备管理功能。</p></p></div>
     </li>
     <li class="popular-posts-item">
       <div class="popular-posts-title"><a href="\2020\11\02\信息安全技术解析与开发实践_阅读笔记\" rel="bookmark">信息安全技术解析与开发实践</a></div>
@@ -322,7 +459,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/" title="操作系统_3设备管理">https://thomas-li-sjtu.github.io/2020/11/05/操作系统-3设备管理/</a>
+    <a href="https://thomas-li-sjtu.github.io/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86/" title="操作系统 （3）设备与文件系统">https://thomas-li-sjtu.github.io/2020/11/05/操作系统-3设备管理/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -349,8 +486,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/11/04/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-2%E8%BF%9B%E7%A8%8B/" rel="prev" title="操作系统 （2）进程">
-      <i class="fa fa-chevron-left"></i> 操作系统 （2）进程
+    <a href="/2020/11/05/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-3%E8%AE%BE%E5%A4%87%E4%B8%8E%E6%96%87%E4%BB%B6/" rel="prev" title="操作系统 （3）设备与文件系统">
+      <i class="fa fa-chevron-left"></i> 操作系统 （3）设备与文件系统
     </a></div>
       <div class="post-nav-item"></div>
     </div>
@@ -413,7 +550,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">设备管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AD%E6%96%AD"><span class="nav-number">2.</span> <span class="nav-text">中断</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text">设备管理数据结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Unix%E7%9A%84%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">Unix的设备管理</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">设备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AD%E6%96%AD"><span class="nav-number">1.2.</span> <span class="nav-text">中断</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">1.3.</span> <span class="nav-text">设备管理数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Unix%E7%9A%84%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86"><span class="nav-number">1.4.</span> <span class="nav-text">Unix的设备管理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.</span> <span class="nav-text">文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E4%B8%8E%E6%A0%87%E5%87%86%E5%AD%90%E4%BE%8B%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">系统调用与标准子例程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Unix%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.2.</span> <span class="nav-text">Unix文件系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%A1%E9%81%93%E4%B8%8E%E7%AE%A1%E9%81%93%E9%80%9A%E4%BF%A1"><span class="nav-number">2.3.</span> <span class="nav-text">管道与管道通信</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -431,7 +568,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -520,12 +657,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">38k</span>
+    <span title="站点总字数">39k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">34 分钟</span>
+    <span title="站点阅读时长">36 分钟</span>
 </div>
 
         
