@@ -2363,7 +2363,127 @@
     <content><![CDATA[<p>计算机网络 传输层</p>
 <a id="more"></a>
 
-<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><h3 id="具体协议"><a href="#具体协议" class="headerlink" title="具体协议"></a>具体协议</h3>]]></content>
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><ul>
+<li><p>介于通信子网和资源子网之间，对高层用户屏蔽了通</p>
+<p>信的细节</p>
+</li>
+<li><p>提供端到端之间的无差错保证</p>
+</li>
+<li><p>网络层提供的服务类型</p>
+<ul>
+<li>A型：本质上很完善，其分组丢失率、重复或篡改的概率可以忽略（局域网的服务）</li>
+<li>B型：具有可接受的残留差错率和不可接受的被告知的故障率</li>
+<li>C型：相当不可靠</li>
+</ul>
+</li>
+<li><p>OSI传输层的协议类型</p>
+<ul>
+<li>TP0：支持A型网络，实现分段和重组功能</li>
+<li>TP1：支持B型网络，执行分段和重组和差错恢复功能</li>
+<li>TP2：支持A型网络，实现分段和重组，以及单一虚拟电路上的数据流多路复用技术和解除复用技术等功能</li>
+<li>TP3：支持B型网络，提供差错恢复、分段和重组、以及单一虚拟电路上的数据流复用技术和解除复用技术等功能</li>
+<li>TP4：支持C类网络，提供差错恢复功能，实现分段和重组处理，并支持单一虚拟电路上的数据流复用技术和解除复用技术</li>
+<li>前四个只适用于面向连接通信</li>
+</ul>
+</li>
+<li><p>通信进程标识：端口号</p>
+<ul>
+<li>系统端口号/熟知端口号</li>
+<li>登记端口号</li>
+<li>客户端口号/短暂端口号</li>
+</ul>
+</li>
+</ul>
+<h3 id="具体协议"><a href="#具体协议" class="headerlink" title="具体协议"></a>具体协议</h3><ul>
+<li><p>UDP</p>
+<ul>
+<li>只在IP的数据报服务之上增加端口功能和差错检测功能</li>
+<li>不可靠的交付，传输的可靠性要靠应用程序来解决</li>
+<li>面向报文：应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文<br><img src="/2020/11/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-2%E4%BC%A0%E8%BE%93%E5%B1%82/image-20201105133256098.png" alt="image-20201105133256098"></li>
+</ul>
+</li>
+<li><p>TCP</p>
+<ul>
+<li><p>概述</p>
+<ul>
+<li>面向连接，点对点，连接的端点叫做套接字，套接字 socket = (IP地址: 端口号)</li>
+<li>全双工通信</li>
+<li>面向字节流</li>
+<li>根据对方给出的窗口值和当前网络拥塞的程度，决定一个报文段应包含多少个字节</li>
+</ul>
+</li>
+<li><p>首部<br><img src="/2020/11/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-2%E4%BC%A0%E8%BE%93%E5%B1%82/image-20201105133458247.png" alt="image-20201105133458247"></p>
+</li>
+<li><p>可靠传输</p>
+<ul>
+<li>每一端都设有两个窗口：发送窗口和接收窗口</li>
+<li>利用字节的序号进行控制，TCP 所有的确认都是基于序号而不是基于报文段</li>
+<li>发送窗口大小由接收方通告的接收窗口大小决定，接收到接收方的确认报文后，窗口后沿向前滑动，并滑动窗口前沿，使得：前沿-后沿=调整后的发送窗口大小</li>
+<li>每个报文设置超时计时器<ul>
+<li>设置与往返时间有关</li>
+</ul>
+</li>
+<li>选择确认<ul>
+<li>收到和前面的字节流不连续的字节</li>
+<li>序号都在接收窗口之内，则接收方先收下这些数据，并告知发送方不要重复发送</li>
+<li>TCP 首部的选项中要加上“允许 SACK”的选项</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>流量控制</p>
+<ul>
+<li>滑动窗口机制</li>
+<li>报文发送时机<ul>
+<li>缓存中存放的数据达到 MSS （最大报文段长度）字节时，就组装成一个 TCP 报文段发送出去</li>
+<li>应用进程指明要求发送报文段</li>
+<li>计时器期限到了，将当前已有的缓存数据装入报文段发送</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>拥塞控制</p>
+<ul>
+<li>传输轮次：把拥塞窗口 cwnd 所允许发送的报文段都连续发送出去，并收到了对已发送的最后一个字节的确认，约为往返时间<br><img src="/2020/11/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-2%E4%BC%A0%E8%BE%93%E5%B1%82/image-20201105134200193.png" alt="image-20201105134200193"></li>
+<li>快重传<ul>
+<li>发送方只要一连收到三个重复确认就应当立即重传对方尚未收到的报文段</li>
+</ul>
+</li>
+<li>快恢复<ul>
+<li>发送端收到连续三个重复的确认时，就将慢开始门限 ssthresh 设置为当前拥塞窗口的一半，然后开始执行拥塞避免算法<br><img src="/2020/11/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-2%E4%BC%A0%E8%BE%93%E5%B1%82/image-20201105134401824.png" alt="image-20201105134401824"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>连接管理</p>
+<ul>
+<li>连接建立：三次握手<br><img src="/2020/11/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-2%E4%BC%A0%E8%BE%93%E5%B1%82/image-20201105134458207.png" alt="image-20201105134458207"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>连接释放：四次挥手</p>
+<ul>
+<li>等待2MSL：保证A最后一个 ACK 报文段能够到达B；使本连接内所产生的所有报文段都从网络中消失，下一个新的连接中不会出现旧的连接请求报文段<br><img src="/2020/11/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-2%E4%BC%A0%E8%BE%93%E5%B1%82/image-20201105134522636.png" alt="image-20201105134522636"></li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>计算机基础</category>
+      </categories>
+      <tags>
+        <tag>计算机网络</tag>
+        <tag>协议</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>计算机网络 （3）应用层</title>
+    <url>/2020/11/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-3%E5%BA%94%E7%94%A8%E5%B1%82/</url>
+    <content><![CDATA[<p>计算机网络 应用层</p>
+<a id="more"></a>
+
+<h3 id="DHCP"><a href="#DHCP" class="headerlink" title="DHCP"></a>DHCP</h3><h3 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h3><h3 id="FTP"><a href="#FTP" class="headerlink" title="FTP"></a>FTP</h3><h3 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h3><h3 id="SMTP"><a href="#SMTP" class="headerlink" title="SMTP"></a>SMTP</h3>]]></content>
       <categories>
         <category>计算机基础</category>
       </categories>
