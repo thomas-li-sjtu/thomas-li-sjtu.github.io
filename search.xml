@@ -3389,4 +3389,320 @@
         <tag>TensorFlow</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Interpretable Probabilistic Password Strength Meters via Deep Learning</title>
+    <url>/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/</url>
+    <content><![CDATA[<p>基于深度学习的可解释概率密码强度表 论文阅读笔记</p>
+<a id="more"></a>
+
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><ul>
+<li>概率密码强度表（Probabilistic password strength meters）已被证明是测量密码强度最准确的工具</li>
+<li>生成一个不透明的安全估计，但不能指明到底密码哪一部分不安全</li>
+<li>贡献：<ul>
+<li>组成密码的每个字符的安全贡献被分离，为用户提供明确的细粒度反馈，反馈具有明确的概率解释</li>
+<li>描述了如何通过一个适用于客户端高效、轻量级的深度学习框架来实现这个方法</li>
+</ul>
+</li>
+</ul>
+<h1 id="导言"><a href="#导言" class="headerlink" title="导言"></a>导言</h1><ul>
+<li>培训用户选择安全密码<ul>
+<li>列出强密码需要的密码策略【10】</li>
+<li>密码强度表被证明是有效的【15，27】</li>
+</ul>
+</li>
+<li>密码强度通过人工定义的特性或启发式熵估计，此类PSM无法准确度量密码的安全性【11，31】</li>
+<li>最先进的方案基于blackbox参数概率模型【9,21】，这些模型没有解释为什么强度会更高，因此没有提供任何关于密码错误或如何改进的反馈</li>
+<li>本文创建了第一个可解释的概率密码强度表——所测量的密码概率可以分解，用来估计密码的每个字符的强度，以为密码的每个原子组件分配一个安全分数，并确定其对总体安全强度的贡献。同时，使用深卷积神经网络将这个过程转换为客户端运行的密码表</li>
+</ul>
+<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><h3 id="概率密码强度表ppsm"><a href="#概率密码强度表ppsm" class="headerlink" title="概率密码强度表ppsm"></a>概率密码强度表ppsm</h3><ul>
+<li>基于密码概率的显式估计</li>
+<li>通过概率模型近似一组已知密码（泄露库）背后的概率分布</li>
+<li>攻击者的目标是最大限度地减少密码的猜测【20】——最佳猜测攻击，猜测按概率递减顺序执行</li>
+<li>此模式下，高概率的密码被认为是脆弱的，低概率密码被评估为安全</li>
+</ul>
+<h3 id="结构化概率模型-Structured-Probabilistic-Models"><a href="#结构化概率模型-Structured-Probabilistic-Models" class="headerlink" title="结构化概率模型 Structured Probabilistic Models"></a>结构化概率模型 Structured Probabilistic Models</h3><ul>
+<li>利用图表示法来描述密码分布，以说明一组随机变量之间的条件依赖属性</li>
+<li>随机属性$x_i$被描绘为节点，当两个节点存在统计上的依赖性时，则存在一条边</li>
+<li>DAG（有向无环图）定义一个贝叶斯网络，边确定两个变量的因果关系。此模型下，可以确定所有随机变量的联系，并获得随机变量的联合概率分布</li>
+<li>无向图，也称马尔可夫模型，认为两个节点对称的影响对方，因此两个节点的因果关系不确定——无法获得这些节点的联合分布</li>
+</ul>
+<h3 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h3><ul>
+<li>概率PSM（ <em>Probabilistic PSMs</em>）<ul>
+<li>一个平稳的，有限状态的马尔可夫链作为直接的密码质量估计器【9】，模型通过分别测量观察到的密码中每一对n-gram的条件概率来计算联合概率</li>
+<li>利用字符/令牌（token）级递归神经网络（RNN）来建模密码概率【21】，扩展了马尔可夫模型方法</li>
+<li>加入一些启发式的方法【25】</li>
+<li>概率方法不能提供任何自然形式的反馈</li>
+</ul>
+</li>
+<li>令牌查找PSM（<em>Token look-up PSMs</em>）<ul>
+<li>密码被建模为令牌的组合，而相对安全性得分是根据令牌在已知字典中的排名得出的</li>
+<li>向用户返回反馈，例如对密码弱点的解释，这依赖于组成密码的令牌的语义</li>
+<li>zxcvbn 根据猜测数的启发式特征对密码进行评分【20】，这种评分被描述为，通过遍历有序令牌列表来匹配测试密码所需的令牌组合的数量</li>
+</ul>
+</li>
+</ul>
+<h1 id="密码表的理论基础"><a href="#密码表的理论基础" class="headerlink" title="密码表的理论基础"></a>密码表的理论基础</h1><h3 id="基于概率推理的字符级强度估计"><a href="#基于概率推理的字符级强度估计" class="headerlink" title="基于概率推理的字符级强度估计"></a>基于概率推理的字符级强度估计</h3><ul>
+<li><p>密码$x = [x_1,…,x_l]$是随机向量$\pmb{x}=[\pmb{x_1,…,x_l}]$，其中各个不相交的随机变量$x_i$代表了对应位置的字符</p>
+</li>
+<li><p>每个随机变量与局部条件概率$Q(x_i)$分布相关，描述了$\pmb{x_i}$的随机行为</p>
+</li>
+<li><p>联合概率从边缘化的局部条件概率分布集合中获得，$P(x)=\prod_{i=1}^l{Q(\pmb{x_i}=x_i)}$</p>
+</li>
+<li><p>联合概率可以作为密码强度的计量，但隐藏了许多细粒度的信息</p>
+</li>
+<li><p>联合概率估计中的局部条件概率</p>
+<ul>
+<li><p>对应的Q越大，越应该替换以提高整体的强度</p>
+</li>
+<li><p>可视化展示：红色表示高概率值，绿色表示低概率值</p>
+<p><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113184629830.png" alt="image-20201113184629830"></p>
+</li>
+</ul>
+</li>
+<li><p>现有的PPSM利用了结构化概率模型，无法产生需要的估计值，其测量的条件概率不能正确建立一个用于提供需要的字符级关联反馈模型</p>
+</li>
+<li><p>建立一个无向模型，以实现上面的反馈机制</p>
+</li>
+</ul>
+<h3 id="密码分布的无方向描述"><a href="#密码分布的无方向描述" class="headerlink" title="密码分布的无方向描述"></a>密码分布的无方向描述</h3><ul>
+<li><p>描述如何用无向概率模型获得反馈机制</p>
+</li>
+<li><p>FLA</p>
+<ul>
+<li><p>使用RNN在字符级估计密码质量，且假设了一个由贝叶斯网络表示的随机过程，如下图（a）</p>
+</li>
+<li><p>假设了字符间存在因果关系，且向单一的方向流动——字符与后面的字符串独立，因此$P(\pmb{x})=\prod_{i=1}^lQ(\pmb{x_i})=P(\pmb{x_1})\prod_{i=2}^lP(\pmb{x_i|x_1,…,x_{i-1})}$</p>
+</li>
+<li><p>例如，第一个字符独立于密码中其他任何符号，但对一个健全的反馈机制，每个字符都必须严格根据整个字符串的上下文定义为“弱”或“强”</p>
+</li>
+<li><p>再例如，”（password）”中，第一个字符的强和弱应当取决于最后一个字符是不是”）”，而不是完全独立</p>
+<p><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113190522068.png" alt="image-20201113190522068"></p>
+</li>
+<li><p>其他类型的PPSM[【9，30】也同样如此</p>
+</li>
+<li><p>有向模型旨在充分理解随机变量之间因果关系</p>
+</li>
+<li><p>但不可能断言组成密码的符号之间既没有独立性也没有因果关系</p>
+</li>
+</ul>
+</li>
+<li><p>与普通字典单词不同的是，密码建立在更复杂的结构和字符之间清晰的交互之上，如果不放松现有PPSM所使用的许多假设，就无法完全描述这些字符</p>
+</li>
+<li><p>使用图3（b）的模型——每个局部条件概率都是在字符串中任何其他符号提供的上下文中计算的</p>
+<p><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113194628671.png" alt="image-20201113194628671"></p>
+<ul>
+<li><p>效果如图所示</p>
+<p><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113193649197.png" alt="image-20201113193649197"></p>
+</li>
+<li><p>此方法下的局部条件概率上的连乘，不能严格的获得联合概率分布$P(x)$，Hammersley–Clifffford 定理【16】</p>
+</li>
+<li><p>使用适当的近似方法来近似联合概率分布（附录I）；反馈机制更详细的描述（II）</p>
+</li>
+<li><p>方法可以直接应用于n-gram或token</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="密码表实现"><a href="#密码表实现" class="headerlink" title="密码表实现"></a>密码表实现</h1><h3 id="模型训练"><a href="#模型训练" class="headerlink" title="模型训练"></a>模型训练</h3><ul>
+<li><p>训练一个神经网络模拟图3（b）的计算过程——训练网络来解决文本域上定义的类似修复的任务（inpainting-like task defined over the textual domain）</p>
+</li>
+<li><p>模型要求返回$x$所有未观测元素的概率分布，明确测量与可观测上下文有关的元素的条件概率</p>
+</li>
+<li><p>训练过程类似自动编码结构【8】，对一个实例进行破坏性变换，以变换后的结果为输入，优化以产生与原始实例最相似的输出——通过从字符串中移除随机选择的字符来执行破坏操作</p>
+<p><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113201803364.png" alt="image-20201113201803364"></p>
+</li>
+<li><p>文献【23】：学习一个合适的密码表示，以进行猜测攻击</p>
+</li>
+<li><p>选择deep residual structure来建立一个自动编码器，网络遵循在【23】定义的相同的通用上下文编码器（【24】）架构</p>
+</li>
+<li><p>编码器通过两个完全连接层与解码器连接</p>
+</li>
+<li><p>模型损失函数：</p>
+<ul>
+<li>Enc为编码器网络，Dec为解码器网络</li>
+<li>s为$softmax$函数</li>
+<li>$d$为交叉熵，$mmd$为$maximum \ mean\  discrepancy$</li>
+</ul>
+<p><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113202537986.png" alt="image-20201113202537986"></p>
+</li>
+<li><p>在Rockyou泄露库（【7】）上按80/20训练与测试</p>
+</li>
+<li><p>过滤长度少于5的密码，最大长度为16</p>
+</li>
+<li><p>获得三种架构的神经网络</p>
+</li>
+</ul>
+<h3 id="模型推理过程"><a href="#模型推理过程" class="headerlink" title="模型推理过程"></a>模型推理过程</h3><ul>
+<li>模型训练后，即可计算$Q(x_i)$</li>
+<li>例如，计算”iloveyou”中字母”e”的条件概率<ul>
+<li>创建”ilov you”并输入网络</li>
+<li>输出未观测的随机变量$\pmb{x}$，即$Q(\pmb{x_5})$的概率分布</li>
+<li>边缘化得到$P(\pmb{x_5})=’e’|\hat{x}$</li>
+</ul>
+</li>
+<li>必须测量所有字符的$Q(x_i)$</li>
+</ul>
+<h1 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h1><h3 id="测试密码表准确率"><a href="#测试密码表准确率" class="headerlink" title="测试密码表准确率"></a>测试密码表准确率</h3><ul>
+<li><p>验证所提出的估计过程及其网络实现的效果</p>
+</li>
+<li><p>测试集</p>
+<ul>
+<li>暗网【1】中发现的泄露库</li>
+<li>取长度为5-16的密码，按照出现频率降序排列</li>
+<li>依据【15】的方法，从测试集筛出频数小于10的密码</li>
+<li>最终得到$10^7$条unique password数据集$X_{bc}$，考虑到数据量和数据源，认为这个数据集是对真实世界密码分布的准确描述</li>
+</ul>
+</li>
+<li><p>测试强度表</p>
+<ul>
+<li>马尔可夫模型【3】（与文献【15】的一致）</li>
+<li>文献【21】的神经网络方法用【4】实现，模型称为FLA</li>
+<li>评估过程遵循文献【15】中的定义，使用加权Spearman相关系数测量生成结果的准确性。但考虑到泄露库的规模和多样性，直接使用$X_{bc}$的频率排名——实际上具有相同频率值的密码在相关度量计算中能得到相同的排名（rank）</li>
+</ul>
+</li>
+<li><p>结果</p>
+<ul>
+<li><p>本文方法最差的结果也比马尔可夫强</p>
+</li>
+<li><p>只有最好的结果能与FLA相媲美。但FLA需要更多的磁盘空间</p>
+</li>
+<li><p>结果证明本文定义的概率估计过程是正确的，并能准确评估string级别的密码质量</p>
+<p><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113161819599.png" alt="image-20201113161819599"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="局部条件概率与口令强度的关系分析"><a href="#局部条件概率与口令强度的关系分析" class="headerlink" title="局部条件概率与口令强度的关系分析"></a>局部条件概率与口令强度的关系分析</h3><ul>
+<li><p>测试了所提出的密码结构与密码强度关系的建模正确性</p>
+</li>
+<li><p>评估步骤（从弱密码集合$X$开始）</p>
+<ul>
+<li>对集合进行猜测攻击，以估计每个口令的猜测数</li>
+<li>根据估计的局部条件概率替换口令的$n$个字符，产生新的“被干扰”密码</li>
+<li>对“被干扰”的密码重复猜测攻击，并测量猜测次数的变化</li>
+</ul>
+</li>
+<li><p>密码集合：评估基于一组弱密码，因此考虑$X_{bc}$前$10^4$个密码</p>
+</li>
+<li><p>密码扰动类型</p>
+<ul>
+<li>baseline<ul>
+<li>用随机选择的符号替换密码中随机定位的字符，文献【25】和文献【14】使用此策略</li>
+<li>符号为小写字母和数字</li>
+</ul>
+</li>
+<li>Semi-Meter<ul>
+<li>利用本文密码表产生的局部条件概率</li>
+<li>给定密码，计算每个字符的条件概率$Q(x_i)$，之后选择并替换具有最大概率的字符$argmax_{x_i}Q(x_i)$，替换符号为随机的小写字母或大写字母</li>
+<li>多轮替换（n大于1）中，选择上一轮的扰动密码作为下一轮的输入</li>
+</ul>
+</li>
+<li>Fully-Meter<ul>
+<li>替换方式同Semi-Meter一致</li>
+<li>但基于$Q(x_i)$的分布选择替换字符。特别的，选择$Q(x_i)=argmin_{s \in \sum’}Q(x_i=s)$，其中$\sum’$为候选符号池</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>猜测攻击</p>
+<ul>
+<li>用文献【28】的<em>min-auto</em>策略评估密码强度</li>
+<li>集合为Hashcat【2】，PCFG【6，30】，马尔可夫链【5，13】</li>
+<li>限制每个工具生成$10^{10}$个密码，总规模为3TB</li>
+</ul>
+</li>
+<li><p>指标</p>
+<ul>
+<li>平均猜测数量增量（AGI）</li>
+<li>未猜测密码的平均数目（PNP）作为辅助度量，当猜测次数达到$10^{12}$时视为猜测不成功<br><img src="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/image-20201113172017332.png" alt="image-20201113172017332"></li>
+</ul>
+</li>
+<li><p>局限性</p>
+<ul>
+<li>评估目标主要是验证前文提出的评估过程的可靠性，因此没有进行用户研究</li>
+<li>没有评估与人有关的因素，如密码可记忆性</li>
+</ul>
+</li>
+</ul>
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><ul>
+<li>证明了通过从根本上重新考虑潜在的密码质量估计，来构造可解释的概率密码表是可能的</li>
+<li>提出了一个无方向性的密码生成过程的概率解释</li>
+<li>验证了我们的无向描述和深度学习解决方案，并引入了一种独特的字符级反馈机制，抽象出任何启发式结构</li>
+</ul>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><p>. “1.4 Billion Clear Text Credentials Discovered in a Single Database”. <a href="https://tinyurl.com/t8jp5h7">https://tinyurl.com/t8jp5h7</a>.</p>
+</li>
+<li><p>hashcat GitHub”. <a href="https://github.com/hashcat">https://github.com/hashcat</a>.</p>
+</li>
+<li><p>“NEMO Markov Model GitHub”. <a href="https://github.com/RUB-ysSec/NEMO">https://github.com/RUB-ysSec/NEMO</a>.</p>
+</li>
+<li><p>“Neural Network Cracking GitHub”. <a href="https://github.com/cupslab/neural_network_cracking">https://github.com/cupslab/neural_network_cracking</a>.</p>
+</li>
+<li><p>“OMEN GitHub”. <a href="https://github.com/RUB-SysSec/OMEN">https://github.com/RUB-SysSec/OMEN</a>.</p>
+</li>
+<li><p>“PCFG GitHub”. <a href="https://github.com/lakiw/pcfg_cracker">https://github.com/lakiw/pcfg_cracker</a>.</p>
+</li>
+<li><p>“RockYou Password Leak”. <a href="https://downloads.skullsecurity.org/passwords/rockyou.txt.bz2">https://downloads.skullsecurity.org/passwords/rockyou.txt.bz2</a>.</p>
+</li>
+<li><p>Pierre Baldi. Autoencoders, unsupervised learning, and deep architectures. In <em>Proceedings of ICML Workshop on Unsupervised and Transfer Learning</em>, volume 27 of <em>Proceedings of Machine Learning Research</em>, pages 37–49, Bellevue, Washington, USA, 02 Jul 2012. PMLR.</p>
+</li>
+<li><p>Claude Castelluccia, Markus D¨urmuth, and Daniele Perito. Adaptive Password-Strength Meters from Markov Models. In <em>NDSS</em>, 2012.</p>
+</li>
+<li><p>Luke St. Clair, Lisa Johansen, William Enck, Matthew Pirretti, Patrick Traynor, Patrick McDaniel, and Trent Jaeger. Password exhaustion: Predicting the end of password usefulness. In <em>Information Systems Security</em>, pages 37–55, Berlin, Heidelberg, 2006. Springer Berlin Heidelberg.</p>
+</li>
+<li><p>M. Dell’ Amico, P. Michiardi, and Y. Roudier. Password strength: An empirical analysis. In <em>2010 Proceedings IEEE INFOCOM</em>, pages 1–9, March 2010.</p>
+</li>
+<li><p>Matteo Dell’Amico and Maurizio Filippone. Monte Carlo Strength Evaluation: Fast and Reliable Password Checking. In <em>Proceedings of the 22nd ACM SIGSAC</em> <em>Conference on Computer and Communications Security</em>, CCS ’15, page 158–169, New York, NY, USA, 2015. Association for Computing Machinery.</p>
+</li>
+<li><p>Markus Duermuth, Fabian Angelstorf, Claude Castelluccia, Daniele Perito, and Abdelberi Chaabane. OMEN: Faster Password Guessing Using an Ordered Markov Enumerator. In <em>International Symposium on Engineering Secure Software and</em> <em>Systems</em>, milan, Italy, March 2015.</p>
+</li>
+<li><p>Alain Forget, Sonia Chiasson, P. C. van Oorschot, and Robert Biddle. Improving Text Passwords through Persuasion. In <em>Proceedings of the 4th Symposium on</em> <em>Usable Privacy and Security</em>, SOUPS ’08, page 1–12, New York, NY, USA, 2008. Association for Computing Machinery.</p>
+</li>
+<li><p>Maximilian Golla and Markus Durmuth. On the Accuracy of Password Strength Meters. In <em>Proceedings of the 2018 ACM SIGSAC Conference on Computer and</em> <em>Communications Security</em>, CCS ’18, page 1567–1582, New York, NY, USA, 2018. Association for Computing Machinery.</p>
+</li>
+<li><p>Daphne Koller and Nir Friedman. <em>Probabilistic Graphical Models: Principles and</em> <em>Techniques - Adaptive Computation and Machine Learning</em>. The MIT Press, 2009.</p>
+</li>
+<li><p>Saranga Komanduri, Richard Shay, Lorrie Faith Cranor, Cormac Herley, and Stuart Schechter. Telepathwords: Preventing Weak Passwords by Reading Users’ Minds. In <em>23rd USENIX Security Symposium (USENIX Security 14)</em>, pages 591– 606, San Diego, CA, August 2014. USENIX Association.</p>
+</li>
+<li><p>Yann Lecun, Sumit Chopra, Raia Hadsell, Marc Aurelio Ranzato, and Fu Jie Huang. <em>A tutorial on energy-based learning</em>. MIT Press, 2006.</p>
+</li>
+<li><p>Jianzhu Ma, Jian Peng, Sheng Wang, and Jinbo Xu. Estimating the Partition Function of Graphical Models Using Langevin Importance Sampling . In <em>Proceedings of the Sixteenth International Conference on Artifificial Intelligence and</em> <em>Statistics</em>, volume 31 of <em>Proceedings of Machine Learning Research</em>, pages 433–441, Scottsdale, Arizona, USA, 29 Apr–01 May 2013. PMLR.</p>
+</li>
+<li><p>J. L. Massey. Guessing and entropy. In <em>Proceedings of 1994 IEEE International</em> <em>Symposium on Information Theory</em>, pages 204–, June 1994.</p>
+</li>
+<li><p> William Melicher, Blase Ur, Sean M. Segreti, Saranga Komanduri, Lujo Bauer, Nicolas Christin, and Lorrie Faith Cranor. Fast, Lean, and Accurate: Modeling Password Guessability Using Neural Networks. In <em>25th USENIX Security Symposium (USENIX Security 16)</em>, pages 175–191, Austin, TX, August 2016. USENIX Association.</p>
+</li>
+<li><p>Arvind Narayanan and Vitaly Shmatikov. Fast Dictionary Attacks on Passwords Using Time-Space Tradeoffff. In <em>Proceedings of the 12th ACM Conference on Computer and Communications Security</em>, CCS ’05, page 364–372, New York, NY, USA, 2005. Association for Computing Machinery.</p>
+</li>
+<li><p>Dario Pasquini, Ankit Gangwal, Giuseppe Ateniese, Massimo Bernaschi, and Mauro Conti. Improving Password Guessing via Representation Learning. <em>arXiv</em> <em>e-prints</em>, page arXiv:1910.04232, Oct 2019.</p>
+</li>
+<li><p>Deepak Pathak, Philipp Kr¨ahenb¨uhl, Jeffff Donahue, Trevor Darrell, and Alexei Efros. Context Encoders: Feature Learning by Inpainting. In <em>Computer Vision</em> <em>and Pattern Recognition (CVPR)</em>, 2016.</p>
+</li>
+<li><p>Blase Ur, Felicia Alfifieri, Maung Aung, Lujo Bauer, Nicolas Christin, Jessica Colnago, Lorrie Faith Cranor, Henry Dixon, Pardis Emami Naeini, Hana Habib, Noah Johnson, and William Melicher. Design and Evaluation of a Data-Driven Password Meter. In <em>CHI ’17</em>, 2017.</p>
+</li>
+<li><p>Blase Ur, Jonathan Bees, Sean M. Segreti, Lujo Bauer, Nicolas Christin, and Lorrie Faith Cranor. Do users’ perceptions of password security match reality? In <em>Proceedings of the 2016 CHI Conference on Human Factors in Computing Systems</em>, CHI ’16, page 3748–3760, New York, NY, USA, 2016. Association for Computing Machinery.</p>
+</li>
+<li><p>Blase Ur, Patrick Gage Kelley, Saranga Komanduri, Joel Lee, Michael Maass, Michelle L. Mazurek, Timothy Passaro, Richard Shay, Timothy Vidas, Lujo Bauer, Nicolas Christin, and Lorrie Faith Cranor. How does your password measure up? the effffect of strength meters on password creation. In <em>Presented as part of the 21st</em> <em>USENIX Security Symposium (USENIX Security 12)</em>, pages 65–80, Bellevue, WA, 2012. USENIX.</p>
+</li>
+<li><p>Blase Ur, Sean M. Segreti, Lujo Bauer, Nicolas Christin, Lorrie Faith Cranor, Saranga Komanduri, Darya Kurilova, Michelle L. Mazurek, William Melicher, and Richard Shay. Measuring Real-World Accuracies and Biases in Modeling Password Guessability. In <em>24th USENIX Security Symposium (USENIX Security 15)</em>, pages 463–481, Washington, D.C., August 2015. USENIX Association.</p>
+</li>
+<li><p>D. Wang, D. He, H. Cheng, and P. Wang. fuzzyPSM: A New Password Strength Meter Using Fuzzy Probabilistic Context-Free Grammars. In <em>2016 46th Annual IEEE/IFIP International Conference on Dependable Systems and Networks</em> <em>(DSN)</em>, pages 595–606, June 2016.</p>
+</li>
+<li><p>M. Weir, S. Aggarwal, B. d. Medeiros, and B. Glodek. Password Cracking Using Probabilistic Context-Free Grammars. In <em>2009 30th IEEE Symposium on Security</em> <em>and Privacy</em>, pages 391–405, May 2009.</p>
+</li>
+<li><p>Matt Weir, Sudhir Aggarwal, Michael Collins, and Henry Stern. Testing Metrics for Password Creation Policies by Attacking Large Sets of Revealed Passwords. In <em>Proceedings of the 17th ACM Conference on Computer and Communications Security</em>, CCS ’10, page 162–175, New York, NY, USA, 2010. Association for Computing Machinery.</p>
+</li>
+<li><p>Daniel Lowe Wheeler. zxcvbn: Low-Budget Password Strength Estimation. In <em>25th</em> <em>USENIX Security Symposium (USENIX Security 16)</em>, pages 157–173, Austin, TX, August 2016. USENIX Association.</p>
+</li>
+<li><p>Junyuan Xie, Linli Xu, and Enhong Chen. Image denoising and inpainting with deep neural networks. In <em>Advances in Neural Information Proces</em></p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>论文</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
+      </tags>
+  </entry>
 </search>
