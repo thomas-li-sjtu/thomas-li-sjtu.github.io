@@ -3845,14 +3845,271 @@
       </tags>
   </entry>
   <entry>
-    <title>Python进阶</title>
-    <url>/2020/11/16/Python%E8%BF%9B%E9%98%B6/</url>
-    <content><![CDATA[<p>《Intermediate Python》阅读笔记</p>
+    <title>Python进阶（上）</title>
+    <url>/2020/11/16/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8A%EF%BC%89/</url>
+    <content><![CDATA[<p>《Intermediate Python》阅读笔记 上半部分</p>
 <a id="more"></a>
 
+<h2 id="args-和-kwargs"><a href="#args-和-kwargs" class="headerlink" title="args 和 ***kwargs**"></a><em>args 和 **</em>*kwargs**</h2><ul>
+<li>不是必须写成*args 和**kwargs。 只有变量前⾯的 * 才是必须的</li>
+</ul>
+<h3 id="args的用法"><a href="#args的用法" class="headerlink" title="*args的用法"></a>*args的用法</h3><ul>
+<li><p>将不定数量的参数传递给⼀个函数</p>
+</li>
+<li><p>发送⼀个⾮键值对的可变数量的参数列表</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_var_args</span>(<span class="params">f_arg, *argv</span>):</span> </span><br><span class="line">    print(<span class="string">&quot;first normal arg:&quot;</span>, f_arg) </span><br><span class="line">    <span class="keyword">for</span> arg <span class="keyword">in</span> argv: </span><br><span class="line">        print(<span class="string">&quot;another arg through *argv:&quot;</span>, arg) </span><br><span class="line"></span><br><span class="line">test_var_args(<span class="string">&#x27;yasoob&#x27;</span>, <span class="string">&#x27;python&#x27;</span>, <span class="string">&#x27;eggs&#x27;</span>, <span class="string">&#x27;test&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出：</span></span><br><span class="line">first normal arg: yasoob </span><br><span class="line">another arg through *argv: python </span><br><span class="line">another arg through *argv: eggs </span><br><span class="line">another arg through *argv: test</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="kwargs的用法"><a href="#kwargs的用法" class="headerlink" title="**kwargs的用法"></a>**kwargs的用法</h3><ul>
+<li><p>将不定长度的键值对，作为参数传递给⼀个函数——适合在一个函数中处理带有名字的参数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">greet_me</span>(<span class="params">**kwargs</span>):</span></span><br><span class="line">    <span class="keyword">for</span> key, value <span class="keyword">in</span> kwargs.items():</span><br><span class="line">        print(<span class="string">&quot;&#123;0&#125; == &#123;1&#125;&quot;</span>.<span class="built_in">format</span>(key, value))</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>greet_me(name=<span class="string">&quot;yasoob&quot;</span>)</span><br><span class="line">name == yasoob</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>所有参数（包括标准参数）的使用：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">some_func(fargs, *args, **kwargs)</span><br></pre></td></tr></table></figure>
 
 
-<h2 id="args-和-kwargs"><a href="#args-和-kwargs" class="headerlink" title="args 和 ***kwargs**"></a><em>args 和 **</em>*kwargs**</h2>]]></content>
+</li>
+</ul>
+<h2 id="调试（Debugging）"><a href="#调试（Debugging）" class="headerlink" title="调试（Debugging）"></a>调试（Debugging）</h2><ul>
+<li><p>Python debugger(pdb)</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ python -m pdb my_script.py</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>debugger在脚本第⼀⾏指令处停⽌执⾏</li>
+<li>可以通过<code>pdb</code>模式接着查看变量信息</li>
+</ul>
+</li>
+<li><p>脚本内部设置断点，在某些特定点查看变量信息和各种执⾏时信息</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pdb</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_bread</span>():</span></span><br><span class="line">    pdb.set_trace()</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;I don&#x27;t have time&quot;</span></span><br><span class="line">print(make_bread())</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>运⾏时进⼊debugger模式</li>
+<li>命令列表<ul>
+<li>c: 继续执⾏</li>
+<li>w: 显⽰当前正在执⾏的代码⾏的上下⽂信息</li>
+<li>a: 打印当前函数的参数列表</li>
+<li>s: 执⾏当前代码⾏，并停在第⼀个能停的地⽅（相当于单步进⼊）</li>
+<li>n: 继续执⾏到当前函数的下⼀⾏，或者当前⾏直接返回（单步跳过）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="生成器（Generators）"><a href="#生成器（Generators）" class="headerlink" title="生成器（Generators）"></a>生成器（Generators）</h2><ul>
+<li><p>迭代器（iterators）</p>
+<ul>
+<li>可以遍历⼀个容器（特别是列表）对象</li>
+<li>任意定义了<code>__next__</code>方法的对象</li>
+</ul>
+</li>
+<li><p>可迭代对象（Iterable）：Python 中任意的对象，只要定义可以返回⼀个迭代器的<code>__iter__</code>⽅法，或支持下标索引的<code>__getitem__</code>方法</p>
+</li>
+<li><p>迭代（Iteration）：从某地方取出一个元素的过程</p>
+</li>
+<li><p>生成器：只能对其迭代一次的迭代器</p>
+<ul>
+<li><p>运行时生成值</p>
+</li>
+<li><p>通过遍历使用</p>
+<ul>
+<li><p><code>for</code>循环</p>
+</li>
+<li><p>将生成器传递给任意可迭代的函数和结构</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">generator_function</span>():</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    <span class="keyword">yield</span> i</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> generator_function():</span><br><span class="line">    print(item)  <span class="comment"># 最终打印出数字0-9</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>应用场景：不想同⼀时间将所有计算出来的⼤量结果分配到内存</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 计算斐波那契数列</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fibon</span>(<span class="params">n</span>):</span></span><br><span class="line">	a = b = <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">        <span class="keyword">yield</span> a</span><br><span class="line">        a, b = b, a + b</span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> fibon(<span class="number">1000000</span>):</span><br><span class="line">    print(x)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可迭代对象不一定是迭代器——⽀持迭代，但不能直接对其进⾏迭代操作</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">my_string = <span class="string">&quot;Yasoob&quot;</span></span><br><span class="line"><span class="built_in">next</span>(my_string) <span class="comment"># 内置函数，用于获取⼀个序列的下⼀个元素</span></span><br><span class="line">&gt;&gt;&gt;Output: Traceback (most recent call last): File <span class="string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt; TypeError: <span class="built_in">str</span> <span class="built_in">object</span> <span class="keyword">is</span> <span class="keyword">not</span> an iterator</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>iter()</code>：根据⼀个可迭代对象返回⼀个迭代器对象</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Map，Filter-和-Reduce"><a href="#Map，Filter-和-Reduce" class="headerlink" title="Map，Filter 和 Reduce"></a><strong>Map</strong>，<strong>Filter</strong> 和 <strong>Reduce</strong></h2><ul>
+<li><p><code>Map</code></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">map</span>(function_to_apply, list_of_inputs)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将⼀个函数映射到⼀个输⼊列表的所有元素上</p>
+</li>
+<li><p>适用于“需要把列表中所有元素⼀个个地传递给⼀个函数”甚至一组函数的情况</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">multiply</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> (x*x) </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span>(<span class="params">x</span>):</span> </span><br><span class="line">    <span class="keyword">return</span> (x+x)</span><br><span class="line">funcs = [multiply, add]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    value = <span class="built_in">map</span>(<span class="keyword">lambda</span> x: x(i), funcs)</span><br><span class="line">    print(<span class="built_in">list</span>(value))  <span class="comment"># 返回迭代器</span></span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<ul>
+<li><code>Filter</code></li>
+</ul>
+<ul>
+<li><p>过滤列表中的元素，返回⼀个由所有符合要求的元素所构成的列表——即函数映射到该元素时返回值为True</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">number_list = <span class="built_in">range</span>(<span class="number">-5</span>, <span class="number">5</span>)</span><br><span class="line">less_than_zero = <span class="built_in">filter</span>(<span class="keyword">lambda</span> x: x &lt; <span class="number">0</span>, number_list)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<ul>
+<li><p><code>Reduce</code></p>
+<ul>
+<li><p>要对⼀个列表进⾏⼀些计算并返回结果</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 计算阶乘</span></span><br><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> reduce</span><br><span class="line">product = reduce( (<span class="keyword">lambda</span> x, y: x * y), [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>] )</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="set-数据结构"><a href="#set-数据结构" class="headerlink" title="set 数据结构"></a>set 数据结构</h2><ul>
+<li><p>不包含重复的值</p>
+</li>
+<li><p>两个结合的交集</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">input_set1.intersection(input_set2)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>两个集合的差集</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">input_set1.difference(input_set2)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="三元运算符"><a href="#三元运算符" class="headerlink" title="三元运算符"></a>三元运算符</h2><ul>
+<li><p>伪代码：condition_is_true if condition else condition_is_false </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">is_fat = <span class="literal">True</span></span><br><span class="line">state = <span class="string">&quot;fat&quot;</span> <span class="keyword">if</span> is_fat <span class="keyword">else</span> <span class="string">&quot;not fat&quot;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>简单的⼀⾏快速判断</p>
+</li>
+</ul>
+<h2 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h2><h3 id="前述"><a href="#前述" class="headerlink" title="前述"></a>前述</h3><ul>
+<li><p>函数赋值给一个变量</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hi</span>(<span class="params">name=<span class="string">&quot;yasoob&quot;</span></span>):</span></span><br><span class="line">	<span class="keyword">return</span> <span class="string">&quot;hi &quot;</span> + name</span><br><span class="line">greet = hi</span><br><span class="line">print(greet())</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>函数嵌套函数</p>
+</li>
+<li><p>函数中返回函数——一个函数作为变量被返回</p>
+</li>
+<li><p>函数作为参数传递给另一个函数</p>
+</li>
+</ul>
+<h3 id="装饰器-1"><a href="#装饰器-1" class="headerlink" title="装饰器"></a>装饰器</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 原理</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a_new_decorator</span>(<span class="params">a_func</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wrapTheFunction</span>():</span></span><br><span class="line">    print(<span class="string">&quot;I am doing some boring work before executing a_func()&quot;</span>)</span><br><span class="line">        a_func()</span><br><span class="line">        print(<span class="string">&quot;I am doing some boring work after executing a_func()&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> wrapTheFunction</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a_function_requiring_decoration</span>():</span></span><br><span class="line">    print(<span class="string">&quot;I am the function which needs some decoration to remove my foul smell&quot;</span>)</span><br><span class="line">a_function_requiring_decoration()</span><br><span class="line">a_function_requiring_decoration = a_new_decorator(a_function_requiring_decoration) </span><br><span class="line"><span class="comment">#now a_function_requiring_decoration is wrapped by wra</span></span><br><span class="line">a_function_requiring_decoration()</span><br><span class="line"><span class="comment">##now a_function_requiring_decoration is wrapped by wrapTheFunction()</span></span><br><span class="line"><span class="comment"># I am the function which needs some decoration to remove my foul smell </span></span><br><span class="line"><span class="comment"># I am doing some boring work after executing a_func()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#使用@：</span></span><br><span class="line"><span class="meta">@a_new_decorator</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a_function_requiring_decoration</span>():</span></span><br><span class="line">    print(<span class="string">&quot;I am the function which needs some decoration to &quot;</span> <span class="string">&quot;remove my foul smell&quot;</span>)</span><br><span class="line">a_function_requiring_decoration()</span><br><span class="line"><span class="comment">#outputs: I am doing some boring work before executing a_func() </span></span><br><span class="line"><span class="comment"># I am the function which needs some decoration to remove my foul smell </span></span><br><span class="line"><span class="comment"># I am doing some boring work after executing a_func()</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>但@重写了函数的名字和注释⽂档，即<code>a_function_requiring_decoration.__name__</code>为<code>wrapTheFunction</code>——<code>@wraps</code>接受⼀个函数进⾏装饰，并具有复制函数名称、注释⽂档、参数列表等功能</p>
+</li>
+<li><pre><code class="python">from functools import wraps
+def a_new_decorator(a_func):
+    @wraps(a_func)
+    ...
+@a_new_decorator
+def a_function_requiring_decoration():
+    pass
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">* 蓝本规范</span><br><span class="line"></span><br><span class="line">  ```python</span><br><span class="line">  <span class="keyword">from</span> functools <span class="keyword">import</span> wraps</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">decorator_name</span>(<span class="params">f</span>):</span></span><br><span class="line"><span class="meta">      @wraps(f)</span></span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">decorated</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">          <span class="keyword">if</span> <span class="keyword">not</span> can_run:</span><br><span class="line">              <span class="keyword">return</span> <span class="string">&quot;Function will not run&quot;</span></span><br><span class="line">      <span class="keyword">return</span> decorated</span><br><span class="line">  </span><br><span class="line"><span class="meta">  @decorator_name</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">func</span>():</span></span><br><span class="line">      <span class="keyword">return</span>(<span class="string">&quot;Function is running&quot;</span>)</span><br><span class="line">  can_run = <span class="literal">True</span></span><br><span class="line">  func()</span><br></pre></td></tr></table></figure></code></pre>
+</li>
+<li><p>应用</p>
+<ul>
+<li><p>授权：⽤于Flask和Django web框架</p>
+</li>
+<li><p>日志</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> wraps</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logit</span>(<span class="params">logfile=<span class="string">&#x27;out.log&#x27;</span></span>):</span></span><br><span class="line"><span class="meta">    @wraps(func)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">with_logging</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">        log_string = func.__name__ + <span class="string">&quot; was called&quot;</span></span><br><span class="line">        print(func.__name__ + <span class="string">&quot; was called&quot;</span>)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(logfile, <span class="string">&#x27;a&#x27;</span>) <span class="keyword">as</span> opened_file:</span><br><span class="line">            opened_file.write(log_string + <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">        <span class="keyword">return</span> func(*args, **kwargs)</span><br><span class="line">    <span class="keyword">return</span> with_logging</span><br><span class="line"><span class="meta">@logit(logfile=&#x27;func2.log&#x27;)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">addition_func</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;Do some math.&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> x + x</span><br><span class="line">result = addition_func(<span class="number">4</span>) <span class="comment"># Output: addition_func was called  func2.log 的⽂件出现，并记录上⾯的字符串</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>带参数的装饰器</p>
+<ul>
+<li>具体参见上面的日志应用场景</li>
+</ul>
+</li>
+</ul>
+<h2 id="Global-和-Return"><a href="#Global-和-Return" class="headerlink" title="Global 和 Return"></a>Global 和 Return</h2><ul>
+<li>global变量：在函数以外的区域都能访问</li>
+<li>返回多个变量</li>
+</ul>
+<h2 id="slots"><a href="#slots" class="headerlink" title="slots"></a><strong>slots</strong></h2><ul>
+<li><p>默认情况下Python⽤⼀个字典来保存⼀个对象的实例属性</p>
+</li>
+<li><p>对于有着已知属性的⼩类来说，这个字典浪费了许多内存——最好直接分配⼀个固定量的内存来保存所有的属性，即使用<code>__slot__</code>给一个固定集合的属性分配空间</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 不使⽤ __slots__</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>(<span class="params"><span class="built_in">object</span></span>):</span> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, name, identifier</span>):</span> </span><br><span class="line">        self.name = name </span><br><span class="line">        self.identifier = identifier </span><br><span class="line">        self.set_up()</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="comment"># 使⽤ __slots__，为内存减轻负担</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    __slots__ = [<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;identifier&#x27;</span>]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, name, identifier</span>):</span> </span><br><span class="line">        self.name = name </span><br><span class="line">        self.identifier = identifier </span><br><span class="line">        self.set_up()</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>编程语言</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>进阶语法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Python进阶（下）</title>
+    <url>/2020/11/17/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8B%EF%BC%89/</url>
+    <content><![CDATA[<p>《Intermediate Python》阅读笔记 下半部分</p>
+<a id="more"></a>
+
+<h2 id="容器-Collections"><a href="#容器-Collections" class="headerlink" title="容器 Collections"></a>容器 Collections</h2><ul>
+<li>一个模块</li>
+<li></li>
+</ul>
+<h2 id="枚举-Enumerate"><a href="#枚举-Enumerate" class="headerlink" title="枚举 Enumerate"></a>枚举 Enumerate</h2><ul>
+<li><p>内置函数</p>
+</li>
+<li><p>遍历数据并⾃动计数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> counter, value <span class="keyword">in</span> <span class="built_in">enumerate</span>(some_list):</span><br><span class="line">	print(counter, value)</span><br><span class="line">   </span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line">(<span class="number">0</span>, ...)</span><br><span class="line">(<span class="number">1</span>, ...)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定制从其他数字开始枚举</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">enumerate</span>(my_list, <span class="number">1</span>)  <span class="comment"># 从1开始枚举</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="推导式"><a href="#推导式" class="headerlink" title="推导式"></a>推导式</h2><ul>
+<li><p>列表推导式</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">variable = [out_exp <span class="keyword">for</span> out_exp <span class="keyword">in</span> input_list <span class="keyword">if</span> out_exp == <span class="number">2</span>]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>字典推导式：类似列表推导式</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">mcase = &#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">10</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">34</span>, <span class="string">&#x27;A&#x27;</span>: <span class="number">7</span>, <span class="string">&#x27;Z&#x27;</span>: <span class="number">3</span>&#125;</span><br><span class="line"><span class="comment"># 同⼀个字母但不同⼤⼩写的值合并</span></span><br><span class="line">mcase_frequency = &#123;</span><br><span class="line">    k.lower(): mcase.get(k.lower(), <span class="number">0</span>) + mcase.get(k.upper(), <span class="number">0</span>) <span class="keyword">for</span> k <span class="keyword">in</span> mcase.keys()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对换键值</span></span><br><span class="line">&#123;v: k <span class="keyword">for</span> k, v <span class="keyword">in</span> some_dict.items()&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>集合推导式：使用大括号的”列表推导“</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">squared = &#123;x**<span class="number">2</span> <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><ul>
+<li><p>try/except从句</p>
+</li>
+<li><p>处理多个异常</p>
+<ul>
+<li><p>把所有可能发⽣的异常放到⼀个元组⾥</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    file = <span class="built_in">open</span>(<span class="string">&#x27;test.txt&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>)</span><br><span class="line"><span class="keyword">except</span> (IOError, EOFError) <span class="keyword">as</span> e:</span><br><span class="line">    print(<span class="string">&quot;An error occurred. &#123;&#125;&quot;</span>.<span class="built_in">format</span>(e.args[<span class="number">-1</span>]))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对每个单独的异常在单独的except语句块中处理</p>
+</li>
+<li><p>捕获所有异常</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    file = <span class="built_in">open</span>(<span class="string">&#x27;test.txt&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>)</span><br><span class="line"><span class="keyword">except</span> Exception:</span><br><span class="line">    <span class="comment"># 打印⼀些异常⽇志，如果你想要的话</span></span><br><span class="line">    <span class="keyword">raise</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>Finally从句：代码不管异常是否触发都将会被执⾏</p>
+</li>
+<li><p>try/else从句 ：在没有触发异常的时候执⾏⼀些代码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    print(<span class="string">&#x27;I am sure no exception is going to occur!&#x27;</span>) </span><br><span class="line"><span class="keyword">except</span> Exception: </span><br><span class="line">    print(<span class="string">&#x27;exception&#x27;</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="comment"># 这⾥的代码只会在try语句⾥没有触发异常时运⾏, </span></span><br><span class="line">    <span class="comment"># 但是这⾥的异常将 *不会* 被捕获 </span></span><br><span class="line">    print(<span class="string">&#x27;This would only run if no exception occurs. And an error here &#x27;</span> <span class="string">&#x27;would NOT be caught.&#x27;</span>) </span><br><span class="line"><span class="keyword">finally</span>: </span><br><span class="line">    print(<span class="string">&#x27;This would be printed in every case.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a><strong>lambda</strong>表达式</h2><ul>
+<li><p>是一行函数</p>
+</li>
+<li><p>lambda 参数:操作(参数)</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">add = <span class="keyword">lambda</span> x, y: x + y</span><br><span class="line">print(add(<span class="number">3</span>, <span class="number">5</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列表排序</span></span><br><span class="line">a = [(<span class="number">1</span>, <span class="number">2</span>), (<span class="number">4</span>, <span class="number">1</span>), (<span class="number">9</span>, <span class="number">10</span>), (<span class="number">13</span>, <span class="number">-3</span>)]</span><br><span class="line">a.sort(key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>])</span><br><span class="line"><span class="comment"># Output: [(13, -3), (4, 1), (1, 2), (9, 10)]</span></span><br><span class="line"><span class="comment"># 列表并行排序</span></span><br><span class="line">data = <span class="built_in">zip</span>(list1, list2)</span><br><span class="line">data.sort()</span><br><span class="line">list1, list2 = <span class="built_in">map</span>(<span class="keyword">lambda</span> t: <span class="built_in">list</span>(t), <span class="built_in">zip</span>(*data))</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h2 id="For-else"><a href="#For-else" class="headerlink" title="For else"></a>For else</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> container: </span><br><span class="line">    <span class="keyword">if</span> search_something(item): </span><br><span class="line">        <span class="comment"># Found it! </span></span><br><span class="line">        process(item) </span><br><span class="line">        <span class="keyword">break</span> </span><br><span class="line"><span class="keyword">else</span>:  <span class="comment"># else从句会在循环正常结束时执⾏，即循环没有遇到任何break</span></span><br><span class="line">    <span class="comment"># Didn&#x27;t find anything.. </span></span><br><span class="line">    not_found_in_container()</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用C扩展"><a href="#使用C扩展" class="headerlink" title="使用C扩展"></a>使用C扩展</h2><h2 id="上下文管理器"><a href="#上下文管理器" class="headerlink" title="上下文管理器"></a>上下文管理器</h2>]]></content>
       <categories>
         <category>编程语言</category>
       </categories>
