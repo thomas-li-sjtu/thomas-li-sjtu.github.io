@@ -4049,8 +4049,21 @@ def a_function_requiring_decoration():
 <a id="more"></a>
 
 <h2 id="容器-Collections"><a href="#容器-Collections" class="headerlink" title="容器 Collections"></a>容器 Collections</h2><ul>
-<li>一个模块</li>
-<li></li>
+<li><p>一个模块</p>
+</li>
+<li><p>defaultdict：当字典里的key不存在但被查找时，返回的不是keyError而是一个默认值</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"><span class="built_in">dict</span> = defaultdict( factory_function)  <span class="comment"># 可以是list、set、str等，当key不存在时，返回工厂函数的默认值——[],(),&#x27;&#x27;,0等</span></span><br><span class="line"></span><br><span class="line">colours = ( (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Yellow&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Blue&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Arham&#x27;</span>, <span class="string">&#x27;Green&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Black&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Red&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ahmed&#x27;</span>, <span class="string">&#x27;Silver&#x27;</span>), </span><br><span class="line">          )</span><br><span class="line">favourite_colours = defaultdict(<span class="built_in">list</span>)</span><br><span class="line"><span class="keyword">for</span> name, colour <span class="keyword">in</span> colours:</span><br><span class="line">    favourite_colours[name].append(colour)</span><br><span class="line"><span class="comment"># defaultdict(&lt;type &#x27;list&#x27;&gt;, </span></span><br><span class="line"><span class="comment"># &#123;&#x27;Arham&#x27;: [&#x27;Green&#x27;], </span></span><br><span class="line"><span class="comment"># &#x27;Yasoob&#x27;: [&#x27;Yellow&#x27;, &#x27;Red&#x27;], </span></span><br><span class="line"><span class="comment"># &#x27;Ahmed&#x27;: [&#x27;Silver&#x27;], </span></span><br><span class="line"><span class="comment"># &#x27;Ali&#x27;: [&#x27;Blue&#x27;, &#x27;Black&#x27;] </span></span><br><span class="line"><span class="comment"># &#125;)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>counter：适用于需要使用dict和次数的场景，传入迭代器</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line">colours = ( (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Yellow&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Blue&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Arham&#x27;</span>, <span class="string">&#x27;Green&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Black&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Red&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ahmed&#x27;</span>, <span class="string">&#x27;Silver&#x27;</span>), </span><br><span class="line">          )</span><br><span class="line">favs = Counter(name <span class="keyword">for</span> name, colour <span class="keyword">in</span> colours)</span><br><span class="line"><span class="comment">## Counter(&#123; </span></span><br><span class="line"><span class="comment">## &#x27;Yasoob&#x27;: 2, </span></span><br><span class="line"><span class="comment">## &#x27;Ali&#x27;: 2,</span></span><br><span class="line"><span class="comment">## &#x27;Arham&#x27;: 1, </span></span><br><span class="line"><span class="comment">## &#x27;Ahmed&#x27;: 1 </span></span><br><span class="line"><span class="comment">## &#125;)</span></span><br><span class="line"></span><br><span class="line">c = Counter(a=<span class="number">3</span>, b=<span class="number">1</span>)</span><br><span class="line">d = Counter(a=<span class="number">1</span>, b=<span class="number">2</span>)</span><br><span class="line">c + d                       <span class="comment"># 相加</span></span><br><span class="line"><span class="comment">#Counter(&#123;&#x27;a&#x27;: 4, &#x27;b&#x27;: 3&#125;)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>deque：双端队列，可以从头/尾两端添加或删除元素</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> deque</span><br><span class="line">d = deque()</span><br><span class="line">d = deque(<span class="built_in">range</span>(<span class="number">5</span>))</span><br><span class="line">d.popleft()  <span class="comment"># 输出: 0</span></span><br><span class="line">d = deque(maxlen=<span class="number">30</span>)  <span class="comment"># 限制列表⼤⼩，当超出限制，数据会从队列另⼀端被挤出</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nametuple：像字典(dict)⼀样访问namedtuples，但namedtuples不可变</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> namedtuple</span><br><span class="line">Animal = namedtuple(<span class="string">&#x27;Animal&#x27;</span>, <span class="string">&#x27;name age type&#x27;</span>)</span><br><span class="line">perry = Animal(name=<span class="string">&quot;perry&quot;</span>, age=<span class="number">31</span>, <span class="built_in">type</span>=<span class="string">&quot;cat&quot;</span>)</span><br><span class="line"><span class="comment"># Animal(name=&#x27;perry&#x27;, age=31, type=&#x27;cat&#x27;)</span></span><br><span class="line">print(perry.name)  <span class="comment"># &#x27;perry&#x27;</span></span><br></pre></td></tr></table></figure>
+
+</li>
 </ul>
 <h2 id="枚举-Enumerate"><a href="#枚举-Enumerate" class="headerlink" title="枚举 Enumerate"></a>枚举 Enumerate</h2><ul>
 <li><p>内置函数</p>
@@ -4060,6 +4073,17 @@ def a_function_requiring_decoration():
 </li>
 <li><p>定制从其他数字开始枚举</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">enumerate</span>(my_list, <span class="number">1</span>)  <span class="comment"># 从1开始枚举</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="对象自省"><a href="#对象自省" class="headerlink" title="对象自省"></a>对象自省</h2><ul>
+<li><p>运⾏时判断⼀个对象的类型的能⼒</p>
+</li>
+<li><p>dir</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">my_list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>] </span><br><span class="line"><span class="built_in">dir</span>(my_list)  <span class="comment"># 返回⼀个列表对象的所有⽅法名</span></span><br><span class="line"><span class="comment"># Output: [&#x27;__add__&#x27;, &#x27;__class__&#x27;, &#x27;__contains__&#x27;, &#x27;__delattr__&#x27;, &#x27;__delitem__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__delslice__&#x27;, &#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;, &#x27;__getattribute__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__getitem__&#x27;, &#x27;__getslice__&#x27;, &#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__iadd__&#x27;, &#x27;__imul__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__init__&#x27;, &#x27;__iter__&#x27;, &#x27;__le__&#x27;, &#x27;__len__&#x27;, &#x27;__lt__&#x27;, &#x27;__mul__&#x27;, &#x27;__ne__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__new__&#x27;, &#x27;__reduce__&#x27;, &#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;, &#x27;__reversed__&#x27;, &#x27;__rmul__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__setattr__&#x27;, &#x27;__setitem__&#x27;, &#x27;__setslice__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__subclasshook__&#x27;, &#x27;append&#x27;, &#x27;count&#x27;, &#x27;extend&#x27;, &#x27;index&#x27;, &#x27;insert&#x27;, &#x27;pop&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;remove&#x27;, &#x27;reverse&#x27;, &#x27;sort&#x27;]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>type与id：type函数返回⼀个对象的类型，id函数返回任意不同种类对象的唯⼀ID</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">print(<span class="built_in">type</span>(<span class="string">&#x27;&#x27;</span>))</span><br><span class="line"><span class="comment"># Output: &lt;type &#x27;str&#x27;&gt;</span></span><br><span class="line">name = <span class="string">&quot;Yasoob&quot;</span> </span><br><span class="line">print(<span class="built_in">id</span>(name))</span><br><span class="line"><span class="comment"># Output: 139972439030304</span></span><br></pre></td></tr></table></figure>
 
 </li>
 </ul>
@@ -4103,13 +4127,92 @@ def a_function_requiring_decoration():
 <li><p>lambda 参数:操作(参数)</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">add = <span class="keyword">lambda</span> x, y: x + y</span><br><span class="line">print(add(<span class="number">3</span>, <span class="number">5</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列表排序</span></span><br><span class="line">a = [(<span class="number">1</span>, <span class="number">2</span>), (<span class="number">4</span>, <span class="number">1</span>), (<span class="number">9</span>, <span class="number">10</span>), (<span class="number">13</span>, <span class="number">-3</span>)]</span><br><span class="line">a.sort(key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>])</span><br><span class="line"><span class="comment"># Output: [(13, -3), (4, 1), (1, 2), (9, 10)]</span></span><br><span class="line"><span class="comment"># 列表并行排序</span></span><br><span class="line">data = <span class="built_in">zip</span>(list1, list2)</span><br><span class="line">data.sort()</span><br><span class="line">list1, list2 = <span class="built_in">map</span>(<span class="keyword">lambda</span> t: <span class="built_in">list</span>(t), <span class="built_in">zip</span>(*data))</span><br></pre></td></tr></table></figure>
 
-
+</li>
+</ul>
+<h2 id="一行式"><a href="#一行式" class="headerlink" title="一行式"></a>一行式</h2><ul>
+<li><p>简易Web Server ：通过⽹络快速共享⽂件；在共享文件目录下的命令行输入</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ python -m http.server</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>规范的打印：规范打印出列表和字典</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pprint <span class="keyword">import</span> pprint</span><br><span class="line">my_dict = &#123;<span class="string">&#x27;name&#x27;</span>: <span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;age&#x27;</span>: <span class="string">&#x27;undefined&#x27;</span>&#125;</span><br><span class="line">pprint(my_dict)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>脚本性能分析：定位脚本中的性能瓶颈</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ python -m cProfile my_script.py</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>csv转为json</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ python -c <span class="string">&quot;import csv,json;print json.dumps(list(csv.reader(open(&#x27;csv_file.csv&#x27;))))&quot;</span> </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>列表展平</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> itertools.chain.from_iterable</span><br><span class="line">a_list = [[<span class="number">1</span>, <span class="number">2</span>], [<span class="number">3</span>, <span class="number">4</span>], [<span class="number">5</span>, <span class="number">6</span>]]</span><br><span class="line">print(<span class="built_in">list</span>(itertools.chain.from_iterable(a_list))) </span><br><span class="line"><span class="comment"># Output: [1, 2, 3, 4, 5, 6]</span></span><br></pre></td></tr></table></figure>
 
 </li>
 </ul>
 <h2 id="For-else"><a href="#For-else" class="headerlink" title="For else"></a>For else</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> container: </span><br><span class="line">    <span class="keyword">if</span> search_something(item): </span><br><span class="line">        <span class="comment"># Found it! </span></span><br><span class="line">        process(item) </span><br><span class="line">        <span class="keyword">break</span> </span><br><span class="line"><span class="keyword">else</span>:  <span class="comment"># else从句会在循环正常结束时执⾏，即循环没有遇到任何break</span></span><br><span class="line">    <span class="comment"># Didn&#x27;t find anything.. </span></span><br><span class="line">    not_found_in_container()</span><br></pre></td></tr></table></figure>
 
-<h2 id="使用C扩展"><a href="#使用C扩展" class="headerlink" title="使用C扩展"></a>使用C扩展</h2><h2 id="上下文管理器"><a href="#上下文管理器" class="headerlink" title="上下文管理器"></a>上下文管理器</h2>]]></content>
+<h2 id="使用C扩展"><a href="#使用C扩展" class="headerlink" title="使用C扩展"></a>使用C扩展</h2><h3 id="ctypes模块"><a href="#ctypes模块" class="headerlink" title="ctypes模块"></a>ctypes模块</h3><ul>
+<li><p>提供了和C语⾔ 兼容的数据类型和函数来加载dll⽂件</p>
+</li>
+<li><p>示例</p>
+<ul>
+<li><p>C代码：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt; </span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add_int</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">int</span>)</span></span>; </span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">add_float</span><span class="params">(<span class="keyword">float</span>, <span class="keyword">float</span>)</span></span>; </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add_int</span><span class="params">(<span class="keyword">int</span> num1, <span class="keyword">int</span> num2)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> num1 + num2; </span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">add_float</span><span class="params">(<span class="keyword">float</span> num1, <span class="keyword">float</span> num2)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> num1 + num2; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译为.so文件（windows下为DLL）</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#For windows</span></span><br><span class="line">gcc -shared -o Test.dll Test.c</span><br><span class="line"><span class="comment">#For Linux </span></span><br><span class="line">$ gcc -shared -Wl,-soname,adder -o adder.so -fPIC add.c</span><br><span class="line"><span class="comment">#For Mac </span></span><br><span class="line">$ gcc -shared -Wl,-install_name,adder.so -o adder.so -fPIC add.c</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>python中调用</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> ctypes <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#load the shared object file </span></span><br><span class="line">adder = CDLL(<span class="string">&#x27;./adder.so&#x27;</span>)</span><br><span class="line"><span class="comment">#Find sum of integers </span></span><br><span class="line">res_int = adder.add_int(<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">a = c_float(<span class="number">5.5</span>) </span><br><span class="line">b = c_float(<span class="number">4.1</span>)</span><br><span class="line">add_float = adder.add_float</span><br><span class="line">add_float.restype = c_float</span><br><span class="line">add_float(a, b)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ctypes接口允许在调⽤C函数时使⽤Python中默认的字符串型和整型，对于其他布尔型和浮点型，应先转化为c_float</p>
+</li>
+<li><p>不能在C中对对象进⾏操作</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Python-C-API"><a href="#Python-C-API" class="headerlink" title="Python/C API"></a>Python/C API</h3><ul>
+<li><p>以特定的⽅式来编写C代码</p>
+</li>
+<li><p>所有的Python对象都被表⽰为PyObject的结构体，且Python.h头⽂件中提供操作函数</p>
+</li>
+<li><p>示例</p>
+<ul>
+<li><p>C代码</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;Python.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">static</span> PyObject* <span class="title">addList_add</span><span class="params">(PyObject* self, PyObject* args)</span></span>&#123; </span><br><span class="line">    PyObject * listObj; </span><br><span class="line">   </span><br><span class="line">    <span class="comment">//The input arguments come as a tuple, we parse the args to get the various variables </span></span><br><span class="line">    <span class="comment">//In this case it&#x27;s only one list variable, which will now be referenced by listObj </span></span><br><span class="line">    <span class="keyword">if</span> (! PyArg_ParseTuple( args, <span class="string">&quot;O&quot;</span>, &amp;listObj )) </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>; </span><br><span class="line">    </span><br><span class="line">    <span class="comment">//length of the list long </span></span><br><span class="line">    length = PyList_Size(listObj); </span><br><span class="line">    </span><br><span class="line">    <span class="comment">//iterate over all the elements </span></span><br><span class="line">    <span class="keyword">int</span> i, sum =<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; length; i++) &#123; </span><br><span class="line">        <span class="comment">//get an element out of the list - the element is also a python objects </span></span><br><span class="line">        PyObject* temp = PyList_GetItem(listObj, i); </span><br><span class="line">        <span class="comment">//we know that object represents an integer - so convert it into C long </span></span><br><span class="line">        <span class="keyword">long</span> elem = PyInt_AsLong(temp); </span><br><span class="line">        sum += elem; </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//value returned back to python code - another python object </span></span><br><span class="line">    <span class="comment">//build value here converts the C long to a python integer </span></span><br><span class="line">    <span class="keyword">return</span> Py_BuildValue(<span class="string">&quot;i&quot;</span>, sum); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//This is the docstring that corresponds to our &#x27;add&#x27; function.</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">char</span> addList_docs[] = <span class="string">&quot;add( ): add all elements of the list\n&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* This table contains the relavent info mapping -</span></span><br><span class="line"><span class="comment">   &lt;function-name in python module&gt;, &lt;actual-function&gt;,</span></span><br><span class="line"><span class="comment">   &lt;type-of-args the function expects&gt;, &lt;docstring associated with the function&gt; </span></span><br><span class="line"><span class="comment">*/</span> </span><br><span class="line"><span class="keyword">static</span> PyMethodDef addList_funcs[] = &#123; </span><br><span class="line">    &#123;<span class="string">&quot;add&quot;</span>, (PyCFunction)addList_add, METH_VARARGS, addList_docs&#125;,</span><br><span class="line">    &#123;<span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="literal">NULL</span>&#125; </span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* addList is the module name, and this is the initialization block of the module. </span></span><br><span class="line"><span class="comment">   &lt;desired module name&gt;, &lt;the-info-table&gt;, &lt;module&#x27;s-docstring&gt; </span></span><br><span class="line"><span class="comment">*/</span> </span><br><span class="line"><span class="function">PyMODINIT_FUNC <span class="title">initaddList</span><span class="params">(<span class="keyword">void</span>)</span></span>&#123;</span><br><span class="line">    Py_InitModule3(<span class="string">&quot;addList&quot;</span>, addList_funcs, <span class="string">&quot;Add all ze lists&quot;</span>); </span><br><span class="line">&#125; <span class="comment">//模块初始化块签名为PyMODINIT_FUNC init&#123;模块名&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>setup.py：编译安装到Python模块</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> distutils.core <span class="keyword">import</span> setup, Extension</span><br><span class="line">setup(name=<span class="string">&#x27;addList&#x27;</span>, version=<span class="string">&#x27;1.0&#x27;</span>, \</span><br><span class="line">      ext_modules=[Extension(<span class="string">&#x27;addList&#x27;</span>, [<span class="string">&#x27;adder.c&#x27;</span>])])</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ python setup.py install</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> addList</span><br><span class="line">l = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">print(<span class="string">&quot;Sum of List - &quot;</span> + <span class="built_in">str</span>(l) + <span class="string">&quot; = &quot;</span> + <span class="built_in">str</span>(addList.add(l)))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="上下文管理器"><a href="#上下文管理器" class="headerlink" title="上下文管理器"></a>上下文管理器</h2><ul>
+<li>在有需要的时候，精确地分配和释放资源</li>
+<li>最⼴泛的案例是with语句</li>
+</ul>
+<h3 id="基于类的实现"><a href="#基于类的实现" class="headerlink" title="基于类的实现"></a>基于类的实现</h3><ul>
+<li><p>⼀个上下⽂管理器的类，最起码要定义<code>__enter__</code>和<code>__exit__</code>⽅法</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">File</span>(<span class="params"><span class="built_in">object</span></span>):</span> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, file_name, method</span>):</span> </span><br><span class="line">        self.file_obj = <span class="built_in">open</span>(file_name, method) </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__enter__</span>(<span class="params">self</span>):</span> </span><br><span class="line">        <span class="keyword">return</span> self.file_obj </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__exit__</span>(<span class="params">self, <span class="built_in">type</span>, value, traceback</span>):</span> </span><br><span class="line">        print(<span class="string">&quot;Exception has been handled&quot;</span>) </span><br><span class="line">        self.file_obj.close() </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        </span><br><span class="line"><span class="keyword">with</span> File(<span class="string">&#x27;demo.txt&#x27;</span>, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> opened_file: </span><br><span class="line">    opened_file.write(<span class="string">&#x27;Hola!&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>过程：</p>
+<ul>
+<li>with语句先暂存了File的<code>__exit__</code></li>
+<li>调⽤File的<code>__enter__</code>，打开⽂件并返回给with语句</li>
+<li>使⽤.write()写⽂件 </li>
+<li>with语句调⽤之前暂存的<code>__exit__</code>，关闭⽂件</li>
+</ul>
+</li>
+</ul>
+<h3 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h3><ul>
+<li>如果发⽣异常，异常的type,value和traceback传递给<code>__exit__</code>处理，如果<code>__exit__</code>返回的是True，这个异常被处理，否则with语句抛出异常</li>
+</ul>
+]]></content>
       <categories>
         <category>编程语言</category>
       </categories>
