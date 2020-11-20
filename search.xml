@@ -4224,7 +4224,8 @@ def a_function_requiring_decoration():
   <entry>
     <title>GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</title>
     <url>/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p>
+<a id="more"></a>]]></content>
       <categories>
         <category>论文</category>
       </categories>
@@ -4236,7 +4237,227 @@ def a_function_requiring_decoration():
   <entry>
     <title>PassGAN:A Deep Learning Approach for Password Guessing</title>
     <url>/2020/11/20/PassGAN-A-Deep-Learning-Approach-for-Password-Guessing/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>《PassGAN：A Deep Learning Approach for Password Guessing》论文阅读记录</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>最先进的密码猜测工具（HashCat和John the Ripper）可以执行简单的字典攻击，并使用密码生成规则（连接字符串、leet）扩展密码字典</li>
+<li>进一步扩展生成规则以模拟真实密码较为困难——用基于理论的机器学习算法 PassGAN 代替人工生成的密码规则</li>
+<li>PassGAN 使用生成性对抗网络（GAN）从实际的密码泄漏中自动学习真实密码的分布，并生成高质量的密码猜测</li>
+<li>在两个大型密码数据集上评估PassGAN，效果优于基于规则的和最先进的机器学习密码猜测工具</li>
+<li>将 PassGAN 的输出与 HashCat 的输出相结合，能够比单独使用 HashCat 多匹配 51%-73% 密码——PassGAN 可以自动提取一定数目的密码属性</li>
+</ul>
+<hr>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>密码猜测工具在识别弱密码上具有价值（尤其是密码以哈希形式存储）</p>
+<ul>
+<li>根据每个密码的散列快速测试大量极有可能（或者说，高度相似）的密码</li>
+<li>没有用尽所有可能的字符组合，而是使用字典中的单词和泄漏的密码作为候选</li>
+</ul>
+</li>
+<li><p>最先进的密码猜测工具采用启发式算法，包括复合单词（iloveyou123456）、混合字母大小写（例如，iLoVeyOu）和leet speak（例如，il0v3you）以及这些规则的组合。</p>
+<blockquote>
+<p>启发式算法：一个基于直观或经验构造的算法，在可接受的花费（指计算时间和空间）下给出待解决组合优化问题每一个实例的一个可行解。该算法常能发现很不错的解，但没办法证明它不会得到较坏的解</p>
+</blockquote>
+</li>
+<li><p>转换规则再结合马尔可夫模型</p>
+</li>
+<li><p>启发式方法基于用户如何选择密码的直观经验，而不来自大型密码数据集的原则性分析——可扩展性有限</p>
+</li>
+</ul>
+<h3 id="我们的方法"><a href="#我们的方法" class="headerlink" title="我们的方法"></a>我们的方法</h3><ul>
+<li>基于深度学习的方法代替基于规则的，以及基于马尔可夫模型等简单数据驱动技术的密码猜测</li>
+<li>训练一个神经网络，更好地确定密码的特征和结构，生成遵循相同分布的新样本</li>
+<li>马尔可夫模型：隐式假设所有相关密码特征都可以用n-grams定义；基于规则：只能猜测与规则匹配的密码</li>
+<li>假设：<ul>
+<li>神经网络有足够的表达能力</li>
+<li>不需要任何先验知识</li>
+<li>通过 PassGAN 验证</li>
+</ul>
+</li>
+<li>一个深层生成网络（G）试图模拟样本的潜在分布，一个判别深层神经网络（D）试图区分原始训练样本（即“真实样本”）和G生成的样本（即“假样本”）</li>
+<li>使用泄漏的密码列表（真实示例）来训练D</li>
+</ul>
+<blockquote>
+<p>GANs 通过训练一个深层神经网络来执行隐式生成建模，该结构由一个简单的随机分布（例如，高斯分布或均匀分布）提供，并通过生成遵循可用数据分布的样本来完成 </p>
+<p>隐式地建立了$x=F^{-1}(s)$模型，其中$F(x)$是数据的累积密度函数，$s$是均匀分布的随机变量</p>
+</blockquote>
+<h3 id="2-2-贡献"><a href="#2-2-贡献" class="headerlink" title="2.2. 贡献"></a>2.2. 贡献</h3><ul>
+<li>经过适当训练的GAN能够产生高质量的密码猜测<ul>
+<li>在RockYou数据集的一部分上进行训练，并在两个不同的数据集上进行测试：<ul>
+<li>RockYou数据集的另一部分（最终匹配43.6%）</li>
+<li>LinkedIn泄露的密码数据集（最终匹配24.2%）</li>
+</ul>
+</li>
+<li>若测试数据集删除训练集中存在的密码示例，以测试 PassGAN 创建未知密码的能力，则最终匹配 34.6%、 34.2%</li>
+<li>PassGAN 生成的绝大多数密码与测试集不匹配，但“看起来”像是人类生成的密码——可能与未考虑的真实账户密码匹配</li>
+</ul>
+</li>
+<li>证明 PassGAN 效果不弱于最先进的密码生成规则</li>
+<li>使用 PassGAN，匹配的次数会随着生成的密码数量而稳步增加<ul>
+<li>PassGAN的输出不限于密码空间的一小部分</li>
+<li>这以生成更多密码为代价，但在实际应用上并不是问题<ul>
+<li>存储成本在稳步下降</li>
+<li>密码猜测工具可以组合使用</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>PassGAN 在基于神经网络的密码猜测算法方面，不弱于最先进的技术（FLA）</li>
+<li>证明 PassGAN 可以有效地补充密码生成规则<ul>
+<li>PassGAN 匹配的密码不由密码规则生成</li>
+<li>与 HashCat 结合，与单独使用 HashCat 相比，可额外猜出 51%到73% 的唯一密码。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="背景和相关工作"><a href="#背景和相关工作" class="headerlink" title="背景和相关工作"></a>背景和相关工作</h2><ul>
+<li>深度学习：特征可以有效地从数据中学习，而手工编码的特征往往表现不好</li>
+</ul>
+<h3 id="生成性神经网络"><a href="#生成性神经网络" class="headerlink" title="生成性神经网络"></a>生成性神经网络</h3><ul>
+<li>由两个神经网络组成：生成型神经网络$G$和判别型神经网络$D$</li>
+<li>给出输入数据集 $L = {x_1,x_2,…x_n}$ ，$G$的目标是根据潜在分布$Pr(x)$中产生“假样本”，$D$的目标是通过学习数据集$L$，区分假样本和真实样本。当不能区分样本真假时，认为训练完成</li>
+<li>对于一个噪声分布$z$:<br>$$min_{\theta_G}max_{\theta_D}\sum_{i=1}^nlogf(x_i;\theta_D)+\sum_{j=1}^nlog(1-f(g(z_j;\theta_G);\theta_D))$$</li>
+</ul>
+<h3 id="密码猜测"><a href="#密码猜测" class="headerlink" title="密码猜测"></a>密码猜测</h3><ul>
+<li><p>JTP、HashCat、马尔可夫模型</p>
+</li>
+<li><p>与其他神经网络的比较：</p>
+<ul>
+<li><p>FLA：RNN，每一个新的字符（包括一个特殊的密码结尾字符）都是根据其概率来选择的</p>
+<blockquote>
+<p> As such, given a trained FLA model, one can feed a set of passwords to the model and retrieve as output a file containing 6 fields organized as follows:<br> (1) password<br> (2) the probability of that password<br> (3) the estimated output guess number<br> (4) the std deviation of the randomized trial for this password<br> (5) the number of measurements for this password<br> (6) the estimated confidence interval for the guess number (in units of number of guesses).</p>
+</blockquote>
+</li>
+<li><p>FLA 和 PassGAN 的输出概率之间的差异，来自FLA中密码生成过程的马尔可夫结构——任何未在 n-gram 范围内捕获的密码特征都可能不会被 FLA 编码。例如，如果将10个字符密码的有意义子集构造为两个单词的连接（例如MusicMusic），则n≤5的任何 Markov 过程都将无法正确捕获此行为</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="GaN结构与超参数"><a href="#GaN结构与超参数" class="headerlink" title="GaN结构与超参数"></a>GaN结构与超参数</h2><ul>
+<li><p>使用Gullajani等人的 <code>Wasserstein-GANs（IWGAN）</code> 的改进训练来实例化PassGAN</p>
+</li>
+<li><p>依赖于 <code>ADAM</code> 优化器来最小化训练误差，即减少模型输出与其训练数据之间的不匹配</p>
+<blockquote>
+<p>训练误差大说明对训练集特性学习得不够，训练误差太小说明过度学习了训练集特性，容易发生过拟合</p>
+</blockquote>
+</li>
+<li><p>超参数：</p>
+<ul>
+<li><code>Batch size</code> 批处理大小：在优化器的每个步骤中通过 GAN 传播的来自训练集的密码数</li>
+<li><code>Number of iterations</code> 迭代次数：GAN 调用其前向步骤和后向传播步骤的次数。在每个迭代中，GAN 运行一次生成器和一次或多次判别器。</li>
+<li><code>Number of discriminator iterations per generator iteration</code> 每个生成器迭代的判别器迭代次数：生成器在每个 GAN 迭代中执行的迭代次数。</li>
+<li><code>Model dimensionality</code> 模型维度：每个卷积层的维度（权重）数量</li>
+<li><code>Gradient penalty coefficient (λ)</code> 梯度惩罚系数：与其输入相关的判别器梯度范数的惩罚。使 GAN 的训练更加稳定</li>
+<li><code>Output sequence length</code> 输出序列长度：生成器生成的字符串的最大长度</li>
+<li><code>Size of the input noise vector (seed)</code> 输入噪声向量（seed）的大小：为生成样本，多少随机比特作为$G$的输入</li>
+<li><code>Maximum number of examples</code> 样本的最大数量：代表训练项目的最大加载数目（即密码）</li>
+<li><code>Adam</code>优化器的超参数：<ul>
+<li><code>Learning rate</code> 学习率：调整模型权重的速度</li>
+<li>`Coefficient $\beta_1$ 系数$\beta_1$：渐变的运行平均值的衰减率</li>
+<li>Coefficient $\beta_2$ 系数$\beta_2$：梯度平方的运行平均衰减率</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>超参数设置：</p>
+<ul>
+<li>Batch size 为64</li>
+<li>number of iterations 为 199000，number of  discriminator iterations per generative iteration 设置为 10（<code>IWGAN</code> 的默认值）</li>
+<li>两个神经网络每一层有128维，有5层</li>
+<li>梯度惩罚为 10</li>
+<li>生成序列长度为 10 字符</li>
+<li>噪声矢量为128个浮点数</li>
+<li>系数$\beta_1$和$\beta_2$分别为0.5和0.9</li>
+<li>学习速率为10<sup>-4</sup></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h2><ul>
+<li>量化 PassGAN 猜测密码的能力，与 FLA、3-gram Markov模型、JTR(SpiderLab mangling rules)、HashCat (Best64 和 gen2 rules)进行比较</li>
+<li>从概率密度和密码分布的角度分析 PassGAN 的输出</li>
+</ul>
+<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><ul>
+<li>GAN 训练与测试<ul>
+<li>训练集和测试集同上所述</li>
+<li>选择长度不大于10字符的密码</li>
+<li>由于 LinkedIn 为密码哈希值，因此 LinkedIn 测试数据集只包含JTR和HashCat 等工具能够恢复的明文密码</li>
+<li>训练中过拟合的影响：<ul>
+<li>为评估训练过程中是否产生过拟合，在训练过程设置了 CheckPoint</li>
+<li>在每个 CheckPoint 上，生成10<sup>8</sup>个密码以测试是否过拟合</li>
+</ul>
+</li>
+<li>下图显示 PassGAN 在各种检查点上生成的与RockYou测试集匹配的唯一密码数。X轴表示PassGAN训练过程的迭代次数（检查点）<br><img src="/2020/11/20/PassGAN-A-Deep-Learning-Approach-for-Password-Guessing/1.PNG"></li>
+</ul>
+</li>
+</ul>
+<h3 id="评估-PassGAN-生成的密码"><a href="#评估-PassGAN-生成的密码" class="headerlink" title="评估 PassGAN 生成的密码"></a>评估 PassGAN 生成的密码</h3><ul>
+<li>PassGAN 生成 5*10<sup>10</sup>个密码</li>
+<li>其余模型计算密码方式：<ul>
+<li>HashCat 与 JTR：<ul>
+<li>使用训练集中按频率降序排列的密码实例化二者的规则</li>
+<li>对其输出均匀采样10<sup>9</sup>个样本，样本中密码长度不超过10个字符</li>
+</ul>
+</li>
+<li>FLA：<ul>
+<li>模型包含两个隐藏层和一个大小为512的密集层（dense layer）</li>
+<li>取出输出空间的一个概率阈值$p$为10<sup>-10</sup>的子集（密码概率至少为$p$），并降序排列</li>
+</ul>
+</li>
+<li>Markov 模型：<ul>
+<li>使用标准配置运行 3-gram Markov模型</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>对以上每一种工具，PassGAN 至少能获得相同数目的匹配密码——生成密码数目要多一个数量级。若训练集和测试集不同，PassGAN的效果更好<br><img src="/2020/11/20/PassGAN-A-Deep-Learning-Approach-for-Password-Guessing/2.PNG"></li>
+<li>将多个密码猜测工具联合使用：<ul>
+<li>将基于规则的工具和基于机器学习的工具联合起来评估</li>
+<li>假设：基于规则的工具更快，但基于机器学习的工具能在猜测次数更多的前提下匹配到额外的密码</li>
+<li>方法：删去 HashCat Best64 匹配到的密码，重新测试，Rockyou测试集和LinkedIn测试集结果如下：<br><img src="/2020/11/20/PassGAN-A-Deep-Learning-Approach-for-Password-Guessing/3.PNG"><br><img src="/2020/11/20/PassGAN-A-Deep-Learning-Approach-for-Password-Guessing/4.PNG"></li>
+<li>PassGAN 和 FLA 均可产生不少于基于规则工具的匹配密码，且密码并不相同</li>
+</ul>
+</li>
+<li>PassGAN 和 FLA 的更多差别：<ul>
+<li>下图显示了在Rockyou测试集上，PassGAN 在前 7·10<sup>10</sup> 次猜测中匹配的密码，有多少是FLA需要更多次数才能猜到（即，FLA认为这些密码的概率比较小）<br><img src="/2020/11/20/PassGAN-A-Deep-Learning-Approach-for-Password-Guessing/5.PNG"></li>
+<li>由图像的趋势可知，一般来说，这两个工具在为密码分配概率上是一致的</li>
+</ul>
+</li>
+</ul>
+<h3 id="评估-PassGAN的输出特性"><a href="#评估-PassGAN的输出特性" class="headerlink" title="评估 PassGAN的输出特性"></a>评估 PassGAN的输出特性</h3><ul>
+<li>PassGAN 概率密度估计<ul>
+<li>匹配密码的能力取决于正确估计密码频率的能力</li>
+<li>生成 10<sup>10</sup> 个密码，并计算了其中每个密码的频率，并与训练集中的相应频率比较</li>
+<li>50个最频繁的密码，40%属于训练集最频繁的100个密码</li>
+<li>PassGAN 没有为不太可能的密码精确地建模密码概率——任何导致更好的密度估计的改进，都可能提高模型猜测能力</li>
+</ul>
+</li>
+<li>输出空间的大小<ul>
+<li>增加 PassGAN 生成的密码数时，生成唯一密码（新密码）的速率只略微降低</li>
+</ul>
+</li>
+<li>PassGAN 生成的未匹配密码，很多是人工生成密码的合理候选</li>
+</ul>
+<hr>
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><ul>
+<li>字符级 GAN 很适合密码猜测</li>
+<li>当前的基于规则的密码猜测很有效，但作用有限</li>
+<li>最好的猜测策略是将这些工具组合起来</li>
+<li>GANs 可以很好地推广到密码数据集，而不限于训练集</li>
+<li>最新的GANs密度估计仅对其生成的空间子集是正确的。随着密码频率的降低，PassGAN 密度估计的质量下降——更大的训练数据集，再加上更复杂的神经网络结构，可以显著提高密度估计，从而提高 PassGAN 性能</li>
+</ul>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>PassGAN 旨在从泄漏密码中学习密码分布信息，不依赖任何附加信息</li>
+<li>PassGAN 能够在没有用户干预的情况下生成密码，不需要对密码的先验知识，也不需要对密码泄漏数据库进行手动分析</li>
+<li>测试 PassGAN 是否能猜到没有被训练过的密码，以及 PassGAN 输出的分布如何接近真正的密码泄漏的分布</li>
+<li>PassGAN 始终能够生成与其他密码猜测工具相同数量的匹配</li>
+<li>PassGAN 目前需要输出比其他工具更多的密码才能获得相同数量的匹配——就提出的技术而言，这一成本可以忽略不计</li>
+<li>相信通过在更大的数据集上训练 PassGAN（即部署更复杂的神经网络和进行更全面的训练），底层 GAN 将执行更精确的密度估计，从而减少实现特定匹配次数所需的输出密码数</li>
+</ul>
+]]></content>
       <categories>
         <category>论文</category>
       </categories>
