@@ -29,12 +29,17 @@
 <meta property="og:site_name" content="More Than Code">
 <meta property="og:description" content="《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/image-20201121114912309.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/1.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/image-20201121124650933.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/2.PNG">
 <meta property="article:published_time" content="2020-11-20T09:17:16.000Z">
-<meta property="article:modified_time" content="2020-11-20T10:23:52.792Z">
+<meta property="article:modified_time" content="2020-11-21T05:20:21.885Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="密码">
 <meta property="article:tag" content="GAN">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/image-20201121114912309.png">
 
 <link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/">
 
@@ -242,14 +247,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>97</span>
+              <span>1.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -263,6 +268,89 @@
       
         <p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p>
 <a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>过去的神经网络无法跨网攻击，因为每个数据集都有自己的特点</li>
+<li>GENPass 从多个数据集中学习特征，通过对抗生成，保证输出的字典在多个不同的数据集上有高的正确率</li>
+<li>生成器为 PCFG+LSTM(PL)</li>
+<li>从一个数据集学习，跨站猜测中 PL 比LSTM要好；GENPass 比单纯地混合数据集的表现要好</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>Hashcat 和 JtR 只能产生有限的 wordlist</li>
+<li>PassGAN 只是在一个数据集上进行测试</li>
+<li>GENPass 可以从多个数据集中学习特征，并通过对抗生成来确保不同数据集中输出单词列表的准确性</li>
+<li>PL：<ul>
+<li>用 PCFG 规则将密码序列替代为标签（单元）序列<ul>
+<li>一个密码是一个很多单元的组成序列</li>
+<li>认为总共有四种类型：分别为字母L，数字D，特殊符号S和换行符</li>
+</ul>
+</li>
+<li>生成模板序列，通过 LSTM 进行序列的预测，生成下个单元</li>
+<li>将单元还原回密码字符</li>
+<li>每次都选择高权重的数据，会出现大量重复，因此作者设计了一个随机选择算法。方法比较简单，根据候选密码字符的频数，设置一个相应长度的区间，将这些区间首尾相连拼接到一起，再在整个大的区间中随机选择一个数。对 L4 的三个候选和频率—[‘abcd’:4,‘love’:3,‘life’:5]，则 abcd 为[0:4)区间，love是[4:7)区间，life是[7:12)区间。在[0,12)中随机选个数字，落到哪个区间就选哪个</li>
+</ul>
+</li>
+<li>不同的数据集的权重，会有不同的规则和长度，相应会有很多个PL预测模型，因此作者设计了GENPass，可以从不同的生成模型进行选择</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h3 id="传统的密码猜测方法"><a href="#传统的密码猜测方法" class="headerlink" title="传统的密码猜测方法"></a>传统的密码猜测方法</h3><ul>
+<li>JTR 和 HashCat——对哈希值的猜测；必须基于给定的密码单词表。单词表的大小意味着破解尝试的上限</li>
+<li>马尔可夫模型</li>
+<li>PCFG</li>
+</ul>
+<h3 id="基于神经网络的猜测方法"><a href="#基于神经网络的猜测方法" class="headerlink" title="基于神经网络的猜测方法"></a>基于神经网络的猜测方法</h3><ul>
+<li>LSTM——限制了密码的结构，不具有普适性</li>
+<li>PassGAN</li>
+</ul>
+<h2 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h2><h3 id="PL"><a href="#PL" class="headerlink" title="PL"></a>PL</h3><ul>
+<li>将密码处理为单元的序列（PCFG）</li>
+<li>训练 LSTM 以预测下一个 unit</li>
+<li>翻译回字符序列。其中同一个单元可能对应多个字符序列</li>
+<li>根据各个字符序列的权重来随机挑选、<ul>
+<li>$t[i]$为第$i$个候选字符序列频率，则对应一个区间$[\  \sum_{j=1}^{i-1}t[i],\sum_{j=1}^it[i] \ ]$</li>
+<li>$s$为频率和，生成一个随机数，选择包含随机数区间对应的候选字符序列<br><img src="/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/image-20201121114912309.png" alt="image-20201121114912309"></li>
+</ul>
+</li>
+</ul>
+<h3 id="GENPass"><a href="#GENPass" class="headerlink" title="GENPass"></a>GENPass</h3><ul>
+<li><p>GENPass从不同数据集产生general worklist</p>
+</li>
+<li><p>不同数据集有不同的规则和不同的密码长度，因此不能直接混合规则</p>
+</li>
+<li><p>Prediction of model n: n个PL模型</p>
+</li>
+<li><p>Weight Choosing: 每个模型的输出单元可以合并为一个表，作为权重选择的输入，输出为随机的选择结果</p>
+</li>
+<li><p>Classifier：CNN</p>
+<ul>
+<li>随机的密码明文训练</li>
+<li>同【49】一样—— Z. Xiang, J. Zhao, and Y. LeCun, “Character-level convolutional networks for text classifification,” <em>in Proc. Adv. Neural Inf. Process. Syst.</em>,2015, pp. 649–657.</li>
+<li>给一个密码，分类器要能说明这个密码最可能来自哪个数据库。因此会有一个 softmax 层</li>
+<li>单独的一个密码不足以捕获特征，因此和前四个生成后的密码结合，一起作为输入</li>
+</ul>
+</li>
+<li><p>Descriminator: 判断是否接受生成的密码。为了生成 general wordlist，需要接受不能明显判别出数据库源头的密码——分类器不能判别的密码。用分类器输出的标准差来评价密码的概括性——标准差不能太大，也不嫩太小，否则重复性高。这里选择了0.2作为阈值<br><img src="/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/1.PNG"><br><img src="/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/image-20201121124650933.png" alt="image-20201121124650933"></p>
+</li>
+<li><p>关于weight choosing，如何选择输出单元：</p>
+<ul>
+<li>不能等概率地选择</li>
+<li>典型密码集的权重更高</li>
+<li>计算权重：<ul>
+<li><img src="/2020/11/20/GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation/2.PNG"></li>
+<li>当训练后确定𝑃时，接受密码的标准是KL散度是否小于0.1</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="实验和评估"><a href="#实验和评估" class="headerlink" title="实验和评估"></a>实验和评估</h2><ul>
+<li>Myspace 与 phpBB 训练 PL，并与 FLA 做 one-site 测试和 cross-site 测试</li>
+<li>Myspace 与 phpBB 训练 GENPass，并对比混合两个数据集进行测试的结果</li>
+<li>图略</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>略</li>
+</ul>
+
     </div>
 
     
@@ -409,6 +497,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E7%9A%84%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B%E6%96%B9%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">传统的密码猜测方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84%E7%8C%9C%E6%B5%8B%E6%96%B9%E6%B3%95"><span class="nav-number">3.2.</span> <span class="nav-text">基于神经网络的猜测方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PL"><span class="nav-number">4.1.</span> <span class="nav-text">PL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GENPass"><span class="nav-number">4.2.</span> <span class="nav-text">GENPass</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%92%8C%E8%AF%84%E4%BC%B0"><span class="nav-number">5.</span> <span class="nav-text">实验和评估</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">6.</span> <span class="nav-text">结论</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -515,12 +604,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">110k</span>
+    <span title="站点总字数">111k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:40</span>
+    <span title="站点阅读时长">1:41</span>
 </div>
 
         
