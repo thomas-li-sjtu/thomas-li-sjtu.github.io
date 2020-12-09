@@ -3702,9 +3702,9 @@
       </tags>
   </entry>
   <entry>
-    <title>现代密码学</title>
+    <title>现代密码学（1）对称密码</title>
     <url>/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/</url>
-    <content><![CDATA[<p>现代密码学课程笔记</p>
+    <content><![CDATA[<p>现代密码学课程笔记（1）</p>
 <a id="more"></a>
 
 <h2 id="密码学历史——代换与置换"><a href="#密码学历史——代换与置换" class="headerlink" title="密码学历史——代换与置换"></a>密码学历史——代换与置换</h2><ul>
@@ -3734,7 +3734,7 @@
 <li>轨道栅栏密码：以不同的行写下消息字母，按行读取消息</li>
 <li>几何图形密码：一种形式写下消息，以另一种形式读取消息<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201106221032419.png" alt="image-20201106221032419"></li>
 <li>行变换密码：按行写出字母，以密钥给出的顺序按行读出密文<ul>
-<li>例：<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201106221702625.png" alt="image-20201106221702625"></li>
+<li>例：Key（R）：读取顺序<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201106221702625.png" alt="image-20201106221702625"></li>
 <li>例：<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201106221724681.png" alt="image-20201106221724681"></li>
 </ul>
 </li>
@@ -3832,7 +3832,229 @@
 <li><p>对密钥猜测攻击</p>
 </li>
 </ul>
-<h3 id="DES-1"><a href="#DES-1" class="headerlink" title="DES"></a>DES</h3>]]></content>
+<h3 id="DES-1"><a href="#DES-1" class="headerlink" title="DES"></a>DES</h3><ul>
+<li>56 比特的密钥</li>
+<li>分组长度 64 比特，密文 64 比特</li>
+<li>过程：<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201125100926748.png" alt="image-20201125100926748"><br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201125100219861.png" alt="image-20201125100219861"></li>
+<li>对函数$F$：32bit 通过扩展函数扩展为 48 位；XOR 计算，获得8个6位串；使用 8 个S盒：b1b6确定矩阵行，b2b3b4b5确定矩阵列，得到矩阵元素；通过P固定置换<ul>
+<li>子密钥：密钥中 56 位参与子密钥编写，8位奇偶校验（不参与密钥编写）<ul>
+<li>PC-1、PC-2：固定置换，获得6*8</li>
+<li>LS：向左循环移位</li>
+<li>每轮获得6*8的表，其中元素对应K的第几比特</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>核心是S盒，其他计算是线性的<ul>
+<li>S盒不能是线性</li>
+<li>一个输入为改变至少要引起两个输出的改变</li>
+<li>固定一个输入比特，其他输入变化时，输出数字中0和1近似相等</li>
+</ul>
+</li>
+<li>三重 DES：两个密钥的三重 DES<ul>
+<li>$C=E_{K1}[D_{K2}[E_{K1}[P]]]$</li>
+<li>密钥长度：112</li>
+<li>不存在$E_{K2}[E_{K1}[P]]=E_{K3}[P]$</li>
+</ul>
+</li>
+</ul>
+<h3 id="IDEA"><a href="#IDEA" class="headerlink" title="IDEA"></a>IDEA</h3><ul>
+<li><p>抗差分分析和相关分析；PGP的一部分</p>
+</li>
+<li><p>分组长度 64 位，密钥 128 位，同一算法可加密可解密</p>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201125104620976.png" alt="image-20201125104620976"></p>
+</li>
+<li><p>生成 52 个16bit子密钥</p>
+<ul>
+<li>前8个直接取出</li>
+<li>25bit循环左移，取出下一个子密钥；重复此过程</li>
+</ul>
+</li>
+<li><p>解密密钥从加密子密钥导出（对比上一张图理解：共9个循环，前8个每轮需要6个子密钥，最后一轮需要4个子密钥）</p>
+<ul>
+<li>解密循环 I 的前4个子密钥从加密循环 10-I 的前4个子密钥导出；解密密钥第1、4个子密钥对应于1、4加密子密钥的乘法逆元；2、3对应2、3的加法逆元；</li>
+<li>对前8个循环，循环 I 的最后两个子密钥等于加密循环 9-I 的最后两个子密钥<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201125103456612.png" alt="image-20201125103456612"><br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201125103425637.png" alt="image-20201125103425637"></li>
+</ul>
+</li>
+</ul>
+<h2 id="AES"><a href="#AES" class="headerlink" title="AES"></a>AES</h2><h3 id="AES框架（Rijndael）"><a href="#AES框架（Rijndael）" class="headerlink" title="AES框架（Rijndael）"></a>AES框架（Rijndael）</h3><ul>
+<li><p>可变块长，可变密钥长度</p>
+</li>
+<li><p>处理单位为字节，明文分组用字节为单位的正方形矩阵表示，称为状态矩阵</p>
+<ul>
+<li><p>明文分组：abcdefghijklmnop</p>
+</li>
+<li><p>状态矩阵：（0x61为字符a的十六进制表示）</p>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209102340062.png" alt="image-20201209102340062"></p>
+</li>
+</ul>
+</li>
+<li><p>轮函数：</p>
+<ul>
+<li><p>字节替换：每一字节应用非线性变换</p>
+<ul>
+<li>替代表是一个16*16的矩阵，行来自高4bit，列来自低4bit</li>
+</ul>
+</li>
+<li><p>行移位：每一行的字节循环重新排序</p>
+<ul>
+<li><p>$B_{i,j}=A_{i,(i+j)mod4}$，即对于4*4的16字节状态矩阵，第一行不移位，第二行左循环移动一位，第三行左循环移动两位，第四行左循环移动三位</p>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209101645802.png" alt="image-20201209101645802"></p>
+</li>
+</ul>
+</li>
+<li><p>列混合：对矩阵的列线性变换（矩阵相乘实现）</p>
+<ul>
+<li><p>移位后的状态矩阵与固定矩阵相乘</p>
+</li>
+<li><p>加法与乘法时基于$GF(2^8)$的二元运算</p>
+<ul>
+<li>加法：两个字节异或</li>
+<li>乘法：乘0x02等价于左移一位，之后同0x1E异或</li>
+</ul>
+</li>
+<li><p>解密时换一个矩阵</p>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209102826753.png" alt="image-20201209102826753"></p>
+</li>
+</ul>
+</li>
+<li><p>轮密钥加：轮密钥混合到中间数据</p>
+<ul>
+<li><p>将密钥同样变为矩阵形式（32*4），每一列和状态矩阵的同一列进行异或</p>
+</li>
+<li><p>解密时再进行一次异或</p>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209103413064.png" alt="image-20201209103413064"></p>
+</li>
+<li><p>初始密钥输入4*4状态矩阵，即为W[0]，W[1]，W[2]，W[3]</p>
+</li>
+<li><p>如果i不是4的倍数，则$W[i]=W[i-4]\ XOR\ W[i-1]$</p>
+</li>
+<li><p>如果i是4的倍数，则$W[i]=W[i-4]\ XOR \ T(W[i-1])$</p>
+<ul>
+<li>T：四个字节循环左移1个字节，循环结果用S盒代换，代换结果同4个字节长度的常量进行异或，常量在每一轮都不同</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>过程：</p>
+<ul>
+<li>解密对应的字节替换矩阵为逆S盒</li>
+</ul>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209101346365.png" alt="image-20201209101346365"></p>
+</li>
+</ul>
+<h3 id="分组密码工作模式"><a href="#分组密码工作模式" class="headerlink" title="分组密码工作模式"></a>分组密码工作模式</h3><p>DES工作模式：</p>
+<ul>
+<li>Block Modes：ECB, CBC</li>
+<li>Stream Modes ：CFB, OFB</li>
+</ul>
+<h4 id="ECB-Electronic-Codebook-Book"><a href="#ECB-Electronic-Codebook-Book" class="headerlink" title="ECB(Electronic Codebook Book)"></a>ECB(Electronic Codebook Book)</h4><ul>
+<li>消息分为独立的加密模块，每块单独使用DES加密且密钥相同，适合少量数据的加密</li>
+<li>少于64bit的消息需要填充</li>
+<li><strong>同一个64比特明文，如果出现多次，其密文是相同的</strong></li>
+</ul>
+<h4 id="CBC-Cipher-Block-Chaining"><a href="#CBC-Cipher-Block-Chaining" class="headerlink" title="CBC(Cipher Block Chaining)"></a>CBC(Cipher Block Chaining)</h4><ul>
+<li>没有ECB的缺陷</li>
+<li>一次对一个明文分组加密，输入为当前明文分组和前一个密文分组的异或，第一个明文加密需要一个初始向量（解密时前一个密文与当前解密结果异或，第一个密文解密需要一个收发双方都知道、被保护的初始向量）</li>
+<li>可用于用户鉴别</li>
+</ul>
+<h4 id="CFB-Cipher-FeedBack"><a href="#CFB-Cipher-FeedBack" class="headerlink" title="CFB(Cipher FeedBack)"></a>CFB(Cipher FeedBack)</h4><ul>
+<li><p>将DES转换为流密码</p>
+<ul>
+<li>不需要填充消息</li>
+<li>密文和明文一样长</li>
+</ul>
+</li>
+<li><p>可用于认证</p>
+</li>
+<li><p><strong>适合数据以比特或字节为单位，传输过程中比特错误会被传播——1bit错误会影响解密结果中各个明文单元的值</strong></p>
+</li>
+<li><p>使用一个与块的大小相同的移位寄存器，并用初始向量IV将寄存器初始化；寄存器内容使用块密码加密，结果的最高j比特和对应明文单元（j比特长）异或，获得j位密文；密文移入寄存器最右面j位，并对j比特之后的明文重复此过程</p>
+</li>
+<li><p>解密过程同上，以密文作为输入</p>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209114014404.png" alt="image-20201209114014404"></p>
+</li>
+</ul>
+<h4 id="OFB"><a href="#OFB" class="headerlink" title="OFB"></a>OFB</h4><ul>
+<li>将加密算法的输出（即异或之前的结果）反馈到移位寄存器，CFB将密文单元反馈到寄存器</li>
+<li>传输过程中比特错误不会被传播</li>
+</ul>
+<h3 id="对称密码算法分析"><a href="#对称密码算法分析" class="headerlink" title="对称密码算法分析"></a>对称密码算法分析</h3><ul>
+<li>强力攻击（密钥空间穷搜索）</li>
+<li>差分密码分析</li>
+</ul>
+<h2 id="序列密码"><a href="#序列密码" class="headerlink" title="序列密码"></a>序列密码</h2><ul>
+<li>被加密的消息m分成连续的比特串，使用密钥流——向密钥流生成器输入一个密钥（初始密钥/种字），输出伪随机序列——的第i个元素对m的第i个元素加密，所有加密输出连接起来形成密文</li>
+<li>安全性完全取决种字的安全等级</li>
+</ul>
+<h3 id="同步流密码与自同步流密码"><a href="#同步流密码与自同步流密码" class="headerlink" title="同步流密码与自同步流密码"></a>同步流密码与自同步流密码</h3><ul>
+<li>同步流：<ul>
+<li>密钥流与明文串无关</li>
+<li>实现无错误传播——一个密文字符改变不影响后续符号</li>
+</ul>
+</li>
+<li>自同步流：<ul>
+<li>当前密钥流与先前密文有关</li>
+</ul>
+</li>
+</ul>
+<h3 id="线性反馈移位寄存器LFSR"><a href="#线性反馈移位寄存器LFSR" class="headerlink" title="线性反馈移位寄存器LFSR"></a>线性反馈移位寄存器LFSR</h3><ul>
+<li><p>同步密钥流生成方式</p>
+</li>
+<li><p>$a_i$为存储单元，取值0/1；n个存c_i=0/1储单元称为n级，则有$2^n$个状态；$a_i$与$c_i（c_i=0/1）$相乘后模2加</p>
+<ul>
+<li>多项式$c_nx^n+c_{n-1}x^{n-1}+…+c_1x+1$为联接多项式</li>
+<li>第$t+1$时刻寄存器的内容为<img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209143837293.png" alt="image-20201209143837293" style="zoom:50%;"></li>
+</ul>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209142731900.png" alt="image-20201209142731900"></p>
+<ul>
+<li><strong>根据联结多项式画LFSR、画状态转移图、算周期</strong></li>
+</ul>
+</li>
+<li><p>一个n级LFSR序列周期最大为$2^n-1$，若能达到这个周期，则序列为n级最大的线性移位寄存器周期序列，简称m序列，则转移图仅由两个圈构成</p>
+<ul>
+<li>充要条件为<strong>多项式为F2上的n次本原多项式</strong></li>
+<li>$2^n-1$为素数时，每一个不可约多项式都是本原多项式</li>
+</ul>
+</li>
+</ul>
+<h3 id="伪随机序列"><a href="#伪随机序列" class="headerlink" title="伪随机序列"></a>伪随机序列</h3><ul>
+<li>证明m序列的伪随机性</li>
+</ul>
+<h3 id="线性复杂度"><a href="#线性复杂度" class="headerlink" title="线性复杂度"></a>线性复杂度</h3><ul>
+<li>序列的线性复杂度：能够输出该序列的最短线性移位寄存器的级数</li>
+<li>序列的线性复杂度为$l$，只要知道序列中任意相继的$2l$位，就可确定整个序列</li>
+<li>良好的密钥流：周期充分长；随机统计特性好；线性复杂度为序列长度的一半</li>
+</ul>
+<h3 id="基于LFSR的伪随机序列生成器"><a href="#基于LFSR的伪随机序列生成器" class="headerlink" title="基于LFSR的伪随机序列生成器"></a>基于LFSR的伪随机序列生成器</h3><h4 id="滤波生成器"><a href="#滤波生成器" class="headerlink" title="滤波生成器"></a>滤波生成器</h4><p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209145607127.png" alt="image-20201209145607127"></p>
+<ul>
+<li>n级线性移位寄存器+m元非线性滤波函数g，g为m元布尔函数</li>
+</ul>
+<h4 id="组合生成器"><a href="#组合生成器" class="headerlink" title="组合生成器"></a>组合生成器</h4><p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209145913032.png" alt="image-20201209145913032"></p>
+<ul>
+<li>若干个线性移位寄存器+非线性组合函数</li>
+<li>若级数两两互素，f与n个输出都有关，则序列周期为$\prod_{j=1}^n(2^{r_j}-1)$</li>
+</ul>
+<h4 id="钟控生成器"><a href="#钟控生成器" class="headerlink" title="钟控生成器"></a>钟控生成器</h4><p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209151313747.png" alt="image-20201209151313747"></p>
+<ul>
+<li><p>一个或多个移位寄存器来控制另一个或多个移位寄存器的时钟，输出钟控序列</p>
+<ul>
+<li>LFSR1输出1时，时钟脉冲通过与门使LFSR2进行一次移位，生成下一位</li>
+<li>当LFSR1输出0时，LFSR2重复输出前一位</li>
+<li>LFSR1：10101循环；LFSR2：a0a1a2循环；则：钟控序列为a0a0a1a1a2</li>
+</ul>
+</li>
+<li><p>交错停走式生成器：LFSR1的输出是1时，LFSR2被时钟驱动；LFSR1的输出是0时，LFSR3被时钟驱动</p>
+<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201209152415634.png" alt="image-20201209152415634"></p>
+</li>
+</ul>
+<h3 id="流密码应用"><a href="#流密码应用" class="headerlink" title="流密码应用"></a>流密码应用</h3><ul>
+<li>A5算法：全球移动通信系统GSM中执行加密运算，从用户手机到基站的连接加密</li>
+<li>RC4：密钥长度可变，且面向字节操作</li>
+</ul>
+]]></content>
       <categories>
         <category>信息安全</category>
       </categories>
@@ -4551,12 +4773,47 @@ def a_function_requiring_decoration():
     <content><![CDATA[<p>Linux 常见问题与解决方法</p>
 <a id="more"></a>
 
-<h2 id="Permission-Denied"><a href="#Permission-Denied" class="headerlink" title="Permission Denied"></a>Permission Denied</h2><h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3>]]></content>
+<h2 id="Permission-Denied"><a href="#Permission-Denied" class="headerlink" title="Permission Denied"></a>Permission Denied</h2><h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">-bash: ./xampp.run: Permission denied</span><br></pre></td></tr></table></figure>
+
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><ul>
+<li><p>用户缺少某种权限</p>
+</li>
+<li><pre><code class="bash">$ chmod 777 xampp.run
+$ chmod +x  xampp.run #给xampp.run执行权限
+$ chmod +w xampp.run #给xampp.run写权限
+$ chmod +r  xampp.run #给xampp.run读权限
+<figure class="highlight vim"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">##  /usr/bin/<span class="keyword">en</span><span class="variable">v:</span> ‘<span class="keyword">python</span>(<span class="number">3</span>)\r’: No such <span class="keyword">file</span> <span class="built_in">or</span> directory</span><br><span class="line"></span><br><span class="line">### 问题描述</span><br><span class="line"></span><br><span class="line">* DOS系统下和Linux系统下对于换行键的表示不同：</span><br><span class="line"></span><br><span class="line">  * windows下，用连续的<span class="string">&#x27;\r&#x27;</span>和<span class="string">&#x27;\n&#x27;</span>两个字符进行换行。<span class="string">&#x27;\r&#x27;</span>为回车符，<span class="string">&#x27;\n&#x27;</span>为换行符</span><br><span class="line">  * 在Linux下，用<span class="string">&#x27;\n&#x27;</span>进行换行</span><br><span class="line"></span><br><span class="line">* ```bash</span><br><span class="line">  $ /usr/bin/<span class="keyword">en</span><span class="variable">v:</span> ‘<span class="keyword">python</span>(<span class="number">3</span>)\r’: No such <span class="keyword">file</span> <span class="built_in">or</span> directory</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+<h3 id="解决方法-1"><a href="#解决方法-1" class="headerlink" title="解决方法"></a>解决方法</h3><ul>
+<li><p>方法一：vim打开文件，输入 <code>:set ff=unix</code> 后回车，保存文件并退出<code>:wq</code></p>
+</li>
+<li><p>方法二：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo apt-get install dos2unix</span><br><span class="line">$ dos2unix &lt;filename&gt;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+]]></content>
       <categories>
         <category>Linux</category>
       </categories>
       <tags>
         <tag>Linux开发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>现代密码学（2）公钥密码</title>
+    <url>/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/</url>
+    <content><![CDATA[<p>现代密码学课程笔记（2）</p>
+<a id="more"></a>
+
+<h2 id="公钥密码学"><a href="#公钥密码学" class="headerlink" title="公钥密码学"></a>公钥密码学</h2>]]></content>
+      <categories>
+        <category>信息安全</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
       </tags>
   </entry>
 </search>
