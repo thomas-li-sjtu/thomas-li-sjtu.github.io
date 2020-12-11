@@ -4808,7 +4808,112 @@ $ chmod +r  xampp.run #给xampp.run读权限
     <content><![CDATA[<p>现代密码学课程笔记（2）</p>
 <a id="more"></a>
 
-<h2 id="公钥密码学"><a href="#公钥密码学" class="headerlink" title="公钥密码学"></a>公钥密码学</h2>]]></content>
+<h2 id="公钥密码学"><a href="#公钥密码学" class="headerlink" title="公钥密码学"></a>公钥密码学</h2><ul>
+<li><p>对称密码体制缺陷：</p>
+<ul>
+<li>密钥分配问题：需要安全信道协商密钥</li>
+<li>密钥管理问题：任意两个用户间都要有共享密钥，用户太多则密钥太多</li>
+<li>无签名功能：无法向第三方证明来源</li>
+</ul>
+</li>
+<li><p>理论：</p>
+<ul>
+<li>私钥及其他密码信息容易计算公钥</li>
+<li>由公钥和算法描述难以计算私钥</li>
+</ul>
+</li>
+<li><p>安全性：</p>
+<ul>
+<li>穷搜索理论上能够破解公钥密码</li>
+<li>加密速度慢</li>
+</ul>
+</li>
+<li><p>公钥分配方案：</p>
+<ul>
+<li>不能交换任意消息，可以建立共享密钥</li>
+<li>安全性基于离散对数的困难性</li>
+</ul>
+</li>
+<li><p>D-H公钥分配：</p>
+<ul>
+<li>初始化<ul>
+<li>一个大素数p（200位）</li>
+<li>一个生成元a</li>
+<li>密钥$x_A &lt; p，x_B&lt;p$</li>
+<li>计算$y_A=a^{x_A}mod\ p,y_B=a^{x_B}mod\ p$</li>
+<li>双方分别公开$y_A,y_B$</li>
+</ul>
+</li>
+<li>计算共享密钥<ul>
+<li>$K_{AB} = (y_A)^{x_B} mod\ p =(y_B)^{x_A} mod\ p$</li>
+<li>前者为B的计算，后者为A的计算</li>
+</ul>
+</li>
+<li>D-H应用：<ul>
+<li>抵抗被动攻击,但不能抵抗主动攻击</li>
+<li>主体每次可以选择新的私钥，计算及交换新的公钥</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="公钥加密算法"><a href="#公钥加密算法" class="headerlink" title="公钥加密算法"></a>公钥加密算法</h2><p>基于不同有限域的指数运算：RSA，ElGamal；其他问题的公钥体制大多被攻破</p>
+<h3 id="RSA"><a href="#RSA" class="headerlink" title="RSA"></a>RSA</h3><ul>
+<li>建立<ul>
+<li>选择两个随机大素数p，q并计算乘积N、N的欧拉函数$\phi(N)=(p-1)(q-1)$</li>
+<li>选择随机数e，e与欧拉函数互素，e为加密密钥</li>
+<li>计算d，d满足$ed = 1\ mod\ \phi(N)$</li>
+<li>公钥为${e、N}$，私钥为${d、p、q}$</li>
+<li>明文M（$M&lt;N$），密文为$C=M^e mod\ N$</li>
+<li>解密：$M=C^dmod\ N$</li>
+</ul>
+</li>
+<li>e对所有用户可以相同，通常为65535</li>
+<li>利用中国剩余定理CRT快速计算</li>
+<li>安全性：RSA破译难度不超过大素数分解<ul>
+<li>共模攻击1</li>
+<li>低加密指数攻击：e不能太小，短消息要随机数字填充</li>
+</ul>
+</li>
+<li>Rabin：<ul>
+<li>基于二次剩余问题和模n平方根问题</li>
+<li>加密密钥为2，安全性等价于对n的引述分解；解密更为困难</li>
+<li>不能抵抗选择密文攻击</li>
+</ul>
+</li>
+</ul>
+<h3 id="EI-Gamal"><a href="#EI-Gamal" class="headerlink" title="EI Gamal"></a>EI Gamal</h3><ul>
+<li>D-H方案的变形，可用于交换密钥；基于离散对数，但增加了消息长度</li>
+<li>过程：<ul>
+<li>生成密钥<ul>
+<li>选取大素数p和本元g</li>
+<li>接收方有密钥$x_B$，$y_B=g^{x_B}mod \ p$</li>
+</ul>
+</li>
+<li>加密<ul>
+<li>明文为M</li>
+<li>发送者选取随机数（永久保密）0&lt;=k&lt;=p-1，$K=y_B^k mod\ p$</li>
+<li>密文对$C={g^kmod\ p,KMmod\ p}$</li>
+</ul>
+</li>
+<li>解密<ul>
+<li>$K=C_1^{x_B}mod\ p,M=C_2K^{-1}mod\ p$</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="认证与哈希函数"><a href="#认证与哈希函数" class="headerlink" title="认证与哈希函数"></a>认证与哈希函数</h2><h3 id="认证函数"><a href="#认证函数" class="headerlink" title="认证函数"></a>认证函数</h3><ul>
+<li>认证目的：实体认证——发送者身份，消息认证——消息完整性</li>
+<li>攻击：泄露+通信量分析（加密），伪装+内容篡改+序号篡改+计时篡改（消息认证），抵赖（数字签名）</li>
+<li>三类认证：消息加密，MAC，哈希函数</li>
+</ul>
+<h3 id="消息加密"><a href="#消息加密" class="headerlink" title="消息加密"></a>消息加密</h3><p>消息加密提供认证</p>
+<ul>
+<li>对称加密：提供保密与一定程度的认证，不提供签名（可否认）</li>
+<li>公钥加密：三种情况，公钥/私钥/公钥+私钥</li>
+</ul>
+<h3 id="MAC"><a href="#MAC" class="headerlink" title="MAC"></a>MAC</h3><h3 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h3>]]></content>
       <categories>
         <category>信息安全</category>
       </categories>
