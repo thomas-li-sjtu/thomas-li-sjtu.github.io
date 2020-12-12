@@ -29,11 +29,15 @@
 <meta property="og:site_name" content="More Than Code">
 <meta property="og:description" content="现代密码学课程笔记（2）">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/8[%60MDUF7ZSN%6053T$E@%0P1L.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212131622648.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212130317783.png">
 <meta property="article:published_time" content="2020-12-09T02:51:52.000Z">
-<meta property="article:modified_time" content="2020-12-11T11:38:05.179Z">
+<meta property="article:modified_time" content="2020-12-12T05:23:52.703Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="密码">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/8[%60MDUF7ZSN%6053T$E@%0P1L.png">
 
 <link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/">
 
@@ -241,14 +245,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.1k</span>
+              <span>2.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -368,7 +372,115 @@
 <li>对称加密：提供保密与一定程度的认证，不提供签名（可否认）</li>
 <li>公钥加密：三种情况，公钥/私钥/公钥+私钥</li>
 </ul>
-<h3 id="MAC"><a href="#MAC" class="headerlink" title="MAC"></a>MAC</h3><h3 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h3>
+<h3 id="MAC"><a href="#MAC" class="headerlink" title="MAC"></a>MAC</h3><p>对选定消息,使用一个密钥,产生一个短小的定长数据分组，附加在消息中提供认证功能</p>
+<ul>
+<li><p>方法</p>
+<ul>
+<li>$M || C_k(M)$——认证</li>
+<li>$E_{k2}(M || C_{k1}(M)$——认证+加密</li>
+<li>$E_{k2}(M) || C_{k1}(E_{k2}(M))$——认证+加密</li>
+</ul>
+</li>
+<li><p>适用于消息广播、比加密解密的工作量小、认证与保密分离、延长消息的保护期限</p>
+</li>
+<li><p>不可逆，且不提供数字签名</p>
+</li>
+</ul>
+<h3 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h3><p>将任意长度消息映射成一个较短定长输出消息的函数，为文件、消息或其它的分组数据产生“数字指纹”</p>
+<ul>
+<li>鉴别方式：<ul>
+<li>$E_k(M || H(M) )$</li>
+<li>$M || E_k(H(M) )$</li>
+<li>$M || E_{KRa}(H(M) )$——鉴别与数字签名</li>
+<li>$E_k(M || E_{KRa}(H(M) ))$</li>
+<li>$M || H(M || S)$，S为双方共享的一个秘密</li>
+<li>$E_k(M || H(M || S))$</li>
+</ul>
+</li>
+<li>函数要求：<ul>
+<li>消息长度任意，输出定长</li>
+<li>易于计算</li>
+<li>单向性</li>
+<li>任意给定分组x，寻求不等于x的y，使得H(y)= H(x)在计算上不可行</li>
+<li>寻求对任何的(x,y)对使得H(x)=H(y)在计算上不可行</li>
+</ul>
+</li>
+</ul>
+<h4 id="简单的哈希算法"><a href="#简单的哈希算法" class="headerlink" title="简单的哈希算法"></a>简单的哈希算法</h4><p>每个n比特长度分组按比特异或，得到长度为n的哈希码</p>
+<ul>
+<li>改进：<ul>
+<li>先将n比特的哈希值设置为0</li>
+<li>当前的哈希值循环左移一位</li>
+<li>数据分组与哈希值异或形成新的哈希值</li>
+</ul>
+</li>
+<li>Merkle-Damgard结构：<ul>
+<li>$M=(Y_0,…,Y_L)，CV_0=初始n比特值$</li>
+<li>$CV_i=f(CV_{i-1},Y_{i-1}),0&lt;i\leq L$，f为压缩函数；如果F抗碰撞，则哈希结果抗碰撞</li>
+<li>$H(M)=CV_L$</li>
+</ul>
+</li>
+</ul>
+<h4 id="MD5"><a href="#MD5" class="headerlink" title="MD5"></a>MD5</h4><p>输入任意长度报文，输出128比特的摘要；输入分组长度为512比特；符合Merkle-Damgard结构</p>
+<img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/8[`MDUF7ZSN`53T$E@%0P1L.png" alt="img" style="zoom:67%;">
+
+<ul>
+<li><p>步骤</p>
+<ul>
+<li><p>填充消息，使消息长度为N*i+448比特（N大于0）</p>
+</li>
+<li><p>添加消息长度（64位）——消息表示为N个32位字</p>
+</li>
+<li><p>初始化128位MD缓存，存放杂凑中间与最后结果；字的低位字节在高地址前</p>
+</li>
+<li><p>处理报文分组</p>
+<ul>
+<li><p>输入：当前512位分组$Y_q$与上一轮输出$CV_q$</p>
+</li>
+<li><p>压缩：包含4个循环，顺次记为F，G，H，I；借助列表T[1,…,64]，列表提供随机化的32位模板以消除输入的规律</p>
+<ul>
+<li><p>每个循环包含16步操作</p>
+</li>
+<li><p>每一步的基本操作：$b \leftarrow b + ((a + g(b, c, d) + X[k] + T[i]) &lt;&lt;&lt; s)$</p>
+<ul>
+<li><p>模$2^{32}$加</p>
+</li>
+<li><p>$a,b,c,d$：缓存中的4个字，一开始被初始化，之后每一步操作结果都会替换其中一个字</p>
+</li>
+<li><p>$&lt;&lt;&lt;s$：循环左移s位</p>
+</li>
+<li><p>$T[i]$：矩阵T中的第i个32比特字，i = 1,…,16</p>
+</li>
+<li><p>$g$：循环函数F、G、H、I</p>
+</li>
+<li><p>$X[k]$：当前分组中第k个字</p>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212131622648.png" alt="image-20201212131622648"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>输出：第四次循环输出加到$CV_q$，得$CV_{q+1}$——模$2^{32}$相加</p>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212130317783.png" alt="image-20201212130317783"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>应用</p>
+<ul>
+<li>生成消息摘要</li>
+<li>用于数字签名</li>
+</ul>
+</li>
+<li><p>逆向</p>
+</li>
+</ul>
+<h4 id="SHA1"><a href="#SHA1" class="headerlink" title="SHA1"></a>SHA1</h4><p>输入最大长度为$2^{64}$位的消息，输出160比特，分组为512比特</p>
+<p>* </p>
+
     </div>
 
     
@@ -518,7 +630,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81%E5%AD%A6"><span class="nav-number">1.</span> <span class="nav-text">公钥密码学</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">公钥加密算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RSA"><span class="nav-number">2.1.</span> <span class="nav-text">RSA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EI-Gamal"><span class="nav-number">2.2.</span> <span class="nav-text">EI Gamal</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E4%B8%8E%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">认证与哈希函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">认证函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%8A%A0%E5%AF%86"><span class="nav-number">3.2.</span> <span class="nav-text">消息加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MAC"><span class="nav-number">3.3.</span> <span class="nav-text">MAC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-number">3.4.</span> <span class="nav-text">哈希函数</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81%E5%AD%A6"><span class="nav-number">1.</span> <span class="nav-text">公钥密码学</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">公钥加密算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RSA"><span class="nav-number">2.1.</span> <span class="nav-text">RSA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EI-Gamal"><span class="nav-number">2.2.</span> <span class="nav-text">EI Gamal</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E4%B8%8E%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">认证与哈希函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">认证函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%8A%A0%E5%AF%86"><span class="nav-number">3.2.</span> <span class="nav-text">消息加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MAC"><span class="nav-number">3.3.</span> <span class="nav-text">MAC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-number">3.4.</span> <span class="nav-text">哈希函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95"><span class="nav-number">3.4.1.</span> <span class="nav-text">简单的哈希算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MD5"><span class="nav-number">3.4.2.</span> <span class="nav-text">MD5</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SHA1"><span class="nav-number">3.4.3.</span> <span class="nav-text">SHA1</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -625,12 +737,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">116k</span>
+    <span title="站点总字数">117k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:45</span>
+    <span title="站点阅读时长">1:46</span>
 </div>
 
         
