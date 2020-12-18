@@ -2422,8 +2422,7 @@
 <li>路由器</li>
 </ul>
 </li>
-<li><p>路由器：利用网络地址（即IP地址）来区别不同的网络，实现网络的互联和隔离，保持各个网络的独立性；路由器的每一个接口都有一个不同网络号的</p>
-<p>IP 地址</p>
+<li><p>路由器：利用网络地址（即IP地址）来区别不同的网络，实现网络的互联和隔离，保持各个网络的独立性；路由器的每一个接口都有一个不同网络号的 IP 地址</p>
 </li>
 <li><p>三层交换机：集成交换机和路由器的功能</p>
 <ul>
@@ -2557,8 +2556,7 @@
 <a id="more"></a>
 
 <h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><ul>
-<li><p>介于通信子网和资源子网之间，对高层用户屏蔽了通</p>
-<p>信的细节</p>
+<li><p>介于通信子网和资源子网之间，对高层用户屏蔽了通信的细节</p>
 </li>
 <li><p>提供端到端之间的无差错保证</p>
 </li>
@@ -5133,5 +5131,63 @@ $ chmod +r  xampp.run #给xampp.run读权限
       <tags>
         <tag>密码</tag>
       </tags>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/2020/12/12/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6%E8%AF%BE%E7%A8%8B%E9%A1%B9%E7%9B%AE/</url>
+    <content><![CDATA[<h1 id="mmtls——微信安全通信协议分析"><a href="#mmtls——微信安全通信协议分析" class="headerlink" title="mmtls——微信安全通信协议分析"></a>mmtls——微信安全通信协议分析</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>作为腾讯公司开发的一款即时通信软件，微信支持跨通信运营商、跨操作系统的信息交互。微信原有的安全通信协议基于登陆时派发的 SessionKey，但由于SessionKey 只在应用层保护了请求的数据部分，因此仍然存在通过请求包头部的用户id和请求业务id进行映射关联分析的风险。同时，原有的密码学协议和算法与最新成果有一定差距，安全性存在一定不足。</p>
+<p>综上，微信需要一套能够加密保护客户端到服务器之间所有通信数据、对开发人员透明的安全通信协议，由此基于TLS1.3的<code>mmtls</code>诞生了。</p>
+<h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>系统的安全性、可用性、性能等指标之间往往存在复杂的相互影响，因此<code>mmtls</code>协议需要有以下特点：</p>
+<ul>
+<li>安全性。协议需要保证通信数据不被窃听、篡改、重放和伪造。</li>
+<li>低延迟。由于该协议为即时通信提供安全服务，因此需要保证数据传输没有明显的延迟。</li>
+<li>可扩展性。为了提高灵活性和安全性，协议需要及时添加安全强度更高的组件，并禁用被攻破的组件</li>
+<li>可用性。微信用户多，业务繁重，因此需要考虑极端情况下的可用性，以确保通信</li>
+</ul>
+<h2 id="协议设计"><a href="#协议设计" class="headerlink" title="协议设计"></a>协议设计</h2><p>微信使用<code>TCP</code>协议进行报文传输，分为长连接和短连接两种。前者在<code>mmtls</code>基础上使用私有协议，后者则是<code>HTTP</code>协议加上<code>mmtls</code>。<code>mmtls</code>在微信通信层次中介于应用层和网络连接层，类似于<code>TLS</code>在<code>HTTP</code>与<code>TCP</code>之间的位置，这样不会影响其他网络协议。</p>
+<p>同样与<code>TLS</code>相似的，<code>mmtls</code>有三个子协议：<code>Record</code>协议、<code>Handshake</code>协议和<code>Alert</code>协议，其中<code>Alert</code>协议和<code>Handshake</code>协议是<code>Record</code>协议的上层协议，因此在<code>Record</code>协议包中有专门的一个字段，用来确定当前<code>Record</code>数据包上层协议是<code>Handshake</code>、<code>Alert</code>还是应用层协议。</p>
+<h3 id="Handshake协议"><a href="#Handshake协议" class="headerlink" title="Handshake协议"></a>Handshake协议</h3><p><code>Handshake</code>协议的主要任务是完成<code>Client</code>与<code>Server</code>的握手协商，让通信双方安全地获得一致的对称密钥，以进行后续的通信数据加密传输。</p>
+<p>TLS1.3有两种<code>1-RTT</code>的密钥协商方式（<code>1-RTT ECDHE</code>、 <code>1-RTT PSK</code>）和4种<code>0-RTT</code>的密钥协商方式（<code>0-RTT PSK</code>、<code>0-RTT ECDH</code>、<code>0-RTT PSK-ECDHE</code>、<code>0-RTT ECDH-ECDHE</code>），而基于TLS1.3的<code>mmtls</code>结合了微信网络连接特点，在保证安全性和性能的前提下，只保留了三种密钥协商方式（<code>1-RTT ECDHE</code>、<code>1-RTT PSK</code>、<code>0-RTT PSK</code>）——长连接在建立<code>TCP</code>连接后会发送一个数据包用于验证长连接的连通性（中间路由可能不支持私有协议），因此使用<code>1-RTT ECDHE</code>和<code>1-RTT PSK</code>；短连接则使用<code>0-PSK</code>，以减少时延，提高用户体验。</p>
+<h4 id="1-RTT"><a href="#1-RTT" class="headerlink" title="1-RTT"></a>1-RTT</h4><h5 id="ECDHE"><a href="#ECDHE" class="headerlink" title="ECDHE"></a>ECDHE</h5><p><code>ECDH</code>密钥交换协议包含两个过程——密钥生成与密钥协商。通信双方分别生成一对公私钥，并交换公钥；之后通过收到的公钥和自己的私钥计算出共享密钥，以对明文进行对称加密，实现加密通信。但这个过程存在中间人攻击的风险，即通信双方实际上是与攻击者分别协商出共享密钥，但却以为自己是和通信目标进行了协商。</p>
+<p>以上问题的产生是由于通信双方无法确定报文是否来自目的端，因此在密钥协商过程中需要加入身份的认证：基于<code>MAC</code>的对称认证和基于数字签名的非对称认证。<code>mmtls</code>协议采用了后一种被称为<code>ECDSA</code>的算法，通信双方进行密钥协商时，分别签名公钥，收到消息后首先验证签名，签名无误才进行下一步的密钥协商。</p>
+<p>具体过程如下：</p>
+<ul>
+<li>客户端发送<code>client_pub_key</code></li>
+<li>服务器生成<code>server_pub_key</code>、<code>server_pri_key</code></li>
+<li>服务器用<code>sign_key</code>对<code>server_pub_key</code>签名</li>
+<li>签名和<code>server_pub_key</code>发还客户端</li>
+<li>客户端用内置的<code>verify_key</code>验证验证签名</li>
+</ul>
+<p>由于只用一方的签名即可抵抗中间人攻击，因此<code>mmtls</code>只对<code>Server</code>进行认证，不考虑<code>Client</code>的完整性。</p>
+<h5 id="PSK"><a href="#PSK" class="headerlink" title="PSK"></a>PSK</h5><p><code>PSK</code>是<code>ECDH</code>握手中<code>Server</code>通过安全信道下发的内容，其中包含对称密钥<code>key</code>和<code>key</code>的密文<code>ticket&#123;key&#125;</code>。</p>
+<p>在协商时，<code>Client</code>将<code>ticket&#123;key&#125;</code>发给<code>Server</code>，由于只有<code>Server</code>能够解密，因此<code>Server</code>用解密后的<code>key</code>计算协商数据的<code>MAC</code>完成认证。以上过程使用的都是对称算法，因此性能要优于<code>ECDH</code>。</p>
+<h4 id="0-RTT-PSK"><a href="#0-RTT-PSK" class="headerlink" title="0-RTT PSK"></a>0-RTT PSK</h4><p>在<code>1-RTT PSK</code>握手之前，<code>Client</code>已经得到了一个对称加密密钥，因此可以直接用这个密钥加密数据，和<code>ticket&#123;key&#125;</code>一起发送给<code>Server</code>，因此节约了一个轮次。</p>
+<h4 id="更多的细节"><a href="#更多的细节" class="headerlink" title="更多的细节"></a>更多的细节</h4><ol>
+<li><code>0-RTT PSK</code>的前向保密性。由于加密数据的安全性依赖于长期保存的密钥<code>ticket</code>，因此如果<code>ticket</code>泄露，基于<code>ticket</code>保护的所有数据都将失去保密性，因此可以在<code>0-RTT PSK</code>协商过程中同时完成<code>ECDHE</code>密钥协商，即<code>0-RTT PSK-ECDHE</code>。</li>
+<li><code>Verify_key</code>的下发问题。在<code>1-RTT ECDHE</code>中，<code>Verify_key</code>用于客户端验证签名，类似与<code>RSA</code>签名验证中公钥的作用，因此此密钥的下发问题就类似于公钥的派发问题。<code>TLS</code>采用证书链派发公钥证书，但为了减少额外的时间和带宽等资源消耗，且微信客户端是腾讯发布的程序，因此将<code>Verify_key</code>内置于客户端。</li>
+<li><code>sign_key</code>泄露问题。如果<code>Server</code>的<code>sign_key</code>泄露，则任何攻击者都可伪装为<code>Server</code>，因此需要及时地更新<code>Verify_key</code>，也就是及时撤销公钥。<code>TLS</code>通过<code>CRL</code>和<code>OCSP</code>撤销公钥，但均存在延迟问题，微信通信的安全性无法获得保障。同样的，由于<code>Verify_key</code>内置于客户端，必要时其实可以通过强制升级客户端的方式完成<code>Verify_key</code>的更新。</li>
+</ol>
+<h3 id="Record协议"><a href="#Record协议" class="headerlink" title="Record协议"></a>Record协议</h3><p>经过握手，通信双方获得了一致的对称密钥。TLS1.3 只能使用集成加密和消息认证码的算法进行加密。因此基于 TLS1.3 的<code>mmtls</code>选择<code>AES-GCM</code>作为认证加密算法——<code>AES</code>进行加密，采用<code>Counter</code>模式计算<code>GMAC</code>进行认证。</p>
+<h4 id="密钥扩展"><a href="#密钥扩展" class="headerlink" title="密钥扩展"></a>密钥扩展</h4><p>由于 TLS1.3 要求通信双方不能采用完全一致的对称密钥，因此通过握手获得的密钥必须使用密码扩展组件<code>HKDF</code>进行扩展变换，获得对称加密参数：</p>
+<ul>
+<li><code>Client Write MAC Key</code></li>
+<li><code>Server Write MAC Key</code></li>
+<li><code>Client Write Encryption Key</code></li>
+<li><code>Server Write Encryption Key</code></li>
+<li><code>Client Write IV</code></li>
+<li><code>Server Write IV</code></li>
+</ul>
+<h5 id="参数的计算"><a href="#参数的计算" class="headerlink" title="参数的计算"></a>参数的计算</h5><p>通过握手获得的密钥，根据握手过程的不同分为两种：<code>Static Secret(SS)</code>和<code>Ephemeral Secret(ES)</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1-RTT ECDHE</span></span><br><span class="line">ES = SS = ECDH_Compute_Key(server_pub_key, client_pri_key); </span><br><span class="line"><span class="comment">//0-RTT/1-RTT PSK</span></span><br><span class="line">ES = SS = preshared_key;</span><br><span class="line"><span class="comment">//0-RTT PSK-ECDHE</span></span><br><span class="line">SS = preshared_key，</span><br><span class="line">ES = ECDH_Compute_Key(server_pub_key, client_pri_key);</span><br></pre></td></tr></table></figure>
+
+<p>扩展组件<code>HKDF</code>定义了两个函数——<code>HKDF-Extract(salt, initial-keying-material)</code>和<code>HKDF-Expand(pseudorandom key, info, out_key_length)</code>——以保证扩展结果具有伪随机性。前者保证熵足够均匀，足够伪随机，后者实现密钥扩展，其中参数<code>pseudorandom key</code>一般是<code>HKDF-Extract</code>的返回值，参数<code>info</code>包括了握手消息的哈希、表示密钥用途的字符串常量和扩展结果长度。</p>
+<h5 id="扩展结果"><a href="#扩展结果" class="headerlink" title="扩展结果"></a>扩展结果</h5><p>因为使用<code>AES-GCM</code>作为认证加密算法，所以经过密钥扩展，<code>mmtls</code>最终获得四个参数，得到长度为<code>2*encrypt_key_length + 2*iv_length</code>长度的数据：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">client_write_key = key_block[<span class="number">0.</span>..encrypt_key_length<span class="number">-1</span>]</span><br><span class="line">client_write_key = key_block[encrypt_key_length..<span class="number">.2</span>*encrypt_key_length<span class="number">-1</span>]</span><br><span class="line">client_write_IV  = key_block[<span class="number">2</span>*encrypt_key_length..<span class="number">.2</span>*encrypt_key_length+iv_length<span class="number">-1</span>]</span><br><span class="line">server_write_IV  = key_block[<span class="number">2</span>*encrypt_key_length+iv_length..<span class="number">.2</span>*encrypt_key_length+<span class="number">2</span>*iv_length<span class="number">-1</span>]</span><br></pre></td></tr></table></figure>
+
+<h4 id="抗重放"><a href="#抗重放" class="headerlink" title="抗重放"></a>抗重放</h4><p>由于<code>1-RTT</code>握手方式的一个数据包不包含具体的数据，因此<code>Client</code>与<code>Server</code>共同决定序列号起点，之后对每一个数据包编号后认证加密，便可实现抗重放的功能。</p>
+<p>对于<code>0-RTT</code>握手方式，<code>mmtls</code>提出基于<code>Client</code>与<code>Server</code>的时间序列抵抗重放攻击，即保证超过一段时间的重放包被<code>Server</code>处理，而该段时间内的重放包在<code>logic</code>层参与下进行处理。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>微信安全通信协议<code>mmtls</code>在 TLS1.3 的基础上实现，通过<code>ECDH</code>协商密钥，通过<code>ECDHA</code>验证签名，实现通信双方握手，之后<code>HKDF</code>组件进行密钥扩展，获得真正的对称密钥，认证加密算法<code>AES-GCM</code>对数据包进行处理，保证微信通信的安全、轻量和高性能。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="http://blog.helong.info/blog/2015/09/06/tls-protocol-analysis-and-crypto-protocol-design/">TLS协议分析与现代加密通信协议设计</a><br>        <a href="https://www.doc88.com/p-2317739528738.html">微信交互协议和加密模式研究</a><br>        <a href="https://github.com/leafzz/mmtls-demo">微信mmtls协议归纳和演示</a><br>        <a href="https://github.com/SuperSocks5/mmtls">基于 TCP 上 mmtls 安全传输实现</a><br>        <a href="https://blog.csdn.net/T0mato_/article/details/53160772">AES-GCM</a></p>
+]]></content>
   </entry>
 </search>
