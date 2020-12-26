@@ -3758,14 +3758,17 @@
 <li>替换（S-boxes）：一个二进制字用其他二进制字替换（混淆作用）s<ul>
 <li>替换函数为密钥</li>
 <li>可视为查表运算</li>
-<li>使明文和密文、密文和密钥之间的统计相关特性极小化，避免统计分析攻击</li>
+<li>使<strong>明文和密文、密文和密钥之间的统计相关特性极小化</strong>，避免统计分析攻击</li>
 </ul>
 </li>
-<li>置换（P-boxes）：二进制字次序打乱，重排的方法为密钥（扩散作用），明文和密钥的影响分布到多个密文中</li>
-<li>组合：混合变换，一些 S-boxes 由 P-box 连接<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201111101657412.png" alt="image-20201111101657412"></li>
+<li>置换（P-boxes）：二进制字次序打乱，重排的方法为密钥（扩散作用），<strong>明文和密钥的影响分布到多个密文中</strong></li>
+<li>组合：混合变换，一些 S-boxes 由 P-box 连接<img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201111101657412.png" alt="image-20201111101657412" style="zoom: 50%;">
+</li>
 </ul>
 </li>
-<li><p>Feistel 密码<br><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201111101911374.png" alt="image-20201111101911374"></p>
+<li><p>Feistel 密码</p>
+<img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201111101911374.png" alt="image-20201111101911374" style="zoom: 50%;">
+
 <ul>
 <li>输入块分成左右两部分 L(i-1) 和 R(i-1)，变换是在密码的第I轮只使用R(i-1) </li>
 <li>g 由第i个密钥K(i)控制</li>
@@ -3773,22 +3776,20 @@
 </li>
 <li><p>雪崩效应</p>
 <ul>
-<li>输入改变1bit, 导致近一半的比特发生变化</li>
+<li>输入改变1bit, 导致近一半的比特发生变化——<strong>小的输入变化导致大的输出变化</strong></li>
 <li>函数$F$有雪崩特性：对$2^m$个明文向量，分为$2^{m-1}$个向量对$x_i$和$x_i’$，每对向量只有一个比特不同，若$V_i=F(x_i)XORF(x_i’)$，则近一半的$V_i$为1</li>
-<li>小的输入变化导致大的输出变化</li>
 </ul>
 </li>
 <li><p>完备性</p>
 <ul>
-<li>每个输出比特是所有输入比特的复杂函数的输出</li>
+<li><strong>每个输出比特是所有输入比特的复杂函数的输出</strong>——<strong>每个输出比特依赖于所有输入比特</strong></li>
 <li>函数$F$有完备性：对每个输出向量的每一比特$j(0&lt;j&lt;m)$，至少存在一个明文对$x_i$和$x_i’$只在第$i$个比特不同，且$F(x_i)$和$F(x_i’)$的第$j$比特不同</li>
-<li>每个输出比特依赖于所有输入比特</li>
 </ul>
 </li>
 <li><p>Lusifer 密码</p>
 <ul>
 <li><p>DES 前身</p>
-<p><img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201113081436815.png" alt="image-20201113081436815"></p>
+<img src="/2020/11/05/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6/image-20201113081436815.png" alt="image-20201113081436815" style="zoom:50%;">
 </li>
 <li><p>分组长度128bit，密钥长度128bit</p>
 </li>
@@ -4885,12 +4886,12 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>过程：<ul>
 <li>生成密钥<ul>
 <li>选取大素数p和本元g</li>
-<li>接收方有私钥$x_B$，公开$y_B=g^{x_B}mod \ p$</li>
+<li>接收方有私钥$x_B$，公开$(y_B=g^{x_B}mod \ p,\ g,\ p)$</li>
 </ul>
 </li>
 <li>加密<ul>
 <li>明文为M</li>
-<li>发送者选取随机数（永久保密）0&lt;=k&lt;=p-1，$K=y_B^k mod\ p$</li>
+<li>发送者选取随机数$k$（永久保密）$0\leq k\leq p-1，K=y_B^k mod\ p$</li>
 <li>密文对$C={g^kmod\ p,KMmod\ p}$</li>
 </ul>
 </li>
@@ -4953,8 +4954,8 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>消息长度任意，输出定长</li>
 <li>易于计算</li>
 <li>单向性</li>
-<li>任意给定分组x，寻求不等于x的y，使得H(y)= H(x)在计算上不可行</li>
-<li>寻求对任何的(x,y)对使得H(x)=H(y)在计算上不可行</li>
+<li>任意给定分组x，寻求不等于x的y，使得H(y)= H(x)在计算上不可行——弱抗碰撞性</li>
+<li>寻求对任何的(x,y)对使得H(x)=H(y)在计算上不可行——强抗碰撞性</li>
 </ul>
 </li>
 <li>用途<ul>
@@ -4981,7 +4982,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </ul>
 </li>
 </ul>
-<h4 id="MD5"><a href="#MD5" class="headerlink" title="MD5"></a>MD5</h4><p>输入任意长度报文，输出128比特的摘要；输入分组长度为512比特；符合Merkle-Damgard结构</p>
+<h4 id="MD5"><a href="#MD5" class="headerlink" title="MD5"></a>MD5</h4><p>输入任意长度报文，<strong>输出128比特的摘要</strong>；<strong>输入分组长度为512比特</strong>；符合Merkle-Damgard结构</p>
 <img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-1.png" alt="img" style="zoom:67%;">
 
 <ul>
@@ -4997,9 +4998,9 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <ul>
 <li><p>输入：当前512位分组$Y_q$与上一轮输出$CV_q$</p>
 </li>
-<li><p>压缩：包含4个循环，顺次记为F，G，H，I；借助列表T[1,…,64]，列表提供随机化的32位模板以消除输入的规律</p>
+<li><p>压缩：<strong>包含4个循环</strong>，顺次记为F，G，H，I；借助列表T[1,…,64]，列表提供随机化的32位模板以消除输入的规律</p>
 <ul>
-<li><p>每个循环包含16步操作</p>
+<li><p><strong>每个循环包含16步操作</strong></p>
 </li>
 <li><p>每一步的基本操作：$b \leftarrow b + ((a + g(b, c, d) + X[k] + T[i]) &lt;&lt;&lt; s)$</p>
 <ul>
@@ -5038,17 +5039,17 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li><p>逆向</p>
 </li>
 </ul>
-<h4 id="SHA1"><a href="#SHA1" class="headerlink" title="SHA1"></a>SHA1</h4><p>输入最大长度为$2^{64}$位的消息，输出160比特，分组为512比特</p>
+<h4 id="SHA1"><a href="#SHA1" class="headerlink" title="SHA1"></a>SHA1</h4><p><strong>输入最大长度为$2^{64}$位的消息，输出160比特，分组为512比特</strong></p>
 <ul>
 <li><p>步骤：</p>
 <ul>
 <li><p>添加填充位，一个1和若干0，使得长度同上</p>
 </li>
-<li><p>添加长度（同上）</p>
+<li><p>添加消息长度（同上）</p>
 </li>
 <li><p>初始化160位MD缓冲区，表示为5个字的寄存器；前四个字同MD5；高端字节存储</p>
 </li>
-<li><p>512位数据块为单位，四轮，一轮20步，每轮分别使用一个额外的常数$K_t$</p>
+<li><p>512位数据块为单位，<strong>四轮，一轮20步</strong>，每轮分别使用一个额外的常数$K_t$</p>
 <ul>
 <li><p>每一步：</p>
 <p>$A,B,C,D,E\leftarrow E+f_t(B,C,D)+S^5(A)+W_i+K_t),A,S^{30}(B),C,D$</p>
@@ -5072,7 +5073,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </li>
 <li><p>对比</p>
 <ul>
-<li>SHA = MD4 ＋ 扩展变换 ＋ 外加一轮 ＋ 更好的雪崩</li>
+<li>SHA = MD4 ＋ 扩展变换 ＋ 外加一轮 ＋ 更好的雪崩（每一轮加上前一步的结果）</li>
 <li> MD5 = MD4 ＋ 改进的比特杂凑 ＋ 外加一轮 ＋ 更好的雪崩</li>
 </ul>
 <p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212135015810.png" alt="image-20201212135015810"></p>
@@ -5081,10 +5082,10 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </li>
 </ul>
 <h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>只对消息的哈希签名（否则交换信息长度增加一倍）</p>
-<h3 id="RSA-1"><a href="#RSA-1" class="headerlink" title="RSA"></a>RSA</h3><p>已知：${(e,R),(d,p,q)}$</p>
+<h3 id="RSA-1"><a href="#RSA-1" class="headerlink" title="RSA"></a>RSA</h3><p>已知：${(e,N),(d,p,q)}$</p>
 <ul>
-<li>计算明文M的哈希h，$S=h^d(mod\ R)$，发送$(M,S)$</li>
-<li>接收方同样计算哈希h，$S^e mod\ R=h’mod\ R$，对比h和h’</li>
+<li>计算明文M的哈希h，$S=h^d(mod\ N)$，发送$(M,S)$</li>
+<li>接收方同样计算哈希h，$S^e mod\ N=h’mod\ N$，对比h和h’</li>
 <li>若先加密后签名，签名可能被替换</li>
 </ul>
 <h3 id="El-Gamal"><a href="#El-Gamal" class="headerlink" title="El Gamal"></a>El Gamal</h3><ul>
