@@ -5696,11 +5696,6 @@ $ chmod +r  xampp.run #给xampp.run读权限
       </tags>
   </entry>
   <entry>
-    <title>Flask开发_阅读笔记_1</title>
-    <url>/2020/12/20/Flask%E5%BC%80%E5%8F%91-%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0-1/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
     <title>FlaskWeb开发（1）Flask介绍</title>
     <url>/2020/12/30/FlaskWeb%E5%BC%80%E5%8F%91-1/</url>
     <content><![CDATA[<p>《FlaskWeb开发》阅读笔记——第一部分 Flask简介</p>
@@ -5900,12 +5895,61 @@ $ chmod +r  xampp.run #给xampp.run读权限
 
 <figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--templates/index.html：使用 Flask-WTF 和 Flask-Bootstrap 渲染表单--&gt;</span></span><br><span class="line">&#123;% extends &quot;base.html&quot; %&#125; </span><br><span class="line">&#123;% import &quot;bootstrap/wtf.html&quot; as wtf %&#125; </span><br><span class="line"> </span><br><span class="line">&#123;% block title %&#125;Flasky&#123;% endblock %&#125; </span><br><span class="line"> </span><br><span class="line">&#123;% block page_content %&#125; </span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;page-header&quot;</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello, &#123;% if name %&#125;&#123;&#123; name &#125;&#125;&#123;% else %&#125;Stranger&#123;% endif %&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span> </span><br><span class="line">&#123;&#123; wtf.quick_form(form) &#125;&#125; </span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure>
 
+</li>
+</ul>
+<h4 id="视图函数处理表单"><a href="#视图函数处理表单" class="headerlink" title="视图函数处理表单"></a>视图函数处理表单</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(&#x27;/&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;])  # 注册为GET和POST请求的处理程序，否则为注册为GET请求的处理程序</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span> </span><br><span class="line">    name = <span class="literal">None</span>  <span class="comment"># 存放表单中输入的有效名字</span></span><br><span class="line">    form = NameForm()  <span class="comment"># 创建NameForm类实例用于表示表单</span></span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit():  <span class="comment"># 数据能被所有验证函数接受，返回true</span></span><br><span class="line">        name = form.name.data  <span class="comment"># 名字赋值给局部变量name</span></span><br><span class="line">        form.name.data = <span class="string">&#x27;&#x27;</span>  <span class="comment"># 清空表单字段</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;index.html&#x27;</span>, form=form, name=name)  <span class="comment"># 渲染模板， name为表单中输入的名字</span></span><br></pre></td></tr></table></figure>
 
+<ul>
+<li>提交表单大多作为 POST 请求进行处理</li>
+</ul>
+<h4 id="重定向与用户会话"><a href="#重定向与用户会话" class="headerlink" title="重定向与用户会话"></a>重定向与用户会话</h4><ul>
+<li><p>刷新页面时，浏览器会重新发送之前已经发送过的最后一个请求</p>
+</li>
+<li><p>使用重定向作为 POST 请求的响应，内容是 URL，而不是包含 HTML 代码的字符串，浏览器收到重定向响应时，会向重定向的 URL 发起 GET 请求——原先用<code>form.name.data</code>获取用户输入，但请求结束后数据便丢失，因此需要保存输入数据</p>
+</li>
+<li><p>把数据存储在用户会话中，在请求之间”记住“数据（session，类似 Python 字典）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, session, redirect, url_for </span><br><span class="line"> </span><br><span class="line"><span class="meta">@app.route(&#x27;/&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span> </span><br><span class="line">    form = NameForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        session[<span class="string">&#x27;name&#x27;</span>] = form.name.data </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;index.html&#x27;</span>, form=form, name=session.get(<span class="string">&#x27;name&#x27;</span>))  <span class="comment"># 对于不存在的键，get()返回None</span></span><br></pre></td></tr></table></figure>
 
 </li>
 </ul>
-<h4 id="视图函数处理表单"><a href="#视图函数处理表单" class="headerlink" title="视图函数处理表单"></a>视图函数处理表单</h4><h4 id="重定向与用户会话"><a href="#重定向与用户会话" class="headerlink" title="重定向与用户会话"></a>重定向与用户会话</h4><h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><h4 id="SQL数据库"><a href="#SQL数据库" class="headerlink" title="SQL数据库"></a>SQL数据库</h4><h4 id="NoSQL数据库"><a href="#NoSQL数据库" class="headerlink" title="NoSQL数据库"></a>NoSQL数据库</h4><h4 id="Python数据库框架"><a href="#Python数据库框架" class="headerlink" title="Python数据库框架"></a>Python数据库框架</h4><h4 id="定义模型"><a href="#定义模型" class="headerlink" title="定义模型"></a>定义模型</h4><h4 id="关系"><a href="#关系" class="headerlink" title="关系"></a>关系</h4><h3 id="电子邮件"><a href="#电子邮件" class="headerlink" title="电子邮件"></a>电子邮件</h3><p><code>pip install flask-mail</code></p>
-<h3 id="其他结构"><a href="#其他结构" class="headerlink" title="其他结构"></a>其他结构</h3><h2 id="第二部分-实例：社交博客"><a href="#第二部分-实例：社交博客" class="headerlink" title="第二部分 实例：社交博客"></a>第二部分 实例：社交博客</h2><h2 id="第三部分-测试与部署"><a href="#第三部分-测试与部署" class="headerlink" title="第三部分 测试与部署"></a>第三部分 测试与部署</h2>]]></content>
+<h4 id="Flash消息"><a href="#Flash消息" class="headerlink" title="Flash消息"></a>Flash消息</h4><ul>
+<li><p>提交表单后，让用户知道变化——<code>flash()</code>函数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, session, redirect, url_for, flash </span><br><span class="line"> </span><br><span class="line"><span class="meta">@app.route(&#x27;/&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span> </span><br><span class="line">    form = NameForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        old_name = session.get(<span class="string">&#x27;name&#x27;</span>) </span><br><span class="line">        <span class="keyword">if</span> old_name <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> old_name != form.name.data:  <span class="comment"># 每次提交的名字都会和存储在用户会话中的名字进行比较</span></span><br><span class="line">            flash(<span class="string">&#x27;Looks like you have changed your name!&#x27;</span>) </span><br><span class="line">        session[<span class="string">&#x27;name&#x27;</span>] = form.name.data </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;index.html&#x27;</span>, </span><br><span class="line">        form = form, name = session.get(<span class="string">&#x27;name&#x27;</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>仅调用<code>flash()</code>不能把消息显示出来，需要在模板渲染（最好为基模板）——<code>get_flashed_messages()</code></p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--templates/base.html：渲染 Flash 消息--&gt;</span></span><br><span class="line">&#123;% block content %&#125; </span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;container&quot;</span>&gt;</span> </span><br><span class="line">    &#123;% for message in get_flashed_messages() %&#125; </span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;alert alert-warning&quot;</span>&gt;</span> </span><br><span class="line">        <span class="tag">&lt;<span class="name">button</span> <span class="attr">type</span>=<span class="string">&quot;button&quot;</span> <span class="attr">class</span>=<span class="string">&quot;close&quot;</span> <span class="attr">data-dismiss</span>=<span class="string">&quot;alert&quot;</span>&gt;</span><span class="symbol">&amp;times;</span><span class="tag">&lt;/<span class="name">button</span>&gt;</span> </span><br><span class="line">        &#123;&#123; message &#125;&#125;  <span class="comment">&lt;!--每次调用flash()都会生成一个消息，获取的消息在下次调用时不会再次返回--&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">div</span>&gt;</span> </span><br><span class="line">    &#123;% endfor %&#125; </span><br><span class="line"> </span><br><span class="line">    &#123;% block page_content %&#125;&#123;% endblock %&#125; </span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span> </span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure>
+
+<img src="/2020/12/30/FlaskWeb%E5%BC%80%E5%8F%91-1/image-20210102222657693.png" alt="image-20210102222657693" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><h4 id="SQL数据库"><a href="#SQL数据库" class="headerlink" title="SQL数据库"></a>SQL数据库</h4><ul>
+<li><p>关系数据库</p>
+</li>
+<li><p>主键：其值为表中各行的唯一标识符</p>
+</li>
+<li><p>外键：引用同一个表或不同表中某行的主键</p>
+<p><img src="/2020/12/30/FlaskWeb%E5%BC%80%E5%8F%91-1/image-20210102223815533.png" alt="image-20210102223815533"></p>
+</li>
+</ul>
+<h4 id="NoSQL数据库"><a href="#NoSQL数据库" class="headerlink" title="NoSQL数据库"></a>NoSQL数据库</h4><ul>
+<li><p>文档数据库和键值对数据库</p>
+</li>
+<li><p>使用集合代替表，使用文档代替记录</p>
+<p><img src="/2020/12/30/FlaskWeb%E5%BC%80%E5%8F%91-1/image-20210102223729144.png" alt="image-20210102223729144"></p>
+</li>
+</ul>
+<h4 id="Python数据库框架"><a href="#Python数据库框架" class="headerlink" title="Python数据库框架"></a>Python数据库框架</h4><ul>
+<li>对象关系映射（Object-Relational Mapper，ORM）与对象文档映射（Object-Document Mapper，ODM）</li>
+<li>ORM 和 ODM 把对象业务转换成数据库业务，性能上有一定的损耗</li>
+<li>数据库抽象层代码包：SQLAlchemy 和 MongoEngine 等，可以直接处理高等级的 Python 对象，而非表、文档、查询语言等数据库实体</li>
+</ul>
+<h4 id="Flask-SQLAlchemy"><a href="#Flask-SQLAlchemy" class="headerlink" title="Flask-SQLAlchemy"></a>Flask-SQLAlchemy</h4><p><code>pip install flask-sqlalchemy</code></p>
+<ul>
+<li><h4 id="定义模型"><a href="#定义模型" class="headerlink" title="定义模型"></a>定义模型</h4></li>
+</ul>
+<h4 id="关系"><a href="#关系" class="headerlink" title="关系"></a>关系</h4><h4 id="数据库操作"><a href="#数据库操作" class="headerlink" title="数据库操作"></a>数据库操作</h4><h4 id="结合视图函数"><a href="#结合视图函数" class="headerlink" title="结合视图函数"></a>结合视图函数</h4><h4 id="Python-Shell-集成"><a href="#Python-Shell-集成" class="headerlink" title="Python Shell 集成"></a>Python Shell 集成</h4><h4 id="Flask-Migrate"><a href="#Flask-Migrate" class="headerlink" title="Flask-Migrate"></a>Flask-Migrate</h4><h3 id="电子邮件"><a href="#电子邮件" class="headerlink" title="电子邮件"></a>电子邮件</h3><p><code>pip install flask-mail</code></p>
+<h3 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h3><h2 id="第二部分-实例：社交博客"><a href="#第二部分-实例：社交博客" class="headerlink" title="第二部分 实例：社交博客"></a>第二部分 实例：社交博客</h2><h2 id="第三部分-测试与部署"><a href="#第三部分-测试与部署" class="headerlink" title="第三部分 测试与部署"></a>第三部分 测试与部署</h2>]]></content>
       <categories>
         <category>项目实践</category>
       </categories>
