@@ -3696,6 +3696,7 @@
       </categories>
       <tags>
         <tag>密码</tag>
+        <tag>AE</tag>
       </tags>
   </entry>
   <entry>
@@ -5697,7 +5698,8 @@ $ chmod +r  xampp.run #给xampp.run读权限
   <entry>
     <title>FlaskWeb开发（1）Flask介绍</title>
     <url>/2020/12/30/FlaskWeb%E5%BC%80%E5%8F%91-1/</url>
-    <content><![CDATA[<p>《FlaskWeb开发》阅读笔记——第一部分 Flask简介</p>
+    <content><![CDATA[<p>《FlaskWeb开发》阅读笔记</p>
+<p>第一部分 Flask简介</p>
 <a id="more"></a>
 
 <h3 id="程序基本结构"><a href="#程序基本结构" class="headerlink" title="程序基本结构"></a>程序基本结构</h3><ul>
@@ -6116,10 +6118,11 @@ $ chmod +r  xampp.run #给xampp.run读权限
   <entry>
     <title>FlaskWeb开发（2）Flask实例</title>
     <url>/2021/01/03/FlaskWeb%E5%BC%80%E5%8F%91-2/</url>
-    <content><![CDATA[<p>《FlaskWeb开发》阅读笔记——第二部分 Flask实例：社交博客</p>
+    <content><![CDATA[<p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 用户认证、角色分配与资料编辑</p>
 <a id="more"></a>
 
-<h2 id="第二部分-实例：社交博客"><a href="#第二部分-实例：社交博客" class="headerlink" title="第二部分 实例：社交博客"></a>第二部分 实例：社交博客</h2><h3 id="用户认证"><a href="#用户认证" class="headerlink" title="用户认证"></a>用户认证</h3><p>认证包：</p>
+<h2 id="第二部分-实例：社交博客-上"><a href="#第二部分-实例：社交博客-上" class="headerlink" title="第二部分 实例：社交博客(上)"></a>第二部分 实例：社交博客(上)</h2><h3 id="用户认证"><a href="#用户认证" class="headerlink" title="用户认证"></a>用户认证</h3><p>认证包：</p>
 <ul>
 <li> Flask-Login：管理已登录用户的用户会话</li>
 <li>Werkzeug：计算密码散列值并进行核对</li>
@@ -6177,7 +6180,148 @@ $ chmod +r  xampp.run #给xampp.run读权限
 
 </li>
 </ul>
-<h4 id="注册新用户"><a href="#注册新用户" class="headerlink" title="注册新用户"></a>注册新用户</h4><h4 id="确认账户"><a href="#确认账户" class="headerlink" title="确认账户"></a>确认账户</h4><h4 id="管理账户"><a href="#管理账户" class="headerlink" title="管理账户"></a>管理账户</h4><h3 id="用户角色"><a href="#用户角色" class="headerlink" title="用户角色"></a>用户角色</h3><h3 id="用户资料"><a href="#用户资料" class="headerlink" title="用户资料"></a>用户资料</h3><h3 id="博客文章"><a href="#博客文章" class="headerlink" title="博客文章"></a>博客文章</h3><h3 id="关注者"><a href="#关注者" class="headerlink" title="关注者"></a>关注者</h3><h3 id="用户评论"><a href="#用户评论" class="headerlink" title="用户评论"></a>用户评论</h3><h3 id="编程接口"><a href="#编程接口" class="headerlink" title="编程接口"></a>编程接口</h3><h2 id="第三部分-测试与部署"><a href="#第三部分-测试与部署" class="headerlink" title="第三部分 测试与部署"></a>第三部分 测试与部署</h2>]]></content>
+<h4 id="注册新用户"><a href="#注册新用户" class="headerlink" title="注册新用户"></a>注册新用户</h4><ul>
+<li><p>添加注册表单</p>
+<ul>
+<li><p>表单函数</p>
+  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/auth/forms.py：用户注册表单</span></span><br><span class="line"><span class="keyword">from</span> flask.ext.wtf <span class="keyword">import</span> Form</span><br><span class="line"><span class="keyword">from</span> wtforms <span class="keyword">import</span> StringField, PasswordField, BooleanField, SubmitField</span><br><span class="line"><span class="keyword">from</span> wtforms.validators <span class="keyword">import</span> Required, Length, Email, Regexp, EqualTo</span><br><span class="line"><span class="keyword">from</span> wtforms <span class="keyword">import</span> ValidationError</span><br><span class="line"><span class="keyword">from</span> ..models <span class="keyword">import</span> User</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RegistrationForm</span>(<span class="params">Form</span>):</span> </span><br><span class="line">    email = StringField(<span class="string">&#x27;Email&#x27;</span>, validators=[Required(), Length(<span class="number">1</span>, <span class="number">64</span>), </span><br><span class="line">                                             Email()]) </span><br><span class="line">    username = StringField(<span class="string">&#x27;Username&#x27;</span>, validators=[ </span><br><span class="line">        Required(), Length(<span class="number">1</span>, <span class="number">64</span>), Regexp(<span class="string">&#x27;^[A-Za-z][A-Za-z0-9_.]*$&#x27;</span>, <span class="number">0</span>, </span><br><span class="line">                                          <span class="string">&#x27;Usernames must have only letters, &#x27;</span> </span><br><span class="line">                                          <span class="string">&#x27;numbers, dots or underscores&#x27;</span>)])  <span class="comment"># Regexp 验证函数，确保username字段只包含字母、数字、下划线和点号；正则表达式后的参数：正则表达式的旗标和验证失败时显示的错误消息</span></span><br><span class="line">    password = PasswordField(<span class="string">&#x27;Password&#x27;</span>, validators=[ </span><br><span class="line">        Required(), EqualTo(<span class="string">&#x27;password2&#x27;</span>, message=<span class="string">&#x27;Passwords must match.&#x27;</span>)])  <span class="comment"># Equalto：验证两个密码字段中的值是否一致</span></span><br><span class="line">    password2 = PasswordField(<span class="string">&#x27;Confirm password&#x27;</span>, validators=[Required()]) </span><br><span class="line">    submit = SubmitField(<span class="string">&#x27;Register&#x27;</span>) </span><br><span class="line"></span><br><span class="line">  <span class="comment"># 表单类中定义validate_ 开头且后面跟着字段名的方法——类似验证函数，和验证函数一起调用</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_email</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> User.query.filter_by(email=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Email already registered.&#x27;</span>)  <span class="comment"># 验证失败则抛出ValidationError异常，参数是错误消息</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_username</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> User.query.filter_by(username=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Username already in use.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>登录页面要显示一个指向注册页面的链接</p>
+  <figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/templates/auth/login.html：链接到注册页面--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span> </span><br><span class="line">    New user? </span><br><span class="line">    <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; url_for(&#x27;auth.register&#x27;) &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">        Click here to register </span><br><span class="line">    <span class="tag">&lt;/<span class="name">a</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>注册的视图函数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：用户注册路由</span></span><br><span class="line"><span class="meta">@auth.route(&#x27;/register&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">register</span>():</span> </span><br><span class="line">    form = RegistrationForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        user = User(email=form.email.data, </span><br><span class="line">                    username=form.username.data, </span><br><span class="line">                    password=form.password.data) </span><br><span class="line">        db.session.add(user) </span><br><span class="line">        flash(<span class="string">&#x27;You can now login.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;auth.login&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/register.html&#x27;</span>, form=form)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="确认账户"><a href="#确认账户" class="headerlink" title="确认账户"></a>确认账户</h4><ul>
+<li><p>有时需要确认注册时用户提供的信息是否正确，例如能够验证邮箱——需要发送确认邮件，新账户标记为待确认，用户需要点击邮件中包含确认令牌的 URL 链接</p>
+</li>
+<li><p>确认链接通常为：<code>http://www.example.com/auth/confirm/&lt;确认令牌&gt;</code></p>
+</li>
+<li><p>将生成和校验令牌的功能加入 User 模型中</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/models.py：确认用户账户</span></span><br><span class="line"><span class="keyword">from</span> itsdangerous <span class="keyword">import</span> TimedJSONWebSignatureSerializer <span class="keyword">as</span> Serializer  <span class="comment"># 生成具有过期时间的 JSON Web 签名，类的构造函数参数为一个密钥，可使用SECRET_KEY</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> current_app </span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> db </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    confirmed = db.Column(db.Boolean, default=<span class="literal">False</span>) </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">generate_confirmation_token</span>(<span class="params">self, expiration=<span class="number">3600</span></span>):</span> </span><br><span class="line">        s = Serializer(current_app.config[<span class="string">&#x27;SECRET_KEY&#x27;</span>], expiration)  <span class="comment"># 参数expires_in设置令牌的过期时间（秒）</span></span><br><span class="line">        <span class="keyword">return</span> s.dumps(&#123;<span class="string">&#x27;confirm&#x27;</span>: self.<span class="built_in">id</span>&#125;)  <span class="comment"># dumps()为指定数据生成加密签名并生成序列串</span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">confirm</span>(<span class="params">self, token</span>):</span> </span><br><span class="line">        s = Serializer(current_app.config[<span class="string">&#x27;SECRET_KEY&#x27;</span>]) </span><br><span class="line">        <span class="keyword">try</span>: </span><br><span class="line">            data = s.loads(token)  <span class="comment"># 解码令牌，检验签名和过期时间，如果通过则返回原始数据，或者抛出异常</span></span><br><span class="line">        <span class="keyword">except</span>: </span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line">        <span class="keyword">if</span> data.get(<span class="string">&#x27;confirm&#x27;</span>) != self.<span class="built_in">id</span>:  <span class="comment"># 检查令牌中的id是否和存储在current_user中的已登录用户匹配</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line">        self.confirmed = <span class="literal">True</span> </span><br><span class="line">        db.session.add(self) </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>发送确认邮件</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：能发送确认邮件的注册路由</span></span><br><span class="line"><span class="keyword">from</span> ..email <span class="keyword">import</span> send_email </span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/register&#x27;, methods = [&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">register</span>():</span> </span><br><span class="line">    form = RegistrationForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        <span class="comment"># ... </span></span><br><span class="line">        <span class="comment"># 重定向之前需要发送确认邮件</span></span><br><span class="line">        db.session.add(user) </span><br><span class="line">        db.session.commit()  <span class="comment"># 提交数据库之后才能赋予新用户id值</span></span><br><span class="line">        token = user.generate_confirmation_token()  <span class="comment"># 生成令牌</span></span><br><span class="line">        send_email(user.email, <span class="string">&#x27;Confirm Your Account&#x27;</span>, </span><br><span class="line">                   <span class="string">&#x27;auth/email/confirm&#x27;</span>, user=user, token=token)  </span><br><span class="line">        flash(<span class="string">&#x27;A confirmation email has been sent to you by email.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/register.html&#x27;</span>, form=form)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>邮件需要两个模板：纯文本正文和富文本正文</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/templates/auth/email/confirm.txt：确认邮件的纯文本正文</span></span><br><span class="line">Dear &#123;&#123; user.username &#125;&#125;, </span><br><span class="line"></span><br><span class="line">Welcome to Flasky! </span><br><span class="line">To confirm your account please click on the following link: </span><br><span class="line">&#123;&#123; url_for(<span class="string">&#x27;auth.confirm&#x27;</span>, token=token, _external=<span class="literal">True</span>) &#125;&#125;  <span class="comment"># 一般url_for()生成相对URL，因此需要设置_external=True以生成完整的URL</span></span><br><span class="line">Sincerely, </span><br><span class="line">The Flasky Team </span><br><span class="line"> </span><br><span class="line">Note: replies to this email address are <span class="keyword">not</span> monitored.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>确认账户的视图函数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> current_user </span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/confirm/&lt;token&gt;&#x27;) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">confirm</span>(<span class="params">token</span>):</span> </span><br><span class="line">    <span class="keyword">if</span> current_user.confirmed:  <span class="comment"># 检查已登录的用户是否已经确认过</span></span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">if</span> current_user.confirm(token):  <span class="comment"># 调用user模型的确认功能</span></span><br><span class="line">        flash(<span class="string">&#x27;You have confirmed your account. Thanks!&#x27;</span>) </span><br><span class="line">    <span class="keyword">else</span>: </span><br><span class="line">        flash(<span class="string">&#x27;The confirmation link is invalid or has expired.&#x27;</span>) </span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>过滤未确认的账户，并显示一个页面，要求用户获取权限前确认账户</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：before_app_request中过滤未确认的账户</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@auth.before_app_request </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">before_request</span>():</span> </span><br><span class="line">    <span class="comment"># 同时满足：用户已登录+用户账户没有确认+请求端点不在蓝本中，会拦截请求</span></span><br><span class="line">    <span class="keyword">if</span> current_user.is_authenticated() \ </span><br><span class="line">            <span class="keyword">and</span> <span class="keyword">not</span> current_user.confirmed \ </span><br><span class="line">            <span class="keyword">and</span> request.endpoint[:<span class="number">5</span>] != <span class="string">&#x27;auth.&#x27;</span> \  </span><br><span class="line">            <span class="keyword">and</span> request.endpoint != <span class="string">&#x27;static&#x27;</span>:  <span class="comment"># endpoint获取请求端点</span></span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;auth.unconfirmed&#x27;</span>))  <span class="comment"># 重定向到路由/auth/unconfirmed</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/unconfirmed&#x27;) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">unconfirmed</span>():</span> </span><br><span class="line">    <span class="keyword">if</span> current_user.is_anonymous() <span class="keyword">or</span> current_user.confirmed: </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/unconfirmed.html&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>邮件重发</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：重新发送账户确认邮件</span></span><br><span class="line"><span class="meta">@auth.route(&#x27;/confirm&#x27;) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">resend_confirmation</span>():</span>  <span class="comment"># 重复了一次register()中的操作</span></span><br><span class="line">    token = current_user.generate_confirmation_token() </span><br><span class="line">    send_email(current_user.email, <span class="string">&#x27;Confirm Your Account&#x27;</span>, </span><br><span class="line">               <span class="string">&#x27;auth/email/confirm&#x27;</span>, user=current_user, token=token) </span><br><span class="line">    flash(<span class="string">&#x27;A new confirmation email has been sent to you by email.&#x27;</span>) </span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="管理账户"><a href="#管理账户" class="headerlink" title="管理账户"></a>管理账户</h4><ul>
+<li>其他的账户功能：<ul>
+<li>修改密码</li>
+<li>重设密码（忘记密码）</li>
+<li>修改电子邮件地址</li>
+</ul>
+</li>
+</ul>
+<h3 id="用户角色"><a href="#用户角色" class="headerlink" title="用户角色"></a>用户角色</h3><ul>
+<li>管理员、普通用户、助理等</li>
+<li>存在角色的分立，以及权限的组合（这里将用户分为不同角色，但角色用权限定义）</li>
+</ul>
+<h4 id="数据库中的表示"><a href="#数据库中的表示" class="headerlink" title="数据库中的表示"></a>数据库中的表示</h4><ul>
+<li><p>Role 模型</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 权限常量</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Permission</span>:</span>  </span><br><span class="line">    FOLLOW = <span class="number">0x01</span> </span><br><span class="line">    COMMENT = <span class="number">0x02</span> </span><br><span class="line">    WRITE_ARTICLES = <span class="number">0x04</span> </span><br><span class="line">    MODERATE_COMMENTS = <span class="number">0x08</span> </span><br><span class="line">    ADMINISTER = <span class="number">0x80</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Role</span>(<span class="params">db.Model</span>):</span> </span><br><span class="line">    __tablename__ = <span class="string">&#x27;roles&#x27;</span> </span><br><span class="line">    <span class="built_in">id</span> = db.Column(db.Integer, primary_key=<span class="literal">True</span>) </span><br><span class="line">    name = db.Column(db.String(<span class="number">64</span>), unique=<span class="literal">True</span>) </span><br><span class="line">    default = db.Column(db.Boolean, default=<span class="literal">False</span>, index=<span class="literal">True</span>) </span><br><span class="line">    permissions = db.Column(db.Integer)  <span class="comment"># 各权限都对应一个位位置，能执行某项操作的角色，其位会被设为1。int一共8位，因此能表示8个权限</span></span><br><span class="line">    users = db.relationship(<span class="string">&#x27;User&#x27;</span>, backref=<span class="string">&#x27;role&#x27;</span>, lazy=<span class="string">&#x27;dynamic&#x27;</span>)</span><br><span class="line">    </span><br><span class="line"><span class="meta">    @staticmethod </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">insert_roles</span>():</span>  </span><br><span class="line">        <span class="comment"># 通过角色名查找现有的角色，然后再进行更新。没有角色名才新建角色对象</span></span><br><span class="line">        roles = &#123;  <span class="comment"># 使用权限组织角色，新增新角色只需使用不同的权限组合即可</span></span><br><span class="line">            <span class="string">&#x27;User&#x27;</span>: (Permission.FOLLOW | </span><br><span class="line">                     Permission.COMMENT | </span><br><span class="line">                     Permission.WRITE_ARTICLES, <span class="literal">True</span>), </span><br><span class="line">            <span class="string">&#x27;Moderator&#x27;</span>: (Permission.FOLLOW | </span><br><span class="line">                          Permission.COMMENT | </span><br><span class="line">                          Permission.WRITE_ARTICLES | </span><br><span class="line">                          Permission.MODERATE_COMMENTS, <span class="literal">False</span>), </span><br><span class="line">            <span class="string">&#x27;Administrator&#x27;</span>: (<span class="number">0xff</span>, <span class="literal">False</span>) </span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">for</span> r <span class="keyword">in</span> roles: </span><br><span class="line">            role = Role.query.filter_by(name=r).first() </span><br><span class="line">            <span class="keyword">if</span> role <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">                role = Role(name=r) </span><br><span class="line">            role.permissions = roles[r][<span class="number">0</span>] </span><br><span class="line">            role.default = roles[r][<span class="number">1</span>] </span><br><span class="line">            db.session.add(role) </span><br><span class="line">        db.session.commit()</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="角色赋予"><a href="#角色赋予" class="headerlink" title="角色赋予"></a>角色赋予</h4><ul>
+<li><p>用户注册时默认位“一般用户”</p>
+</li>
+<li><p>管理员注册时，由变量 FLASKY_ADMIN 中的邮箱地址识别，并自动赋予其管理员角色</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, **kwargs</span>):</span>  </span><br><span class="line">        <span class="built_in">super</span>(User, self).__init__(**kwargs)  <span class="comment"># 构造函数首先调用基类的构造函数，如果没有定义角色，则根据邮箱地址设置角色</span></span><br><span class="line">        <span class="keyword">if</span> self.role <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">            <span class="keyword">if</span> self.email == current_app.config[<span class="string">&#x27;FLASKY_ADMIN&#x27;</span>]: </span><br><span class="line">                self.role = Role.query.filter_by(permissions=<span class="number">0xff</span>).first() </span><br><span class="line">            <span class="keyword">if</span> self.role <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">                self.role = Role.query.filter_by(default=<span class="literal">True</span>).first() </span><br><span class="line">    <span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="角色验证"><a href="#角色验证" class="headerlink" title="角色验证"></a>角色验证</h4><ul>
+<li><p>添加辅助方法，以验证角色是否有指定的权限</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/models.py</span></span><br><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> UserMixin, AnonymousUserMixin </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">can</span>(<span class="params">self, permissions</span>):</span>  <span class="comment"># 位与操作</span></span><br><span class="line">        <span class="keyword">return</span> self.role <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> \ </span><br><span class="line">            (self.role.permissions &amp; permissions) == permissions </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">is_administrator</span>(<span class="params">self</span>):</span>  <span class="comment"># 单独实现管理员权限检查</span></span><br><span class="line">        <span class="keyword">return</span> self.can(Permission.ADMINISTER) </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AnonymousUser</span>(<span class="params">AnonymousUserMixin</span>):</span>  <span class="comment"># 匿名角色</span></span><br><span class="line">    <span class="comment"># 设为用户未登录时current_user的值，不用预先检查用户是否登录</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">can</span>(<span class="params">self, permissions</span>):</span> </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">is_administrator</span>(<span class="params">self</span>):</span> </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line"> </span><br><span class="line">login_manager.anonymous_user = AnonymousUser</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>自定义检查用户权限的修饰器</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/decorators.py</span></span><br><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> wraps </span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> abort </span><br><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> current_user </span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">permission_required</span>(<span class="params">permission</span>):</span>  <span class="comment"># 用于常规权限检查</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">decorator</span>(<span class="params">f</span>):</span> </span><br><span class="line"><span class="meta">        @wraps(f) </span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">decorated_function</span>(<span class="params">*args, **kwargs</span>):</span> </span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> current_user.can(permission): </span><br><span class="line">                abort(<span class="number">403</span>) </span><br><span class="line">            <span class="keyword">return</span> f(*args, **kwargs) </span><br><span class="line">        <span class="keyword">return</span> decorated_function </span><br><span class="line">    <span class="keyword">return</span> decorator </span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">admin_required</span>(<span class="params">f</span>):</span>  <span class="comment"># 用于管理员权限检查</span></span><br><span class="line">    <span class="keyword">return</span> permission_required(Permission.ADMINISTER)(f)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>让 Permission 类在所有模板中全局可访问，需要使用上下文处理器，此时 render_template() 可以不用添加 Permission 类的模板参数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/main/__init__.py：把 Permission 类加入模板上下文</span></span><br><span class="line"><span class="meta">@main.app_context_processor </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">inject_permissions</span>():</span> </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(Permission=Permission)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="用户资料"><a href="#用户资料" class="headerlink" title="用户资料"></a>用户资料</h3><ul>
+<li>类似个人空间</li>
+</ul>
+<h4 id="资料信息"><a href="#资料信息" class="headerlink" title="资料信息"></a>资料信息</h4><ul>
+<li><p>扩充 User 模型，增加用户的其他信息</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/models.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    name = db.Column(db.String(<span class="number">64</span>))  <span class="comment"># 用户真实姓名</span></span><br><span class="line">    location = db.Column(db.String(<span class="number">64</span>)) </span><br><span class="line">    about_me = db.Column(db.Text())  <span class="comment"># db.String需要指定最大长度，db.Text不用</span></span><br><span class="line">    member_since = db.Column(db.DateTime(), default=datetime.utcnow)  <span class="comment"># datetime.utcnow后面没有()， default参数可以接受函数作为默认值</span></span><br><span class="line">    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">ping</span>(<span class="params">self</span>):</span>  <span class="comment"># 刷新用户的最后访问时间，此时要在app/auth/views.py的before_request()中增加语句current_user.ping()</span></span><br><span class="line">        self.last_seen = datetime.utcnow() </span><br><span class="line">        db.session.add(self)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="用户资料页面"><a href="#用户资料页面" class="headerlink" title="用户资料页面"></a>用户资料页面</h4><ul>
+<li><p>为每个用户都创建资料页面</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/main/views.py：资料页面的路由</span></span><br><span class="line"><span class="meta">@main.route(&#x27;/user/&lt;username&gt;&#x27;) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">user</span>(<span class="params">username</span>):</span> </span><br><span class="line">    user = User.query.filter_by(username=username).first() </span><br><span class="line">    <span class="keyword">if</span> user <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">        abort(<span class="number">404</span>) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;user.html&#x27;</span>, user=user)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置资料页面的模板</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/templates/user.html：用户资料页面的模板--&gt;</span></span><br><span class="line">&#123;% block page_content %&#125; </span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;page-header&quot;</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>&#123;&#123; user.username &#125;&#125;<span class="tag">&lt;/<span class="name">h1</span>&gt;</span> </span><br><span class="line">    &#123;% if user.name or user.location %&#125; </span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span> </span><br><span class="line">        <span class="comment">&lt;!--name和location字段在同一个&lt;p&gt;元素中，因此至少定义二者的一个时，&lt;p&gt;元素就会创建--&gt;</span></span><br><span class="line">        &#123;% if user.name %&#125;&#123;&#123; user.name &#125;&#125;&#123;% endif %&#125; </span><br><span class="line">        &#123;% if user.location %&#125; </span><br><span class="line">        <span class="comment">&lt;!--location字段被渲染成指向谷歌地图的查询链接--&gt;</span></span><br><span class="line">            From <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;http://maps.google.com/?q=&#123;&#123; user.location &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">                &#123;&#123; user.location &#125;&#125; </span><br><span class="line">            <span class="tag">&lt;/<span class="name">a</span>&gt;</span> </span><br><span class="line">        &#123;% endif %&#125; </span><br><span class="line">    <span class="tag">&lt;/<span class="name">p</span>&gt;</span> </span><br><span class="line">    &#123;% endif %&#125; </span><br><span class="line">    &#123;% if current_user.is_administrator() %&#125; </span><br><span class="line">    <span class="comment">&lt;!--如果用户是管理员，就显示其邮箱地址--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;mailto:&#123;&#123; user.email &#125;&#125;&quot;</span>&gt;</span>&#123;&#123; user.email &#125;&#125;<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span> </span><br><span class="line">    &#123;% endif %&#125; </span><br><span class="line">    &#123;% if user.about_me %&#125;<span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123; user.about_me &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span>&#123;% endif %&#125; </span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span> </span><br><span class="line">        Member since &#123;&#123; moment(user.member_since).format(&#x27;L&#x27;) &#125;&#125;. </span><br><span class="line">        Last seen &#123;&#123; moment(user.last_seen).fromNow() &#125;&#125;. </span><br><span class="line">    <span class="tag">&lt;/<span class="name">p</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span> </span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在 base.html 中，在导航条上添加一个链接，指向用户资料页面</p>
+</li>
+</ul>
+<h4 id="资料编辑器"><a href="#资料编辑器" class="headerlink" title="资料编辑器"></a>资料编辑器</h4><ul>
+<li><p>用户要进入一个页面并编辑资料，而管理员也要能够编辑任意用户的资料——包括用户不能直接访问的 User 模型字段</p>
+</li>
+<li><p>用户级别的资料编辑器</p>
+<ul>
+<li><p>编辑表单</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/main/forms.py：资料编辑表单</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EditProfileForm</span>(<span class="params">Form</span>):</span>  <span class="comment"># 此表单字段都是可选的，因此长度验证函数允许长度为0</span></span><br><span class="line">    name = StringField(<span class="string">&#x27;Real name&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    location = StringField(<span class="string">&#x27;Location&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    about_me = TextAreaField(<span class="string">&#x27;About me&#x27;</span>) </span><br><span class="line">    submit = SubmitField(<span class="string">&#x27;Submit&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编辑路由</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/main/views.py：资料编辑路由</span></span><br><span class="line"><span class="meta">@main.route(&#x27;/edit-profile&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit_profile</span>():</span> </span><br><span class="line">    form = EditProfileForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        current_user.name = form.name.data </span><br><span class="line">        current_user.location = form.location.data </span><br><span class="line">        current_user.about_me = form.about_me.data </span><br><span class="line">        db.session.add(current_user) </span><br><span class="line">        flash(<span class="string">&#x27;Your profile has been updated.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;.user&#x27;</span>, username=current_user.username)) </span><br><span class="line">    form.name.data = current_user.name </span><br><span class="line">    form.location.data = current_user.location </span><br><span class="line">    form.about_me.data = current_user.about_me </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;edit_profile.html&#x27;</span>, form=form)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在资料页面添加编辑链接</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/templates/user.html：资料编辑的链接--&gt;</span></span><br><span class="line">&#123;% if user == current_user %&#125;  <span class="comment">&lt;!--只有当用户查看自己的资料页面时才显示--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">class</span>=<span class="string">&quot;btn btn-default&quot;</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; url_for(&#x27;.edit_profile&#x27;) &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">    Edit Profile </span><br><span class="line"><span class="tag">&lt;/<span class="name">a</span>&gt;</span> </span><br><span class="line">&#123;% endif %&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>管理员级别的资料编辑器</p>
+<ul>
+<li><p>编辑表单</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/main/forms.py：管理员使用的资料编辑表单</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EditProfileAdminForm</span>(<span class="params">Form</span>):</span> </span><br><span class="line">    email = StringField(<span class="string">&#x27;Email&#x27;</span>, validators=[Required(), Length(<span class="number">1</span>, <span class="number">64</span>), </span><br><span class="line">                                             Email()]) </span><br><span class="line">    username = StringField(<span class="string">&#x27;Username&#x27;</span>, validators=[ </span><br><span class="line">        Required(), Length(<span class="number">1</span>, <span class="number">64</span>), Regexp(<span class="string">&#x27;^[A-Za-z][A-Za-z0-9_.]*$&#x27;</span>, <span class="number">0</span>, </span><br><span class="line">                                          <span class="string">&#x27;Usernames must have only letters, &#x27;</span> </span><br><span class="line">                                          <span class="string">&#x27;numbers, dots or underscores&#x27;</span>)]) </span><br><span class="line">    confirmed = BooleanField(<span class="string">&#x27;Confirmed&#x27;</span>) </span><br><span class="line">    role = SelectField(<span class="string">&#x27;Role&#x27;</span>, coerce=<span class="built_in">int</span>)  <span class="comment"># # SelectField包装，从而实现下拉列表，用来在这个表单中选择用户角色</span></span><br><span class="line">    name = StringField(<span class="string">&#x27;Real name&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    location = StringField(<span class="string">&#x27;Location&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    about_me = TextAreaField(<span class="string">&#x27;About me&#x27;</span>) </span><br><span class="line">    submit = SubmitField(<span class="string">&#x27;Submit&#x27;</span>)  </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, user, *args, **kwargs</span>):</span> </span><br><span class="line">        <span class="built_in">super</span>(EditProfileAdminForm, self).__init__(*args, **kwargs) </span><br><span class="line">        self.role.choices = [(role.<span class="built_in">id</span>, role.name) </span><br><span class="line">                             <span class="keyword">for</span> role <span class="keyword">in</span> Role.query.order_by(Role.name).<span class="built_in">all</span>()]  <span class="comment"># 实例的choices属性中设置各选项，选项是元组列表，元组为(选项标识符，控件中的文本字段)；参数coerce=int把字段的值转换为整数</span></span><br><span class="line">        self.user = user  <span class="comment"># 表单构造函数接收用户对象，并将其保存在成员变量中</span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_email</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> field.data != self.user.email <span class="keyword">and</span> \ </span><br><span class="line">                User.query.filter_by(email=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Email already registered.&#x27;</span>) </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_username</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> field.data != self.user.username <span class="keyword">and</span> \ </span><br><span class="line">                User.query.filter_by(username=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Username already in use.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编辑路由：和普通用户的编辑路由具有基本相同的结构</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/main/views.py：管理员的资料编辑路由</span></span><br><span class="line"><span class="meta">@main.route(&#x27;/edit-profile/&lt;int:id&gt;&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="meta">@admin_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit_profile_admin</span>(<span class="params"><span class="built_in">id</span></span>):</span> </span><br><span class="line">    user = User.query.get_or_404(<span class="built_in">id</span>)  <span class="comment"># 提供的id不正确则返回 404 错误</span></span><br><span class="line">    form = EditProfileAdminForm(user=user) </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        user.email = form.email.data </span><br><span class="line">        user.username = form.username.data </span><br><span class="line">        user.confirmed = form.confirmed.data </span><br><span class="line">        user.role = Role.query.get(form.role.data) </span><br><span class="line">        user.name = form.name.data </span><br><span class="line">        user.location = form.location.data </span><br><span class="line">        user.about_me = form.about_me.data </span><br><span class="line">        db.session.add(user) </span><br><span class="line">        flash(<span class="string">&#x27;The profile has been updated.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;.user&#x27;</span>, username=user.username)) </span><br><span class="line">    </span><br><span class="line">    form.email.data = user.email </span><br><span class="line">    form.username.data = user.username </span><br><span class="line">    form.confirmed.data = user.confirmed </span><br><span class="line">    form.role.data = user.role_id </span><br><span class="line">    form.name.data = user.name </span><br><span class="line">    form.location.data = user.location </span><br><span class="line">    form.about_me.data = user.about_me </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;edit_profile.html&#x27;</span>, form=form, user=user)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在资料页面添加编辑链接</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="用户头像"><a href="#用户头像" class="headerlink" title="用户头像"></a>用户头像</h4><ul>
+<li><p>添加 <a href="http://gravatar.com/">Gravatar</a> 提供的用户头像——将头像和邮箱地址关联</p>
+</li>
+<li><p>生成头像的 URL 时，要计算邮箱地址的 MD5 散列值：<code> http://www.gravatar.com/avatar/&lt;hash&gt;</code>，URL 的查询字符串中可包含多个参数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/models.py：生成 Gravatar URL</span></span><br><span class="line"><span class="keyword">import</span> hashlib </span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> request </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gravatar</span>(<span class="params">self, size=<span class="number">100</span>, default=<span class="string">&#x27;identicon&#x27;</span>, rating=<span class="string">&#x27;g&#x27;</span></span>):</span> </span><br><span class="line">        <span class="keyword">if</span> request.is_secure: </span><br><span class="line">            url = <span class="string">&#x27;https://secure.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="keyword">else</span>: </span><br><span class="line">            url = <span class="string">&#x27;http://www.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="built_in">hash</span> = hashlib.md5(self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;&#123;url&#125;/&#123;hash&#125;?s=&#123;size&#125;&amp;d=&#123;default&#125;&amp;r=&#123;rating&#125;&#x27;</span>.<span class="built_in">format</span>( </span><br><span class="line">            url=url, <span class="built_in">hash</span>=<span class="built_in">hash</span>, size=size, default=default, rating=rating)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>资料页面的头像</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/tempaltes/user.html：资料页面中的头像--&gt;</span></span><br><span class="line">... </span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">class</span>=<span class="string">&quot;img-rounded profile-thumbnail&quot;</span> <span class="attr">src</span>=<span class="string">&quot;&#123;&#123; user.gravatar(size=256) &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将哈希结果存到数据库</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># app/models.py：使用缓存的 MD5 散列值生成 Gravatar URL</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    avatar_hash = db.Column(db.String(<span class="number">32</span>)) </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, **kwargs</span>):</span> </span><br><span class="line">        <span class="comment"># ... </span></span><br><span class="line">        <span class="keyword">if</span> self.email <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> self.avatar_hash <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">            self.avatar_hash = hashlib.md5( </span><br><span class="line">                self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">change_email</span>(<span class="params">self, token</span>):</span>  <span class="comment"># 若用户更新了邮箱地址，则重新计算散列</span></span><br><span class="line">        <span class="comment"># ... </span></span><br><span class="line">        self.email = new_email </span><br><span class="line">        self.avatar_hash = hashlib.md5( </span><br><span class="line">            self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line">        db.session.add(self) </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span> </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gravatar</span>(<span class="params">self, size=<span class="number">100</span>, default=<span class="string">&#x27;identicon&#x27;</span>, rating=<span class="string">&#x27;g&#x27;</span></span>):</span>  <span class="comment"># 优先使用模型中保存的散列值</span></span><br><span class="line">        <span class="keyword">if</span> request.is_secure: </span><br><span class="line">            url = <span class="string">&#x27;https://secure.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="keyword">else</span>: </span><br><span class="line">            url = <span class="string">&#x27;http://www.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="built_in">hash</span> = self.avatar_hash <span class="keyword">or</span> hashlib.md5( </span><br><span class="line">            self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;&#123;url&#125;/&#123;hash&#125;?s=&#123;size&#125;&amp;d=&#123;default&#125;&amp;r=&#123;rating&#125;&#x27;</span>.<span class="built_in">format</span>( </span><br><span class="line">            url=url, <span class="built_in">hash</span>=<span class="built_in">hash</span>, size=size, default=default, rating=rating)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+]]></content>
       <categories>
         <category>项目实践</category>
       </categories>
@@ -6194,8 +6338,299 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <a id="more"></a>
 
 <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
-<li>过去的神经网络无法跨网攻击，因为每个数据集都有自己的特点</li>
+<li>介绍了一种用于密码猜测的深度生成模型表示学习方法</li>
+<li>展示了一种抽象的密码表示形式，能提供通用的属性</li>
+<li>提出<ul>
+<li>条件密码猜测的一般框架，可以生成带有任意偏差的密码</li>
+<li>期望最大化启发的框架，动态调整估计的密码分布，以匹配被攻击的密码数据集的分布</li>
 </ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>现代的密码猜测攻击建立在这样的观察基础上：人类选择的密码并不是均匀分布在密码空间中，而是自然倾向于选择容易记住的密码</li>
+<li>攻击者可以估计真实密码在密码空间的密集区域【58】</li>
+<li>【42，27，56】在不同的假设下，试图直接估计一组密码背后的概率分布，以生成合适的猜测</li>
+<li>表示学习从大量的非结构化数据中学习有用的和解释性的表示【18】</li>
+<li>对 GAN【30】实例和 WAEs【51】实例的潜在空间中对密码的表示进行建模，由于其平滑性【18】，这种表示形式在高维密码空间中强制了语义组织，使得生成器的潜在空间中，与语义相关的密码的表示更为接近，潜在空间中的几何关系直接转换为数据空间中的语义关系</li>
+<li>本文表征了两个主要属性：密码强局部性和密码弱局部性，分别对应条件密码猜测和动态密码猜测</li>
+<li>贡献：<ul>
+<li>第一个证明，在密码猜测领域中使用完全无监督学习的表示学习具有可行性</li>
+<li>提出一种概率性的，完全不受监督的基于模板的密码生成方式CPG</li>
+<li>提出DPG：从与被攻击密码集的交互反馈，动态地调整猜测策略，攻击者可以利用在攻击中成功猜出的密码不断调整攻击模型</li>
+</ul>
+</li>
+</ul>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><h3 id="深度生成模型"><a href="#深度生成模型" class="headerlink" title="深度生成模型"></a>深度生成模型</h3><ul>
+<li><p>深度生成模型是潜变量模型。网络被隐含地引导去学习一组潜在变量</p>
+</li>
+<li><p>训练过程中，<strong>对学习到的潜在变量进行先验分布，这种先验，在本文中称为先验潜伏分布或$\dot{p}(z)$**——一种易于抽样、无信息和因子分解的先验，</strong>往往是标准正态分布或0-1均匀分布**【29】</p>
+</li>
+<li><p>生成网络是潜在空间$Z$和数据空间$X$之间确定性的映射函数：$p(X)=p(X|z;\theta)\dot{p}(z)$</p>
+</li>
+<li><p>本文引入了一般的潜在空间概率密度函数$p(z)$，而且生成器的平滑度迫使在学习的潜在空间中形成几何组织，类似特征嵌入</p>
+</li>
+<li><p>GAN 通过对抗性训练绕过了定义一个明确的似然函数，能够估计一个尖锐分布【29】</p>
+</li>
+<li><p>AE 没有用对抗性进行训练，而是使用最大似然方法，一旦训练好，解码器就可以充当数据生成器。但训练期间必须强制潜在空间和先验潜在分布一致</p>
+</li>
+</ul>
+<h3 id="生成模型在密码猜测的应用"><a href="#生成模型在密码猜测的应用" class="headerlink" title="生成模型在密码猜测的应用"></a>生成模型在密码猜测的应用</h3><ul>
+<li>上一部分证明了深层生成模型具有其固有的新颖、有价值的特性，在表示学习的角度下抽象底层模型，这些特性可以用来设计独特的猜测技术，这是任何现有方法都做不到的</li>
+</ul>
+<h4 id="GAN"><a href="#GAN" class="headerlink" title="GAN"></a>GAN</h4><ul>
+<li><p>PassGAN【35】将 GAN 生成器训练为 an implicit estimator of password distributions</p>
+<ul>
+<li>在残差网络的架构上【34】利用了具有梯度代价的 WGAN【33】</li>
+<li>假定了一个具有标准正态分布的潜在空间</li>
+<li>PassGAN 与其他方法相比，如果要获得相同数量的匹配密码，最多需要十倍的猜测次数</li>
+<li>模型无法将固定的概率分配给产生的猜测，因此无法根据密码使用人数对其排序</li>
+<li>存在训练不稳定性（因此生成器和判别器不能执行足够数量的迭代次数，下面为原因）<ul>
+<li>离散数据对生成器难以重现，因为 softmax 层会导致低质量的梯度（<code>low-quality gradient</code>）</li>
+<li>生成器无法完全模拟离散特性，因此判别器更容易区分真假，这样就没有给生成器留下提高的空间（特别是训练的最后阶段）</li>
+</ul>
+</li>
+<li>每一个字符串表示为一个二进制矩阵，通过独热码串联而成</li>
+</ul>
+</li>
+<li><p>对策：</p>
+<ul>
+<li>对训练集的字符串表示，增加了随机平滑机制——<strong>在每个字符的独热码上加入小幅度的加性噪声</strong></li>
+<li>噪声幅度的上限作为超参数，设置为0.01</li>
+<li><strong>加入噪声后对每个字符分布重新归一化</strong>（<em>这里我没想明白归一化的含义？是一个独热码[1,0,0,0]+[0.005,0.005,0.005,0.005]之后，内部归一化吗，而且噪声服从什么分布？</em>）</li>
+<li><strong>保持梯度惩罚框架 WGAN</strong>【33】 不变</li>
+<li>用更深的 residual bottleneck blocks【34】替代了 residual blocks，但数量保持一致</li>
+<li>生成器中**使用 batch normalization **对增加层数极为重要</li>
+<li>以上对策提高了训练迭代次数，而不会出现崩溃【21】</li>
+</ul>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210105202001024.png" alt="image-20210105202001024"></p>
+</li>
+<li><p>根据密码最大长度（10、16、22）不同，训练三个生成器</p>
+</li>
+</ul>
+<h4 id="AE"><a href="#AE" class="headerlink" title="AE"></a>AE</h4><ul>
+<li>第二种生成密码猜测模型基于 WAE【51】</li>
+<li>WAE 规范化了潜在空间，使其与选定的潜在分布保持一致</li>
+<li>WAE 与 GAN 部分特点相似，但 WAE 提供了准确的逆映射（编码），使得在一些情况下比 GAN 要好</li>
+<li>将<strong>模型训练为 CAE</strong>【47】<ul>
+<li>每次接收输入密码的噪声版本（以一定概率$p=\frac{\varepsilon}{|x|}$去除密码中的任意字符，其中分母为密码长度，分子为设置为5的超参数）</li>
+<li>输入处理后的密码，再现完整的密码——必须从上下文估计丢失的字符</li>
+<li>使用 GAN 生成器架构，但层数更深</li>
+<li>使用和 GAN 相同的先验潜在分布（$N(0,1)$，128维）</li>
+</ul>
+</li>
+</ul>
+<h2 id="条件密码猜测-CPG-和密码的强局域性"><a href="#条件密码猜测-CPG-和密码的强局域性" class="headerlink" title="条件密码猜测(CPG)和密码的强局域性"></a>条件密码猜测(CPG)和密码的强局域性</h2><p>介绍密码的局部性概念以及可能的应用</p>
+<h3 id="密码强局部性和本地化抽样"><a href="#密码强局部性和本地化抽样" class="headerlink" title="密码强局部性和本地化抽样"></a>密码强局部性和本地化抽样</h3><ul>
+<li><p>在训练过程中加入注意力机制/感应偏置（<code>inductive bias</code>）</p>
+</li>
+<li><p>在本文中，<strong>密码潜在表示的相似性取决于一些关键因素，例如密码结构、常见子字符串的出现以及字符类别</strong>（具体因素在论文的附录中）</p>
+</li>
+<li><p>这里用三个密码——“jimmy91”, “abc123abc”, and “123456”——举了一个例子（<em>个人认为这里的图是后期手动生成的，以说明潜在的分布具有意义</em>），每个密码的周围密码存在一定的相似性</p>
+</li>
+<li><p><strong>将这种共享同一细粒度特征的密码聚集起来</strong>，这样的特征体现了密码的强局部性</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210105211348525.png" alt="image-20210105211348525"></p>
+</li>
+<li><p>由于这样的密码被限制在密码空间的特定区域，因此可以通过在此区域采样来诱导网络生成时的样本倾向，即产生 bias——需要考虑如何表达这种 bias /定位这一空间</p>
+<ul>
+<li><p><strong>提取原型密码 x 的潜在表示 z（之后称为枢轴，在上图就是深红色的密码） 周围的潜在点，以生成与原型 x 相关的密码</strong></p>
+</li>
+<li><p><strong>通过之前的 AE 网络从 x 推断潜在表示 z</strong>（作者认为，这个过程可以推广，也可以使用其他的深度生成模型如【25，36，40】）</p>
+</li>
+<li><p><strong>获得 z 之后可以将生成器的采样限制在 z 的周围，以生成相似的密码</strong></p>
+<ul>
+<li><p><strong>为了与先前的潜在分布保持一致，并避免采样分布不匹配，选择高斯分布$N(z,\sigma I)$</strong></p>
+</li>
+<li><p>认为潜在点和 z 的语义关系强度，和二者的空间距离成正比，因此<strong>高斯分布的标准差提供了语义相关强度限制手段</strong>。下面这个是不同标准差下，潜在点采样结果</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210105221136674.png" alt="image-20210105221136674"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="基于密码模板倒置的局部空间密码生成"><a href="#基于密码模板倒置的局部空间密码生成" class="headerlink" title="基于密码模板倒置的局部空间密码生成"></a>基于密码模板倒置的局部空间密码生成</h3><ul>
+<li><p>上面用编码器、密码在密码空间的位置属性生成相关类别的密码，但还可以进一步通过“模板”定义这些类别，从而更精准定位密码空间位置</p>
+</li>
+<li><p><strong>编码器通过在字母表中引入占位符，强制定义特定的密码</strong>，例如 Jimmy** 表示字符串 Jimmy 长度为8（加结束符）、前缀为 Jimmy 的密码，且<strong>占位符的独热向量为空</strong></p>
+</li>
+<li><p>在<strong>生成过程的过程中，占位符被高概率的字符替换</strong></p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210105223854336.png" alt="image-20210105223854336"></p>
+</li>
+</ul>
+<h3 id="CPG"><a href="#CPG" class="headerlink" title="CPG"></a>CPG</h3><ul>
+<li><p>适用场景：</p>
+<ul>
+<li>攻击者需要生成任意数量的具有特定结构/公共子串的猜测</li>
+<li>攻击者可以恢复不完整的密码</li>
+<li>合法用户用于恢复遗忘了部分字符的密码</li>
+</ul>
+</li>
+<li><p>过去的方法（如FLA）无法“条件生成密码”</p>
+<ul>
+<li>不能为丢失字符指定概率</li>
+<li><strong>丢失了前向性，即忽略了占位符出现在密码开头的可能性</strong></li>
+<li>如果占位符过多，过去的方法也不适用（但它们能处理特殊情况的模板，如前缀完全已知，而且占位符数目不多）</li>
+<li>过去的方法，为了生成任意的模板，往往根据截至频率来枚举密码<ul>
+<li>需要大空间存储，枚举次数极多</li>
+<li>难以生成低概率的猜测——如果选择的 bias 使该类密码的分布概率较低，那么这类密码在枚举过程中不容易出现</li>
+<li><strong>基于枚举的方法不能生成密码猜测攻击需要的有效猜测量</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>相反的，基于表示学习的方法和其位置属性，能够实现条件密码生成</p>
+<ul>
+<li><p><strong>局部性原则使得相似的密码分布在潜在空间的有限区域</strong></p>
+</li>
+<li><p>模板反转能定位这些区域</p>
+</li>
+<li><p>可以有条件地为每个有意义的 bias 产生猜测</p>
+</li>
+<li><p>算法如下</p>
+<ul>
+<li><p>选择一个模板$t$</p>
+</li>
+<li><p>用编码网络$E$得到潜在分布$z$</p>
+</li>
+<li><p>以$z$为中心抽取潜在点，尺度为$\sigma$</p>
+</li>
+<li><p>过滤与 $t$相同的猜测结果</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210105231316946.png" alt="image-20210105231316946"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h3><p><em>我认为这里的评估，是为了证明本文的方法在某些场景下的生成效果，会远好于已有的方法，而没有考虑具体的密码破解能力（覆盖率），也就是说CPG的方法只能作为密码破解的一个子方案；其意义在于表明强关联性是具有意义的</em></p>
+<ul>
+<li><p>创建带 bias 的测试集</p>
+<ul>
+<li><p>一个带偏差的$t_i$是一个模板，一个字符串$t_i$由字符表中的字符（210个）和占位符组成</p>
+</li>
+<li><p>每个模板都是从密码验证集$X_v$随机抽取，这里用 LinkedIn，密码长度最大为16，有$6 \times 10^7$个不重复密码——是训练集 Rockyou 的5倍</p>
+<ul>
+<li>对从验证集抽取的一条密码，<strong>每个字符都有一定概率（概率为0.5）被替换为占位符</strong>（<em>个人认为服从二项分布</em>）</li>
+<li><strong>只选择包含至少 4 个可观察字符和至少 5 个占位符的模板</strong>，以限制暴力破解的可能性</li>
+</ul>
+</li>
+<li><p>获得足够大的模板集合后，创建一组有偏差的测试集</p>
+<ul>
+<li><p>查找与各个模板匹配的所有密码</p>
+</li>
+<li><p>基于匹配的密码数目，将模板分为四类（每一类都至少有30个不同的模板，具体模板在论文附录）</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210106095205727.png" alt="image-20210106095205727"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>测试结果</p>
+<ul>
+<li><p>使用 CWAE（此场景下，AE 要好于 GAN）根据训练集密码最大长度训练三个模型（10，16，22），三者的结果基本一致<code>no consistently different results have been obtained with models trained on password lengths 10 and 22</code></p>
+</li>
+<li><p><strong>设置高斯分布标准差为0.8，为每个模板生成$10^7$个密码，计算相应模板下实际密码的覆盖率</strong></p>
+</li>
+<li><p>对比模型（每个对比方法经过训练后生成$10^{10}$个密码）</p>
+<p><em>疑问：这里 CWAE 是需要用rockyou获得对应模板密码后，再根据这些模板密码训练，然后在linkedin上不同模板下的密码集测试的吗？还是 CWAE 只需要保证输入和输出相同就行（我感觉应该是后者）？对比模型则是用rockyou统一训练后，生成这么多密码，再分别查看模板的覆盖率吗？</em></p>
+<ul>
+<li>OMEN：相同的训练数据集 Rockyou（0.8-0.2）</li>
+<li>FLA：使用【42】中最大的模型，即3个LSTM组成，一个LSTM有1000个cell</li>
+<li>PCFG：相同的训练数据集 Rockyou（0.8-0.2）</li>
+<li>HashCat：数据来源相同，但按照频率排序，密码唯一，使用 PasswordsPro【6】作为规则集</li>
+<li>CMU-PGS：密码根据最小自动配置【53】猜测的，其中组合了多种工具，通过 web 界面查询猜测次数并只考虑次数少于$10^{10}$的密码，<code>Recommended tools setup and “1class1” have been used</code></li>
+</ul>
+</li>
+<li><p>结果如下</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210106102651616.png" alt="image-20210106102651616"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="动态密码猜测（DPG）和密码弱局部性"><a href="#动态密码猜测（DPG）和密码弱局部性" class="headerlink" title="动态密码猜测（DPG）和密码弱局部性"></a>动态密码猜测（DPG）和密码弱局部性</h2><h3 id="密码弱局部性"><a href="#密码弱局部性" class="headerlink" title="密码弱局部性"></a>密码弱局部性</h3><ul>
+<li><p>密码的表示可以通过嵌入性质实现相似密码的映射——强局部性；密码的一般特征，如平均密码长度、字符分布可以作为弱局部性</p>
+</li>
+<li><p>这里论文举了一个例子，将 MySpace、Hotmail、phpbb 由生成器学习的潜在空间表示出来，与整个密码空间做了一个对比（<em>没想明白这个图是怎么画出来的，文章说通过降维获得，但怎么做到降维成2D的？</em>）</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210106103821530.png" alt="image-20210106103821530"></p>
+</li>
+</ul>
+<h3 id="DPG"><a href="#DPG" class="headerlink" title="DPG"></a>DPG</h3><p><em>我觉得，这个算法的重点在于：1.需要生成器生成密码  2.根据猜测结果对生成器再次微调</em></p>
+<ul>
+<li><p>以往的概率密码猜测工具都<strong>显式/隐式地捕捉训练集密码背后的概率分布，它隐含了训练集的分布满足一般性的假设</strong></p>
+</li>
+<li><p>训练集和测试集分布上的差异是一个广泛的问题，称为<code>covariate shift reduction</code>【49】</p>
+</li>
+<li><p>但如果破解了第一个密码，则可以开始观察、模拟测试集的分布</p>
+<ul>
+<li>过去的方法，如 FLA，其分布受网络参数决定$p(x)=p(x;\theta)$，因此如果通过破解结果反向作用网络参数，<strong>需要考虑破解结果的代表性问题</strong>——几百个破解结果和百万级的训练数据之间的权重——微调网络的成本很高</li>
+<li>但<strong>生成模型模拟的分布，是潜在分布 z 的联合概率分布$P(x)=P(x,z)=P(x|z;\theta)P(z)$，后者可以进行调整——后者独立于生成器</strong><ul>
+<li>在均匀分布的情况下（例如myspace），可以缩小密集区域周围的空间，避免探索整个潜在空间</li>
+<li>对于远离生成器模型分布的密码集（训练集和测试集的分布差异较大时），可以将重点放在潜在空间的区域上</li>
+<li>当改变 z 的分布来为某一猜测到的密码 x 分配更多概率密度时，其实也<strong>增加了密码空间中其相邻密码的概率——由于弱局部性属性，这些密码具有相似的特征</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>以下为具体算法：</p>
+<ul>
+<li><p>$O$为目标密码集，$Z$为生成器生成的密码</p>
+</li>
+<li><p>$p_{latent}$代表采样潜伏点的分布（<em>我觉得是指生成器输入的采样分布，但初始化时的分布时什么？标准正态分布吗？</em>）</p>
+</li>
+<li><p>$makeLatentDistribution$函数从猜中的口令集合得出新的潜在分布（<em>是更新生成器吗，还是更新DPG输入的分布？我觉得是后者</em>）</p>
+<ul>
+<li>每个新猜到的密码都会引入一个以$z_j$为中心的新高斯分布，超参数$\sigma$为每个新高斯的标准差，表明希望从观察到的密码集中采样距离，越大则可以探索更广的距离</li>
+<li>新高斯函数为$N(z_j,\sigma)$</li>
+<li>如果 $x_i$ 的概率已知，则可以对相应 $z_i$ 的高斯函数加权。否则认为高斯分布均匀</li>
+</ul>
+</li>
+<li><p>$G(z)$表示根据$z$生成一个候选密码</p>
+</li>
+<li><p>$\alpha$为启动超参数，表明猜测到预定数目的密码后，开始使用条件潜伏分布</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210106110326303.png" alt="image-20210106110326303"></p>
+</li>
+</ul>
+</li>
+<li><p>GAN 在 DPG 的表现上好于 CWAE</p>
+</li>
+<li><p>和 PassGAN 对比，DPG 在三个数据集上（和下面三个不同）都比 PassGAN 好，覆盖率分别为25+、35+、30+</p>
+</li>
+<li><p>与其他方法的对比——如果没有明显的协变量转换，动态攻击不能直接与最先进的解决方案的性能相匹配，但能够猜测到测试集中特殊的密码</p>
+<p><img src="/2020/01/04/Improving-Password-Guessing-via-Representation-Learning/image-20210106111658123.png" alt="image-20210106111658123"></p>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>基于字典的攻击是最早的猜测技术<ul>
+<li>基于规则的密码扩展【44】——JTR【7】，Hashcat【3】</li>
+<li>基于概率：<ul>
+<li>马尔可夫模型【45】</li>
+<li>提出 OMEN【27】作为前者的扩展，其中引入改进的枚举猜测算法</li>
+<li>PCFG【56】，从密码推断语法，以生成猜测密码</li>
+</ul>
+</li>
+<li>基于神经网络<ul>
+<li>【22】首次引入网络</li>
+<li>【42】提出用递归神经网络估计密码分布（FLA），此方法放宽了潜在的n元马尔可夫假设，通过树遍历算法在密码空间中枚举</li>
+<li>根据已知的其他网站泄露密码，“调整”密码以猜测其他账户密码<ul>
+<li>【46】方法的基础为密码相似性——用户经常使用一对密码，则这对密码是相似的</li>
+<li>【46】的攻击技术基于概率神经模型，为攻击产生微调的密码变体</li>
+<li>构建一个嵌入空间<code>embedding space</code>以估计所选密码之间的相似性，并构建密码强度计，用于查看用户创建密码时是否微调密码。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>证明局部性原则和深度生成模型的结合具有实践和理论的可能性</li>
+<li>提出 CPG 和 DPG<ul>
+<li>前者支持条件生成任意偏置密码——从经验上证明了其优势</li>
+<li>后者证明，从猜测到的密码中获得的新知识可以进一步推广，以模拟目标密码分布，能生成被攻击的密码集特有的密码（这一点其他猜测方法做不到）</li>
+</ul>
+</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] “Chinese Video Service Giant Y ouku Hacked; 100M Accounts Sold on Dark Web”. <a href="https://tinyurl.com/yb78uxnh">https://tinyurl.com/yb78uxnh</a>.<br>        [2] “Cracking Passwords 101”. <a href="https://tinyurl.com/y268xahe">https://tinyurl.com/y268xahe</a>.<br>        [3] “hashcat”. <a href="https://tinyurl.com/y636jsz9">https://tinyurl.com/y636jsz9</a>.<br>        [4] “Hotmail Password Leak”. <a href="https://tinyurl.com/yyr2je4m">https://tinyurl.com/yyr2je4m</a>.<br>        [5] “Improving Password Guessing via Representation Learning”. <a href="https://github.com/pasquini-dario/PLR">https://github.com/pasquini-dario/PLR</a>.<br>        [6] “InsidePro-PasswordsPro Rules”. <a href="https://tinyurl.com/vd9jzaz">https://tinyurl.com/vd9jzaz</a>.<br>        [7] “John the Ripper”. <a href="https://tinyurl.com/j91l">https://tinyurl.com/j91l</a>.<br>        [8] “Leak Y ouku”. <a href="https://tinyurl.com/y9f2xez6">https://tinyurl.com/y9f2xez6</a>.<br>        [9] “LinkedIn Password Leak”. <a href="https://tinyurl.com/yxf7f5gv">https://tinyurl.com/yxf7f5gv</a>.<br>        [10] “MySpace Password Leak”. <a href="https://tinyurl.com/y433aaah">https://tinyurl.com/y433aaah</a>.<br>        [11] “phpbb Password Leak”. <a href="https://tinyurl.com/yxonf7um">https://tinyurl.com/yxonf7um</a>.<br>        [12] “RockY ou Password Leak”. <a href="https://tinyurl.com/af858jc">https://tinyurl.com/af858jc</a>.<br>        [13] “The Carnegie Mellon University Password Research Group’s Password Guessability Service”. <a href="https://tinyurl.com/y9362h6z">https://tinyurl.com/y9362h6z</a>.<br>        [14] “Zomato hacked: Security breach results in 17 million user data stolen”. <a href="https://tinyurl.com/y8xec7sr">https://tinyurl.com/y8xec7sr</a>.<br>        [15] “Zomato Password Leak”. <a href="https://tinyurl.com/ya3sthdp">https://tinyurl.com/ya3sthdp</a>.<br>        [16] Kamran Ali, Alex X Liu, Wei Wang, and Muhammad Shahzad. Keystroke Recognition Using WiFi Signals. In ACM MobiCom, pages 90–102, 2015.<br>        [17] Davide Balzarotti, Marco Cova, and Giovanni Vigna. Clearshot: Eaves-dropping on Keyboard Input from Video. In IEEE S&amp;P, pages 170–183, 2008.<br>        [18] Y oshua Bengio, Aaron Courville, and Pascal Vincent. Representation Learning: A Review and New Perspectives. IEEE Transactions on Pattern Analysis and Machine Intelligence, 35(8):1798–1828, 2013.<br>        [19] Hossein Bidgoli. Handbook of Information Security, Information Warfare, Social, Legal, and International Issues and Security Foundations, volume 2. John Wiley &amp; Sons, 2006.<br>        [20] Samuel R. Bowman, Luke Vilnis, Oriol Vinyals, Andrew Dai, Rafal Jozefowicz, and Samy Bengio. Generating sentences from a continuous space. In Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning, pages 10–21, Berlin, Germany, August 2016. Association for Computational Linguistics.<br>        [21] Andrew Brock, Jeff Donahue, and Karen Simonyan. Large Scale GAN Training for High Fidelity Natural Image Synthesis. arXiv preprint arXiv:1809.11096, 2018.<br>        [22] Angelo Ciaramella, Paolo D’Arco, Alfredo De Santis, Clemente Galdi, and Roberto Tagliaferri.  Neural Network Techniques for Proactive Password Checking. IEEE Transactions on Dependable and Secure Computing, 3(4):327–339, 2006.<br>        [23] Anupam Das, Joseph Bonneau, Matthew Caesar, Nikita Borisov, and XiaoFeng Wang. The Tangled Web of Password Reuse. In NDSS Symposium, pages 1–15, 2014.<br>        [24] Peter J Diggle and Richard J Gratton. Monte Carlo Methods of Inference for Implicit Statistical Models. Journal of the Royal Statistical Society: Series B (Methodological), 46(2):193–212, 1984.<br>        [25] Jeff Donahue, Philipp Krähenbühl, and Trevor Darrell. Adversarial Feature Learning. arXiv preprint arXiv:1605.09782, 2016.<br>        [26] Vincent Dumoulin, Ishmael Belghazi, Ben Poole, Olivier Mastropietro, Alex Lamb, Martin Arjovsky, and Aaron Courville.  Adversarially Learned Inference. arXiv preprint arXiv:1606.00704, 2016.<br>        [27] Markus Dürmuth, Fabian Angelstorf, Claude Castelluccia, Daniele Perito, and Abdelberi Chaabane. OMEN: Faster Password Guessing using an Ordered Markov Enumerator. In ESSoS, pages 119–132, 2015.<br>        [28] Maximilian Golla and Markus Dürmuth. On the Accuracy of Password Strength Meters. In ACM CCS, pages 1567–1582, 2018.<br>        [29] Ian Goodfellow. NIPS 2016 Tutorial: Generative Adversarial Networks. arXiv preprint arXiv:1701.00160, 2016.<br>        [30] Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and Y oshua Bengio. Generative Adversarial Nets. In NIPS, pages 2672–2680, 2014.<br>        [31] Palash Goyal and Emilio Ferrara.  Graph Embedding Techniques, Applications, and Performance: A Survey. Elsevier Knowledge-Based Systems, 151:78–94, 2018.<br>        [32] Alex Graves. Generating Sequences with Recurrent Neural Networks. arXiv preprint arXiv:1308.0850, 2013.<br>        [33] Ishaan Gulrajani, Faruk Ahmed, Martin Arjovsky, Vincent Dumoulin, and Aaron C Courville. Improved Training of Wasserstein GANs. In NIPS, pages 5767–5777, 2017.<br>        [34] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.  Deep Residual Learning for Image Recognition. In CVPR, pages 770–778, 2016.<br>        [35] Briland Hitaj, Paolo Gasti, Giuseppe Ateniese, and Fernando Perez-Cruz. PassGAN: A Deep Learning Approach for Password Guessing. In ACNS, pages 217–237, 2019.<br>        [36] Diederik P Kingma and Max Welling. Auto-encoding V ariational Bayes. arXiv preprint arXiv:1312.6114, 2013.<br>        [37] Yang Li and Tao Yang. Word Embedding for Understanding Natural Language: A Survey. In Springer Guide to Big Data Applications, pages 83–104. 2018.<br>        [38] Junyu Luo, Y ong Xu, Chenwei Tang, and Jiancheng Lv. Learning Inverse Mapping by Autoencoder based Generative Adversarial Nets. In International Conference on Neural Information Processing, pages 207–216. Springer, 2017.<br>        [39] Laurens van der Maaten and Geoffrey Hinton. Visualizing Data using t-SNE. Journal of Machine Learning Research, 9:2579–2605, 2008.<br>        [40] Alireza Makhzani, Jonathon Shlens, Navdeep Jaitly, Ian Goodfellow, and Brendan Frey. Adversarial Auto-Encoders. arXiv preprint arXiv:1511.05644, 2015.<br>        [41] Philip Marquardt, Arunabh V erma, Henry Carter, and Patrick Traynor. (sp)iPhone: Decoding Vibrations From Nearby Keyboards Using Mobile Phone Accelerometers. In ACM CCS, pages 551–562, 2011.<br>        [42] William Melicher, Blase Ur, Sean M Segreti, Saranga Komanduri, Lujo Bauer, Nicolas Christin, and Lorrie Faith Cranor.  Fast, Lean, and Accurate: Modeling Password Guessability using Neural Networks. In USENIX Security Symposium, pages 175–191, 2016. GitHub Repo: <a href="https://tinyurl.com/y9o7jdd8">https://tinyurl.com/y9o7jdd8</a>.<br>        [43] Shakir Mohamed and Balaji Lakshminarayanan. Learning in Implicit Generative Models. arXiv preprint arXiv:1610.03483, 2016.<br>        [44] Robert Morris and Ken Thompson. Password Security: A Case History. Communications of the ACM, 22(11):594–597, 1979.<br>        [45] Arvind Narayanan and Vitaly Shmatikov. Fast Dictionary Attacks on Passwords using Time-space Tradeoff. In ACM CCS, pages 364–372, 2005.<br>        [46] Bijeeta Pal, Tal Daniel, Rahul Chatterjee, and Thomas Ristenpart. Beyond Credential Stuffing: Password Similarity Models using Neural Networks. In IEEE S&amp;P, pages 1–18, 2019.<br>        [47] Deepak Pathak, Philipp Krahenbuhl, Jeff Donahue, Trevor Darrell, and Alexei A Efros. Context Encoders: Feature Learning by Inpainting. In IEEE CVPR, pages 2536–2544, 2016.<br>        [48] Alec Radford, Luke Metz, and Soumith Chintala. Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks. arXiv preprint arXiv:1511.06434, 2015.<br>        [49] Masashi Sugiyama, Matthias Krauledat, and Klaus-Robert M˜Aˇ zller. Covariate Shift Adaptation by Importance Weighted Cross V alidation. Journal of Machine Learning Research, 8(May):985–1005, 2007.<br>        [50] Ilya Sutskever, James Martens, and Geoffrey E Hinton. Generating Text with Recurrent Neural Networks. In ICML, pages 1017–1024, 2011.<br>        [51] Ilya Tolstikhin, Olivier Bousquet, Sylvain Gelly, and Bernhard Schoelkopf.  Wasserstein  Auto-Encoders. arXiv  preprint arXiv:1711.01558, 2017.<br>        [52] Blase Ur, Fumiko Noma, Jonathan Bees, Sean M Segreti, Richard Shay, Lujo Bauer, Nicolas Christin, and Lorrie Faith Cranor. I Added ‘!’at the End to Make It Secure: Observing Password Creation in the Lab. In SOUPS, pages 123–140, 2015.<br>        [53] Blase Ur, Sean M Segreti, Lujo Bauer, Nicolas Christin, Lorrie Faith Cranor, Saranga Komanduri, Darya Kurilova, Michelle L Mazurek, William Melicher, and Richard Shay. Measuring Real-world Accuracies and Biases in Modeling Password Guessability. In USENIX Security Symposium, pages 463–481, 2015.<br>        [54] Martin Vuagnoux and Sylvain Pasini. Compromising Electromagnetic Emanations of Wired and Wireless Keyboards. In USENIX Security Symposium, pages 1–16, 2009.<br>        [55] Ding Wang, Zijian Zhang, Ping Wang, Jeff Yan, and Xinyi Huang. Targeted Online Password Guessing: An Underestimated Threat. In ACM CCS, pages 1242–1254, 2016.<br>        [56] Matt Weir, Sudhir Aggarwal, Breno De Medeiros, and Bill Glodek. Password Cracking using Probabilistic Context-free Grammars. In IEEE S&amp;P, pages 391–405, 2009.<br>        [57] Tom White.  Sampling Generative Networks. arXiv preprint arXiv:1609.04468, 2016.<br>        [58] Roman V Yampolskiy. Analyzing User Password Selection Behavior for Reduction of Password Space. In ICCST, pages 109–115, 2006.</p>
 ]]></content>
       <categories>
         <category>论文</category>
@@ -6203,6 +6638,368 @@ $ chmod +r  xampp.run #给xampp.run读权限
       <tags>
         <tag>密码</tag>
         <tag>GAN</tag>
+        <tag>AE</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>FlaskWeb开发（3）Flask实例</title>
+    <url>/2021/01/06/FlaskWeb%E5%BC%80%E5%8F%91-3/</url>
+    <content><![CDATA[<p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 博客引擎、关注和评论</p>
+<a id="more"></a>
+
+<h2 id="第二部分-实例：社交博客-下"><a href="#第二部分-实例：社交博客-下" class="headerlink" title="第二部分 实例：社交博客(下)"></a>第二部分 实例：社交博客(下)</h2><h3 id="博客文章"><a href="#博客文章" class="headerlink" title="博客文章"></a>博客文章</h3><h3 id="关注者"><a href="#关注者" class="headerlink" title="关注者"></a>关注者</h3><h3 id="用户评论"><a href="#用户评论" class="headerlink" title="用户评论"></a>用户评论</h3><h3 id="编程接口"><a href="#编程接口" class="headerlink" title="编程接口"></a>编程接口</h3><h2 id="第三部分-测试与部署"><a href="#第三部分-测试与部署" class="headerlink" title="第三部分 测试与部署"></a>第三部分 测试与部署</h2>]]></content>
+      <categories>
+        <category>项目实践</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>可视化</tag>
+        <tag>Web应用</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>产品数据管理原理与应用</title>
+    <url>/2021/01/05/%E4%BA%A7%E5%93%81%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86%E5%8E%9F%E7%90%86%E4%B8%8E%E5%BA%94%E7%94%A8/</url>
+    <content><![CDATA[<p>《产品数据管理原理与应用》阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h4 id="PDM"><a href="#PDM" class="headerlink" title="PDM"></a>PDM</h4><ul>
+<li>产品数据管理（PDM，product data management）：满足PTQCS（设计生产产品 product，缩短上市时间 time，保证品质 quality，降低成本 cost，提供售后服务 service），管理所有与产品相关信息和与产品信息相关过程</li>
+<li>将所有与产品相关的信息和所有与产品有关的过程集成，利用数据库实现信息的生成、存储、查询、控制存取、编辑、恢复、检查、追溯</li>
+<li>其他应用通过接口、封装等方式作为对象集成进来</li>
+<li>功能：<ul>
+<li>电子仓库与文档管理——核心，为存取数据提供安全的控制机制，允许透明访问全企业的产品信息</li>
+<li>工作流与过程管理——控制用户之间的数据流向</li>
+<li>产品结构与配置管理——物料清单BOM为核心，将最终产品的工程数据和文档联系起来；按产品视图组织产品结构，不同部门按需要组织产品结构</li>
+<li>项目管理——基于工作流，包括了项目与任务的描述、成员组成和工作分配、工作流程、时间管理等</li>
+<li>零件分类管理——以编码的方式，分为标识码和分类码</li>
+<li>系统定制与集成</li>
+</ul>
+</li>
+</ul>
+<h4 id="Teamcenter"><a href="#Teamcenter" class="headerlink" title="Teamcenter"></a>Teamcenter</h4><ul>
+<li>体系结构（两种）<ul>
+<li>两层：客户端层+资源层</li>
+<li>四层：客户端层+web层+企业层+资源层；每一层为上一层提供服务<ul>
+<li>web层：通过 teamcenter 服务器提供所有的 teamcenter 功能</li>
+<li>企业层：负责业务逻辑、安全规则、数据库存取；数据以 PLM XML 的格式传入企业层</li>
+<li>资源层：直接与数据库和os交互</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li>业务流程阶段分类，并确定各个阶段的数据</li>
+<li>数据的层次关系</li>
+<li>确定各个数据的覆盖范围</li>
+<li>企业内的数据流动过程</li>
+</ol>
+<h2 id="电子仓库与文档管理"><a href="#电子仓库与文档管理" class="headerlink" title="电子仓库与文档管理"></a>电子仓库与文档管理</h2><h4 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h4><ul>
+<li><p>元数据：数据的数据，关于数据的组织、数据地址和关系的信息</p>
+<ul>
+<li>统一的格式，规范化方式描述数据</li>
+<li>可移植</li>
+<li>一般是层次的树状结构<ul>
+<li>信息资源基本内容的描述——标题、摘要、关键字</li>
+<li>信息资源的获取方式——资源的分发者信息、资源的获取地址</li>
+<li>描述元数据的维护信息——元数据标识、维护方、创建和更新日期、更新频率</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>产品相关信息 = 各种主记录 + 各种文档：主记录描述对象的属性；主记录和文档通过元数据关联——例如，主记录定义了零件号、中文名、零件材料等属性，元数据还有一个位置地址属性指向物理数据的引用指针，二者根据零件号建立关系，主记录根据元数据和文档建立联系</p>
+</li>
+<li><p>电子仓库：PDM 中实现特殊存储机制的元数据库和管理系统，保存所有与产品相关的物理数据和文件的元数据，以及元数据指向物理数据、文件的指针；是服务器为文档的存储专门设置的区域，把文档存放在专用存储区中或从中取出，并在存取过程中产生元数据</p>
+<ul>
+<li>三种电子仓库<ul>
+<li>集中式——存放物理文件的文件系统、元数据管理库、数据记录管理库放在同一个服务器上</li>
+<li>分布式——同一个电子仓库对应多个分布在不同计算机上的文件系统与目录</li>
+<li>虚拟式</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>文档管理：企业的信息以文档的形式存在，文档管理以文档的内容作为管理对象。</p>
+<ul>
+<li>功能：文档操作、文档版本控制、文档审核时的格式转换和圈阅、文档的复制删除移交等</li>
+<li>包括数据文件、表格文件、多媒体文件、图形文件等</li>
+</ul>
+</li>
+<li><p>电子仓库与文档管理关系</p>
+<ul>
+<li>如果是数据库管理，则提取文件描述信息后添加到数据库表格，即可将数据库的每一个记录和一个文档联系起来</li>
+<li>PDM 下，首先通过规则约束库进行约束检查，只有符合操作权限用户才可将文档存入电子仓库。文档的元数据存入元数据库，具体文件放入指定文件系统的相关路径，物理数据打散后存入指定数据库。</li>
+<li>对用户屏蔽了文件实际的存储物理位置</li>
+</ul>
+</li>
+</ul>
+<h4 id="Teamcenter的产品数据（汽车企业为例）"><a href="#Teamcenter的产品数据（汽车企业为例）" class="headerlink" title="Teamcenter的产品数据（汽车企业为例）"></a>Teamcenter的产品数据（汽车企业为例）</h4><p>零组件业务对象基本结构包括 Item——业务对象各个版本都使用的全局数据，Item Master(Form)——存储用户业务属性数据的表单，Item Revison——特定版本使用的数据，Item Revison Master(Form)</p>
+<ul>
+<li>Item 表示产品和相关零部件，不分大小。描述一个实物。系统以 Item 为中心组织所有与零部件相关的设计数据，并标识不同版本对其技术的变更状态，用于追溯<ul>
+<li>通过 teamcenter 客户端创建</li>
+<li>通过 NX、Catia Manager 的集成客户端界面创建</li>
+</ul>
+</li>
+<li>Item Reversion：一个 Item 至少有一个零组件版本；系统通过版本来记录零组件的更改情况，每有产品归档，则生成一个新的版本；修改过去版本需要其他操作<ul>
+<li>没有归档钱的修改，称为 Version，课通过签入、签出的方式修改与保存</li>
+</ul>
+</li>
+<li>系统使用表单将属性信息直接存入关系型数据库；系统提供了 Item 和 Item Reversion 预先定义的属性和用户自定义属性的方法</li>
+<li>状态标识了一个 Item Reversion 不可修改/可修改<ul>
+<li>发放 Released：数据已经归档，用户只能读</li>
+<li>流程中 In-Process：数据处于流程审批，必须经过许可才能修改</li>
+<li>工作状态 working：此类数据不固定，经常修改</li>
+</ul>
+</li>
+<li>数据集：每个产品对象都有一些来自不同应用的数据文件描述其不同方面的信息，数据集是管理（存放）这些文件的对象，不同格式的文件对应不同类型的数据集<ul>
+<li>一个 dataset 可与多个 tool 关联，一个 tool 对应相关的应用软件，即可用多种软件编辑</li>
+<li>dataset 中的文件对象称为命名引用 named reference，定义了管理的文件格式（文件形式、扩展名等）</li>
+</ul>
+</li>
+<li>Home：用户的根文件夹；Newstuff：默认存放临时对象；Mailbox：接收其他用户发送的邮件</li>
+<li>Item/Reversion 与产品数据的关系 Relation：<ul>
+<li>规范关系 specification：只能用于 Reversion</li>
+<li>需求关系 requirement： Item 和 Reversion 必须满足的准则</li>
+<li>表现关系 manifestation：某一特定时刻 Item、Reversion 在某些方面的快照</li>
+<li>引用关系 reference：数据与 Item、Reversion 之间未定义的关系</li>
+</ul>
+</li>
+<li>只能对有权限的数据删除，如果不能删除，则数据对象被引用（被签出、状态为流程中/流程状态）</li>
+<li>如果数据对象被签出，其他用户不能修改该数据的内容</li>
+<li>系统通过 Item 组织数据，各个 dataset 以不同的关系 Relation 挂在 Item Reversion 共同表示一个完整的设计单元</li>
+</ul>
+<h4 id="数据建模"><a href="#数据建模" class="headerlink" title="数据建模"></a>数据建模</h4><ul>
+<li>BMIDE 可以扩展数据模型，将用户自定义的数据对象加到 Teamcenter 默认的数据对象之上</li>
+<li>数据模型对象被保存到模板（或者说，解决方案）中，模板为应用程序服务</li>
+<li>用户利用 BMIDE 创建数据模型对象时，数据模型就已经保存到自己的模板中</li>
+<li>最后，通过 Teamcenter Environment Manager 将模型打包</li>
+<li>注意<ul>
+<li>只有一个版本是工作版本</li>
+<li>通过设置深复制规则，将 Item Reversion 下的部分文档复制到新对象中</li>
+<li>Item ID 是系统识别 Item 的唯一标识，编码方式分为：有意义的编号和无意义的流水号，可设置命名规则</li>
+</ul>
+</li>
+<li>流程如下（以建立一个新的数据模型 DesignPart 为例）<ul>
+<li>新建业务对象并添加属性</li>
+<li>创建 Item ID 和 Reversion ID，附加命名规则</li>
+<li>定制 UOM（个人理解为计量单位）</li>
+<li>创建 LOV</li>
+<li>发放工作版本</li>
+<li>设置深复制规则</li>
+<li>……</li>
+</ul>
+</li>
+</ul>
+<h2 id="产品结构与配置管理"><a href="#产品结构与配置管理" class="headerlink" title="产品结构与配置管理"></a>产品结构与配置管理</h2><h4 id="基础-1"><a href="#基础-1" class="headerlink" title="基础"></a>基础</h4><ul>
+<li><p>BOM（Bill of Material）</p>
+<ul>
+<li>物料清单，即产品结构表，将产品的原材料、零配件等拆解，将各个单项的物料代码、品名、规格、损耗等按制造流程记录下来，列为一个清单</li>
+<li>广义的 BOM 为产品结构+工艺流程：<ul>
+<li>先确定工艺流程</li>
+<li>描述各个工序中使用的物料</li>
+<li>子物料还有对应的生产子流程</li>
+<li>根据生产组织方式决定 BOM 的层次</li>
+</ul>
+</li>
+<li>扩展的 BOM：又包括了设备、人工、资金等资源</li>
+</ul>
+</li>
+<li><p>BOM 是一个结构化的表，还包含了零部件的装配数、特征参数、技术文档和图形文档等</p>
+<ul>
+<li>由于部件使用情况的复杂性，零部件的借用关系使 BOM 数据成网状结构（部件、子部件等）</li>
+<li>产品的 BOM 结构具有层次关系，且有单父多子和多父多子的情况</li>
+<li>不同零部件的特征参数不同</li>
+<li>BOM 需要有版本管理功能</li>
+</ul>
+</li>
+<li><p>梳理为树状结构</p>
+</li>
+<li><p>常见 BOM 数据结构</p>
+<ul>
+<li>单层 BOM：装配和被装配关系，单父单子，字段：父件代码、子件代码、装配数量、id</li>
+<li>多层 BOM：详尽记录从成品到部件的每个层次的配置关系，字段：产品代码、子件代码、装配数量、层次号、id</li>
+<li>复合型 BOM：单父单子，字段：产品代码、父件代码、子件代码、装配数目、层次号</li>
+<li>矩阵型 BOM：对角线对称的方阵，$a_{ij}$为0时，部件 i 和部件 j 之间没有装配关系；小于 0，被装配，大于0，正向装配</li>
+<li>二叉树 BOM：类似单层 BOM</li>
+</ul>
+</li>
+<li><p>BOM 分类</p>
+<ul>
+<li>EBOM：设计部门的数据；产品设计——产品结构、明细表、汇总表、产品使用说明书等</li>
+<li>PBOM：工艺设计部门根据 EBOM 生成工艺计划、工序信息等，计划 BOM，用于产品预测</li>
+<li>MBOM：根据 PBOM 设计具体的装配步骤，包括材料定额、装配顺序等</li>
+<li>CBOM：财务报表，成本 BOM</li>
+<li>EBOM 主要来自 CAD 系统的设计信息，PBOM 来自 CAPP 系统的工艺信息</li>
+<li>EBOM 反映产品的组成，MBOM 反映产品制造层次和制造过程</li>
+</ul>
+</li>
+<li><p>产品结构管理</p>
+<ul>
+<li><p>建立产品生命周期中各种功能与应用系统的联系，主要包括：产品结构树的建立、文档关系管理、产品版本管理</p>
+</li>
+<li><p>产品结构树：</p>
+<ul>
+<li>按部件分解，直到零件为止，形成分层树状结构</li>
+<li>各个节点属性包括零部件的属性以及主文档的属性</li>
+</ul>
+</li>
+<li><p>文档关系管理</p>
+<ul>
+<li>PDM 系统以产品结构为基础管理与零部件相关的文档，每一种部件定义一个文件夹存放相关文档</li>
+<li>通过关联将不同产品结构树下的对象连接起来</li>
+</ul>
+</li>
+<li><p>产品版本管理</p>
+<ul>
+<li><p>版本包含了设计对象在当时的全部信息，以及该版本设计对象与相关联对象的联系——如零部件对象版本与文档版本的关联性</p>
+</li>
+<li><p>线性版本模型和树状版本模型，后者可用于多种设计方案的情况</p>
+</li>
+<li><p>根据设计对象的状态，版本也有对应的状态</p>
+<ul>
+<li>工作版本只能由设计者修改，其他用户不能访问/引用</li>
+<li>提交版本（不能修改）放到共享电子仓库，其他用户可查看，不能引用</li>
+<li>发布版本放到专用的电子仓库，不能修改，可以查看</li>
+</ul>
+<p><img src="/2021/01/05/%E4%BA%A7%E5%93%81%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86%E5%8E%9F%E7%90%86%E4%B8%8E%E5%BA%94%E7%94%A8/image-20210106133604166.png" alt="image-20210106133604166"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>产品配置管理</p>
+<ul>
+<li><p>构成产品的零部件会经历多次修改，有的零部件会有很多版本/一个产品由不同零部件结构/一个产品的零部件版本不同</p>
+</li>
+<li><p>根据产品结构，选择零部件将其按某种组合规则编组，形成一个具体的产品——产品配置</p>
+</li>
+<li><p>配置规则：</p>
+<ul>
+<li><p>变量配置规则</p>
+<ul>
+<li>零部件某个属性有多个可选项</li>
+<li>根据变量取值确定具体的 BOM 本体结构</li>
+<li>配置条件近似逻辑运算</li>
+</ul>
+</li>
+<li><p>版本配置规则</p>
+<ul>
+<li>根据版本和版本状态配置</li>
+</ul>
+</li>
+<li><p>有效性配置规则</p>
+<ul>
+<li><p>各个版本的生效时间、有效时间不一样，零件的有效个数不同</p>
+</li>
+<li><p>根据有效性的取值确定 BOM 本体结构的配置</p>
+<p><img src="/2021/01/05/%E4%BA%A7%E5%93%81%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86%E5%8E%9F%E7%90%86%E4%B8%8E%E5%BA%94%E7%94%A8/image-20210106140338404.png" alt="image-20210106140338404"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Teamcenter中的产品结构与配置管理"><a href="#Teamcenter中的产品结构与配置管理" class="headerlink" title="Teamcenter中的产品结构与配置管理"></a>Teamcenter中的产品结构与配置管理</h4><ul>
+<li>产品结构与配置管理对应 TC 的结构管理器 structure management 模块</li>
+<li>基本概念<ul>
+<li>BOM 视图：TC 中一种具体定义零组件信息的数据对象，存放零组件的装配结构——必须依附于零组件</li>
+<li>BOM 视图版本：TC 中一种具体定义零组件版本信息的数据对象，存放零组件版本的装配结构<ul>
+<li>必须依附于零组件版本，此时说明这个零组件版本是一个装配件</li>
+<li>针对不同的用途，TC 定义了不同的视图分别表示</li>
+<li>也可以为一个零组件版本创建多个不同类型的 BOM 视图版本</li>
+</ul>
+</li>
+<li>非精确装配</li>
+<li>精确装配</li>
+<li>事例：添加一个零组件版本到一个装配件时，就创建了一个零组件版本到上级装配件零组件版本的一个事例（一个装配关系）</li>
+<li>度量单位</li>
+<li>装配数量</li>
+<li>标注</li>
+</ul>
+</li>
+<li>产品结构与配置管理<ul>
+<li>BOM 编制与维护<ul>
+<li>创建零件间使用关系</li>
+<li>显示结构管理器待处理标记</li>
+<li>重复件打包</li>
+</ul>
+</li>
+<li>BOM 比较：确认零部件的更改情况，验证零部件在不同 BOM 的一致性（数量、版本、版本变化、BOM视图差异等）<ul>
+<li>比较层次：单层——只比较产品结构的第一层，多层——先对顶层比较后比较子装配件，最底层——只比较最底层的零件，忽略中间层次的部件</li>
+</ul>
+</li>
+<li>产品配置<ul>
+<li>使用制约条件、互斥条件、关联条件、选项条件等进行配置</li>
+<li>定义 BOM 结构</li>
+<li>创建选项后，将选项的值以“变量条件”的形式添加上去</li>
+<li>配置值之间的约束关系，通过“选项约束”定义，即定义“主要特征”和“小特征”之间的关联关系</li>
+<li>设置规则检查，用户可定义哪些选项值不能同时选择</li>
+</ul>
+</li>
+<li>BOM 版本与状态管理<ul>
+<li>根据版本所处状态可形成不同的配置，通过将版本规则加入到产品结构中，用户可获得符合条件的零部件版本</li>
+<li>TC 有 8 种版本控制类型</li>
+<li>结构管理器中默认设置了一些版本规则</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="工作流与过程管理"><a href="#工作流与过程管理" class="headerlink" title="工作流与过程管理"></a>工作流与过程管理</h2><h4 id="基础-2"><a href="#基础-2" class="headerlink" title="基础"></a>基础</h4><ul>
+<li>定义和控制数据操作的基本过程，并维护已有的工作流</li>
+<li>基本概念<ul>
+<li>产品全生命周期：由一系列的有序状态组成，如审批、发放、生产、使用等</li>
+<li>过程：从一个状态到另一个状态时，要进行的操作+规则集合</li>
+<li>工作流程</li>
+<li>电子表单：每个工作流有一个电子表单，记录业务流程的信息，是产品数据的一部分；包括：审核人意见、归档产品数据的元数据、流程中操作人的签名</li>
+</ul>
+</li>
+<li>类型<ul>
+<li>任务管理<ul>
+<li>管理某人在某时对什么数据对象做了什么处理，对哪些数据产生影响，应当通知哪些人</li>
+</ul>
+</li>
+<li>工作流管理</li>
+<li>任务历史管理</li>
+</ul>
+</li>
+<li>工作流程管理<ul>
+<li>工作流程用流程图表示</li>
+<li>每个节点代表一个工作步骤，需要设定属性——用户、意见、期限、启动条件与通过条件<ul>
+<li>用户：任务人员，可将属性设置为“运行设定”</li>
+<li>意见：当前节点是否通过——批准、否决、退回等</li>
+<li>期限：完成工作的期限</li>
+<li>启动条件：上一节点（组）的反馈是否满足条件</li>
+</ul>
+</li>
+<li>相关功能（略）</li>
+</ul>
+</li>
+<li>工程变更<ul>
+<li>引起产品与相关产品、文档等的修改</li>
+<li>PDM 中的更改管理</li>
+</ul>
+</li>
+</ul>
+<h4 id="Teamcenter中的工作流与过程管理"><a href="#Teamcenter中的工作流与过程管理" class="headerlink" title="Teamcenter中的工作流与过程管理"></a>Teamcenter中的工作流与过程管理</h4><p>TC 的工作流与过程管理模块对企业的工作过程或活动进行管理，可以创建、执行、监督和控制串行、并行、混合的工作流程</p>
+<ul>
+<li>TC 中，新建的 Item Revision 处于 Working 状态，对 Item Revision 下定义的 dataset 与其关联，完成操作后随 Item Revison 共同提交一个审批流程，并获得对应的发放状态</li>
+<li>基本概念<ul>
+<li>流程 Process：</li>
+<li>流程模板 Process Template：</li>
+</ul>
+</li>
+</ul>
+<h4 id="Teamcenter中的工程更改"><a href="#Teamcenter中的工程更改" class="headerlink" title="Teamcenter中的工程更改"></a>Teamcenter中的工程更改</h4><h2 id="零件分类管理"><a href="#零件分类管理" class="headerlink" title="零件分类管理"></a>零件分类管理</h2><h4 id="基础-3"><a href="#基础-3" class="headerlink" title="基础"></a>基础</h4><h4 id="Teamcenter中的分类管理"><a href="#Teamcenter中的分类管理" class="headerlink" title="Teamcenter中的分类管理"></a>Teamcenter中的分类管理</h4><h2 id="PDM-系统集成"><a href="#PDM-系统集成" class="headerlink" title="PDM 系统集成"></a>PDM 系统集成</h2><h2 id="项目管理"><a href="#项目管理" class="headerlink" title="项目管理"></a>项目管理</h2>]]></content>
+      <categories>
+        <category>项目实践</category>
+      </categories>
+      <tags>
+        <tag>数据库</tag>
       </tags>
   </entry>
 </search>
