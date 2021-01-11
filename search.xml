@@ -8097,7 +8097,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>$∆= \begin{Bmatrix} β∈Γ:p(β)&gt;p(α) \end{Bmatrix}\quad$，$∆$是强度比$α$弱的密码的集合</li>
 <li>基于$n$个样本密码的一个子集，当$n$趋于无穷时，能有效地逼近$S_{p}（α）$</li>
 <li>对大小为$n$的密码集$Θ$进行替换采样，对每个密码$β$进行概率$p（β）$采样</li>
-<li>$C_∆$为集合$∆$的势（度量集合规模大小）为：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/1.PNG"></li>
+<li>$C_∆$为集合$∆$的势（度量集合规模大小）为：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/1.PNG" alt="1.PNG"></li>
 <li>为避免上溢和下溢：32位浮点数，使用64位算法</li>
 <li>可证明：<ul>
 <li>攻击模型$p$下，$C_∆$的期望为$|∆|$</li>
@@ -8125,7 +8125,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>$i≤0$或$i&gt;l$时，$c_i$被认为是一个不出现在密码中的特殊符号$⊥$，表示密码的开始或结束</li>
 <li>数据稀疏性问题：一些$n-grams$可能训练集中没有，模型会错误地将其概率标记为0</li>
 <li>实现细节：<ul>
-<li>算法如下图：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/2.PNG"></li>
+<li>算法如下图：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/2.PNG" alt="2.PNG"></li>
 <li>设置$c_a…c_{b-1}$为状态$s$，$c_b$为转换$t$，以简化计算</li>
 <li>对每个状态$s$，降序排列所有的转换$t_{s,i}$</li>
 <li>与计算一个累计概率数组$C_s$,$C_s[i]=\sum_{j=1}^iP(t_{s,j}|s)=C_s[i-1]+P(t_{s,i}|s)$。对此数组可使用二分查找</li>
@@ -8148,12 +8148,12 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </li>
 <li>BackOff<ul>
 <li>通过考虑所有长度的n-grams来处理稀疏性，并丢弃出现次数小于阈值$τ$的那些——对于每一个新字符的选择，模型考虑了过去字符在训练集中出现至少$τ$次的最长序列</li>
-<li>具体如下图：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/3.PNG"></li>
+<li>具体如下图：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/3.PNG" alt="3.PNG"></li>
 <li>在每个密码前面加上一个开始符号</li>
 <li>实现细节<ul>
 <li>简单方法是对训练集进行一次处理，对n的任何值计算所有n-grams的出现次数，并在处理结束时删除出现次数小于$τ$的所有n-grams的信息</li>
 <li>可以迭代处理：第i次迭代中，计算i-grams的出现次数，丢弃那些少于$τ$出现次数的i-grams</li>
-<li>算法如下：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/4.PNG"></li>
+<li>算法如下：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/4.PNG" alt="4.PNG"></li>
 </ul>
 </li>
 </ul>
@@ -8164,14 +8164,14 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <font size="3">
 
 <h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="方法精密度"><a href="#方法精密度" class="headerlink" title="方法精密度"></a>方法精密度</h3><ul>
-<li>下图显示了模型计算出密码的概率和对应密码强度$S_{p}（α）$之间关系，这里密码的概率不小于$2^{-20}$。每个模型训练五次，对应的阴影部分为密码强度的范围<br>  <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/7.PNG"></li>
+<li>下图显示了模型计算出密码的概率和对应密码强度$S_{p}（α）$之间关系，这里密码的概率不小于$2^{-20}$。每个模型训练五次，对应的阴影部分为密码强度的范围<br>  <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/7.PNG" alt="7.PNG"></li>
 <li><figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line">The <span class="built_in">difference</span> <span class="keyword">in</span> <span class="keyword">the</span> probability vs. rank plot is due <span class="built_in">to</span> <span class="keyword">the</span> fact that <span class="keyword">each</span> model generates passwords <span class="keyword">with</span> <span class="keyword">a</span> different probability distribution.</span><br></pre></td></tr></table></figure>
   <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/8.PNG"><h3 id="比较攻击模型"><a href="#比较攻击模型" class="headerlink" title="比较攻击模型"></a>比较攻击模型</h3></li>
 <li>绘制了攻击者根据猜测次数猜测单个密码的概率</li>
 <li>使用Xato作为训练集，通过计算Rockyou数据集中的密码获得结果</li>
 <li>对于前$2^{16}-2^{20}$个猜测，backoff和PCFG的性能几乎相等：这是因为这两个模型基本上都在猜测训练数据集中最频繁的密码</li>
 <li>密码的出现次数低于BackOff模型的阈值时，PCFG模型继续猜测训练集中的单词，而BackOff模型开始尝试“泛化”——起初，这有利于PCFGs，但最终BackOff模型的效果更好</li>
-<li>最佳攻击策略取决于攻击者能够承受的猜测次数<br> <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/6.PNG"></li>
+<li>最佳攻击策略取决于攻击者能够承受的猜测次数<br> <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/6.PNG" alt="6.PNG"></li>
 <li>密码抵抗某一攻击的强度表明了密码抵抗其他攻击的强度</li>
 <li>N-grams：<ul>
 <li>训练集较大，因此即使使用更高阶的模型（n=3和n=4）也可以找到大部分密码</li>
@@ -8193,7 +8193,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>假设攻击者知道此限制，因此不会猜测不满足要求的密码</li>
 <li>这些结果应被视为对通过实施此类限制可以获得的强度改进的乐观评估</li>
 <li>给定一个布尔函数$f（α）$，该函数表示了当前密码是否符合要求，新强度度量应该只计算概率高于$p（β）&gt;p（α）$且$f（β）$为真的密码</li>
-<li>使用backoff攻击模型，结果如下：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/5.PNG"></li>
+<li>使用backoff攻击模型，结果如下：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/5.PNG" alt="5.PNG"></li>
 </ul>
 <hr>
 <font>
