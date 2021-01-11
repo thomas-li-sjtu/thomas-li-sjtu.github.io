@@ -8043,180 +8043,6 @@ $ chmod +r  xampp.run #给xampp.run读权限
       </tags>
   </entry>
   <entry>
-    <title>Monte Carlo Strength Evaluation-Fast and Reliable Password Checking</title>
-    <url>/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/</url>
-    <content><![CDATA[<p>《Monte Carlo Strength Evaluation-Fast and Reliable Password Checking》论文阅读记录</p>
-<a id="more"></a>
-
-<font face="宋体">
-<font size="4">
-
-<h1 id="Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking-Monte-Carlo强度评估——快速可靠的密码检查"><a href="#Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking-Monte-Carlo强度评估——快速可靠的密码检查" class="headerlink" title="Monte Carlo Strength Evaluation-Fast and Reliable Password Checking  Monte Carlo强度评估——快速可靠的密码检查"></a>Monte Carlo Strength Evaluation-Fast and Reliable Password Checking <br> Monte Carlo强度评估——快速可靠的密码检查</h1><font>
-<font size="3">
-
-<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
-<li>提出了一种新的方法，来估计使用现代攻击查找密码所需的猜测次数</li>
-<li>所需资源少，适用于广泛的概率模型，具有很好的收敛性</li>
-<li>实验证明了该方案的可扩展性和通用性</li>
-</ul>
-<hr>
-<font>
-<font size="3">
-
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
-<li>密码表鼓励用户选择更好的密码，但它们的输出通常是有问题的，因为它不是对攻击者需要破解密码的努力的可靠评估</li>
-<li>密码强度定义为攻击者猜测密码强度所需的尝试次数</li>
-<li>计算效率：采样步骤占用少，可以预先计算；一旦完成，计算密码强度就和通过二分查找一样方便</li>
-<li>对密码强度的估计以速度O（1/√n）收敛，n是样本中的密码个数</li>
-<li>较大的训练集可以改进对“平均”密码的攻击，而对于特别容易或难以猜测的密码，则没有太多收获</li>
-<li>长度要求比有关字符组成的要求更可取</li>
-<li>贡献：<ul>
-<li>一种合理的计算密码强度的方法</li>
-<li>对方法的精度进行了实证评估，包括计算成本和精度之间的权衡</li>
-<li>一个广泛的经验评估，以比较最新的攻击模式，训练集的影响和密码选择的限制</li>
-</ul>
-</li>
-</ul>
-<hr>
-<font>
-<font size="3">
-
-<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
-<li>彩虹链（Rainbow chains）能够有效地记忆一组非常大的预先计算的密码散列，并找到出现在其中的密码</li>
-<li>在计算散列值之前，在密码上附加一个随机的位字符串——盐析技术</li>
-<li>防止猜测攻击的一个关键防御技术是密码增强或扩展，这相当于使用计算开销很大的函数对密码进行哈希运算，从而减慢猜测攻击的速度</li>
-</ul>
-<hr>
-<font>
-<font size="3">
-
-<h2 id="密码强度评估"><a href="#密码强度评估" class="headerlink" title="密码强度评估"></a>密码强度评估</h2><ul>
-<li>最新的密码研究基于概率密码模型，试图在字符串和人类选择字符串作为密码的频率之间建立映射，来描述选择密码的方式</li>
-<li>设置所有密码的集合为$Г$，概率密码模型是一个函数$p$，$\sum_{α∈Г} p(α)=1$</li>
-<li>攻击模型按概率的降序枚举密码，模型$p$下密码$α$的强度（或秩）$S_{p}（α）$是概率大于$α$的密码数<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3></li>
-<li>$∆= \begin{Bmatrix} β∈Γ:p(β)&gt;p(α) \end{Bmatrix}\quad$，$∆$是强度比$α$弱的密码的集合</li>
-<li>基于$n$个样本密码的一个子集，当$n$趋于无穷时，能有效地逼近$S_{p}（α）$</li>
-<li>对大小为$n$的密码集$Θ$进行替换采样，对每个密码$β$进行概率$p（β）$采样</li>
-<li>$C_∆$为集合$∆$的势（度量集合规模大小）为：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/1.PNG" alt="1.PNG"></li>
-<li>为避免上溢和下溢：32位浮点数，使用64位算法</li>
-<li>可证明：<ul>
-<li>攻击模型$p$下，$C_∆$的期望为$|∆|$</li>
-<li>$C_∆$的标准差为$O（1/\sqrt{n}）$<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3></li>
-</ul>
-</li>
-<li>以上描述中，每次想要评估密码$α$的强度时从模型$p$创建一个大小为$n$的样本$Θ$</li>
-<li>优化措施：预计算概率排名曲线，并通过执行$O（log n）$查找来计算新密码的强度</li>
-<li>数组$A = [p (β_1), . . . , p (β_n)]$，其中元素降序排列</li>
-<li>创建数组$C$：$C[i]=\frac{1}{n}\sum_{j=1}^i\frac{1}{A[j]}=C[j-1]+\frac{1}{nA[j]}$</li>
-<li>计算密码$α$的强度：首先通过二分查找$A[j]&gt;p（α）$中最右边$A[j]$的索引$j$。而对应的$C_∆$就等于$C[j]$</li>
-</ul>
-<hr>
-<font>
-<font size="3">
-
-<h2 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h2><h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><ul>
-<li>Rockyou数据集</li>
-<li>使用Xato作为测试集，Rockyou作为训练集</li>
-<li>需要明文密码来训练攻击模型和评估强度<h3 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h3></li>
-<li>N-Grams(n-1阶 Markov模型)<ul>
-<li>将字符串$c_a…c_b$在训练数据集中出现的次数设置为$o(c_a…c_b)$</li>
-<li>将字符$c_b$出现在字符串$c_a…c_{b-1}$后面的频率设置为<br>$$ P(c_b|c_a…c_{b-1}=\frac{o(c_a…c_b)}{o(c_a…c_{b-1})}  $$</li>
-<li>密码$c_1…c_l$的概率为：<br>$$p_{n-grams}(c_1…c_l)=\prod_{i=1}^{l+1}P(c_i|c_{i-n+1}…c_{i-1})$$</li>
-<li>$i≤0$或$i&gt;l$时，$c_i$被认为是一个不出现在密码中的特殊符号$⊥$，表示密码的开始或结束</li>
-<li>数据稀疏性问题：一些$n-grams$可能训练集中没有，模型会错误地将其概率标记为0</li>
-<li>实现细节：<ul>
-<li>算法如下图：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/2.PNG" alt="2.PNG"></li>
-<li>设置$c_a…c_{b-1}$为状态$s$，$c_b$为转换$t$，以简化计算</li>
-<li>对每个状态$s$，降序排列所有的转换$t_{s,i}$</li>
-<li>与计算一个累计概率数组$C_s$,$C_s[i]=\sum_{j=1}^iP(t_{s,j}|s)=C_s[i-1]+P(t_{s,i}|s)$。对此数组可使用二分查找</li>
-<li>计算的概率可能非常小，因此存储并计算概率的$log_2$对数，而不是概率本身</li>
-<li>生成的密码按降序排列</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>PCFGs<ul>
-<li>此方法认为，密码通常遵循类似的结构，例如一个单词后跟一个数字。在PCFG方法中，密码按模板分组</li>
-<li>密码的概率是通过将模板的频率乘以模板中每个模式的频率来计算的，例子如下：<br>$$p_{PCFG}(“abc123”) = P (L_3D_3) P (“abc”|L_3) P (“123”|D_3)$$</li>
-<li>从密码训练集中获取模板、数字和符号的频率，并从字典中获取字母组的频率</li>
-<li>实现细节：<ul>
-<li>不存储模板和字符组的频率，而是存储它们出现的次数</li>
-<li>计算给定密码的概率时，减去由于评估中的密码而导致的一次出现</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>BackOff<ul>
-<li>通过考虑所有长度的n-grams来处理稀疏性，并丢弃出现次数小于阈值$τ$的那些——对于每一个新字符的选择，模型考虑了过去字符在训练集中出现至少$τ$次的最长序列</li>
-<li>具体如下图：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/3.PNG" alt="3.PNG"></li>
-<li>在每个密码前面加上一个开始符号</li>
-<li>实现细节<ul>
-<li>简单方法是对训练集进行一次处理，对n的任何值计算所有n-grams的出现次数，并在处理结束时删除出现次数小于$τ$的所有n-grams的信息</li>
-<li>可以迭代处理：第i次迭代中，计算i-grams的出现次数，丢弃那些少于$τ$出现次数的i-grams</li>
-<li>算法如下：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/4.PNG" alt="4.PNG"></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<hr>
-<font>
-<font size="3">
-
-<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="方法精密度"><a href="#方法精密度" class="headerlink" title="方法精密度"></a>方法精密度</h3><ul>
-<li>下图显示了模型计算出密码的概率和对应密码强度$S_{p}（α）$之间关系，这里密码的概率不小于$2^{-20}$。每个模型训练五次，对应的阴影部分为密码强度的范围<br>  <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/7.PNG" alt="7.PNG"></li>
-<li><figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line">The <span class="built_in">difference</span> <span class="keyword">in</span> <span class="keyword">the</span> probability vs. rank plot is due <span class="built_in">to</span> <span class="keyword">the</span> fact that <span class="keyword">each</span> model generates passwords <span class="keyword">with</span> <span class="keyword">a</span> different probability distribution.</span><br></pre></td></tr></table></figure>
-  <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/8.PNG"><h3 id="比较攻击模型"><a href="#比较攻击模型" class="headerlink" title="比较攻击模型"></a>比较攻击模型</h3></li>
-<li>绘制了攻击者根据猜测次数猜测单个密码的概率</li>
-<li>使用Xato作为训练集，通过计算Rockyou数据集中的密码获得结果</li>
-<li>对于前$2^{16}-2^{20}$个猜测，backoff和PCFG的性能几乎相等：这是因为这两个模型基本上都在猜测训练数据集中最频繁的密码</li>
-<li>密码的出现次数低于BackOff模型的阈值时，PCFG模型继续猜测训练集中的单词，而BackOff模型开始尝试“泛化”——起初，这有利于PCFGs，但最终BackOff模型的效果更好</li>
-<li>最佳攻击策略取决于攻击者能够承受的猜测次数<br> <img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/6.PNG" alt="6.PNG"></li>
-<li>密码抵抗某一攻击的强度表明了密码抵抗其他攻击的强度</li>
-<li>N-grams：<ul>
-<li>训练集较大，因此即使使用更高阶的模型（n=3和n=4）也可以找到大部分密码</li>
-<li>基于2-grams和1-grams的攻击模型效果较差</li>
-</ul>
-</li>
-<li>PCFG：<ul>
-<li>更好的训练集（Rockyou而不是Xato）显著提高了性能</li>
-</ul>
-</li>
-<li>BackOff：<ul>
-<li>使用匹配的数据集作为训练集可以提高攻击效果<h3 id="训练集的影响"><a href="#训练集的影响" class="headerlink" title="训练集的影响"></a>训练集的影响</h3></li>
-</ul>
-</li>
-<li>考虑BackOff模型，它对于任何次数的尝试都获得了很好的猜测概率</li>
-<li>在训练数据集的0.1%到100%之间改变训练集大小</li>
-<li>较大的训练集对猜测最简单的密码（最常见的密码可能位于原始训练集的较小子集中）或最难的密码（它们很可能是唯一的，并且即使从较大的训练集中也很少能收集到关于它们的信息）几乎没有影响</li>
-<li>提高训练集大小对于“平均”密码（即在较大的数据集中可以找到给定密码或类似的密码）似乎很有用<h3 id="评估强制性要求"><a href="#评估强制性要求" class="headerlink" title="评估强制性要求"></a>评估强制性要求</h3></li>
-<li>假设攻击者知道此限制，因此不会猜测不满足要求的密码</li>
-<li>这些结果应被视为对通过实施此类限制可以获得的强度改进的乐观评估</li>
-<li>给定一个布尔函数$f（α）$，该函数表示了当前密码是否符合要求，新强度度量应该只计算概率高于$p（β）&gt;p（α）$且$f（β）$为真的密码</li>
-<li>使用backoff攻击模型，结果如下：<br><img src="/2021/01/11/Monte%20Carlo%20Strength%20Evaluation-Fast%20and%20Reliable%20Password%20Checking/5.PNG" alt="5.PNG"></li>
-</ul>
-<hr>
-<font>
-<font size="3">
-
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
-<li>提供了一个可靠的估计——使用最先进的猜测技术对密码进行非常昂贵的攻击的成功率</li>
-<li>猜测密码所需的尝试次数与不同的攻击之间存在相关性</li>
-<li>应针对几种攻击模型检查用户密码，合理的策略是保守地输出产生最低强度值的结果</li>
-<li>相信密码猜测的新发展将很可能继续使用生成概率模型</li>
-</ul>
-<hr>
-<font>
-<font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font>]]></content>
-      <categories>
-        <category>论文</category>
-      </categories>
-      <tags>
-        <tag>密码</tag>
-        <tag>密码猜测</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Password Cracking Using Probabilistic Context-Free Grammars</title>
     <url>/2021/01/11/Password-Cracking-Using-Probabilistic-Context-Free-Grammars/</url>
     <content><![CDATA[<p>《Password Cracking Using Probabilistic Context-Free Grammars》论文阅读记录</p>
@@ -8392,6 +8218,180 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <p>[15] Robert McMillan, Phishing attack targets Myspace users, 2006, [Online Document] [cited 2008 Oct 07] Available HTTP <a href="http://www.infoworld.com/infoworld/article/06/10/27/HNphishingmyspace1.html">http://www.infoworld.com/infoworld/article/06/10/27/HNphishingmyspace1.html</a>. </p>
 <p>[16] Bulletin Board Announcement of the Finnish Password List, October 2007, [Online Document] [cited 2008 Oct 07] Available HTTP <a href="http://www.bat.org/news/view_post?postid=40546&amp;page=1&amp;group">http://www.bat.org/news/view_post?postid=40546&amp;page=1&amp;group</a>. </p>
 ]]></content>
+      <categories>
+        <category>论文</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
+        <tag>密码猜测</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Monte Carlo Strength Evaluation-Fast and Reliable Password Checking</title>
+    <url>/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/</url>
+    <content><![CDATA[<p>《Monte Carlo Strength Evaluation-Fast and Reliable Password Checking》论文阅读记录</p>
+<a id="more"></a>
+
+<font face="宋体">
+<font size="4">
+
+<h1 id="Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking-Monte-Carlo强度评估——快速可靠的密码检查"><a href="#Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking-Monte-Carlo强度评估——快速可靠的密码检查" class="headerlink" title="Monte Carlo Strength Evaluation-Fast and Reliable Password Checking  Monte Carlo强度评估——快速可靠的密码检查"></a>Monte Carlo Strength Evaluation-Fast and Reliable Password Checking <br> Monte Carlo强度评估——快速可靠的密码检查</h1><font>
+<font size="3">
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>提出了一种新的方法，来估计使用现代攻击查找密码所需的猜测次数</li>
+<li>所需资源少，适用于广泛的概率模型，具有很好的收敛性</li>
+<li>实验证明了该方案的可扩展性和通用性</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>密码表鼓励用户选择更好的密码，但它们的输出通常是有问题的，因为它不是对攻击者需要破解密码的努力的可靠评估</li>
+<li>密码强度定义为攻击者猜测密码强度所需的尝试次数</li>
+<li>计算效率：采样步骤占用少，可以预先计算；一旦完成，计算密码强度就和通过二分查找一样方便</li>
+<li>对密码强度的估计以速度O（1/√n）收敛，n是样本中的密码个数</li>
+<li>较大的训练集可以改进对“平均”密码的攻击，而对于特别容易或难以猜测的密码，则没有太多收获</li>
+<li>长度要求比有关字符组成的要求更可取</li>
+<li>贡献：<ul>
+<li>一种合理的计算密码强度的方法</li>
+<li>对方法的精度进行了实证评估，包括计算成本和精度之间的权衡</li>
+<li>一个广泛的经验评估，以比较最新的攻击模式，训练集的影响和密码选择的限制</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>彩虹链（Rainbow chains）能够有效地记忆一组非常大的预先计算的密码散列，并找到出现在其中的密码</li>
+<li>在计算散列值之前，在密码上附加一个随机的位字符串——盐析技术</li>
+<li>防止猜测攻击的一个关键防御技术是密码增强或扩展，这相当于使用计算开销很大的函数对密码进行哈希运算，从而减慢猜测攻击的速度</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="密码强度评估"><a href="#密码强度评估" class="headerlink" title="密码强度评估"></a>密码强度评估</h2><ul>
+<li>最新的密码研究基于概率密码模型，试图在字符串和人类选择字符串作为密码的频率之间建立映射，来描述选择密码的方式</li>
+<li>设置所有密码的集合为$Г$，概率密码模型是一个函数$p$，$\sum_{α∈Г} p(α)=1$</li>
+<li>攻击模型按概率的降序枚举密码，模型$p$下密码$α$的强度（或秩）$S_{p}（α）$是概率大于$α$的密码数<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3></li>
+<li>$∆= \begin{Bmatrix} β∈Γ:p(β)&gt;p(α) \end{Bmatrix}\quad$，$∆$是强度比$α$弱的密码的集合</li>
+<li>基于$n$个样本密码的一个子集，当$n$趋于无穷时，能有效地逼近$S_{p}（α）$</li>
+<li>对大小为$n$的密码集$Θ$进行替换采样，对每个密码$β$进行概率$p（β）$采样</li>
+<li>$C_∆$为集合$∆$的势（度量集合规模大小）为：<br><img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/1.PNG" alt="1.PNG"></li>
+<li>为避免上溢和下溢：32位浮点数，使用64位算法</li>
+<li>可证明：<ul>
+<li>攻击模型$p$下，$C_∆$的期望为$|∆|$</li>
+<li>$C_∆$的标准差为$O（1/\sqrt{n}）$<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3></li>
+</ul>
+</li>
+<li>以上描述中，每次想要评估密码$α$的强度时从模型$p$创建一个大小为$n$的样本$Θ$</li>
+<li>优化措施：预计算概率排名曲线，并通过执行$O（log n）$查找来计算新密码的强度</li>
+<li>数组$A = [p (β_1), . . . , p (β_n)]$，其中元素降序排列</li>
+<li>创建数组$C$：$C[i]=\frac{1}{n}\sum_{j=1}^i\frac{1}{A[j]}=C[j-1]+\frac{1}{nA[j]}$</li>
+<li>计算密码$α$的强度：首先通过二分查找$A[j]&gt;p（α）$中最右边$A[j]$的索引$j$。而对应的$C_∆$就等于$C[j]$</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h2><h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><ul>
+<li>Rockyou数据集</li>
+<li>使用Xato作为测试集，Rockyou作为训练集</li>
+<li>需要明文密码来训练攻击模型和评估强度<h3 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h3></li>
+<li>N-Grams(n-1阶 Markov模型)<ul>
+<li>将字符串$c_a…c_b$在训练数据集中出现的次数设置为$o(c_a…c_b)$</li>
+<li>将字符$c_b$出现在字符串$c_a…c_{b-1}$后面的频率设置为<br>$$ P(c_b|c_a…c_{b-1}=\frac{o(c_a…c_b)}{o(c_a…c_{b-1})}  $$</li>
+<li>密码$c_1…c_l$的概率为：<br>$$p_{n-grams}(c_1…c_l)=\prod_{i=1}^{l+1}P(c_i|c_{i-n+1}…c_{i-1})$$</li>
+<li>$i≤0$或$i&gt;l$时，$c_i$被认为是一个不出现在密码中的特殊符号$⊥$，表示密码的开始或结束</li>
+<li>数据稀疏性问题：一些$n-grams$可能训练集中没有，模型会错误地将其概率标记为0</li>
+<li>实现细节：<ul>
+<li>算法如下图：<br><img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/2.PNG" alt="2.PNG"></li>
+<li>设置$c_a…c_{b-1}$为状态$s$，$c_b$为转换$t$，以简化计算</li>
+<li>对每个状态$s$，降序排列所有的转换$t_{s,i}$</li>
+<li>与计算一个累计概率数组$C_s$,$C_s[i]=\sum_{j=1}^iP(t_{s,j}|s)=C_s[i-1]+P(t_{s,i}|s)$。对此数组可使用二分查找</li>
+<li>计算的概率可能非常小，因此存储并计算概率的$log_2$对数，而不是概率本身</li>
+<li>生成的密码按降序排列</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>PCFGs<ul>
+<li>此方法认为，密码通常遵循类似的结构，例如一个单词后跟一个数字。在PCFG方法中，密码按模板分组</li>
+<li>密码的概率是通过将模板的频率乘以模板中每个模式的频率来计算的，例子如下：<br>$$p_{PCFG}(“abc123”) = P (L_3D_3) P (“abc”|L_3) P (“123”|D_3)$$</li>
+<li>从密码训练集中获取模板、数字和符号的频率，并从字典中获取字母组的频率</li>
+<li>实现细节：<ul>
+<li>不存储模板和字符组的频率，而是存储它们出现的次数</li>
+<li>计算给定密码的概率时，减去由于评估中的密码而导致的一次出现</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BackOff<ul>
+<li>通过考虑所有长度的n-grams来处理稀疏性，并丢弃出现次数小于阈值$τ$的那些——对于每一个新字符的选择，模型考虑了过去字符在训练集中出现至少$τ$次的最长序列</li>
+<li>具体如下图：<br><img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/3.PNG" alt="3.PNG"></li>
+<li>在每个密码前面加上一个开始符号</li>
+<li>实现细节<ul>
+<li>简单方法是对训练集进行一次处理，对n的任何值计算所有n-grams的出现次数，并在处理结束时删除出现次数小于$τ$的所有n-grams的信息</li>
+<li>可以迭代处理：第i次迭代中，计算i-grams的出现次数，丢弃那些少于$τ$出现次数的i-grams</li>
+<li>算法如下：<br><img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/4.PNG" alt="4.PNG"></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="方法精密度"><a href="#方法精密度" class="headerlink" title="方法精密度"></a>方法精密度</h3><ul>
+<li>下图显示了模型计算出密码的概率和对应密码强度$S_{p}（α）$之间关系，这里密码的概率不小于$2^{-20}$。每个模型训练五次，对应的阴影部分为密码强度的范围<br>  <img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/7.PNG" alt="7.PNG"></li>
+<li><figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line">The <span class="built_in">difference</span> <span class="keyword">in</span> <span class="keyword">the</span> probability vs. rank plot is due <span class="built_in">to</span> <span class="keyword">the</span> fact that <span class="keyword">each</span> model generates passwords <span class="keyword">with</span> <span class="keyword">a</span> different probability distribution.</span><br></pre></td></tr></table></figure>
+  <img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/8.PNG" alt="8.PNG"><h3 id="比较攻击模型"><a href="#比较攻击模型" class="headerlink" title="比较攻击模型"></a>比较攻击模型</h3></li>
+<li>绘制了攻击者根据猜测次数猜测单个密码的概率</li>
+<li>使用Xato作为训练集，通过计算Rockyou数据集中的密码获得结果</li>
+<li>对于前$2^{16}-2^{20}$个猜测，backoff和PCFG的性能几乎相等：这是因为这两个模型基本上都在猜测训练数据集中最频繁的密码</li>
+<li>密码的出现次数低于BackOff模型的阈值时，PCFG模型继续猜测训练集中的单词，而BackOff模型开始尝试“泛化”——起初，这有利于PCFGs，但最终BackOff模型的效果更好</li>
+<li>最佳攻击策略取决于攻击者能够承受的猜测次数<br> <img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/6.PNG" alt="6.PNG"></li>
+<li>密码抵抗某一攻击的强度表明了密码抵抗其他攻击的强度</li>
+<li>N-grams：<ul>
+<li>训练集较大，因此即使使用更高阶的模型（n=3和n=4）也可以找到大部分密码</li>
+<li>基于2-grams和1-grams的攻击模型效果较差</li>
+</ul>
+</li>
+<li>PCFG：<ul>
+<li>更好的训练集（Rockyou而不是Xato）显著提高了性能</li>
+</ul>
+</li>
+<li>BackOff：<ul>
+<li>使用匹配的数据集作为训练集可以提高攻击效果<h3 id="训练集的影响"><a href="#训练集的影响" class="headerlink" title="训练集的影响"></a>训练集的影响</h3></li>
+</ul>
+</li>
+<li>考虑BackOff模型，它对于任何次数的尝试都获得了很好的猜测概率</li>
+<li>在训练数据集的0.1%到100%之间改变训练集大小</li>
+<li>较大的训练集对猜测最简单的密码（最常见的密码可能位于原始训练集的较小子集中）或最难的密码（它们很可能是唯一的，并且即使从较大的训练集中也很少能收集到关于它们的信息）几乎没有影响</li>
+<li>提高训练集大小对于“平均”密码（即在较大的数据集中可以找到给定密码或类似的密码）似乎很有用<h3 id="评估强制性要求"><a href="#评估强制性要求" class="headerlink" title="评估强制性要求"></a>评估强制性要求</h3></li>
+<li>假设攻击者知道此限制，因此不会猜测不满足要求的密码</li>
+<li>这些结果应被视为对通过实施此类限制可以获得的强度改进的乐观评估</li>
+<li>给定一个布尔函数$f（α）$，该函数表示了当前密码是否符合要求，新强度度量应该只计算概率高于$p（β）&gt;p（α）$且$f（β）$为真的密码</li>
+<li>使用backoff攻击模型，结果如下：<br><img src="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/5.PNG" alt="5.PNG"></li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>提供了一个可靠的估计——使用最先进的猜测技术对密码进行非常昂贵的攻击的成功率</li>
+<li>猜测密码所需的尝试次数与不同的攻击之间存在相关性</li>
+<li>应针对几种攻击模型检查用户密码，合理的策略是保守地输出产生最低强度值的结果</li>
+<li>相信密码猜测的新发展将很可能继续使用生成概率模型</li>
+</ul>
+<hr>
+<font>
+<font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font>]]></content>
       <categories>
         <category>论文</category>
       </categories>
