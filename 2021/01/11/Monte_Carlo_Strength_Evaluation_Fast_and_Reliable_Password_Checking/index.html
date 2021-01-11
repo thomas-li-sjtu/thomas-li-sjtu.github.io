@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/11/Monte_Carlo_Strength_Evaluation_Fast_and_Reliable_Password_Checking/6.PNG">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/11/Monte_Carlo_Strength_Evaluation_Fast_and_Reliable_Password_Checking/5.PNG">
 <meta property="article:published_time" content="2021-01-11T11:30:16.000Z">
-<meta property="article:modified_time" content="2021-01-11T11:47:55.054Z">
+<meta property="article:modified_time" content="2021-01-11T11:51:31.989Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="密码">
 <meta property="article:tag" content="密码猜测">
@@ -316,7 +316,9 @@
 <h2 id="密码强度评估"><a href="#密码强度评估" class="headerlink" title="密码强度评估"></a>密码强度评估</h2><ul>
 <li>最新的密码研究基于概率密码模型，试图在字符串和人类选择字符串作为密码的频率之间建立映射，来描述选择密码的方式</li>
 <li>设置所有密码的集合为$Г$，概率密码模型是一个函数$p$，$\sum_{α∈Г} p(α)=1$</li>
-<li>攻击模型按概率的降序枚举密码，模型$p$下密码$α$的强度（或秩）$S_{p}（α）$是概率大于$α$的密码数<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3></li>
+<li>攻击模型按概率的降序枚举密码，模型$p$下密码$α$的强度（或秩）$S_{p}（α）$是概率大于$α$的密码数</li>
+</ul>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ul>
 <li>$∆= \begin{Bmatrix} β∈Γ:p(β)&gt;p(α) \end{Bmatrix}\quad$，$∆$是强度比$α$弱的密码的集合</li>
 <li>基于$n$个样本密码的一个子集，当$n$趋于无穷时，能有效地逼近$S_{p}（α）$</li>
 <li>对大小为$n$的密码集$Θ$进行替换采样，对每个密码$β$进行概率$p（β）$采样</li>
@@ -324,9 +326,11 @@
 <li>为避免上溢和下溢：32位浮点数，使用64位算法</li>
 <li>可证明：<ul>
 <li>攻击模型$p$下，$C_∆$的期望为$|∆|$</li>
-<li>$C_∆$的标准差为$O（1/\sqrt{n}）$<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3></li>
+<li>$C_∆$的标准差为$O（1/\sqrt{n}）$</li>
 </ul>
 </li>
+</ul>
+<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><ul>
 <li>以上描述中，每次想要评估密码$α$的强度时从模型$p$创建一个大小为$n$的样本$Θ$</li>
 <li>优化措施：预计算概率排名曲线，并通过执行$O（log n）$查找来计算新密码的强度</li>
 <li>数组$A = [p (β_1), . . . , p (β_n)]$，其中元素降序排列</li>
@@ -340,7 +344,9 @@
 <h2 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h2><h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><ul>
 <li>Rockyou数据集</li>
 <li>使用Xato作为测试集，Rockyou作为训练集</li>
-<li>需要明文密码来训练攻击模型和评估强度<h3 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h3></li>
+<li>需要明文密码来训练攻击模型和评估强度</li>
+</ul>
+<h3 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h3><ul>
 <li>N-Grams(n-1阶 Markov模型)<ul>
 <li>将字符串$c_a…c_b$在训练数据集中出现的次数设置为$o(c_a…c_b)$</li>
 <li>将字符$c_b$出现在字符串$c_a…c_{b-1}$后面的频率设置为<br>$$ P(c_b|c_a…c_{b-1}=\frac{o(c_a…c_b)}{o(c_a…c_{b-1})}  $$</li>
@@ -388,8 +394,12 @@
 
 <h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="方法精密度"><a href="#方法精密度" class="headerlink" title="方法精密度"></a>方法精密度</h3><ul>
 <li>下图显示了模型计算出密码的概率和对应密码强度$S_{p}（α）$之间关系，这里密码的概率不小于$2^{-20}$。每个模型训练五次，对应的阴影部分为密码强度的范围<br>  <img src="/2021/01/11/Monte_Carlo_Strength_Evaluation_Fast_and_Reliable_Password_Checking/7.PNG" alt="7.PNG"></li>
-<li><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">The <span class="built_in">difference</span> <span class="keyword">in</span> <span class="keyword">the</span> probability vs. rank plot is due <span class="built_in">to</span> <span class="keyword">the</span> fact that <span class="keyword">each</span> model generates passwords <span class="keyword">with</span> <span class="keyword">a</span> different probability distribution.</span><br></pre></td></tr></table></figure>
-  <img src="/2021/01/11/Monte_Carlo_Strength_Evaluation_Fast_and_Reliable_Password_Checking/8.PNG" alt="8.PNG"><h3 id="比较攻击模型"><a href="#比较攻击模型" class="headerlink" title="比较攻击模型"></a>比较攻击模型</h3></li>
+</ul>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">The <span class="built_in">difference</span> <span class="keyword">in</span> <span class="keyword">the</span> probability vs. rank plot is due <span class="built_in">to</span> <span class="keyword">the</span> fact that <span class="keyword">each</span> model generates passwords <span class="keyword">with</span> <span class="keyword">a</span> different probability distribution.</span><br></pre></td></tr></table></figure>
+
+<img src="/2021/01/11/Monte_Carlo_Strength_Evaluation_Fast_and_Reliable_Password_Checking/8.PNG" alt="8.PNG" style="zoom:67%;">
+
+<h3 id="比较攻击模型"><a href="#比较攻击模型" class="headerlink" title="比较攻击模型"></a>比较攻击模型</h3><ul>
 <li>绘制了攻击者根据猜测次数猜测单个密码的概率</li>
 <li>使用Xato作为训练集，通过计算Rockyou数据集中的密码获得结果</li>
 <li>对于前$2^{16}-2^{20}$个猜测，backoff和PCFG的性能几乎相等：这是因为这两个模型基本上都在猜测训练数据集中最频繁的密码</li>
@@ -520,10 +530,7 @@
     <a href="/2021/01/11/Password-Cracking-Using-Probabilistic-Context-Free-Grammars/" rel="prev" title="Password Cracking Using Probabilistic Context-Free Grammars">
       <i class="fa fa-chevron-left"></i> Password Cracking Using Probabilistic Context-Free Grammars
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/01/11/Monte-Carlo-Strength-Evaluation-Fast-and-Reliable-Password-Checking/" rel="next" title="Monte Carlo Strength Evaluation-Fast and Reliable Password Checking">
-      Monte Carlo Strength Evaluation-Fast and Reliable Password Checking <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -602,7 +609,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-count">37</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -691,12 +698,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">261k</span>
+    <span title="站点总字数">257k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:57</span>
+    <span title="站点阅读时长">3:54</span>
 </div>
 
         
