@@ -8794,13 +8794,15 @@ $ chmod +r  xampp.run #给xampp.run读权限
       </tags>
   </entry>
   <entry>
-    <title>Python深度学习 第二部分</title>
+    <title>Python深度学习（2）实践——CNN与RNN</title>
     <url>/2021/01/19/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_2%E5%AE%9E%E8%B7%B5/</url>
-    <content><![CDATA[<p>《Python深度学习》笔记整理：第二部分 深度学习实践</p>
+    <content><![CDATA[<p>《Python深度学习》笔记整理：第二部分 深度学习实践——CNN与RNN</p>
 <p>代码基于 Keras 框架</p>
 <a id="more"></a>
 
-<h2 id="深度学习实践"><a href="#深度学习实践" class="headerlink" title="深度学习实践"></a>深度学习实践</h2><h3 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h3><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = models.Sequential() </span><br><span class="line">model.add(layers.Conv2D(<span class="number">32</span>, (<span class="number">3</span>, <span class="number">3</span>), activation=<span class="string">&#x27;relu&#x27;</span>, input_shape=(<span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>)))  </span><br><span class="line">model.add(layers.MaxPooling2D((<span class="number">2</span>, <span class="number">2</span>))) </span><br><span class="line">model.add(layers.Conv2D(<span class="number">64</span>, (<span class="number">3</span>, <span class="number">3</span>), activation=<span class="string">&#x27;relu&#x27;</span>))  </span><br><span class="line">model.add(layers.MaxPooling2D((<span class="number">2</span>, <span class="number">2</span>))) </span><br><span class="line">model.add(layers.Conv2D(<span class="number">64</span>, (<span class="number">3</span>, <span class="number">3</span>), activation=<span class="string">&#x27;relu&#x27;</span>))</span><br><span class="line">model.add(layers.Flatten()) </span><br><span class="line">model.add(layers.Dense(<span class="number">64</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.Dense(<span class="number">10</span>, activation=<span class="string">&#x27;softmax&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = models.Sequential() </span><br><span class="line">model.add(layers.Conv2D(<span class="number">32</span>, (<span class="number">3</span>, <span class="number">3</span>), activation=<span class="string">&#x27;relu&#x27;</span>, input_shape=(<span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>)))  </span><br><span class="line">model.add(layers.MaxPooling2D((<span class="number">2</span>, <span class="number">2</span>))) </span><br><span class="line">model.add(layers.Conv2D(<span class="number">64</span>, (<span class="number">3</span>, <span class="number">3</span>), activation=<span class="string">&#x27;relu&#x27;</span>))  </span><br><span class="line">model.add(layers.MaxPooling2D((<span class="number">2</span>, <span class="number">2</span>))) </span><br><span class="line">model.add(layers.Conv2D(<span class="number">64</span>, (<span class="number">3</span>, <span class="number">3</span>), activation=<span class="string">&#x27;relu&#x27;</span>))</span><br><span class="line">model.add(layers.Flatten()) </span><br><span class="line">model.add(layers.Dense(<span class="number">64</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.Dense(<span class="number">10</span>, activation=<span class="string">&#x27;softmax&#x27;</span>))</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><p>卷积运算</p>
@@ -8853,7 +8855,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </ul>
 </li>
 </ul>
-<h4 id="小型数据集上的应用"><a href="#小型数据集上的应用" class="headerlink" title="小型数据集上的应用"></a>小型数据集上的应用</h4><ul>
+<h3 id="小型数据集上的应用"><a href="#小型数据集上的应用" class="headerlink" title="小型数据集上的应用"></a>小型数据集上的应用</h3><ul>
 <li><p>根据大数据集，创建一个新的小数据集</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> os, shutil </span><br><span class="line"> </span><br><span class="line">original_dataset_dir = <span class="string">&#x27;/Users/fchollet/Downloads/kaggle_original_data&#x27;</span>  <span class="comment"># 原始数据集目录 </span></span><br><span class="line"> </span><br><span class="line">base_dir = <span class="string">&#x27;/Users/fchollet/Downloads/cats_and_dogs_small&#x27;</span>  <span class="comment"># 新数据集目录 </span></span><br><span class="line">os.mkdir(base_dir) </span><br><span class="line"><span class="comment"># 划分后的训练、验证和测试的目录</span></span><br><span class="line">train_dir = os.path.join(base_dir, <span class="string">&#x27;train&#x27;</span>)   </span><br><span class="line">os.mkdir(train_dir) </span><br><span class="line">validation_dir = os.path.join(base_dir, <span class="string">&#x27;validation&#x27;</span>) </span><br><span class="line">os.mkdir(validation_dir) </span><br><span class="line">test_dir = os.path.join(base_dir, <span class="string">&#x27;test&#x27;</span>) </span><br><span class="line">os.mkdir(test_dir) </span><br><span class="line"><span class="comment"># 具体类的训练目录</span></span><br><span class="line">train_cats_dir = os.path.join(train_dir, <span class="string">&#x27;cats&#x27;</span>)   </span><br><span class="line">os.mkdir(train_cats_dir)</span><br><span class="line">train_dogs_dir = os.path.join(train_dir, <span class="string">&#x27;dogs&#x27;</span>)   </span><br><span class="line">os.mkdir(train_dogs_dir) </span><br><span class="line"><span class="comment"># 具体类的验证目录</span></span><br><span class="line">validation_cats_dir = os.path.join(validation_dir, <span class="string">&#x27;cats&#x27;</span>)   </span><br><span class="line">os.mkdir(validation_cats_dir) </span><br><span class="line">validation_dogs_dir = os.path.join(validation_dir, <span class="string">&#x27;dogs&#x27;</span>)   </span><br><span class="line">os.mkdir(validation_dogs_dir) </span><br><span class="line"><span class="comment"># 具体类的测试目录</span></span><br><span class="line">test_cats_dir = os.path.join(test_dir, <span class="string">&#x27;cats&#x27;</span>)   </span><br><span class="line">os.mkdir(test_cats_dir) </span><br><span class="line">test_dogs_dir = os.path.join(test_dir, <span class="string">&#x27;dogs&#x27;</span>)   </span><br><span class="line">os.mkdir(test_dogs_dir) </span><br><span class="line"><span class="comment"># 前1000张复制到训练目录</span></span><br><span class="line">fnames = [<span class="string">&#x27;cat.&#123;&#125;.jpg&#x27;</span>.<span class="built_in">format</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>)] </span><br><span class="line"><span class="keyword">for</span> fname <span class="keyword">in</span> fnames: </span><br><span class="line">    src = os.path.join(original_dataset_dir, fname) </span><br><span class="line">    dst = os.path.join(train_cats_dir, fname) </span><br><span class="line">    shutil.copyfile(src, dst) </span><br><span class="line">fnames = [<span class="string">&#x27;dog.&#123;&#125;.jpg&#x27;</span>.<span class="built_in">format</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>)] </span><br><span class="line"><span class="keyword">for</span> fname <span class="keyword">in</span> fnames: </span><br><span class="line">    src = os.path.join(original_dataset_dir, fname) </span><br><span class="line">    dst = os.path.join(train_dogs_dir, fname) </span><br><span class="line">    shutil.copyfile(src, dst) </span><br><span class="line"><span class="comment"># 后500张复制到验证目录</span></span><br><span class="line">fnames = [<span class="string">&#x27;cat.&#123;&#125;.jpg&#x27;</span>.<span class="built_in">format</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>, <span class="number">1500</span>)]   </span><br><span class="line"><span class="keyword">for</span> fname <span class="keyword">in</span> fnames: </span><br><span class="line">    src = os.path.join(original_dataset_dir, fname) </span><br><span class="line">    dst = os.path.join(validation_cats_dir, fname) </span><br><span class="line">    shutil.copyfile(src, dst) </span><br><span class="line">fnames = [<span class="string">&#x27;dog.&#123;&#125;.jpg&#x27;</span>.<span class="built_in">format</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>, <span class="number">1500</span>)]   </span><br><span class="line"><span class="keyword">for</span> fname <span class="keyword">in</span> fnames: </span><br><span class="line">    src = os.path.join(original_dataset_dir, fname) </span><br><span class="line">    dst = os.path.join(validation_dogs_dir, fname) </span><br><span class="line">    shutil.copyfile(src, dst) </span><br><span class="line"><span class="comment"># 后500张复制到测试目录</span></span><br><span class="line">fnames = [<span class="string">&#x27;cat.&#123;&#125;.jpg&#x27;</span>.<span class="built_in">format</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1500</span>, <span class="number">2000</span>)]   </span><br><span class="line"><span class="keyword">for</span> fname <span class="keyword">in</span> fnames: </span><br><span class="line">    src = os.path.join(original_dataset_dir, fname) </span><br><span class="line">    dst = os.path.join(test_cats_dir, fname) </span><br><span class="line">    shutil.copyfile(src, dst)  </span><br><span class="line">fnames = [<span class="string">&#x27;dog.&#123;&#125;.jpg&#x27;</span>.<span class="built_in">format</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1500</span>, <span class="number">2000</span>)]   </span><br><span class="line"><span class="keyword">for</span> fname <span class="keyword">in</span> fnames: </span><br><span class="line">    src = os.path.join(original_dataset_dir, fname) </span><br><span class="line">    dst = os.path.join(test_dogs_dir, fname) </span><br><span class="line">    shutil.copyfile(src, dst)</span><br></pre></td></tr></table></figure>
 </li>
@@ -8889,7 +8891,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </ul>
 </li>
 </ul>
-<h4 id="预训练的CNN"><a href="#预训练的CNN" class="headerlink" title="预训练的CNN"></a>预训练的CNN</h4><p>预训练网络（pretrained network）是一个保存好的网络，之前已在大型数据集（通常是大规模图像分类任务）上训练好，可将其应用于某个不相干的任务上</p>
+<h3 id="预训练的CNN"><a href="#预训练的CNN" class="headerlink" title="预训练的CNN"></a>预训练的CNN</h3><p>预训练网络（pretrained network）是一个保存好的网络，之前已在大型数据集（通常是大规模图像分类任务）上训练好，可将其应用于某个不相干的任务上</p>
 <ul>
 <li><p>特征提取：使用预训练网络从新样本中提取出特征，输入一个新的分类器，进行训练（以模型 VGG16 为例）</p>
 <ul>
@@ -8918,13 +8920,11 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li><p>微调应当在添加部分训练完后进行，即先冻结卷积基，训练全连接分类器，后解冻，联合训练</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 冻结直到某一层的所有层</span></span><br><span class="line">conv_base.trainable = <span class="literal">True</span> </span><br><span class="line"> </span><br><span class="line">set_trainable = <span class="literal">False</span> </span><br><span class="line"><span class="keyword">for</span> layer <span class="keyword">in</span> conv_base.layers: </span><br><span class="line">    <span class="keyword">if</span> layer.name == <span class="string">&#x27;block5_conv1&#x27;</span>:  <span class="comment"># 名字参见summary()的第一列</span></span><br><span class="line">        set_trainable = <span class="literal">True</span> </span><br><span class="line">    <span class="keyword">if</span> set_trainable: </span><br><span class="line">        layer.trainable = <span class="literal">True</span> </span><br><span class="line">    <span class="keyword">else</span>: </span><br><span class="line">        layer.trainable = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 微调模型</span></span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&#x27;binary_crossentropy&#x27;</span>, </span><br><span class="line">              optimizer=optimizers.RMSprop(lr=<span class="number">1e-5</span>), </span><br><span class="line">              metrics=[<span class="string">&#x27;acc&#x27;</span>]) </span><br><span class="line"> </span><br><span class="line">history = model.fit_generator( </span><br><span class="line">      train_generator, </span><br><span class="line">      steps_per_epoch=<span class="number">100</span>, </span><br><span class="line">      epochs=<span class="number">100</span>, </span><br><span class="line">      validation_data=validation_generator, </span><br><span class="line">      validation_steps=<span class="number">50</span>)</span><br></pre></td></tr></table></figure>
 
-
-
 </li>
 </ul>
 </li>
 </ul>
-<h4 id="CNN的可视化"><a href="#CNN的可视化" class="headerlink" title="CNN的可视化"></a>CNN的可视化</h4><p>卷积神经网络学到的表示非常适合可视化，很大程度上因为是视觉概念的表示</p>
+<h3 id="CNN的可视化"><a href="#CNN的可视化" class="headerlink" title="CNN的可视化"></a>CNN的可视化</h3><p>卷积神经网络学到的表示非常适合可视化，很大程度上因为是视觉概念的表示</p>
 <ul>
 <li><p>可视化中间激活：理解卷积神经网络连续的层如何对输入进行变换</p>
 <ul>
@@ -8988,7 +8988,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </ul>
 </li>
 </ul>
-<h3 id="RNN"><a href="#RNN" class="headerlink" title="RNN"></a>RNN</h3><h4 id="文本数据处理"><a href="#文本数据处理" class="headerlink" title="文本数据处理"></a>文本数据处理</h4><ul>
+<h2 id="RNN"><a href="#RNN" class="headerlink" title="RNN"></a>RNN</h2><h3 id="文本数据处理"><a href="#文本数据处理" class="headerlink" title="文本数据处理"></a>文本数据处理</h3><ul>
 <li>文本向量化<ul>
 <li>文本分割为单词，并将每个单词转换为一个向量</li>
 <li>文本分割为字符，并将每个字符转换为一个向量</li>
@@ -8997,7 +8997,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </li>
 <li>分解的单元称为标记（token），其过程为分词（tokenization）</li>
 </ul>
-<h4 id="RNN-1"><a href="#RNN-1" class="headerlink" title="RNN"></a>RNN</h4><h4 id="一维卷积神经网络"><a href="#一维卷积神经网络" class="headerlink" title="一维卷积神经网络"></a>一维卷积神经网络</h4>]]></content>
+<h3 id="RNN-1"><a href="#RNN-1" class="headerlink" title="RNN"></a>RNN</h3><h3 id="一维卷积神经网络"><a href="#一维卷积神经网络" class="headerlink" title="一维卷积神经网络"></a>一维卷积神经网络</h3>]]></content>
       <categories>
         <category>深度学习</category>
       </categories>
@@ -9007,7 +9007,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
       </tags>
   </entry>
   <entry>
-    <title>Python深度学习 第一部分</title>
+    <title>Python深度学习（1）基础</title>
     <url>/2020/11/07/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_1%E5%9F%BA%E7%A1%80/</url>
     <content><![CDATA[<p>《Python深度学习》笔记整理：第一部分 深度学习基础</p>
 <p>代码基于 Keras 框架</p>
