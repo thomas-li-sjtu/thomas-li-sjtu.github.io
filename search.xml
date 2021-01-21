@@ -8992,12 +8992,128 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>文本向量化<ul>
 <li>文本分割为单词，并将每个单词转换为一个向量</li>
 <li>文本分割为字符，并将每个字符转换为一个向量</li>
-<li>单词或字符的 n-gram，并将每个 n-gram 转换为一个向量</li>
+<li>单词或字符的 n-gram，并将每个 n-gram 转换为一个向量——形成二元、三元语法袋，即成立的是标记的集合</li>
 </ul>
 </li>
-<li>分解的单元称为标记（token），其过程为分词（tokenization）</li>
+<li>分解的单元称为标记（token），其过程为分词（tokenization）<ul>
+<li>独热编码</li>
+<li>标记嵌入（token embedding）</li>
 </ul>
-<h3 id="RNN-1"><a href="#RNN-1" class="headerlink" title="RNN"></a>RNN</h3><h3 id="一维卷积神经网络"><a href="#一维卷积神经网络" class="headerlink" title="一维卷积神经网络"></a>一维卷积神经网络</h3>]]></content>
+</li>
+<li>词袋是一种不保存顺序的分词方法，往往被用于浅层的语言处理模型如 logistic 回归和随机森林</li>
+</ul>
+<h4 id="独热码"><a href="#独热码" class="headerlink" title="独热码"></a>独热码</h4><ul>
+<li><p>字符级独热码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> string </span><br><span class="line"> </span><br><span class="line">samples = [<span class="string">&#x27;The cat sat on the mat.&#x27;</span>, <span class="string">&#x27;The dog ate my homework.&#x27;</span>] </span><br><span class="line">characters = string.printable  <span class="comment"># 所有可打印的 ASCII 字符 </span></span><br><span class="line">token_index = <span class="built_in">dict</span>(<span class="built_in">zip</span>(<span class="built_in">range</span>(<span class="number">1</span>, <span class="built_in">len</span>(characters) + <span class="number">1</span>), characters)) </span><br><span class="line"> </span><br><span class="line">max_length = <span class="number">50</span> </span><br><span class="line">results = np.zeros((<span class="built_in">len</span>(samples), max_length, <span class="built_in">max</span>(token_index.keys()) + <span class="number">1</span>))  <span class="comment"># 结果保存在results中</span></span><br><span class="line"><span class="keyword">for</span> i, sample <span class="keyword">in</span> <span class="built_in">enumerate</span>(samples): </span><br><span class="line">    <span class="keyword">for</span> j, character <span class="keyword">in</span> <span class="built_in">enumerate</span>(sample): </span><br><span class="line">        index = token_index.get(character) </span><br><span class="line">        results[i, j, index] = <span class="number">1.</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Keras 内置函数实现独热编码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.preprocessing.text <span class="keyword">import</span> Tokenizer </span><br><span class="line"> </span><br><span class="line">samples = [<span class="string">&#x27;The cat sat on the mat.&#x27;</span>, <span class="string">&#x27;The dog ate my homework.&#x27;</span>] </span><br><span class="line"> </span><br><span class="line">tokenizer = Tokenizer(num_words=<span class="number">1000</span>)  <span class="comment"># 分词器，只考虑前1000个最常见的单词</span></span><br><span class="line">tokenizer.fit_on_texts(samples)  <span class="comment"># 构建单词索引</span></span><br><span class="line"> </span><br><span class="line">sequences = tokenizer.texts_to_sequences(samples)  <span class="comment"># 字符串转换为整数索引组成的列表</span></span><br><span class="line"> </span><br><span class="line">one_hot_results = tokenizer.texts_to_matrix(samples, mode=<span class="string">&#x27;binary&#x27;</span>)  <span class="comment"># 得到one-hot二进制表示</span></span><br><span class="line"> </span><br><span class="line">word_index = tokenizer.word_index  <span class="comment"># 找回单词索引 &#123;&#x27;the&#x27;: 1, ... &#x27;homework&#x27;: 9&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果唯一标记的数目很多，则可将单词散列编码为固定长度的向量，避免维护一个显式的单词索引</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">samples = [<span class="string">&#x27;The cat sat on the mat.&#x27;</span>, <span class="string">&#x27;The dog ate my homework.&#x27;</span>] </span><br><span class="line">dimensionality = <span class="number">1000</span>  <span class="comment"># 单词保存为长度为1000的向量</span></span><br><span class="line">max_length = <span class="number">10</span> </span><br><span class="line"> </span><br><span class="line">results = np.zeros((<span class="built_in">len</span>(samples), max_length, dimensionality)) </span><br><span class="line"><span class="keyword">for</span> i, sample <span class="keyword">in</span> <span class="built_in">enumerate</span>(samples): </span><br><span class="line">    <span class="keyword">for</span> j, word <span class="keyword">in</span> <span class="built_in">list</span>(<span class="built_in">enumerate</span>(sample.split()))[:max_length]: </span><br><span class="line">        index = <span class="built_in">abs</span>(<span class="built_in">hash</span>(word)) % dimensionality  <span class="comment"># 将单词散列为0~1000范围内的一个随机整数索引</span></span><br><span class="line">        results[i, j, index] = <span class="number">1.</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="词嵌入"><a href="#词嵌入" class="headerlink" title="词嵌入"></a>词嵌入</h4><ul>
+<li><p>one-hot 编码得到的向量是二进制、稀疏、维度高，词嵌入是低维的浮点数向量</p>
+<ul>
+<li>完成主任务（如文档分类或情感预测）的同时学习词嵌入</li>
+<li>预计算词嵌入，将其加载到模型中</li>
+</ul>
+</li>
+<li><p>合理的做法是对每个新任务都学习一个新的嵌入空间——学习 Embedding 层的权重；Embedding 层实际上是一种字典查找，将整数索引（表示特定单词）映射为密集向量</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.layers <span class="keyword">import</span> Embedding </span><br><span class="line"> </span><br><span class="line">embedding_layer = Embedding(<span class="number">1000</span>, <span class="number">64</span>, input_length=<span class="number">10</span>)  <span class="comment"># 标记个数（1000），嵌入的维度（64），句子最长的长度</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>输入是一个二维整数张量（samples, sequence_length），返回三维浮点数张量（samples, sequence_length, embedding_dimensionality）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Sequential  </span><br><span class="line"><span class="keyword">from</span> keras.layers <span class="keyword">import</span> Flatten, Dense, Embedding</span><br><span class="line"></span><br><span class="line">model = Sequential() </span><br><span class="line">model.add(Embedding(<span class="number">10000</span>, <span class="number">8</span>, input_length=maxlen))   </span><br><span class="line">model.add(Flatten())   </span><br><span class="line">model.add(Dense(<span class="number">1</span>, activation=<span class="string">&#x27;sigmoid&#x27;</span>)) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>预计算的词嵌入：</p>
+<ul>
+<li><p>类似卷积基，可以下载词嵌入数据库并在 Keras 的 Embedding 层中使用</p>
+</li>
+<li><p>word2vec， GloVe等</p>
+</li>
+<li><p> <a href="https://nlp.stanford.edu/projects/glove">glove.6B.zip  2014年英文维基百科的预计算嵌入</a></p>
+</li>
+<li><p>解析嵌入文件</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">glove_dir = <span class="string">&#x27;/Users/fchollet/Downloads/glove.6B&#x27;</span> </span><br><span class="line"> </span><br><span class="line">embeddings_index = &#123;&#125; </span><br><span class="line">f = <span class="built_in">open</span>(os.path.join(glove_dir, <span class="string">&#x27;glove.6B.100d.txt&#x27;</span>)) </span><br><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> f: </span><br><span class="line">    values = line.split() </span><br><span class="line">    word = values[<span class="number">0</span>] </span><br><span class="line">    coefs = np.asarray(values[<span class="number">1</span>:], dtype=<span class="string">&#x27;float32&#x27;</span>) </span><br><span class="line">    embeddings_index[word] = coefs </span><br><span class="line">f.close()</span><br><span class="line"></span><br><span class="line">embedding_dim = <span class="number">100</span> </span><br><span class="line"> </span><br><span class="line">embedding_matrix = np.zeros((max_words, embedding_dim)) </span><br><span class="line"><span class="keyword">for</span> word, i <span class="keyword">in</span> word_index.items(): </span><br><span class="line">    <span class="keyword">if</span> i &lt; max_words: </span><br><span class="line">        embedding_vector = embeddings_index.get(word) </span><br><span class="line">        <span class="keyword">if</span> embedding_vector <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>: </span><br><span class="line">            embedding_matrix[i] = embedding_vector  <span class="comment"># 嵌入索引找不到的词，其嵌入向量均为0</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建模型，加载嵌入</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 定义模型</span></span><br><span class="line">...</span><br><span class="line"><span class="comment"># 加载嵌入层权重并冻结</span></span><br><span class="line">model.layers[<span class="number">0</span>].set_weights([embedding_matrix]) </span><br><span class="line">model.layers[<span class="number">0</span>].trainable = <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="RNN-1"><a href="#RNN-1" class="headerlink" title="RNN"></a>RNN</h3><p>以上神经网络单独处理每个输入，在输入与输入之间没有保存任何状态</p>
+<ul>
+<li><p>RNN 的 Numpy 实现</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np </span><br><span class="line"> </span><br><span class="line">timesteps = <span class="number">100</span>  <span class="comment"># 输入序列的时间步数</span></span><br><span class="line">input_features = <span class="number">32</span>  <span class="comment"># 输入特征空间的维度</span></span><br><span class="line">output_features = <span class="number">64</span>  <span class="comment"># 输出特征空间的维度</span></span><br><span class="line"> </span><br><span class="line">inputs = np.random.random((timesteps, input_features))  </span><br><span class="line"> </span><br><span class="line">state_t = np.zeros((output_features,))  <span class="comment"># 初始状态：全零向量</span></span><br><span class="line"><span class="comment"># 创建随机的权重矩阵</span></span><br><span class="line">W = np.random.random((output_features, input_features))  </span><br><span class="line">U = np.random.random((output_features, output_features)) </span><br><span class="line">b = np.random.random((output_features,)) </span><br><span class="line"> </span><br><span class="line">successive_outputs = [] </span><br><span class="line"><span class="keyword">for</span> input_t <span class="keyword">in</span> inputs: </span><br><span class="line">    <span class="comment"># 由输入和当前状态（前一个输出）得到当前输出</span></span><br><span class="line">    output_t = np.tanh(np.dot(W, input_t) + np.dot(U, state_t) + b)  </span><br><span class="line"> </span><br><span class="line">    successive_outputs.append(output_t)  <span class="comment"># 输出保存到一个列表</span></span><br><span class="line"> </span><br><span class="line">    state_t = output_t  <span class="comment"># 更新网络的状态，用于下一个时间步</span></span><br><span class="line"> </span><br><span class="line">final_output_sequence = np.stack(successive_outputs, axis=<span class="number">0</span>)  <span class="comment"># 输出是一个形状为(timesteps,output_features) 的二维张量</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Keras 中 SimpleRNN 接收输入（batch_size, timesteps, input_features），可以输出（batch_size, timesteps, output_features）或（batch_size, output_features），取决于参数<code>return_sequences=True</code></p>
+</li>
+<li><p>堆叠需要所有中间层都返回完整的输出序列</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = Sequential()  </span><br><span class="line">model.add(Embedding(max_features, <span class="number">32</span>))  </span><br><span class="line">model.add(SimpleRNN(<span class="number">32</span>, return_sequences=<span class="literal">True</span>))</span><br><span class="line">model.add(SimpleRNN(<span class="number">32</span>)) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SimpleRNN 不擅长处理长序列</p>
+</li>
+<li><p>LSTM：添加额外的数据流，其中携带着跨越时间步的信息；适用于评论分析全局的长期性结构</p>
+<p><img src="/2021/01/19/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_2%E5%AE%9E%E8%B7%B5/image-20210121152741257.png" alt="image-20210121152741257"></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">output_t = activation(dot(state_t, Uo) + dot(input_t, Wo) + dot(C_t, Vo) + bo) </span><br><span class="line"> </span><br><span class="line">i_t = activation(dot(state_t, Ui) + dot(input_t, Wi) + bi)  </span><br><span class="line">f_t = activation(dot(state_t, Uf) + dot(input_t, Wf) + bf)  </span><br><span class="line">k_t = activation(dot(state_t, Uk) + dot(input_t, Wk) + bk)</span><br><span class="line">c_t+<span class="number">1</span> = i_t * k_t + c_t * f_t</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = Sequential() </span><br><span class="line">model.add(Embedding(max_features, <span class="number">32</span>)) </span><br><span class="line">model.add(LSTM(<span class="number">32</span>)) </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="堆叠循环与双向循环"><a href="#堆叠循环与双向循环" class="headerlink" title="堆叠循环与双向循环"></a>堆叠循环与双向循环</h3><ul>
+<li><p>dropout降低过拟合</p>
+<ul>
+<li>每个循环层都有两个与 dropout 相关的参数：<code>dropout</code>指定该层输入单元的丢弃比率，<code>recurrent_dropout</code>指定循环单元的丢弃比率</li>
+</ul>
+</li>
+<li><p>堆叠循环层：提高网络的表示能力</p>
+<ul>
+<li>所有中间层都应该返回完整的输出序列（3D 张量） </li>
+<li>通过指定<code>return_sequences=True</code>实现</li>
+</ul>
+</li>
+<li><p>双向循环层：相同的信息以不同的方式呈现给循环网络</p>
+<ul>
+<li><p>包含两个普通 RNN，每个 RNN 分别沿一个方向对输入序列进行处理，并结合二者的表示</p>
+</li>
+<li><p>如果在序列数据中最近的数据比序列开头包含更多的信息，双向循环的效果就不明显</p>
+</li>
+<li><p>逆序序列训练一个 RNN</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.datasets <span class="keyword">import</span> imdb </span><br><span class="line"><span class="keyword">from</span> keras.preprocessing <span class="keyword">import</span> sequence </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Sequential </span><br><span class="line"> </span><br><span class="line">max_features = <span class="number">10000</span>  <span class="comment"># 单词索引规模</span></span><br><span class="line">maxlen = <span class="number">500</span>  <span class="comment"># 序列最长长度</span></span><br><span class="line"> </span><br><span class="line">(x_train, y_train), (x_test, y_test) = imdb.load_data( </span><br><span class="line">    num_words=max_features)   </span><br><span class="line"><span class="comment"># 反转序列</span></span><br><span class="line">x_train = [x[::<span class="number">-1</span>] <span class="keyword">for</span> x <span class="keyword">in</span> x_train]   </span><br><span class="line">x_test = [x[::<span class="number">-1</span>] <span class="keyword">for</span> x <span class="keyword">in</span> x_test] </span><br><span class="line"><span class="comment"># 填充序列</span></span><br><span class="line">x_train = sequence.pad_sequences(x_train, maxlen=maxlen)   </span><br><span class="line">x_test = sequence.pad_sequences(x_test, maxlen=maxlen) </span><br><span class="line"> </span><br><span class="line">model = Sequential() </span><br><span class="line">model.add(layers.Embedding(max_features, <span class="number">128</span>)) </span><br><span class="line">model.add(layers.LSTM(<span class="number">32</span>)) </span><br><span class="line">model.add(layers.Dense(<span class="number">1</span>, activation=<span class="string">&#x27;sigmoid&#x27;</span>)) </span><br><span class="line"> </span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>, </span><br><span class="line">              loss=<span class="string">&#x27;binary_crossentropy&#x27;</span>, </span><br><span class="line">              metrics=[<span class="string">&#x27;acc&#x27;</span>]) </span><br><span class="line"> </span><br><span class="line">history = model.fit(x_train, y_train, </span><br><span class="line">                    epochs=<span class="number">10</span>, </span><br><span class="line">                    batch_size=<span class="number">128</span>, </span><br><span class="line">                    validation_split=<span class="number">0.2</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>训练并评估一个双向 LSTM</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = Sequential()  </span><br><span class="line">model.add(layers.Embedding(max_features, <span class="number">32</span>))  </span><br><span class="line">model.add(layers.Bidirectional(layers.LSTM(<span class="number">32</span>)))  <span class="comment"># 第一个参数是一个循环层实例 </span></span><br><span class="line">model.add(layers.Dense(<span class="number">1</span>, activation=<span class="string">&#x27;sigmoid&#x27;</span>)) </span><br><span class="line"> </span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>, loss=<span class="string">&#x27;binary_crossentropy&#x27;</span>, metrics=[<span class="string">&#x27;acc&#x27;</span>]) </span><br><span class="line">history = model.fit(x_train, y_train, </span><br><span class="line">                    epochs=<span class="number">10</span>,  </span><br><span class="line">                    batch_size=<span class="number">128</span>,  </span><br><span class="line">                    validation_split=<span class="number">0.2</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="一维卷积神经网络"><a href="#一维卷积神经网络" class="headerlink" title="一维卷积神经网络"></a>一维卷积神经网络</h3><ul>
+<li><p>使用一维卷积，从序列中提取局部一维序列段（即子序列）；对每个序列段执行相同的输入变换，所以在句子中某个位置学到的模式稍后可以在其他位置被识别，因此一维卷积神经网络具有平移不变性</p>
+<img src="/2021/01/19/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_2%E5%AE%9E%E8%B7%B5/image-20210121161959785.png" alt="image-20210121161959785" style="zoom:67%;">
+</li>
+<li><p>池化： 从输入中提取一维序列段，输出其最大值（最大池化）或平均值（平均池化），用于降低一维输入的长度（子采样）</p>
+</li>
+<li><p>接收的输入为（samples, time, features）的三维张量，返回类似形状的三维张量，卷积窗口是时间轴上的一维窗口</p>
+</li>
+<li><p>一维卷积神经网络可以使用更大的卷积窗口</p>
+</li>
+<li><p>简单的网络</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = Sequential() </span><br><span class="line">model.add(layers.Embedding(max_features, <span class="number">128</span>, input_length=max_len))  <span class="comment"># (None, 500, 128) 每一行是一个单词</span></span><br><span class="line">model.add(layers.Conv1D(<span class="number">32</span>, <span class="number">7</span>, activation=<span class="string">&#x27;relu&#x27;</span>))  <span class="comment">#  (None, 494, 32) </span></span><br><span class="line">model.add(layers.MaxPooling1D(<span class="number">5</span>)) </span><br><span class="line">model.add(layers.Conv1D(<span class="number">32</span>, <span class="number">7</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.GlobalMaxPooling1D()) </span><br><span class="line">model.add(layers.Dense(<span class="number">1</span>)) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>结合卷积神经网络的速度和轻量与 RNN 的顺序敏感性，可以在 RNN 前面使用一维卷积神经网络作为预处理步骤——适用于非常长，以至于 RNN 无法处理的序列 （如包含上千个时间步的序列） </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Sequential </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">from</span> keras.optimizers <span class="keyword">import</span> RMSprop </span><br><span class="line"> </span><br><span class="line">model = Sequential() </span><br><span class="line">model.add(layers.Conv1D(<span class="number">32</span>, <span class="number">5</span>, activation=<span class="string">&#x27;relu&#x27;</span>, </span><br><span class="line">                        input_shape=(<span class="literal">None</span>, float_data.shape[<span class="number">-1</span>])))  <span class="comment"># 输出(None, None, 32) </span></span><br><span class="line">model.add(layers.MaxPooling1D(<span class="number">3</span>))  <span class="comment"># 输出(None, None, 32) </span></span><br><span class="line">model.add(layers.Conv1D(<span class="number">32</span>, <span class="number">5</span>, activation=<span class="string">&#x27;relu&#x27;</span>))  <span class="comment">#  输出(None, None, 32) </span></span><br><span class="line">model.add(layers.GRU(<span class="number">32</span>, dropout=<span class="number">0.1</span>, recurrent_dropout=<span class="number">0.5</span>))  <span class="comment"># 输出(None, 32) </span></span><br><span class="line">model.add(layers.Dense(<span class="number">1</span>))  <span class="comment"># 输出(None, 1) </span></span><br><span class="line"> </span><br><span class="line">model.summary() </span><br><span class="line"> </span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=RMSprop(), loss=<span class="string">&#x27;mae&#x27;</span>) </span><br><span class="line">history = model.fit_generator(train_gen, </span><br><span class="line">                              steps_per_epoch=<span class="number">500</span>, </span><br><span class="line">                              epochs=<span class="number">20</span>, </span><br><span class="line">                              validation_data=val_gen, </span><br><span class="line">                              validation_steps=val_steps)</span><br></pre></td></tr></table></figure>
+
+<img src="/2021/01/19/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_2%E5%AE%9E%E8%B7%B5/image-20210121163507963.png" alt="image-20210121163507963" style="zoom:67%;">
+
+</li>
+</ul>
+]]></content>
       <categories>
         <category>深度学习</category>
       </categories>
