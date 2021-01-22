@@ -7959,23 +7959,34 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <ol>
 <li>$\beta_T(i)=1,i=1,…,N$</li>
 <li>对$t=T-1,T-2,…,1$，$\beta_t(i)=\sum_{j=1}^Na_{ij}b_j(o_{t+1})\beta_{t+1}(j),i=1,…,N$</li>
-<li>$P(O|\lambda)=\sum_{i=1}^N\pi_ib_i(o_1)\beta_1(i)$<h2 id="10-3-学习算法"><a href="#10-3-学习算法" class="headerlink" title="10.3. 学习算法"></a>10.3. 学习算法</h2><h3 id="10-3-1-监督学习方法"><a href="#10-3-1-监督学习方法" class="headerlink" title="10.3.1. 监督学习方法"></a>10.3.1. 监督学习方法</h3></li>
+<li>$P(O|\lambda)=\sum_{i=1}^N\pi_ib_i(o_1)\beta_1(i)$</li>
 </ol>
 </li>
-<li>训练集包含$S$个长度相同的观测序列和对应状态序列${(O_1,I_1),…,(O_s,I_s)}$，利用极大似然估计发估计马尔可夫模型参数</li>
-<li>转移概率$a_{ij}$估计：$\hat{a}<em>{ij}=\frac{A_ij}{\sum_{j=1}^NA</em>{ij}}$，其中$A_{ij}$为样本中时刻$t$处于状态$i$且时刻$t+1$转移到状态$j$的频数</li>
-<li>观测概率$b_j(k)$的估计：设样本中状态$j$观测为$k$的频数为$B_{jk}$，则$\hat{b}<em>j(k)=\frac{B</em>{jk}}{\sum_{k=1}^MB_{jk}}$,j=1,…,N;k=1,…,M$</li>
-<li>初始状态概率$\pi_i$估计为$S$个样本中初始状态为$q_i$的频率</li>
-<li>人工标注训练数据代价较高<h3 id="10-3-2-Baum-Welch算法"><a href="#10-3-2-Baum-Welch算法" class="headerlink" title="10.3.2. Baum-Welch算法"></a>10.3.2. Baum-Welch算法</h3></li>
+</ul>
+<h2 id="10-3-学习算法"><a href="#10-3-学习算法" class="headerlink" title="10.3. 学习算法"></a>10.3. 学习算法</h2><h3 id="10-3-1-监督学习方法"><a href="#10-3-1-监督学习方法" class="headerlink" title="10.3.1. 监督学习方法"></a>10.3.1. 监督学习方法</h3><ul>
+<li><p>训练集包含$S$个长度相同的观测序列和对应状态序列${(O_1,I_1),…,(O_s,I_s)}$，利用极大似然估计发估计马尔可夫模型参数</p>
+</li>
+<li><p>转移概率$a_{ij}$估计：$\hat{a}<em>{ij}=\frac{A_ij}{\sum_{j=1}^NA</em>{ij}}$，其中$A_{ij}$为样本中时刻$t$处于状态$i$且时刻$t+1$转移到状态$j$的频数</p>
+</li>
+<li><p>观测概率$b_j(k)$的估计：设样本中状态$j$观测为$k$的频数为$B_{jk}$，则$\hat{b}<em>j(k)=\frac{B</em>{jk}}{\sum_{k=1}^MB_{jk}}$,j=1,…,N;k=1,…,M$</p>
+</li>
+<li><p>初始状态概率$\pi_i$估计为$S$个样本中初始状态为$q_i$的频率</p>
+</li>
+<li><p>人工标注训练数据代价较高</p>
+</li>
+</ul>
+<h3 id="10-3-2-Baum-Welch算法"><a href="#10-3-2-Baum-Welch算法" class="headerlink" title="10.3.2. Baum-Welch算法"></a>10.3.2. Baum-Welch算法</h3><ul>
 <li>给定训练集只有$S$个长度为$T$的观测序列${O_1,…,O_S}$没有状态序列</li>
 <li>将状态序列数据看作不可观测的隐数据$I$</li>
 <li>$P(O|\lambda)=\sum_IP(O|I,\lambda)P(I|\lambda)$</li>
 <li>参数估计：<ul>
 <li>$\pi=\frac{P(O,i_1=i|\bar{\lambda})}{P(O|\lambda)}$</li>
 <li>$a_{ij}=\frac{\sum_{t=1}^{T-1}P(O,i_t=i,i_{t+1}=j|\bar{\lambda})}{\sum_{t=1}^{T-1}P(O,i_t=1|\bar{\lambda})}$</li>
-<li>$b_j(k)=\frac{\sum_{t=1}^TP(O,i_t=j|\bar{\lambda})I(o_t=v_k)}{\sum_{t=1}^TP(O,i_t=j|\bar{\lambda})}$<h2 id="10-4-预测算法"><a href="#10-4-预测算法" class="headerlink" title="10.4. 预测算法"></a>10.4. 预测算法</h2></li>
+<li>$b_j(k)=\frac{\sum_{t=1}^TP(O,i_t=j|\bar{\lambda})I(o_t=v_k)}{\sum_{t=1}^TP(O,i_t=j|\bar{\lambda})}$</li>
 </ul>
 </li>
+</ul>
+<h2 id="10-4-预测算法"><a href="#10-4-预测算法" class="headerlink" title="10.4. 预测算法"></a>10.4. 预测算法</h2><ul>
 <li>维特比算法<ul>
 <li>动态规划求概率最大路径，一个路径对应一个状态序列<br><img src="/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/4.PNG"></li>
 </ul>
