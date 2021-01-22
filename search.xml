@@ -7492,14 +7492,12 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>适用于训练实例数远大于空间维数时</li>
 </ul>
 <h1 id="4-朴素贝叶斯"><a href="#4-朴素贝叶斯" class="headerlink" title="4. 朴素贝叶斯"></a>4. 朴素贝叶斯</h1><h2 id="4-1-学习与分类"><a href="#4-1-学习与分类" class="headerlink" title="4.1. 学习与分类"></a>4.1. 学习与分类</h2><ul>
-<li><p>通过训练集学习联合概率分布$P(X,Y)$</p>
-</li>
-<li><p>后验概率最大化，即期望风险最小化</p>
-</li>
-<li><p>作条件独立性假设</p>
-</li>
-<li><p>对给定的输入$x$，通过学习到的模型计算后验概率分布$P(Y=c_k|X=x)$，取后验概率最大的类作为输出<br>$$y=f(x)=arg,\underset {c_k}{\operatorname{max}},\frac{P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum_kP(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)} ，即arg,\underset {c_k}{\operatorname{max}},P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)$$</p>
-<h2 id="4-2-参数估计"><a href="#4-2-参数估计" class="headerlink" title="4.2. 参数估计"></a>4.2. 参数估计</h2></li>
+<li>通过训练集学习联合概率分布$P(X,Y)$</li>
+<li>后验概率最大化，即期望风险最小化</li>
+<li>作条件独立性假设</li>
+<li>对给定的输入$x$，通过学习到的模型计算后验概率分布$P(Y=c_k|X=x)$，取后验概率最大的类作为输出<br>$$y=f(x)=arg,\underset {c_k}{\operatorname{max}},\frac{P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum_kP(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)} ，即arg,\underset {c_k}{\operatorname{max}},P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)$$</li>
+</ul>
+<h2 id="4-2-参数估计"><a href="#4-2-参数估计" class="headerlink" title="4.2. 参数估计"></a>4.2. 参数估计</h2><ul>
 <li><p>$a_{jl}$为第$j$个特征可能取的第$l$个值，$j=1,…,n$，$l=1,…,S_j$；$x_i^{(j)}$是第$i$个样本的第$j$个特征</p>
 </li>
 <li><p>计算先验概率及条件概率<br>$$P(Y=c_k)=\frac{\sum_{i=1}^NI(y_i=c_k)}{N}$$<br>$$P(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum_{i=1}^NI(x^{(j)}=a_{jl},y_i=c_k)}{\sum_{i=1}^NI(y_i=c_k)}$$</p>
@@ -7569,40 +7567,60 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>分类树：基尼指数最小化</li>
 </ul>
 <h1 id="6-逻辑斯蒂回归与最大熵模型"><a href="#6-逻辑斯蒂回归与最大熵模型" class="headerlink" title="6. 逻辑斯蒂回归与最大熵模型"></a>6. 逻辑斯蒂回归与最大熵模型</h1><ul>
-<li>均为对数线性回归模型<h2 id="6-1-逻辑斯蒂-logistic-回归模型"><a href="#6-1-逻辑斯蒂-logistic-回归模型" class="headerlink" title="6.1. 逻辑斯蒂(logistic)回归模型"></a>6.1. 逻辑斯蒂(logistic)回归模型</h2></li>
-<li>逻辑斯蒂分布<ul>
-<li>$X$为连续随机变量，$\mu$为位置参数，$\gamma &gt;0$ 为形状参数</li>
-<li>分布函数：<br>$$F(X)=P(X\leq x)=\frac{1}{1+e^{-(x-\mu)/\gamma}}$$<ul>
+<li>均为对数线性回归模型</li>
+</ul>
+<h2 id="6-1-逻辑斯蒂-logistic-回归模型"><a href="#6-1-逻辑斯蒂-logistic-回归模型" class="headerlink" title="6.1. 逻辑斯蒂(logistic)回归模型"></a>6.1. 逻辑斯蒂(logistic)回归模型</h2><ul>
+<li><p>逻辑斯蒂分布</p>
+<ul>
+<li><p>$X$为连续随机变量，$\mu$为位置参数，$\gamma &gt;0$ 为形状参数</p>
+</li>
+<li><p>分布函数：<br>  $$F(X)=P(X\leq x)=\frac{1}{1+e^{-(x-\mu)/\gamma}}$$</p>
+<ul>
 <li>关于点$(\mu,\frac{1}{2})$对称</li>
 <li>形状参数越小，在中心附近增长越快</li>
 </ul>
 </li>
-<li>密度函数：<br>$$f(X)=P(X\leq x)=\frac{e^{-(x-\mu)/\gamma}}{\gamma(1+e^{-(x-\mu)/\gamma})^2}$$<ul>
+<li><p>密度函数：</p>
+<p>  $$f(X)=P(X\leq x)=\frac{e^{-(x-\mu)/\gamma}}{\gamma(1+e^{-(x-\mu)/\gamma})^2}$$</p>
+<ul>
 <li>关于y轴对称</li>
 </ul>
 </li>
 </ul>
 </li>
-<li>二项逻辑斯蒂回归模型<ul>
-<li>分类模型<br>$$P(Y=1|x)=\frac{exp(w\cdot x+b)}{1+w\cdot x+b}$$<br>$$P(Y=0|x)=\frac{1}{1+w\cdot x+b}$$</li>
-<li>$x$是输入，$Y\in \left{0,1\right}$是输出，$w$称权值向量，$b$称偏置</li>
-<li>将实例分到概率值较大的一类</li>
+<li><p>二项逻辑斯蒂回归模型</p>
+<ul>
+<li><p>分类模型<br>$$P(Y=1|x)=\frac{exp(w\cdot x+b)}{1+w\cdot x+b}$$<br>$$P(Y=0|x)=\frac{1}{1+w\cdot x+b}$$</p>
+</li>
+<li><p>$x$是输入，$Y\in \left{0,1\right}$是输出，$w$称权值向量，$b$称偏置</p>
+</li>
+<li><p>将实例分到概率值较大的一类</p>
+</li>
 </ul>
 </li>
-<li>参数估计：<ul>
-<li>对数似然函数（训练数据有N组）<br>$$L(w)=\sum_{i=1}^N[y_i(w\cdot x_i)-log(1+exp(w\cdot x_i))]$$</li>
+<li><p>参数估计：</p>
+<ul>
+<li>对数似然函数（训练数据有N组）</li>
+</ul>
+<p>$$L(w)=\sum_{i=1}^N[y_i(w\cdot x_i)-log(1+exp(w\cdot x_i))]$$</p>
+<ul>
 <li>对上式求极大值，得$w$的估计值</li>
 </ul>
 </li>
-<li>多项逻辑斯蒂回归：<ul>
-<li>离散随机变量$Y$有$K$个取值<br>$$P(Y=k|x)=\frac{exp(w_k\cdot x+b)}{1+\sum_{k=1}^{K-1}w\cdot x+b}$$<br>$$P(Y=K|x)=\frac{1}{1+\sum_{k=1}^{K-1}w_k\cdot x+b}$$<h2 id="6-2-最大熵原理"><a href="#6-2-最大熵原理" class="headerlink" title="6.2. 最大熵原理"></a>6.2. 最大熵原理</h2></li>
+<li><p>多项逻辑斯蒂回归：</p>
+<ul>
+<li>离散随机变量$Y$有$K$个取值<br>$$P(Y=k|x)=\frac{exp(w_k\cdot x+b)}{1+\sum_{k=1}^{K-1}w\cdot x+b}$$<br>$$P(Y=K|x)=\frac{1}{1+\sum_{k=1}^{K-1}w_k\cdot x+b}$$</li>
 </ul>
 </li>
+</ul>
+<h2 id="6-2-最大熵原理"><a href="#6-2-最大熵原理" class="headerlink" title="6.2. 最大熵原理"></a>6.2. 最大熵原理</h2><ul>
 <li>学习概率模型时，在所有可能的概率模型中，熵最大模型是最好的模型</li>
 <li>引入拉格朗日乘子$w_0,…,w_n$，定义拉格朗日函数，得：<ul>
-<li>$w_i$为特征的权值，$f_i(x,y)$为特征函数：当$x$和$y$满足某一事实时取值为1，否则为0<br>$$P(y|x)=\frac{1}{Z_w(x)}exp(\sum_{i=1}^nw_if_i(x,y))$$<br>$$Z_w(x)=\sum_yexp(\sum_{i=1}^nw_if_i(x,y))，规范化因子$$<h2 id="6-3-最优化算法"><a href="#6-3-最优化算法" class="headerlink" title="6.3. 最优化算法"></a>6.3. 最优化算法</h2></li>
+<li>$w_i$为特征的权值，$f_i(x,y)$为特征函数：当$x$和$y$满足某一事实时取值为1，否则为0<br>$$P(y|x)=\frac{1}{Z_w(x)}exp(\sum_{i=1}^nw_if_i(x,y))$$<br>$$Z_w(x)=\sum_yexp(\sum_{i=1}^nw_if_i(x,y))，规范化因子$$</li>
 </ul>
 </li>
+</ul>
+<h2 id="6-3-最优化算法"><a href="#6-3-最优化算法" class="headerlink" title="6.3. 最优化算法"></a>6.3. 最优化算法</h2><ul>
 <li>改进的迭代尺度法<ul>
 <li>最大熵模型的对数似然函数：$L(w)=\sum_{x,y}\widetilde{P}(x,y)\sum_{i=1}^nw_if_i(x,y)-\sum_x\widetilde{P}(x)logZ_w(x)$</li>
 <li>$\widetilde{P}(x,y)$为训练数据的经验概率分布</li>
@@ -7624,7 +7642,9 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>训练数据线性可分：硬间隔最大化，学习线性分类器</li>
 <li>训练数据近似线性可分：软间隔最大化，学习线性分类器</li>
 <li>训练数据线性不可分：核技巧和软间隔最大化，学习非线性支持向量机</li>
-<li>核函数：输入空间为欧氏空间或离散集合，特征空间为希尔伯特空间，将输入映射成的特征向量之间的内积<h2 id="7-1-线性可分支持向量机与硬间隔最大化"><a href="#7-1-线性可分支持向量机与硬间隔最大化" class="headerlink" title="7.1. 线性可分支持向量机与硬间隔最大化"></a>7.1. 线性可分支持向量机与硬间隔最大化</h2><h3 id="7-1-1-线性可分支持向量机"><a href="#7-1-1-线性可分支持向量机" class="headerlink" title="7.1.1. 线性可分支持向量机"></a>7.1.1. 线性可分支持向量机</h3></li>
+<li>核函数：输入空间为欧氏空间或离散集合，特征空间为希尔伯特空间，将输入映射成的特征向量之间的内积</li>
+</ul>
+<h2 id="7-1-线性可分支持向量机与硬间隔最大化"><a href="#7-1-线性可分支持向量机与硬间隔最大化" class="headerlink" title="7.1. 线性可分支持向量机与硬间隔最大化"></a>7.1. 线性可分支持向量机与硬间隔最大化</h2><h3 id="7-1-1-线性可分支持向量机"><a href="#7-1-1-线性可分支持向量机" class="headerlink" title="7.1.1. 线性可分支持向量机"></a>7.1.1. 线性可分支持向量机</h3><ul>
 <li>二类分类问题</li>
 <li>假设输入空间和特征空间的元素一一对应，支持向量机将输入映射为特征向量——在特征空间进行学习，希望找到一个超平面</li>
 <li>训练数据集：$T={(x_1,y_1),(x_2,y_2),…,(x_N,y_N)}$，$x_i$为第$i$个特征向量，$y_i$为类标记</li>
@@ -7632,20 +7652,30 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>线性可分支持向量机：<ul>
 <li>分类超平面$w^<em>\cdot x+b^</em>=0$</li>
 <li>分类决策函数$f(x)=sign(w^<em>\cdot x+b^</em>)$</li>
-<li>将两类数据正确划分且间隔最大<h3 id="7-1-2-函数间隔与几何间隔"><a href="#7-1-2-函数间隔与几何间隔" class="headerlink" title="7.1.2. 函数间隔与几何间隔"></a>7.1.2. 函数间隔与几何间隔</h3></li>
+<li>将两类数据正确划分且间隔最大</li>
 </ul>
 </li>
+</ul>
+<h3 id="7-1-2-函数间隔与几何间隔"><a href="#7-1-2-函数间隔与几何间隔" class="headerlink" title="7.1.2. 函数间隔与几何间隔"></a>7.1.2. 函数间隔与几何间隔</h3><ul>
 <li>函数间隔：给定训练集和超平面，定义函数间隔为$\hat{y_i}=y_i(w\cdot x_i+b)$，超平面关于训练集的函数间隔为所有关于样本点的函数间隔最小值 </li>
 <li>几何间隔：给定训练集和超平面，<ul>
 <li>超平面关于样本点的几何间隔为：$\gamma_i=y_i(\frac{w}{||w||}\cdot x_i+\frac{b}{||w||})$，$||w||$为$w$的$L_2$范数</li>
-<li>超平面关于训练集的几何间隔为所有关于样本点几何间隔的最小值<h2 id="7-2-间隔最大化"><a href="#7-2-间隔最大化" class="headerlink" title="7.2. 间隔最大化"></a>7.2. 间隔最大化</h2></li>
+<li>超平面关于训练集的几何间隔为所有关于样本点几何间隔的最小值</li>
 </ul>
 </li>
-<li>输入：线性可分数据集</li>
-<li>输出：最大间隔分离超平面和分类决策函数</li>
-<li>求解约束最优化问题：<br>$$\underset{w,b}{min} \frac{1}{2}||w||^2，s.t.y_i(w\cdot x_i+b)-1\geq 0$$<br>得最优解$w^*$、$b^*$</li>
-<li>支持向量：线性可分时，样本点与超平面距离最近的样本点实例（使等号成立的点）</li>
-<li>利用拉格朗日乘子法，构造并求解约束最优化问题：<br>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i\cdot x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，\alpha_i\geq 0$$<br>求得最优解$\alpha^*=(\alpha_1^*,…,\alpha_N^*)^T$<ul>
+</ul>
+<h2 id="7-2-间隔最大化"><a href="#7-2-间隔最大化" class="headerlink" title="7.2. 间隔最大化"></a>7.2. 间隔最大化</h2><ul>
+<li><p>输入：线性可分数据集</p>
+</li>
+<li><p>输出：最大间隔分离超平面和分类决策函数</p>
+</li>
+<li><p>求解约束最优化问题：<br>$$\underset{w,b}{min} \frac{1}{2}||w||^2，s.t.y_i(w\cdot x_i+b)-1\geq 0$$<br>得最优解$w^*$、$b^*$</p>
+</li>
+<li><p>支持向量：线性可分时，样本点与超平面距离最近的样本点实例（使等号成立的点）</p>
+</li>
+<li><p>利用拉格朗日乘子法，构造并求解约束最优化问题：<br>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i\cdot x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，\alpha_i\geq 0$$</p>
+<p>求得最优解$\alpha^*=(\alpha_1^*,…,\alpha_N^*)^T$</p>
+<ul>
 <li>$w^*=\sum_{i=1}^N\alpha_i^<em>y_ix_i$，并选择一个$\alpha^</em>$的一个正分量$\alpha_j^*$计算$b^*=y_j-\sum_{i=1}^N\alpha_i^*y_i(x_i\cdot x_j)$</li>
 </ul>
 </li>
