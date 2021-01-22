@@ -7820,7 +7820,9 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </ul>
 <h1 id="9-EM算法及其推广"><a href="#9-EM算法及其推广" class="headerlink" title="9. EM算法及其推广"></a>9. EM算法及其推广</h1><ul>
 <li>用于含有隐变量的概率模型参数的极大似然估计</li>
-<li>求期望，求极大<h2 id="9-1-EM算法"><a href="#9-1-EM算法" class="headerlink" title="9.1. EM算法"></a>9.1. EM算法</h2></li>
+<li>求期望，求极大</li>
+</ul>
+<h2 id="9-1-EM算法"><a href="#9-1-EM算法" class="headerlink" title="9.1. EM算法"></a>9.1. EM算法</h2><ul>
 <li>三硬币模型：先抛硬币A，由A决定抛B或C，记录抛B或C的结果，如何估计三硬币正面出现的概率？</li>
 <li>$Y$代表观测随机变量的数据（也称不完全数据），$Z$代表隐随机变量的数据（不可观测），$\theta$为需要估计的模型参数，则对数似然函数为$L(\theta)=logP(Y|\theta)$，联合概率分布$P(Y,Z|\theta)$，完全数据对数似然函数$logP(Y,Z|\theta)$</li>
 <li>EM算法<ul>
@@ -7840,9 +7842,12 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>一般停止迭代的条件为$||\theta_{(i+1)}-\theta_{(i)}||&lt;\varepsilon_1$</li>
 </ul>
 <h2 id="9-2-学习高斯混合模型"><a href="#9-2-学习高斯混合模型" class="headerlink" title="9.2. 学习高斯混合模型"></a>9.2. 学习高斯混合模型</h2><ul>
-<li>高斯混合模型指如下形式的概率分布模型：$P(y|\theta)=\sum_{k=1}^K\alpha_k\phi(y|\theta_k)$其中$\alpha_k\geq0$是系数，$\sum_{(k=1)}^K\alpha_k=1$,$\phi(y|\theta_k)$为高斯分布密度，称为第$k$个分模型，$\theta_k=(\mu_k,\sigma_k^2)$</li>
-<li>一般的混合 模型可以用任意的概率分布密度代替高斯分布密度</li>
-<li>高斯混合模型参数估计的EM算法<ul>
+<li><p>高斯混合模型指如下形式的概率分布模型：$P(y|\theta)=\sum_{k=1}^K\alpha_k\phi(y|\theta_k)$其中$\alpha_k\geq0$是系数，$\sum_{(k=1)}^K\alpha_k=1$,$\phi(y|\theta_k)$为高斯分布密度，称为第$k$个分模型，$\theta_k=(\mu_k,\sigma_k^2)$</p>
+</li>
+<li><p>一般的混合 模型可以用任意的概率分布密度代替高斯分布密度</p>
+</li>
+<li><p>高斯混合模型参数估计的EM算法</p>
+<ul>
 <li>明确隐变量</li>
 <li>确定$Q$函数</li>
 <li>确定 M 步</li>
@@ -7853,17 +7858,28 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </li>
 </ul>
 <ol>
-<li>取参数初始值迭代</li>
-<li>E步：依据当前模型参数，得分模型$k$对观测数据$y_j$的响应度$\hat{\gamma}_{jk} =\frac{\alpha_k\phi(y_j|\theta_k)}{\sum_{k=1}^K\alpha_k\phi<br>(y_j|\theta_k)},j=1,…,N;k=1,…,K$</li>
-<li>M步：新一轮迭代的模型参数<br>$$\hat{\mu}<em>{k}=\frac{\sum</em>{j=1}^N\hat{\gamma}<em>{jk}y_j}{\sum_{j=1}^N\hat{\gamma}</em>{jk}},k=1,…,K$$<br>$$\hat{\sigma}<em>k^2=\frac{\sum</em>{j=1}^N\hat{\gamma}<em>{jk}(y_j-\mu_k)^2}{\sum</em>{j=1}^N\hat{\gamma}<em>{jk}},k=1,…,K$$<br>$$\hat{\alpha}<em>k=\frac{\sum</em>{j=1}^N\hat{\gamma}</em>{jk}}{N}$$</li>
-<li>重复，直到收敛<h2 id="9-3-EM算法的推广"><a href="#9-3-EM算法的推广" class="headerlink" title="9.3. EM算法的推广"></a>9.3. EM算法的推广</h2></li>
+<li><p>取参数初始值迭代</p>
+</li>
+<li><p>E步：依据当前模型参数，得分模型$k$对观测数据$y_j$的响应度$\hat{\gamma}_{jk} =\frac{\alpha_k\phi(y_j|\theta_k)}{\sum_{k=1}^K\alpha_k\phi  (y_j|\theta_k)},j=1,…,N;k=1,…,K$</p>
+</li>
+<li><p>M步：新一轮迭代的模型参数<br> $$\hat{\mu}<em>{k}=\frac{\sum</em>{j=1}^N\hat{\gamma}<em>{jk}y_j}{\sum_{j=1}^N\hat{\gamma}</em>{jk}},k=1,…,K$$</p>
+<p> $$\hat{\sigma}<em>k^2=\frac{\sum</em>{j=1}^N\hat{\gamma}<em>{jk}(y_j-\mu_k)^2}{\sum</em>{j=1}^N\hat{\gamma}_{jk}},k=1,…,K$$</p>
+<p> $$\hat{\alpha}<em>k=\frac{\sum</em>{j=1}^N\hat{\gamma}_{jk}}{N}$$</p>
+</li>
+<li><p>重复，直到收敛</p>
+</li>
 </ol>
 </li>
-<li>$F$函数：$F(\widetilde{P},\theta)=E_{\widetilde{P}}[logP(Y,Z|\theta)]+H(\widetilde{P})$<ul>
+</ul>
+<h2 id="9-3-EM算法的推广"><a href="#9-3-EM算法的推广" class="headerlink" title="9.3. EM算法的推广"></a>9.3. EM算法的推广</h2><ul>
+<li><p>$F$函数：$F(\widetilde{P},\theta)=E_{\widetilde{P}}[logP(Y,Z|\theta)]+H(\widetilde{P})$</p>
+<ul>
 <li>隐变量数据$Z$的概率分布为$\widetilde{P}(Z)$，参数为$\theta$</li>
-<li>$H(\widetilde{P})$是分布$\widetilde{P}(Z)$的熵<h3 id="9-3-1-GEM算法"><a href="#9-3-1-GEM算法" class="headerlink" title="9.3.1. GEM算法"></a>9.3.1. GEM算法</h3></li>
+<li>$H(\widetilde{P})$是分布$\widetilde{P}(Z)$的熵</li>
 </ul>
 </li>
+</ul>
+<h3 id="9-3-1-GEM算法"><a href="#9-3-1-GEM算法" class="headerlink" title="9.3.1. GEM算法"></a>9.3.1. GEM算法</h3><ul>
 <li>$GEM$算法1<ul>
 <li>输入：观测数据，$F$函数</li>
 <li>输出：模型参数</li>
