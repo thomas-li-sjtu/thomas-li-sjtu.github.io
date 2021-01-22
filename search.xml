@@ -7739,7 +7739,7 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <ol>
 <li>取初值$\alpha^{(0)}=0$，令$k=0$</li>
 <li>取优化变量 $\alpha_1^{(k)},\alpha_2^{(k)}$，解析求解两个变量的最优化问题，得到最优解$\alpha_1^{(k+1)},\alpha_2^{(k+1)}$，更新$\alpha$为$\alpha^{(k+1)}$</li>
-<li>若在精度范围内满足：<br>$$\sum_{i=1}^N\alpha_iy_i=0 \ y_i\cdot g(x_i)\geq 1,\left{x_i|\alpha_i=0\right}  =1, \ \left{x_i|0&lt;\alpha_i&lt;C\right}\leq1, \ \left{x_i|\alpha_i=C\right} \ g(x_i)=\sum_{j=1}^N\alpha_jy_jK(x_j,x_i)+b$$<br>则取$\hat{\alpha} =\alpha^{(k+1)}$</li>
+<li>若在精度范围内满足：<br>$$\sum_{i=1}^N\alpha_iy_i=0 \ y_i\cdot g(x_i)\geq 1,{x_i|\alpha_i=0}  =1, \ {x_i|0&lt;\alpha_i&lt;C}\leq1, \ {x_i|\alpha_i=C} \ g(x_i)=\sum_{j=1}^N\alpha_jy_jK(x_j,x_i)+b$$<br>则取$\hat{\alpha} =\alpha^{(k+1)}$</li>
 </ol>
 </li>
 </ul>
@@ -7797,26 +7797,34 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </li>
 </ul>
 <h3 id="8-2-2-梯度提升"><a href="#8-2-2-梯度提升" class="headerlink" title="8.2.2. 梯度提升"></a>8.2.2. 梯度提升</h3><ul>
-<li>对一般的损失函数进行优化</li>
-<li>算法：<ul>
+<li><p>对一般的损失函数进行优化</p>
+</li>
+<li><p>算法：</p>
+<ul>
 <li>输入：训练集($N$个数据)，损失函数$L(y,f(x))$</li>
 <li>输出：回归树$f(x)$</li>
 </ul>
 <ol>
-<li>初始化<br>$$f_0(x)=arg\underset{c}{min} \sum_{i=1}^NL(y_i,c)$$ </li>
-<li>对$m=1,…,M$<ol>
-<li>对$i=1,…,N$<br>$$r_{mi}=-[\frac{\partial L(y_i,f(x_i))}{\partial f(x_i)}]<em>{f(x)=f</em>{m-1}(x)}$$</li>
-<li>对$r_{mi}$拟合一个回归树，得第$m$棵树的叶结点区域$R_{mj},j=1,…,J$</li>
-<li>对$j$<br>$c_{mj}=arg\underset{c}{min} \sum_{x_i\in R_{mj}}L(y_i,f_{m-1}(x_i)+c)$<ol start="4">
-<li>更新$f_m(x)=f_{m-1}(x)+\sum_{j=1}^Jc_{mj}I(x\in R_{mj})$</li>
+<li><p>初始化<br>$$f_0(x)=arg\underset{c}{min} \sum_{i=1}^NL(y_i,c)$$ </p>
+</li>
+<li><p>对$m=1,…,M$</p>
+<ol>
+<li><p>对$i=1,…,N$<br>   $$r_{mi}=-[\frac{\partial L(y_i,f(x_i))}{\partial f(x_i)}]<em>{f(x)=f</em>{m-1}(x)}$$</p>
+</li>
+<li><p>对$r_{mi}$拟合一个回归树，得第$m$棵树的叶结点区域$R_{mj},j=1,…,J$</p>
+</li>
+<li><p>对$j$<br>   $c_{mj}=arg\underset{c}{min} \sum_{x_i\in R_{mj}}L(y_i,f_{m-1}(x_i)+c)$</p>
+</li>
+<li><p>更新$f_m(x)=f_{m-1}(x)+\sum_{j=1}^Jc_{mj}I(x\in R_{mj})$</p>
+</li>
+<li><p>得回归树$\hat{f(x)}=\sum_{m=1}^M\sum_{j=1}^Jc_{mj}I(x\in R_{mj})$</p>
+</li>
 </ol>
 </li>
-<li>得回归树$\hat{f(x)}=\sum_{m=1}^M\sum_{j=1}^Jc_{mj}I(x\in R_{mj})$</li>
 </ol>
 </li>
-</ol>
+<li><p>初始化，估计使损失函数极小化的常数值；计算损失函数的负梯度在当前模型的值，作为残差得估计；估计回归树叶结点区域，以拟合残差近似值；利用线性搜索估计叶结点区域的值，最小化损失函数；更新回归树</p>
 </li>
-<li>初始化，估计使损失函数极小化的常数值；计算损失函数的负梯度在当前模型的值，作为残差得估计；估计回归树叶结点区域，以拟合残差近似值；利用线性搜索估计叶结点区域的值，最小化损失函数；更新回归树</li>
 </ul>
 <h1 id="9-EM算法及其推广"><a href="#9-EM算法及其推广" class="headerlink" title="9. EM算法及其推广"></a>9. EM算法及其推广</h1><ul>
 <li>用于含有隐变量的概率模型参数的极大似然估计</li>
@@ -7880,7 +7888,8 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </li>
 </ul>
 <h3 id="9-3-1-GEM算法"><a href="#9-3-1-GEM算法" class="headerlink" title="9.3.1. GEM算法"></a>9.3.1. GEM算法</h3><ul>
-<li>$GEM$算法1<ul>
+<li><p>$GEM$算法1</p>
+<ul>
 <li>输入：观测数据，$F$函数</li>
 <li>输出：模型参数</li>
 </ul>
@@ -7894,7 +7903,8 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>重复，直到收敛</li>
 </ol>
 </li>
-<li>$GEM$算法2<ul>
+<li><p>$GEM$算法2</p>
+<ul>
 <li>不直接求极大化$Q(\theta,\theta^{(i)})$的$\theta$，而是逐步逼近</li>
 <li>输入：观测数据，$Q$函数</li>
 <li>输出：模型参数</li>
@@ -7909,18 +7919,22 @@ $ chmod +r  xampp.run #给xampp.run读权限
 <li>重复，直到收敛</li>
 </ol>
 </li>
-<li>$GEM$算法3<ul>
+<li><p>$GEM$算法3</p>
+<ul>
 <li>当参数维度$d\geq2$时，采用新的算法，将EM算法的M步分解为$d$次条件极大化，每次其他分量不变，只改变一个分量</li>
 <li>输入：观测数据，$Q$函数</li>
 <li>输出：模型参数</li>
 </ul>
 <ol>
-<li>初始化参数$\theta^{(0)}=(\theta_1^{(0)},…,\theta_d^{(0)})$</li>
-<li>第$i+1$次迭代<br> 1.记$\theta^{(i)}=(\theta^{(i)}_1,…,\theta^{(i)}_d)$为参数的估计值，$Q(\theta,\theta^{(i)})=\sum_ZP(Z|Y,\theta^{(i)})logP(Y,Z|\theta)$ <ol start="2">
+<li><p>初始化参数$\theta^{(0)}=(\theta_1^{(0)},…,\theta_d^{(0)})$</p>
+</li>
+<li><p>第$i+1$次迭代<br> 1.记$\theta^{(i)}=(\theta^{(i)}_1,…,\theta^{(i)}_d)$为参数的估计值，$Q(\theta,\theta^{(i)})=\sum_ZP(Z|Y,\theta^{(i)})logP(Y,Z|\theta)$ </p>
+<ol start="2">
 <li>进行$d$次条件极大化：求使$Q(\theta,\theta^{(i)})$极大的$\theta^{(i+1)}_1$，之后固定$\theta^{(i+1)}_1$，求使$Q(\theta,\theta^{(i)})$极大的$\theta^{(i+1)}_2$，…，得到$\theta^{(i+1)}$使$Q(\theta^{(i+1)},\theta^{(i)})&gt;Q(\theta^{(i)},\theta^{(i)})$</li>
 </ol>
 </li>
-<li>重复，直到收敛</li>
+<li><p>重复，直到收敛</p>
+</li>
 </ol>
 </li>
 </ul>
