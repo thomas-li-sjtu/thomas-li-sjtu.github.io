@@ -32,7 +32,7 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/3.PNG">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/4.PNG">
 <meta property="article:published_time" content="2021-01-08T09:58:08.000Z">
-<meta property="article:modified_time" content="2021-01-22T15:37:31.299Z">
+<meta property="article:modified_time" content="2021-01-22T15:41:26.955Z">
 <meta property="article:author" content="Thomas-Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/3.PNG">
@@ -469,23 +469,38 @@
 <li>损失函数非负，选取使损失函数最小的模型参数——即模型</li>
 </ul>
 <h2 id="2-3-感知机学习算法"><a href="#2-3-感知机学习算法" class="headerlink" title="2.3. 感知机学习算法"></a>2.3. 感知机学习算法</h2><ul>
-<li>误分类驱动的随机梯度下降</li>
-<li>首先随意选择一个超平面，之后用梯度下降法极小化损失函数——一次随机选取一个误分类点使其梯度下降:<ul>
-<li>分别计算损失函数两个参数的梯度</li>
-<li>随机选择一个误分类点$(x_i,y_i)$（或训练集中选取一个点带入模型进行计算，取小于等于0的点）</li>
-<li>更新参数<br>$$w \leftarrow w+\eta y_ix_i$$<br>$$b \leftarrow b+\eta y_i$$</li>
-<li>重复步骤直到训练集中没有误分类的点</li>
+<li><p>误分类驱动的随机梯度下降</p>
+</li>
+<li><p>首先随意选择一个超平面，之后用梯度下降法极小化损失函数——一次随机选取一个误分类点使其梯度下降:</p>
+<ul>
+<li><p>分别计算损失函数两个参数的梯度</p>
+</li>
+<li><p>随机选择一个误分类点$(x_i,y_i)$（或训练集中选取一个点带入模型进行计算，取小于等于0的点）</p>
+</li>
+<li><p>更新参数<br>$$w \leftarrow w+\eta y_ix_i$$<br>$$b \leftarrow b+\eta y_i$$</p>
+</li>
+<li><p>重复步骤直到训练集中没有误分类的点</p>
+</li>
 </ul>
 </li>
-<li>当训练集线性可分时，此算法的迭代时收敛的</li>
-<li>当训练集不线性可分时，不收敛，结果震荡</li>
-<li>存在很多解，这些解依赖于初值的选择和过程中误分类点的选择顺序——需要对分类超平面增加约束条件，以得到唯一的超平面（此即线性支持向量机）</li>
-<li>对偶形式：<ul>
-<li>将参数表示为实例$x_i$和标记$y_i$的线性组合形式，通过求解系数得到参数</li>
-<li>$f(x)=sign(\sum_{j=1}^N\alpha_jy_jx_j\cdot\pmb{x}+b)$</li>
-<li>模型参数为$\pmb{\alpha}=(\alpha_1,…,\alpha_n)^T$和$b$，迭代前赋初值为0</li>
-<li>选取数据集中的点，如果$y_i{sign(\sum_{j=1}^N\alpha_jy_jx_j\cdot\pmb{x}+b) \leq0}$：<br>$$\alpha_i \leftarrow \alpha_i+\eta $$<br>$$b \leftarrow b+\eta y_i$$</li>
-<li>迭代更新直到没有误分类数据</li>
+<li><p>当训练集线性可分时，此算法的迭代时收敛的</p>
+</li>
+<li><p>当训练集不线性可分时，不收敛，结果震荡</p>
+</li>
+<li><p>存在很多解，这些解依赖于初值的选择和过程中误分类点的选择顺序——需要对分类超平面增加约束条件，以得到唯一的超平面（此即线性支持向量机）</p>
+</li>
+<li><p>对偶形式：</p>
+<ul>
+<li><p>将参数表示为实例$x_i$和标记$y_i$的线性组合形式，通过求解系数得到参数</p>
+</li>
+<li><p>$f(x)=sign(\sum_{j=1}^N\alpha_jy_jx_j\cdot\pmb{x}+b)$</p>
+</li>
+<li><p>模型参数为$\pmb{\alpha}=(\alpha_1,…,\alpha_n)^T$和$b$，迭代前赋初值为0</p>
+</li>
+<li><p>选取数据集中的点，如果$y_i{sign(\sum_{j=1}^N\alpha_jy_jx_j\cdot\pmb{x}+b) \leq0}$：<br>$$\alpha_i \leftarrow \alpha_i+\eta $$<br>$$b \leftarrow b+\eta y_i$$</p>
+</li>
+<li><p>迭代更新直到没有误分类数据</p>
+</li>
 </ul>
 </li>
 </ul>
@@ -500,27 +515,25 @@
 </li>
 <li><p>根据给定的距离度量，在训练集中找到与$x$最近的$k$个点，覆盖这些点的$x$的邻域为$N_k(x)$</p>
 </li>
-<li><p>根据分类决策规则（如多数表决）决定类别：<br>$$y={arg,\underset {c_j}{\operatorname {max}},\sum_{x_i\in\N_k(x)}I(y_i=c_j)}$$</p>
+<li><p>根据分类决策规则（如多数表决）决定类别：<br>$$y={arg,\underset {c_j}{\operatorname {max}},\sum_{x_i\in N_k(x)}I(y_i=c_j)}$$</p>
 <p>其中$I$为指示函数，相等时$I$为1，否则为0</p>
 </li>
 <li><p>多数表决等价于经验风险最小化</p>
-<h2 id="3-2-更快寻找近邻点：kd树"><a href="#3-2-更快寻找近邻点：kd树" class="headerlink" title="3.2. 更快寻找近邻点：kd树"></a>3.2. 更快寻找近邻点：kd树</h2></li>
-<li><p>最简单的方法是线性扫描。计算输入实例与每个训练实例的距离</p>
 </li>
-<li><p>$kd$树为二叉树，不断用垂直于坐标轴的超平面将$k$维空间切分，使得树的每一个节点对应于一个$k$维超矩形区域</p>
-</li>
-<li><p>构造平衡$kd$树： </p>
-<ul>
+</ul>
+<h2 id="3-2-更快寻找近邻点：kd树"><a href="#3-2-更快寻找近邻点：kd树" class="headerlink" title="3.2. 更快寻找近邻点：kd树"></a>3.2. 更快寻找近邻点：kd树</h2><ul>
+<li>最简单的方法是线性扫描。计算输入实例与每个训练实例的距离</li>
+<li>$kd$树为二叉树，不断用垂直于坐标轴的超平面将$k$维空间切分，使得树的每一个节点对应于一个$k$维超矩形区域</li>
+<li>构造平衡$kd$树： <ul>
 <li>输入$k$维空间数据集$T$，输出$kd$树</li>
-<li>构造根节点，根节点对应于包含$T$的$k$维空间的超矩形区域。选择第一维为坐标轴，<br>以数据集所有实例的第一维坐标的中位数作为切分点，将根节点对应的区域切分为两个区域，切分的超平面与坐标轴垂直。从而生成深度为 1 的左右子节点，将落在中位数上的实例保存在根节点</li>
-<li>重复：对深度为$j$的结点，选择第$l$维为切分的坐标轴，其中$l=(jmodk)+1$，重复<br>下去。生成深度为$j+1$的左右子结点。</li>
+<li>构造根节点，根节点对应于包含$T$的$k$维空间的超矩形区域。选择第一维为坐标轴，以数据集所有实例的第一维坐标的中位数作为切分点，将根节点对应的区域切分为两个区域，切分的超平面与坐标轴垂直。从而生成深度为 1 的左右子节点，将落在中位数上的实例保存在根节点</li>
+<li>重复：对深度为$j$的结点，选择第$l$维为切分的坐标轴，其中$l=(jmodk)+1$，重复下去。生成深度为$j+1$的左右子结点。</li>
 <li>直到两个子区域没有实例存在时停止 </li>
 </ul>
 </li>
-<li><p>搜索算法： </p>
-<ul>
+<li>搜索算法： <ul>
 <li>输入已构造的$kd$树，目标点$x$ ，输出$x$的最近邻 </li>
-<li>在 kd 树中找出包含目标点$x$的叶结点：从根出发，递归向下访问$kd$树，若$x$当<br>前维坐标小于切分点坐标则移动到左结点，反之右结点，直到叶子节点 </li>
+<li>在 kd 树中找出包含目标点$x$的叶结点：从根出发，递归向下访问$kd$树，若$x$当前维坐标小于切分点坐标则移动到左结点，反之右结点，直到叶子节点 </li>
 <li>以此叶节点为当前最近点</li>
 <li>递归向上回退，对每个结点：<ul>
 <li>若当前节点保存的实例点距离更近，则以当前节点的实例点为当前最近点</li>
@@ -534,31 +547,50 @@
 <li>回到根节点时搜索结束，最后的当前最近点为$x$的最近邻点</li>
 </ul>
 </li>
-<li><p>适用于训练实例数远大于空间维数时</p>
-</li>
+<li>适用于训练实例数远大于空间维数时</li>
 </ul>
 <h1 id="4-朴素贝叶斯"><a href="#4-朴素贝叶斯" class="headerlink" title="4. 朴素贝叶斯"></a>4. 朴素贝叶斯</h1><h2 id="4-1-学习与分类"><a href="#4-1-学习与分类" class="headerlink" title="4.1. 学习与分类"></a>4.1. 学习与分类</h2><ul>
-<li>通过训练集学习联合概率分布$P(X,Y)$</li>
-<li>后验概率最大化，即期望风险最小化</li>
-<li>作条件独立性假设</li>
-<li>对给定的输入$x$，通过学习到的模型计算后验概率分布$P(Y=c_k|X=x)$，取后验概率最大的类作为输出<br>$$y=f(x)=arg,\underset {c_k}{\operatorname{max}},\frac{P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum_kP(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)} ，即arg,\underset {c_k}{\operatorname{max}},P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)$$<h2 id="4-2-参数估计"><a href="#4-2-参数估计" class="headerlink" title="4.2. 参数估计"></a>4.2. 参数估计</h2></li>
-<li>$a_{jl}$为第$j$个特征可能取的第$l$个值，$j=1,…,n$，$l=1,…,S_j$；$x_i^{(j)}$是第$i$个样本的第$j$个特征</li>
-<li>计算先验概率及条件概率<br>$$P(Y=c_k)=\frac{\sum_{i=1}^NI(y_i=c_k)}{N}$$<br>$$P(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum_{i=1}^NI(x^{(j)}=a_{jl},y_i=c_k)}{\sum_{i=1}^NI(y_i=c_k)}$$</li>
-<li>对于给定的实例，计算各个类的后验概率</li>
-<li>取后验概率最大的作为实例$x$的类</li>
-<li>拉普拉斯平滑：<br>  $$P_\lambda(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum_{i=1}^NI(x^{(j)}=a_{jl},y_i=c_k)+\lambda}{\sum_{i=1}^NI(y_i=c_k)+S_j\lambda}$$<h1 id="5-决策树"><a href="#5-决策树" class="headerlink" title="5. 决策树"></a>5. 决策树</h1><h2 id="5-1-决策树模型与学习"><a href="#5-1-决策树模型与学习" class="headerlink" title="5.1. 决策树模型与学习"></a>5.1. 决策树模型与学习</h2></li>
+<li><p>通过训练集学习联合概率分布$P(X,Y)$</p>
+</li>
+<li><p>后验概率最大化，即期望风险最小化</p>
+</li>
+<li><p>作条件独立性假设</p>
+</li>
+<li><p>对给定的输入$x$，通过学习到的模型计算后验概率分布$P(Y=c_k|X=x)$，取后验概率最大的类作为输出<br>$$y=f(x)=arg,\underset {c_k}{\operatorname{max}},\frac{P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum_kP(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)} ，即arg,\underset {c_k}{\operatorname{max}},P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)$$</p>
+<h2 id="4-2-参数估计"><a href="#4-2-参数估计" class="headerlink" title="4.2. 参数估计"></a>4.2. 参数估计</h2></li>
+<li><p>$a_{jl}$为第$j$个特征可能取的第$l$个值，$j=1,…,n$，$l=1,…,S_j$；$x_i^{(j)}$是第$i$个样本的第$j$个特征</p>
+</li>
+<li><p>计算先验概率及条件概率<br>$$P(Y=c_k)=\frac{\sum_{i=1}^NI(y_i=c_k)}{N}$$<br>$$P(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum_{i=1}^NI(x^{(j)}=a_{jl},y_i=c_k)}{\sum_{i=1}^NI(y_i=c_k)}$$</p>
+</li>
+<li><p>对于给定的实例，计算各个类的后验概率</p>
+</li>
+<li><p>取后验概率最大的作为实例$x$的类</p>
+</li>
+<li><p>拉普拉斯平滑：<br>  $$P_\lambda(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum_{i=1}^NI(x^{(j)}=a_{jl},y_i=c_k)+\lambda}{\sum_{i=1}^NI(y_i=c_k)+S_j\lambda}$$</p>
+</li>
+</ul>
+<h1 id="5-决策树"><a href="#5-决策树" class="headerlink" title="5. 决策树"></a>5. 决策树</h1><h2 id="5-1-决策树模型与学习"><a href="#5-1-决策树模型与学习" class="headerlink" title="5.1. 决策树模型与学习"></a>5.1. 决策树模型与学习</h2><ul>
 <li>内部节点表示一个特征，叶节点表示一个类</li>
 <li>损失函数通常为正则化的极大似然函数，学习策略为最小化损失函数</li>
 <li>训练集放在根节点，选择最优特征将训练集划分为子集，使子集有一个在当前条件下的最好分类。继续选择新的最优特征进行分类，直至训练子集都被正确分类</li>
 <li>剪枝</li>
-<li>生成考虑局部最优，剪枝考虑全局最优<h2 id="5-2-特征选择"><a href="#5-2-特征选择" class="headerlink" title="5.2. 特征选择"></a>5.2. 特征选择</h2></li>
-<li>特征选择准则：信息增益和信息增益比</li>
-<li>信息增益：<ul>
-<li>熵与条件熵</li>
-<li>信息增益：训练集中，类与特征的互信息（$A$为一个特征）<br>$$g(D,A)=H(D)-H(D|A)$$</li>
-<li>信息增益比：信息增益/训练集类的熵<h2 id="5-3-决策树生成"><a href="#5-3-决策树生成" class="headerlink" title="5.3. 决策树生成"></a>5.3. 决策树生成</h2><h3 id="5-3-1-ID3"><a href="#5-3-1-ID3" class="headerlink" title="5.3.1. ID3"></a>5.3.1. ID3</h3></li>
+<li>生成考虑局部最优，剪枝考虑全局最优</li>
+</ul>
+<h2 id="5-2-特征选择"><a href="#5-2-特征选择" class="headerlink" title="5.2. 特征选择"></a>5.2. 特征选择</h2><ul>
+<li><p>特征选择准则：信息增益和信息增益比</p>
+</li>
+<li><p>信息增益：</p>
+<ul>
+<li><p>熵与条件熵</p>
+</li>
+<li><p>信息增益：训练集中，类与特征的互信息（$A$为一个特征）<br>$$g(D,A)=H(D)-H(D|A)$$</p>
+</li>
+<li><p>信息增益比：信息增益/训练集类的熵</p>
+</li>
 </ul>
 </li>
+</ul>
+<h2 id="5-3-决策树生成"><a href="#5-3-决策树生成" class="headerlink" title="5.3. 决策树生成"></a>5.3. 决策树生成</h2><h3 id="5-3-1-ID3"><a href="#5-3-1-ID3" class="headerlink" title="5.3.1. ID3"></a>5.3.1. ID3</h3><ul>
 <li>输入：训练集$D$，特征集$A$，阈值$\varepsilon$</li>
 <li>输出：决策树$T$</li>
 <li>若所有实例属于同一类，则为单结点树</li>
@@ -568,18 +600,28 @@
 <li>不小于阈值：根据$A_g$每一可能值$a_i$，划分数据集$D_i$</li>
 </ul>
 </li>
-<li>对第$i$个子节点，以$D_i$为训练集，$A-A_g$为特征集，重复以上步骤<h3 id="5-3-2-C4-5"><a href="#5-3-2-C4-5" class="headerlink" title="5.3.2. C4.5"></a>5.3.2. C4.5</h3></li>
-<li>基本同上，用信息增益比选择特征<h2 id="5-4-剪枝"><a href="#5-4-剪枝" class="headerlink" title="5.4. 剪枝"></a>5.4. 剪枝</h2></li>
-<li>极小化决策树整体的损失函数<ul>
-<li>$t$为叶结点，包含$N_t$个样本点，其中$k$类样本有$N_{tk}$个，$\alpha \geq0$控制拟合程度和模型复杂度之间的影响<br>$$经验熵：H_t{(T)}=-\sum_k\frac{N_{tk}}{N_t}log\frac{N_{tk}}{N_t}$$<br>$$损失函数：C_\alpha(T)=\sum_{t=1}^{|T|}N_tH_t{(T)}+\alpha|T|=C(T)+\alpha|T|$$</li>
+<li>对第$i$个子节点，以$D_i$为训练集，$A-A_g$为特征集，重复以上步骤</li>
 </ul>
+<h3 id="5-3-2-C4-5"><a href="#5-3-2-C4-5" class="headerlink" title="5.3.2. C4.5"></a>5.3.2. C4.5</h3><ul>
+<li>基本同上，用信息增益比选择特征</li>
+</ul>
+<h2 id="5-4-剪枝"><a href="#5-4-剪枝" class="headerlink" title="5.4. 剪枝"></a>5.4. 剪枝</h2><ul>
+<li><p>极小化决策树整体的损失函数</p>
+<ul>
+<li>$t$为叶结点，包含$N_t$个样本点，其中$k$类样本有$N_{tk}$个，$\alpha \geq0$控制拟合程度和模型复杂度之间的影响</li>
+</ul>
+<p>$$经验熵：H_t{(T)}=-\sum_k\frac{N_{tk}}{N_t}log\frac{N_{tk}}{N_t}$$</p>
+<p>$$损失函数：C_\alpha(T)=\sum_{t=1}^{|T|}N_tH_t{(T)}+\alpha|T|=C(T)+\alpha|T|$$</p>
 </li>
-<li>算法：<ul>
+<li><p>算法：</p>
+<ul>
 <li>计算每个结点的经验熵</li>
 <li>设一组叶结点回缩到父节点之前与之后的损失函数值分别是$C_\alpha(T_A)$与$C_\alpha(T_B)$，若前者更小，则父节点变为新的叶结点</li>
-<li>重复到不能继续<h2 id="5-5-Cart"><a href="#5-5-Cart" class="headerlink" title="5.5. Cart"></a>5.5. Cart</h2></li>
+<li>重复到不能继续</li>
 </ul>
 </li>
+</ul>
+<h2 id="5-5-Cart"><a href="#5-5-Cart" class="headerlink" title="5.5. Cart"></a>5.5. Cart</h2><ul>
 <li>假设决策树是二叉树，内部节点特征取值为是和否</li>
 <li>回归树：平方误差最小化</li>
 <li>分类树：基尼指数最小化</li>
