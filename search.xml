@@ -7586,32 +7586,55 @@ $ chmod +r  xampp.run #给xampp.run读权限
 </ul>
 <h2 id="7-3-线性支持向量机与软间隔最大化"><a href="#7-3-线性支持向量机与软间隔最大化" class="headerlink" title="7.3. 线性支持向量机与软间隔最大化"></a>7.3. 线性支持向量机与软间隔最大化</h2><h3 id="7-3-1-线性支持向量机"><a href="#7-3-1-线性支持向量机" class="headerlink" title="7.3.1. 线性支持向量机"></a>7.3.1. 线性支持向量机</h3><p>将数据中的一些特异点取出，剩余的样本点线性可分  </p>
 <ul>
-<li>由对样本点引入松弛变量 $\xi_i\geq0$，约束条件：<br>$$y_i(w\cdot x_i+b\geq1-\xi_i)$$</li>
-<li>同样的，对每个松弛变量支付一个代价，目标函数变为<br>$$\frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i$$</li>
-<li>$C$为惩罚参数，较大时对误分类的惩罚增加</li>
-<li>即：$\underset{w,b,\xi}{min} \frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i，s.t.y_i(w\cdot x_i+b\geq1-\xi_i)$<h3 id="7-3-2-学习算法"><a href="#7-3-2-学习算法" class="headerlink" title="7.3.2. 学习算法"></a>7.3.2. 学习算法</h3><ul>
-<li>选择惩罚参数$C$，构造二次规划问题：<br>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i\cdot x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，C\geq \alpha_i\geq 0$$<br>求得最优解$\alpha^*=(\alpha_1^*,…,\alpha_N^*)^T$</li>
-<li>$w^*=\sum_{i=1}^N\alpha_i^<em>y_ix_i$，选择一个$\alpha^</em>$的一个分量$0&lt;\alpha_j^*&lt;C$计算$b^*=y_j-\sum_{i=1}^N\alpha_i^*y_i(x_i\cdot x_j)$<h2 id="7-4-非线性支持向量机与核函数"><a href="#7-4-非线性支持向量机与核函数" class="headerlink" title="7.4. 非线性支持向量机与核函数"></a>7.4. 非线性支持向量机与核函数</h2><h3 id="7-4-1-核技巧"><a href="#7-4-1-核技巧" class="headerlink" title="7.4.1. 核技巧"></a>7.4.1. 核技巧</h3></li>
-<li>通过非线性变换将输入空间对应于一个特征空间，超曲面模型对应于超平面模型，通过在特征空间中求解线性支持向量机</li>
-<li>核函数：存在一个从欧氏空间$X$到希尔伯特空间$H$的映射函数$\phi(x)$，函数$K(x,z)=\phi(x)\cdot \phi(z)$，所有$x,z\in X$，则$K(x,z)$为核函数<h3 id="7-4-2-正定核"><a href="#7-4-2-正定核" class="headerlink" title="7.4.2. 正定核"></a>7.4.2. 正定核</h3></li>
-<li>设$K$是对称函数，$K(x,z)$为正定核函数$&lt;=&gt;$对应的 Gram 矩阵$K=[K(x_i,x_j)]_{m\times n}$为半正定矩阵<h3 id="7-4-3-常用核函数"><a href="#7-4-3-常用核函数" class="headerlink" title="7.4.3. 常用核函数"></a>7.4.3. 常用核函数</h3></li>
-<li>多项式核函数</li>
-<li>高斯核函数</li>
-<li>字符串核函数</li>
-<li>将线性支持向量机对偶形式中的内积换成核函数<h2 id="7-5-序列最小最优化算法"><a href="#7-5-序列最小最优化算法" class="headerlink" title="7.5. 序列最小最优化算法"></a>7.5. 序列最小最优化算法</h2></li>
-<li>解此问题：<br>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_jK(x_i,x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，C\geq \alpha_i\geq 0$$</li>
-<li>变量是拉格朗日乘子，一个变量对应一个样本点</li>
-<li>SMO算法：</li>
-</ul>
+<li><p>由对样本点引入松弛变量 $\xi_i\geq0$，约束条件：<br>$$y_i(w\cdot x_i+b\geq1-\xi_i)$$</p>
 </li>
+<li><p>同样的，对每个松弛变量支付一个代价，目标函数变为<br>$$\frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i$$</p>
+</li>
+<li><p>$C$为惩罚参数，较大时对误分类的惩罚增加</p>
+</li>
+<li><p>即：$\underset{w,b,\xi}{min} \frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i，s.t.y_i(w\cdot x_i+b\geq1-\xi_i)$</p>
+</li>
+</ul>
+<h3 id="7-3-2-学习算法"><a href="#7-3-2-学习算法" class="headerlink" title="7.3.2. 学习算法"></a>7.3.2. 学习算法</h3><ul>
+<li><p>选择惩罚参数$C$，构造二次规划问题：</p>
+<p>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i\cdot x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，C\geq \alpha_i\geq 0$$</p>
+<p>求得最优解$\alpha^*=(\alpha_1^*,…,\alpha_N^*)^T$</p>
+</li>
+<li><p>$w^*=\sum_{i=1}^N\alpha_i^<em>y_ix_i$，选择一个$\alpha^</em>$的一个分量$0&lt;\alpha_j^*&lt;C$计算$b^*=y_j-\sum_{i=1}^N\alpha_i^*y_i(x_i\cdot x_j)$</p>
+</li>
+</ul>
+<h2 id="7-4-非线性支持向量机与核函数"><a href="#7-4-非线性支持向量机与核函数" class="headerlink" title="7.4. 非线性支持向量机与核函数"></a>7.4. 非线性支持向量机与核函数</h2><h3 id="7-4-1-核技巧"><a href="#7-4-1-核技巧" class="headerlink" title="7.4.1. 核技巧"></a>7.4.1. 核技巧</h3><ul>
+<li><p>通过非线性变换将输入空间对应于一个特征空间，超曲面模型对应于超平面模型，通过在特征空间中求解线性支持向量机</p>
+</li>
+<li><p>核函数：存在一个从欧氏空间$X$到希尔伯特空间$H$的映射函数$\phi(x)$，函数$K(x,z)=\phi(x)\cdot \phi(z)$，所有$x,z\in X$，则$K(x,z)$为核函数</p>
+<h3 id="7-4-2-正定核"><a href="#7-4-2-正定核" class="headerlink" title="7.4.2. 正定核"></a>7.4.2. 正定核</h3></li>
+<li><p>设$K$是对称函数，$K(x,z)$为正定核函数$&lt;=&gt;$对应的 Gram 矩阵$K=[K(x_i,x_j)]_{m\times n}$为半正定矩阵</p>
+<h3 id="7-4-3-常用核函数"><a href="#7-4-3-常用核函数" class="headerlink" title="7.4.3. 常用核函数"></a>7.4.3. 常用核函数</h3></li>
+<li><p>多项式核函数</p>
+</li>
+<li><p>高斯核函数</p>
+</li>
+<li><p>字符串核函数</p>
+</li>
+<li><p>将线性支持向量机对偶形式中的内积换成核函数</p>
+<h2 id="7-5-序列最小最优化算法"><a href="#7-5-序列最小最优化算法" class="headerlink" title="7.5. 序列最小最优化算法"></a>7.5. 序列最小最优化算法</h2></li>
+<li><p>解此问题：</p>
+<p>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_jK(x_i,x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，C\geq \alpha_i\geq 0$$</p>
+</li>
+<li><p>变量是拉格朗日乘子，一个变量对应一个样本点</p>
+</li>
+<li><p>SMO算法：</p>
+<ul>
 <li>输入：训练集，精度$\varepsilon$</li>
 <li>输出：近似解$\hat{\alpha}$</li>
 </ul>
 <ol>
 <li>取初值$\alpha^{(0)}=0$，令$k=0$</li>
 <li>取优化变量 $\alpha_1^{(k)},\alpha_2^{(k)}$，解析求解两个变量的最优化问题，得到最优解$\alpha_1^{(k+1)},\alpha_2^{(k+1)}$，更新$\alpha$为$\alpha^{(k+1)}$</li>
-<li>若在精度范围内满足：<br>$$\sum_{i=1}^N\alpha<br><em>iy_i=0$$<br>$$y_i\cdot g(x_i)\geq 1,\left{x_i|\alpha_i=0\right}<br>;=1,\left{x_i|0&lt;\alpha_i&lt;C\right};\leq1,\left{x_i|\alpha_i=C\right}$$<br>$$g(x_i)=\sum</em>{j=1}^N\alpha_jy_jK(x_j,x_i)+b$$<br>则取$\hat{\alpha} =\alpha^{(k+1)}$</li>
+<li>若在精度范围内满足：<br>$$\sum_{i=1}^N\alpha_iy_i=0 \ y_i\cdot g(x_i)\geq 1,\left{x_i|\alpha_i=0\right}  =1, \ \left{x_i|0&lt;\alpha_i&lt;C\right}\leq1, \ \left{x_i|\alpha_i=C\right} \ g(x_i)=\sum_{j=1}^N\alpha_jy_jK(x_j,x_i)+b$$<br>则取$\hat{\alpha} =\alpha^{(k+1)}$</li>
 </ol>
+</li>
+</ul>
 <h1 id="8-提升方法"><a href="#8-提升方法" class="headerlink" title="8. 提升方法"></a>8. 提升方法</h1><ul>
 <li>改变训练样本的权重，学习多个分类器并进行线性组合，提高分类性能<h2 id="8-1-AdaBoost算法"><a href="#8-1-AdaBoost算法" class="headerlink" title="8.1. AdaBoost算法"></a>8.1. AdaBoost算法</h2></li>
 <li>二分类的训练数据集，从训练数据中学习一系列弱分类器或基本分类器，并将其线性组合成一个强分类器</li>
