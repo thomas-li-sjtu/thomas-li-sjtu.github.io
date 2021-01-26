@@ -723,9 +723,9 @@
       </tags>
   </entry>
   <entry>
-    <title>Java核心技术卷I （1）</title>
+    <title>Java核心技术卷I （1）基本结构与类</title>
     <url>/2021/01/25/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-1/</url>
-    <content><![CDATA[<p>《Java核心技术卷I》阅读笔记</p>
+    <content><![CDATA[<p>《Java核心技术卷I》阅读笔记——基本结构与类</p>
 <a id="more"></a>
 
 <h2 id="Java-概述"><a href="#Java-概述" class="headerlink" title="Java 概述"></a>Java 概述</h2><h3 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h3><ul>
@@ -1191,7 +1191,97 @@
 </ul>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> nextld;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> salary;</span><br><span class="line">    <span class="comment">//object initialization block</span></span><br><span class="line">    &#123;</span><br><span class="line">        id = nextld;</span><br><span class="line">        nextld++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h4 id="对象析构"><a href="#对象析构" class="headerlink" title="对象析构"></a>对象析构</h4><h3 id="包"><a href="#包" class="headerlink" title="包"></a>包</h3><h3 id="类路径"><a href="#类路径" class="headerlink" title="类路径"></a>类路径</h3><h3 id="文档注释"><a href="#文档注释" class="headerlink" title="文档注释"></a>文档注释</h3><h3 id="类的设计"><a href="#类的设计" class="headerlink" title="类的设计"></a>类的设计</h3><ul>
+<h4 id="对象析构"><a href="#对象析构" class="headerlink" title="对象析构"></a>对象析构</h4><ul>
+<li>Java 不支持析构器——自动的垃圾回收器，不需要人工回收内存</li>
+<li>某些对象使用了内存之外的其他资源：可以为任何一个类添加 finalize 方法。finalize 方法将在垃圾回收器清除对象之前调用</li>
+</ul>
+<h3 id="包"><a href="#包" class="headerlink" title="包"></a>包</h3><ul>
+<li>Java 允许使用包（package）将类组织起来，确保类名的唯一性</li>
+<li>可以使用嵌套层次组织</li>
+<li>编译器的角度来看，嵌套的包之间没有任何关系——java.util 包与 java.util.jar 包没有任何联系</li>
+</ul>
+<h4 id="类的导入"><a href="#类的导入" class="headerlink" title="类的导入"></a>类的导入</h4><ul>
+<li><p>一个类可以使用所属包中的所有类，以及其他包中的公有类（public class）</p>
+</li>
+<li><p>导入方法：</p>
+<ul>
+<li>导入一个包的所有类<code>import java.util.*;</code></li>
+<li>导入一个包的特定类<code>import java.util.LocalDate;</code></li>
+</ul>
+</li>
+<li><p>只能使用星号导入一个包，不能<code>import java.*;</code></p>
+</li>
+<li><p>当两个包都有同一个类，增加特定的语句</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*;</span><br><span class="line"><span class="keyword">import</span> java.sql .*;</span><br><span class="line"><span class="keyword">import</span> java.util.Date;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="静态导入"><a href="#静态导入" class="headerlink" title="静态导入"></a>静态导入</h4><ul>
+<li>导入静态方法，即<code>import static java.lang.System.*;</code>可以使用类 System 的静态方法和静态域，不用添加类名前缀</li>
+</ul>
+<h4 id="类放入包中"><a href="#类放入包中" class="headerlink" title="类放入包中"></a>类放入包中</h4><ul>
+<li><p>必须将包的名字放在源文件的开头，包中定义类的代码之前</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.horstiann.corejava;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Employee</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果没有在源文件中放置 package 语句，这个源文件中的类就被放置在一个默认包（default package）</p>
+</li>
+<li><p>放到不同的包中</p>
+<img src="/2021/01/25/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-1/image-20210126192725499.png" alt="image-20210126192725499" style="zoom:67%;">
+
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ javac com/mycompany/PayrollApp.java</span><br><span class="line">$ java com.mycompany.PayrollApp</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="包的作用域"><a href="#包的作用域" class="headerlink" title="包的作用域"></a>包的作用域</h4><ul>
+<li>标记为 public 的部分可以被任意的类使用；标记为 private 的部分只能被定义它们的类使用；如果没有指定 public 或 private，则这个部分（类、方法或变量）可以被同一个包中的所有方法访问</li>
+</ul>
+<h3 id="类路径"><a href="#类路径" class="headerlink" title="类路径"></a>类路径</h3><ul>
+<li>类存储在文件系统的子目录中，类的路径必须与包名匹配</li>
+</ul>
+<h3 id="文档注释"><a href="#文档注释" class="headerlink" title="文档注释"></a>文档注释</h3><ul>
+<li>javadoc 可以由源文件生成一个 HTML 文档</li>
+</ul>
+<h4 id="注释的插入"><a href="#注释的插入" class="headerlink" title="注释的插入"></a>注释的插入</h4><ul>
+<li>注释应该放置在所描述特性的前面</li>
+<li>格式为<code>/***/</code></li>
+<li>标记由 @ 开始</li>
+<li>自由格式文本中，可以使用 HTML 修饰符</li>
+</ul>
+<h4 id="类注释"><a href="#类注释" class="headerlink" title="类注释"></a>类注释</h4><ul>
+<li><p>类注释必须放在 import 语句之后，类定义之前</p>
+<img src="/2021/01/25/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-1/image-20210126193432725.png" alt="image-20210126193432725" style="zoom:67%;">
+
+</li>
+</ul>
+<h4 id="方法注释"><a href="#方法注释" class="headerlink" title="方法注释"></a>方法注释</h4><ul>
+<li><p>每一个方法注释必须放在所描述的方法之前</p>
+<img src="/2021/01/25/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-1/image-20210126193516046.png" alt="image-20210126193516046" style="zoom:80%;">
+
+</li>
+</ul>
+<h4 id="域注释"><a href="#域注释" class="headerlink" title="域注释"></a>域注释</h4><ul>
+<li><p>只需要对公有域（通常指的是静态常量）建立文档</p>
+<img src="/2021/01/25/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-1/image-20210126193542685.png" alt="image-20210126193542685" style="zoom:50%;">
+
+</li>
+</ul>
+<h4 id="通用注释"><a href="#通用注释" class="headerlink" title="通用注释"></a>通用注释</h4><ul>
+<li>@auther</li>
+<li>@version</li>
+<li>@since</li>
+<li>@deprecated</li>
+<li>@see</li>
+</ul>
+<h4 id="包与概述注释"><a href="#包与概述注释" class="headerlink" title="包与概述注释"></a>包与概述注释</h4><ul>
+<li>产生包注释，需要在每一个包目录中添加一个单独的文件</li>
+<li>以 package-info.java 命名的 Java 文件</li>
+<li>文件必须包含一个初始的<code>/***/</code>注释</li>
+</ul>
+<h4 id="注释的抽取"><a href="#注释的抽取" class="headerlink" title="注释的抽取"></a>注释的抽取</h4><ul>
+<li>切换到包含想要生成文档的源文件目录</li>
+<li>运行<code>javadoc -d 目标目录 nameOfPackage</code></li>
+</ul>
+<h3 id="类的设计"><a href="#类的设计" class="headerlink" title="类的设计"></a>类的设计</h3><ul>
 <li>一定要保证数据私有</li>
 <li> 一定要对数据初始化</li>
 <li>不要在类中使用过多的基本类型</li>
