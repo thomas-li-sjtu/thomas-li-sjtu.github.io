@@ -1151,7 +1151,56 @@
 </ul>
 </li>
 </ul>
-<h3 id="对象构造"><a href="#对象构造" class="headerlink" title="对象构造"></a>对象构造</h3><h4 id="重载"><a href="#重载" class="headerlink" title="重载"></a>重载</h4>]]></content>
+<h3 id="对象构造"><a href="#对象构造" class="headerlink" title="对象构造"></a>对象构造</h3><h4 id="重载"><a href="#重载" class="headerlink" title="重载"></a>重载</h4><ul>
+<li>多个方法有相同的名字，但参数不同，则产生重载</li>
+<li>Java允许重载任何方法，而不只是构造器方法<ul>
+<li>完整描述一个方法，需要指明方法的签名，即方法名与参数类型</li>
+</ul>
+</li>
+</ul>
+<h4 id="默认域初始化"><a href="#默认域初始化" class="headerlink" title="默认域初始化"></a>默认域初始化</h4><ul>
+<li>如果构造器没有显式给域赋初值，则被自动赋为默认值</li>
+<li>数值为 0，布尔为 false，对象引用为 null</li>
+</ul>
+<h4 id="无参数构造器"><a href="#无参数构造器" class="headerlink" title="无参数构造器"></a>无参数构造器</h4><ul>
+<li>对象由无参数构造函数创建时，其状态会设置为适当的默认值</li>
+<li>如果在编写一个类时没有编写构造器，系统就会提供一个无参数构造器，将所有的实例域设置为默认值——仅当类没有提供任何构造器的时候，系统才会提供一个默认的构造器</li>
+</ul>
+<h4 id="显式域初始化"><a href="#显式域初始化" class="headerlink" title="显式域初始化"></a>显式域初始化</h4><ul>
+<li><p>可以在类定义中，直接将一个值赋给任何域</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name = <span class="string">&quot;&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>初始值不一定是常量值</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="class"><span class="keyword">class</span> <span class="title">Employee</span></span></span><br><span class="line"><span class="class">  </span>&#123;</span><br><span class="line">  	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> nextld;</span><br><span class="line">  	<span class="keyword">private</span> <span class="keyword">int</span> id = assignld();</span><br><span class="line">  	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">assignld</span><span class="params">()</span></span></span><br><span class="line"><span class="function">  	</span>&#123;</span><br><span class="line">      	<span class="keyword">int</span> r = nextld;</span><br><span class="line">          nextld++;</span><br><span class="line">          <span class="keyword">return</span> r;</span><br><span class="line">    	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="调用其他构造器"><a href="#调用其他构造器" class="headerlink" title="调用其他构造器"></a>调用其他构造器</h4><ul>
+<li><p>构造器的第一个语句形如 this(…)，则调用同一个类的其他构造器</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Employee</span><span class="params">(<span class="keyword">double</span> s)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">// calls Employee(String, double)</span></span><br><span class="line">	<span class="keyword">this</span>(<span class="string">&quot;Employee #&quot;</span> + nextld, s);</span><br><span class="line">	nextld++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="初始化块"><a href="#初始化块" class="headerlink" title="初始化块"></a>初始化块</h4><ul>
+<li>初始化数据域<ul>
+<li>构造器中设置值</li>
+<li>声明中赋值</li>
+<li>初始化块：只要构造类的对象，这些块就会被执行（不常见）</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> nextld;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> salary;</span><br><span class="line">    <span class="comment">//object initialization block</span></span><br><span class="line">    &#123;</span><br><span class="line">        id = nextld;</span><br><span class="line">        nextld++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="对象析构"><a href="#对象析构" class="headerlink" title="对象析构"></a>对象析构</h4><h3 id="包"><a href="#包" class="headerlink" title="包"></a>包</h3><h3 id="类路径"><a href="#类路径" class="headerlink" title="类路径"></a>类路径</h3><h3 id="文档注释"><a href="#文档注释" class="headerlink" title="文档注释"></a>文档注释</h3><h3 id="类的设计"><a href="#类的设计" class="headerlink" title="类的设计"></a>类的设计</h3><ul>
+<li>一定要保证数据私有</li>
+<li> 一定要对数据初始化</li>
+<li>不要在类中使用过多的基本类型</li>
+<li>不是所有的域都需要独立的域访问器和域更改器</li>
+<li>将职责过多的类进行分解</li>
+<li>类名和方法名要能够体现它们的职责</li>
+<li>优先使用不可变的类</li>
+</ul>
+]]></content>
       <categories>
         <category>编程语言</category>
       </categories>
