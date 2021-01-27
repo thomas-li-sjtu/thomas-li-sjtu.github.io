@@ -10803,12 +10803,11 @@ def a_function_requiring_decoration():
 <li>背景：给定一个泄露的密码，攻击者试图猜测同一用户其他在线帐户的密码</li>
 </ul>
 <h3 id="主要的转换规则"><a href="#主要的转换规则" class="headerlink" title="主要的转换规则"></a>主要的转换规则</h3><ul>
-<li><p>在40%的泄漏密码中得到转换规则，并在剩余60%的数据上测试了猜测算法</p>
-</li>
-<li><p>不考虑额外的转换——添加一些随机的额外字符或在结尾添加表情符号</p>
-</li>
-<li><p>表中转换规则按概率递减的顺序排列<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/5.PNG"></p>
-<h3 id="猜测算法设计"><a href="#猜测算法设计" class="headerlink" title="猜测算法设计"></a>猜测算法设计</h3></li>
+<li>在40%的泄漏密码中得到转换规则，并在剩余60%的数据上测试了猜测算法</li>
+<li>不考虑额外的转换——添加一些随机的额外字符或在结尾添加表情符号</li>
+<li>表中转换规则按概率递减的顺序排列<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/5.PNG"></li>
+</ul>
+<h3 id="猜测算法设计"><a href="#猜测算法设计" class="headerlink" title="猜测算法设计"></a>猜测算法设计</h3><ul>
 <li><p>算法生成一组有序的候选密码</p>
 <p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/6.PNG"></p>
 </li>
@@ -11005,6 +11004,215 @@ def a_function_requiring_decoration():
 <p>[49] Y . Zhang, F. Monrose, and M. K. Reiter, “The Security of Modern Password Expiration: An Algorithmic Framework and Empirical Analysis,” in Proceedings of the 17th ACM conference on Computer and communications security, ser. CCS ’10, 2010, pp. 176–186. </p>
 </font>
 </font>]]></content>
+      <categories>
+        <category>论文</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
+        <tag>密码重用</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Empirical Analysis of Password Reuse and Modification across Online Service</title>
+    <url>/2021/01/28/Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service/</url>
+    <content><![CDATA[<p>《Empirical Analysis of Password Reuse and Modification across Online Service》论文阅读记录</p>
+<font face="宋体">
+<font size="3">
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>分析了107个服务中2880万用户及其6150万密码</li>
+<li>38%的用户在不同的站点重复使用完全相同的密码，而20%的用户修改了现有的密码来创建新的密码</li>
+<li>密码修改模式在不同的用户群体中高度一致——密码修改模式具有很高的可预测性</li>
+<li>一个新的基于训练的猜测算法——在10次尝试内可以破解1600多万个密码对（30%的修改密码和所有重复使用的密码）</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>通过分析公开的密码数据集，试图对用户常用的密码重用/修改方式进行实证测试</li>
+<li>开发了一种基于训练的算法，根据目标用户泄露的密码来猜测目标用户的密码</li>
+<li>电子邮件服务（如Gmail）的密码重用率（60.4%）明显较高</li>
+<li>用户更喜欢使用简单的规则来修改密码，密码转换模式在不同职业和国家的用户中高度一致</li>
+<li>即使只训练了0.1%的数据，该算法也能获得相似的性能——密码修改模式的方差低</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>现有的工作基于用户调查或小规模数据分析（6—7K用户）调查了密码重用和转换[8, 15, 35，38]</li>
+<li>在线密码猜测需要攻击者在有限的尝试次数内猜测密码</li>
+<li>基于拖网的方法只是猜测用户选择的最流行密码</li>
+<li>大量的工作集中于离线猜测[12-14，21，22，33，36]，尝试的次数是无限的</li>
+<li>常见的场景是，给定一个散列密码数据集，脱机猜测将寻求恢复明文密码<ul>
+<li>Markov模型[18，22]</li>
+<li>混乱的单词表方法[31]</li>
+<li>概率上下文无关文法（PCFGs）[14，22，33，36]</li>
+<li>神经网络[21]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h2><ul>
+<li>数据集应该包含电子邮件地址，以便跨服务链接用户的密码</li>
+<li>很难大规模恢复数据集的密码，因此排除了只包含哈希结果的数据集</li>
+<li>总共获得460874306个明文密码（占所有密码的93%）。剩下的7%很难恢复，将使用它们来测试猜测算法</li>
+<li>需要出现在至少两个网站上的用户——构建了一个包含28836775个用户的主数据集，这些用户至少拥有两个明文密码<br><img src="/2021/01/28/Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service/1.PNG"></li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="跨服务重用密码"><a href="#跨服务重用密码" class="headerlink" title="跨服务重用密码"></a>跨服务重用密码</h2><ul>
+<li>分析用户为不同服务重用完全相同密码的频率</li>
+<li>提取密码对，若用户有两个以上的密码，则考虑所有可能的密码对（例如，4个密码意味着6个密码对）</li>
+<li>34.3%的密码对相同，38%的用户（1090万）至少有一对相同的密码</li>
+<li>拥有更多密码的用户是否更可能重用相同的密码？<ul>
+<li>密码少于5个的用户，这个假设正确</li>
+<li>对于拥有更多密码的用户来说，这种趋势相反</li>
+</ul>
+</li>
+<li>包含电子邮件密码的密码对重用率（60.4%）比总体重用率更高，用户更有可能将其电子邮件密码用于其他服务</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="密码转换"><a href="#密码转换" class="headerlink" title="密码转换"></a>密码转换</h2><p>研究过程如下图：<br>  <img src="/2021/01/28/Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service/2.PNG"></p>
+<h3 id="转换规则"><a href="#转换规则" class="headerlink" title="转换规则"></a>转换规则</h3><ul>
+<li>大多数密码对（55.6%）可以用一个转换规则来解释</li>
+<li>完全相同：最常见的规则是重复使用相同的密码</li>
+<li>子字符串：一个密码是另一个密码的子字符串，此规则匹配10%。大多数插入/删除发生在尾部，大多数插入/删除的字符串是纯数字（74%）和短字符串</li>
+<li>大写：比率不高（1.3%），通常在密码开头大写字母（73%）</li>
+<li>Leet：0.3%符合leet规则。10个变换leet变换覆盖了96.6%的leet转换密码对</li>
+<li>倒转：&lt;0.1%使用此规则</li>
+<li>顺序键：包括字母顺序键（abcd）、顺序号（1234）和键盘上的相邻键。&lt;0.1%使用此规则</li>
+<li>公共子串：要求最长的公共字符串大于2个字符，并且所有的公共子字符串应该覆盖超过50%的密码字符。此规则匹配5.7%</li>
+<li>规则的组合：使用rule3-6的组合首先修改密码，然后测试rule2或rule7是否可以得到匹配结果。此规则匹配了另外2.0%数据</li>
+<li>测试了以上所有规则后，仍有46.4%的密码对不匹配——认为46.4%的密码对是用户“从头开始创建新密码”的结果</li>
+</ul>
+<h3 id="用户人口统计的影响"><a href="#用户人口统计的影响" class="headerlink" title="用户人口统计的影响"></a>用户人口统计的影响</h3><ul>
+<li>不同的用户统计数据之间的转换模式的差异——从用户的电子邮件地址推断出他们的人口统计数据</li>
+<li>职业<ul>
+<li>确定了来自教育机构的128036名用户、来自军队的7376名用户和来自政府的3384名用户</li>
+<li>密码转换模式极为相似</li>
+</ul>
+</li>
+<li>国家<ul>
+<li>识别包含国家代码的电子邮件域</li>
+<li>来自不同国家的用户的转换模式非常相似</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="密码猜测"><a href="#密码猜测" class="headerlink" title="密码猜测"></a>密码猜测</h2><h3 id="猜测算法"><a href="#猜测算法" class="headerlink" title="猜测算法"></a>猜测算法</h3><ul>
+<li><p>针对DBCBW[8]中存在的不足，提出了一种新的密码猜测算法</p>
+<ul>
+<li>DBCBW通过转换同一用户的已知密码来猜测目标用户密码</li>
+<li>DBCBW算法简单，但有两个缺点：第一，缺乏训练数据，该算法使用手工生成的转换规则。第二，以固定的顺序应用这些规则，对于单个密码来说可能不是最优的</li>
+</ul>
+</li>
+<li><p>学习目标：</p>
+<ul>
+<li>（1）每个规则的转换过程</li>
+<li>（2）一个模型来定制每个密码的规则顺序</li>
+</ul>
+</li>
+<li><p>训练：</p>
+<ul>
+<li><p>训练过程：</p>
+<ul>
+<li><p>对于每个规则$R_i$，我们试图学习密码转换的列表$T_i$<br>  $$</p>
+<pre><code>  T_i=[t_&#123;i1&#125;，t_&#123;i2&#125;，…t_&#123;iN_i&#125;]</code></pre>
+<p>  $$<br>  其中$t_{ij}$表示此规则下的一个转换</p>
+</li>
+<li><p>$T_i$根据每个转换在训练数据集中出现的频率进行排序</p>
+</li>
+<li><p>密码猜测期间，将独立测试每个转换——“子字符串”规则中，$t$的特征是&lt; insert/delete &gt;&lt; position &gt;&lt; string &gt;，“大写规则”中，$t$的特征是&lt; position &gt;&lt; #chars &gt;</p>
+</li>
+<li><p>“leet”、“顺序键”和“倒转”的转换列表$T$同理</p>
+</li>
+<li><p>“公共子串”：学习排序转换列表（插入、删除、替换、替换、切换顺序）。</p>
+<ul>
+<li>对于给定的密码，首先分割密码以检测潜在的公共子串</li>
+<li>纯数字/字母/特殊字符的子串</li>
+<li>英语单词/名称</li>
+<li>训练数据中常见的子串</li>
+</ul>
+</li>
+<li><p>“规则的组合”：$T$是规则组合的排序列表，其中每个规则组合都有一个待测试的转换规则排序列表</p>
+</li>
+</ul>
+</li>
+<li><p>规则排序：</p>
+<ul>
+<li>对于给定的密码，使用贝叶斯模型来学习应该首先应用哪个规则。这视作一个多类分类问题</li>
+<li>给定一个密码，训练一个模型来估计密码被每个规则转换的可能性。选择朴素贝叶斯分类器（多项式模型），该模型产生数据点（密码）属于类（规则）的概率<br><img src="/2021/01/28/Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service/3.PNG"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>密码猜测</p>
+<ul>
+<li>对于给定的密码对（$pw_1$，$pw_2$），通过转换已知的pw1来测试猜测$pw_1$需要多少次尝试</li>
+<li>使用贝叶斯模型为$pw_1$生成一个特定的规则顺序，据此有两个猜测选项：<ul>
+<li>顺序：一次测试一个规则。在测试了规则下的所有转换之后，转到下一个规则</li>
+<li>旋转：一次测试一个规则和一个转换。在根据规则测试一个转换之后，将转到下一个规则来测试另一个转换。轮流测试每一条规则，只做一个猜测</li>
+</ul>
+</li>
+<li>顺序猜测需要更高精度的预测顺序，旋转猜测对预测误差基线的容忍度更高</li>
+</ul>
+</li>
+<li><p>基准</p>
+<ul>
+<li>使用两个基准进行比较</li>
+<li>使用固定顺序的规则来“顺序猜测”（类似于DBCBW）</li>
+<li>一个流行的现成密码破解工具，开膛手约翰（JtR）[2]。使用JtR的“单一”模式并保持默认设置</li>
+</ul>
+</li>
+</ul>
+<h3 id="猜测结果"><a href="#猜测结果" class="headerlink" title="猜测结果"></a>猜测结果</h3><ul>
+<li>排除了相同的密码对</li>
+<li>对50%的数据进行培训：<ul>
+<li>密码猜测过程中，测试每个密码对的两个方向（$pw_1$→$pw_2$和$pw_2$→$pw_1$）</li>
+<li>仅在100次尝试内就猜出46.5%的密码，10次猜测已经破解了30%的密码</li>
+<li>JtR基准在前10次尝试中几乎没有破解</li>
+<li>贝叶斯模型优于固定排序方法</li>
+<li>旋转猜测比顺序猜测要好；顺序猜测的优势在于前5次猜测；通过更频繁地切换规则，旋转猜测具有更好的总体性能</li>
+</ul>
+</li>
+<li>使用更小的训练数据<ul>
+<li>使用更小的数据集来训练算法（贝叶斯+旋转），以验证转换模式的低方差假设</li>
+<li>测试数据不变，训练数据减少到0.1%</li>
+<li>0.1%的训练曲线仍然与50%的曲线重叠</li>
+</ul>
+</li>
+<li>破解剩下的哈希密码散列<ul>
+<li>有6218778个密码对，其中一个密码是未破解的散列，另一个是纯文本的</li>
+<li>成功地在5000次尝试中恢复了939400（15.1%）的散列<br><img src="/2021/01/28/Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service/4.PNG"></li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><ul>
+<li>考虑到密码的高重用率，有必要通知用户重置密码——被破解的服务，以及具有类似密码的其他服务</li>
+<li>在密码重置过程中，应确保用户不修改已泄漏的密码以创建新密码</li>
+<li>更好的做法是使用密码管理器为每个服务设置唯一和复杂的密码</li>
+<li>电子邮件密码的重复使用率相当高。认为应该向用户发出更具体的警告，以避免在注册服务时重用电子邮件密码</li>
+</ul>
+<hr>
+<font>
+<font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font>]]></content>
       <categories>
         <category>论文</category>
       </categories>
