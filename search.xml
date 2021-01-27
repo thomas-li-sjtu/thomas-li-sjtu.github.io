@@ -44,7 +44,9 @@
 <h2 id="背景和相关工作"><a href="#背景和相关工作" class="headerlink" title="背景和相关工作"></a>背景和相关工作</h2><h3 id="密码猜测攻击"><a href="#密码猜测攻击" class="headerlink" title="密码猜测攻击"></a>密码猜测攻击</h3><ul>
 <li>没有限速策略时，可以实施大规模猜测</li>
 <li>散列密码数据库被盗，即数据库被拖库，则可进行离线攻击【20，23，27，45，46，67，73，75，87】</li>
-<li>加密密钥从密码派生或受密码保护，此情况下也容易受到大规模猜测的攻击<h3 id="测量密码强度"><a href="#测量密码强度" class="headerlink" title="测量密码强度"></a>测量密码强度</h3></li>
+<li>加密密钥从密码派生或受密码保护，此情况下也容易受到大规模猜测的攻击</li>
+</ul>
+<h3 id="测量密码强度"><a href="#测量密码强度" class="headerlink" title="测量密码强度"></a>测量密码强度</h3><ul>
 <li>密码强度模型通常采用两种概念形式<ul>
 <li>依赖于纯粹的统计方法，如香农熵或其他先进的统计方法【21，22】——所需的样本量太大</li>
 <li>模拟对抗性密码猜测【34，65，89】</li>
@@ -67,14 +69,18 @@
 <li>损坏的Wordlist方法（Mangled Wordlist Methods）：<ul>
 <li>软件工具通常用这种方法于生成密码猜测</li>
 <li>这种类型的两种流行工具是Hashcat 和John the Ripper</li>
-<li>使用人工规则来转换词表（密码和字典条目），或者模拟人类编写密码的常见行为进行转换<h3 id="主动密码检查"><a href="#主动密码检查" class="headerlink" title="主动密码检查"></a>主动密码检查</h3></li>
+<li>使用人工规则来转换词表（密码和字典条目），或者模拟人类编写密码的常见行为进行转换</li>
 </ul>
 </li>
+</ul>
+<h3 id="主动密码检查"><a href="#主动密码检查" class="headerlink" title="主动密码检查"></a>主动密码检查</h3><ul>
 <li>以上密码猜测模型可以精确地模拟人工创建的密码，但它们需要数小时或数天以及兆字节或千兆字节的磁盘空间</li>
 <li>当前的实时密码检查程序可以根据它们是否完全运行在客户端进行分类</li>
 <li>服务器端组件在安全性上有很大问题——将密码发送到服务器进行密码检查会破坏所有安全保证，例如保护密钥的密码不应该离开用户的设备</li>
 <li>客户端的密码检查器，例如在浏览器运行的那种，往往根据密码的长度或包含的不同字符类来给密码打分【33，88】</li>
-<li>只有 zxcvbn 【94，95】使用了几十种更先进的启发式方法，给出了合理准确的强度估计——无法简洁地对模型进行编码和计算实时结果，不能直接模拟对抗性猜测<h3 id="神经网络"><a href="#神经网络" class="headerlink" title="神经网络"></a>神经网络</h3></li>
+<li>只有 zxcvbn 【94，95】使用了几十种更先进的启发式方法，给出了合理准确的强度估计——无法简洁地对模型进行编码和计算实时结果，不能直接模拟对抗性猜测</li>
+</ul>
+<h3 id="神经网络"><a href="#神经网络" class="headerlink" title="神经网络"></a>神经网络</h3><ul>
 <li>用于近似高维函数，擅长模糊分类问题和生成新序列</li>
 <li>基于前面的元素生成字符串中下一个元素的概率【49，84】</li>
 <li>序列可能是不精确的、新颖的序列【49】——神经网络可能适合于密码猜测</li>
@@ -85,59 +91,58 @@
 <font size="3">
 
 <h2 id="系统设计"><a href="#系统设计" class="headerlink" title="系统设计"></a>系统设计</h2><h3 id="密码强度测量"><a href="#密码强度测量" class="headerlink" title="密码强度测量"></a>密码强度测量</h3><ul>
-<li><p>神经网络：给定密码的前一个字符，训练产生密码的下一个字符</p>
-</li>
-<li><p>依赖于一个特殊的密码结束符号来模拟在一系列字符之后密码结束的概率</p>
-<figure class="highlight livecodeserver"><table><tr><td class="code"><pre><span class="line">For example, <span class="built_in">to</span> calculate <span class="keyword">the</span> probability <span class="keyword">of</span> <span class="keyword">the</span> entire password ‘bad’, we would <span class="built_in">start</span> <span class="keyword">with</span> <span class="keyword">an</span> <span class="literal">empty</span> password, <span class="keyword">and</span> query <span class="keyword">the</span> network <span class="keyword">for</span> <span class="keyword">the</span> probability <span class="keyword">of</span> seeing <span class="keyword">a</span> ‘b’, <span class="keyword">then</span> seeing <span class="keyword">an</span> ‘<span class="keyword">a</span>’ <span class="keyword">after</span> ‘b’, <span class="keyword">and</span> <span class="keyword">then</span> <span class="keyword">of</span> seeing <span class="keyword">a</span> ‘d’ <span class="keyword">after</span> ‘ba’, <span class="keyword">then</span> <span class="keyword">of</span> seeing <span class="keyword">a</span> complete password <span class="keyword">after</span> ‘bad’</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/1.PNG" alt="1.PNG"></p>
-</li>
-<li><p>使用改进的波束（beam）搜索【64】（深度优先和宽度优先的混合搜索）枚举概率高于给定阈值的所有可能密码，并筛选排序</p>
-</li>
-<li><p>可以在GPU上有效地实现</p>
-</li>
-<li><p>传统的通过枚举计算猜测数的方法，计算量较大。除了猜测数枚举之外，还可以使用 Monte Carlo 模拟来准确高效地估计猜测数【34】</p>
-<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3></li>
-<li><p>模型体系结构</p>
+<li>神经网络：给定密码的前一个字符，训练产生密码的下一个字符</li>
+<li>依赖于一个特殊的密码结束符号来模拟在一系列字符之后密码结束的概率</li>
+</ul>
+<blockquote>
+<pre><code> For example, to calculate the probability of the entire password ‘bad’, 
+ we would start with an empty password, and query the network for the probability of seeing a ‘b’, 
+ then seeing an ‘a’ after ‘b’, and then of seeing a ‘d’ after ‘ba’, then of seeing a complete password after ‘bad’</code></pre>
+</blockquote>
+<p>  <img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/1.PNG" alt="1.PNG"></p>
 <ul>
+<li>使用改进的波束（beam）搜索【64】（深度优先和宽度优先的混合搜索）枚举概率高于给定阈值的所有可能密码，并筛选排序</li>
+<li>可以在GPU上有效地实现</li>
+<li>传统的通过枚举计算猜测数的方法，计算量较大。除了猜测数枚举之外，还可以使用 Monte Carlo 模拟来准确高效地估计猜测数【34】</li>
+</ul>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ul>
+<li>模型体系结构<ul>
 <li>使用循环神经网络（RNN）</li>
 <li>网络中的连接可以按顺序处理元素，并使用内部记忆来记忆关于序列中先前元素的信息</li>
 <li>实现了两种不同的循环体系结构</li>
 </ul>
 </li>
-<li><p>字母表大小</p>
-<ul>
+<li>字母表大小<ul>
 <li>关注的是字符级模型，而不是更常见的单词级模型</li>
 <li>除了字符外，还允许神经网络对音节或标记等子单词单元进行建模</li>
 <li>基于【68】对2000个不同的标记建模，并以和字符相同的方法表示，以输出下一个字符为 a 或 pass 的概率</li>
 <li>对所有字母建模是不必要的开销，而且有些字符，比如大写字母和稀有字符，在神经网络之外建模更好——预测了 a 时，根据训练数据中 a 和 A 出现次数来预测是否大写</li>
 </ul>
 </li>
-<li><p>密码上下文</p>
-<ul>
+<li>密码上下文<ul>
 <li>尝试使用密码中所有前面的字符作为上下文，并且只使用前面的10个字符</li>
 <li>当少于十个上下文字符时，用零填充输入</li>
 <li>以相反的顺序提供上下文字符——例如，从“rowssap”预测“d”而不是“passwor”——有时被证明可以提高性能【48】</li>
 </ul>
 </li>
-<li><p>模型大小</p>
-<ul>
+<li>模型大小<ul>
 <li>评估改变模型大小对猜测成功率的影响，测试了一个有 15700675 个参数的大型神经网络和一个有 682851 个参数的小型网络</li>
 </ul>
 </li>
-<li><p>迁移学习</p>
-<ul>
+<li>迁移学习<ul>
 <li>利用迁移学习来训练神经网络——神经网络的不同部分学习在训练期间识别不同的现象【97】</li>
 <li>针对非传统密码策略的一个关键问题：几乎没有合适训练数据（训练样本的稀疏性）</li>
 <li>首先对模型进行训练集中所有密码的学习。然后，模型的下层被冻结。最后，该模型仅对训练集中符合策略的密码进行重新训练</li>
 <li>模型中的较低层学习数据的低级特征，而较高层学习数据的高级特征</li>
 </ul>
 </li>
-<li><p>训练数据</p>
-<ul>
+<li>训练数据<ul>
 <li>实验了不同的训练数据集</li>
-<li>后面使用了两组<h3 id="客户端模型"><a href="#客户端模型" class="headerlink" title="客户端模型"></a>客户端模型</h3></li>
+<li>后面使用了两组</li>
 </ul>
 </li>
+</ul>
+<h3 id="客户端模型"><a href="#客户端模型" class="headerlink" title="客户端模型"></a>客户端模型</h3><ul>
 <li><p>减少用户所经历的延迟，通过网络传输尽可能少的数据</p>
 </li>
 <li><p>模型尺寸优化：</p>
@@ -146,8 +151,9 @@
 </ul>
 </li>
 <li><p>包含四个步骤：权重量化、定点编码、锯齿形编码和无损压缩</p>
-  <figure class="highlight pgsql"><table><tr><td class="code"><pre><span class="line">weight quantization, fixed-<span class="type">point</span> <span class="keyword">encoding</span>, ZigZag <span class="keyword">encoding</span>, <span class="keyword">and</span> lossless compression</span><br></pre></td></tr></table></figure>
-
+<blockquote>
+<p>weight quantization, fixed-point encoding, ZigZag encoding, and lossless compression</p>
+</blockquote>
 <ul>
 <li><p>权重量化：</p>
 <ul>
@@ -224,16 +230,22 @@
 <li>对所有的 Monte Carlo 模拟，建立了高达$10^{25}$个的猜测模型</li>
 </ul>
 </li>
-<li>对于测量 JtR 和 Hashcat 计算密码可猜测性，列举了两个方法所做的所有猜测。在不同测试集中，进行了大约10<sup>13</sup>到10<sup>15</sup>次猜测<h3 id="训练数据"><a href="#训练数据" class="headerlink" title="训练数据"></a>训练数据</h3></li>
+<li>对于测量 JtR 和 Hashcat 计算密码可猜测性，列举了两个方法所做的所有猜测。在不同测试集中，进行了大约10<sup>13</sup>到10<sup>15</sup>次猜测</li>
+</ul>
+<h3 id="训练数据"><a href="#训练数据" class="headerlink" title="训练数据"></a>训练数据</h3><ul>
 <li>混合使用了泄漏和破解的密码集</li>
 <li>第一组为密码猜测服务（PGS）训练集【89】，包含了 Rockyou【90】 和 Yahoo【43】 泄露的密码集。对于使用自然语言的猜测方法，还包括 web2【11】 列表、Google web【47】 语料库和词形变化字典【78】，共3300万个密码和590万个自然语言单词</li>
-<li>第二组（PGS++训练集）使用额外的泄漏和破解密码集【1、2、3、6、7、9、12、13、14、15、16、20、23、25、42、43、55、56、57、62、63、67、75、77、85、90】来扩充PGS训练集。使用自然语言的方法同上；共1.05亿个密码和590万个自然语言单词<h3 id="测试数据"><a href="#测试数据" class="headerlink" title="测试数据"></a>测试数据</h3></li>
+<li>第二组（PGS++训练集）使用额外的泄漏和破解密码集【1、2、3、6、7、9、12、13、14、15、16、20、23、25、42、43、55、56、57、62、63、67、75、77、85、90】来扩充PGS训练集。使用自然语言的方法同上；共1.05亿个密码和590万个自然语言单词</li>
+</ul>
+<h3 id="测试数据"><a href="#测试数据" class="headerlink" title="测试数据"></a>测试数据</h3><ul>
 <li>使用了五个测试数据集</li>
 <li>1class8：3062个为研究收集的密码，长度超过8个字符【59】</li>
 <li>1class16：2054个密码，长度超过16个字符【59】</li>
 <li>3class12：990个密码，必须包含至少三个字符类（大写字母、小写字母、符号、数字），并至少12个字符【80】</li>
 <li>4class8：2997个密码，必须包含所有四个字符类，并且至少8个字符【66】</li>
-<li>webhost：000webhost泄漏中至少包含8个字符的密码中，随机抽取30000个密码【40】<h3 id="猜测设置"><a href="#猜测设置" class="headerlink" title="猜测设置"></a>猜测设置</h3></li>
+<li>webhost：000webhost泄漏中至少包含8个字符的密码中，随机抽取30000个密码【40】</li>
+</ul>
+<h3 id="猜测设置"><a href="#猜测设置" class="headerlink" title="猜测设置"></a>猜测设置</h3><ul>
 <li>PCFG<ul>
 <li>带有终端平滑和混合结构的PCFG【60】</li>
 <li>训练数据中包含了自然语言词典，每个单词的加权数为密码的十分之一</li>
@@ -299,13 +311,17 @@
 </li>
 <li>循环架构<ul>
 <li>实验了两种不同类型的递归神经网络结构：长短期记忆（LSTM）模型和对LSTM模型的再改进</li>
-<li>网络的总体输出几乎没有影响，改进后的LSTM模型更精确 <h3 id="猜测有效性"><a href="#猜测有效性" class="headerlink" title="猜测有效性"></a>猜测有效性</h3></li>
+<li>网络的总体输出几乎没有影响，改进后的LSTM模型更精确 </li>
 </ul>
 </li>
+</ul>
+<h3 id="猜测有效性"><a href="#猜测有效性" class="headerlink" title="猜测有效性"></a>猜测有效性</h3><ul>
 <li>神经网络更善于在猜测次数更多的情况下以及针对更复杂或更长的密码策略时猜测密码，如 4class8， 1class16， 3class12<br>  <img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/2.PNG" alt="2.PNG"></li>
 <li>尽管神经网络的性能通常优于其他模型，但使用多种猜测方法仍应优于使用任何单一猜测方法进行准确的强度估计</li>
 <li>较大的神经网络模型更严格地适应低质量数据，因此泛化能力比较差</li>
-<li>网络较晚猜到但其他方法容易猜到的密码，通常与自然语言单词中的单词相似；反之，则是新颖的不同于训练集的密码<h3 id="浏览器实现"><a href="#浏览器实现" class="headerlink" title="浏览器实现"></a>浏览器实现</h3></li>
+<li>网络较晚猜到但其他方法容易猜到的密码，通常与自然语言单词中的单词相似；反之，则是新颖的不同于训练集的密码</li>
+</ul>
+<h3 id="浏览器实现"><a href="#浏览器实现" class="headerlink" title="浏览器实现"></a>浏览器实现</h3><ul>
 <li>比较压缩模型与所有服务器端模型（大型神经网络、PCFG、马尔可夫模型、JtR 和 Hashcat）的猜测有效性</li>
 <li>模型编码</li>
 <li>权重与概率曲线量化：预先计算从密码概率到猜测数的映射，并将映射发送到客户端——通过量化猜测数字曲线的概率</li>
@@ -10595,6 +10611,277 @@ def a_function_requiring_decoration():
       <tags>
         <tag>基础语法</tag>
         <tag>Java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>The Tangled Web of Password Reuse</title>
+    <url>/2021/01/27/The-Tangled-Web-of-Password-Reuse/</url>
+    <content><![CDATA[<p>《The Tangled Web of Password Reuse》论文阅读记录</p>
+<a id="more"></a>
+
+<font face="宋体">
+
+<font size="3">
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>首次研究了攻击者如何利用来自一个站点的已知密码，来更好的猜测该用户在其他站点的密码</li>
+<li>数据集为来自11个网站的几十万个泄露的密码。对密码重用进行了用户调查</li>
+<li>确定了一些用户通常用来在站点之间转换基本密码的简单技巧，攻击者可以使用这些技巧来大大简化密码猜测</li>
+<li>开发了第一个跨站点密码猜测算法，该算法能够在100次尝试内猜出30%的转换密码，而标准密码猜测算法在没有跨站点密码知识的情况下只能猜出14%</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>在线服务经常使用密码组合策略或密码表来帮助用户了解密码的强度</li>
+<li>典型的互联网用户估计有25个不同的在线帐户，传统的组合策略或密码表无法防止密码重用</li>
+<li>用户通常使用简单的技巧来处理不同网站上的密码策略，例如对常用密码短语进行调整，这大大提高攻击者在其他站点猜测密码的能力</li>
+<li>贡献：<ul>
+<li>基于迄今为止，为此目的收集的最大数据集，对同一用户在不同网站帐户的直接密码重用率进行了经验估计</li>
+<li>揭示了用户如何修改密码以便跨不同站点重用</li>
+<li>提出跨站点猜测算法，并评估了算法在离线和在线攻击场景下的可行性</li>
+</ul>
+</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h3 id="密码组合策略"><a href="#密码组合策略" class="headerlink" title="密码组合策略"></a>密码组合策略</h3><ul>
+<li>最难破解的密码是随机字符串</li>
+<li>密码身份验证机制通常强制实施密码组合策略，即一组限制密码长度和格式的规则</li>
+<li>复杂的策略会使服务的可用性复杂化，会让用户写下密码列表，降低安全性</li>
+</ul>
+<h3 id="相关工作-1"><a href="#相关工作-1" class="headerlink" title="相关工作"></a>相关工作</h3><ul>
+<li>替代密码的方法：<ul>
+<li>生物测定、公钥证书和硬件令牌</li>
+<li>但需要定制硬件，不易部署，不易与现有服务合并等</li>
+</ul>
+</li>
+<li>密码组合策略和密码表的存在下，用户确实倾向于创建更强大的密码</li>
+<li>基于马尔可夫模型和概率上下文无关文法的密码猜测算法——使用训练集来得到生成具有一定长度的候选子串的概率</li>
+<li>前人创建了一个通用算法，可以根据用户以前的密码猜测未来的密码——分析是基于单一来源的密码</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="测量研究"><a href="#测量研究" class="headerlink" title="测量研究"></a>测量研究</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li>数据集的来源各不相同，但大多数是SQL注入攻击或网络钓鱼活动的结果</li>
+<li>只使用同时带有邮件地址和密码的泄漏数据集,得到6077个用户，每个用户至少有两个从不同网站泄露的密码</li>
+<li>使用John the Ripper工具包反转了尽可能多的散列，以更好地比较密码字符串<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/1.PNG"></li>
+</ul>
+<h3 id="不同站点的密码组合策略"><a href="#不同站点的密码组合策略" class="headerlink" title="不同站点的密码组合策略"></a>不同站点的密码组合策略</h3><ul>
+<li>Char5：至少5个字符</li>
+<li>Char6：至少6个字符</li>
+<li>Char8：至少8个字符</li>
+<li>Char6LU：至少6个字符，包括一个小写字母和一个大写字母</li>
+<li>Char8DSU：至少8个字符，包括一个数字或一个符号或一个大写字母</li>
+<li>Char8LDS：至少8个字符，包含至少一个字母和至少一个数字或符号</li>
+<li>Char6D：至少6个字符，包括至少一个字母和数字</li>
+<li>Char6-12：6-12个字符</li>
+<li>Strong1：<ul>
+<li>7-32个字符，包含至少一个字母和数字</li>
+<li>无特殊字符</li>
+<li>和用户ID不同</li>
+<li>不能和使用过的最后五个密码中的任何一个相同</li>
+</ul>
+</li>
+<li>Strong2：<ul>
+<li>8-20个字符，包含至少一个字母和数字</li>
+<li>无空格，区分大小写</li>
+<li>和用户ID不同</li>
+<li>无指定的特殊符号</li>
+</ul>
+</li>
+<li>Strong3：<ul>
+<li>8-20个字符，包含至少一个字母和数字</li>
+<li>可有指定的特殊符号</li>
+<li>和用户ID不同</li>
+<li>无空格，不区分大小写<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/2.PNG"></li>
+</ul>
+</li>
+</ul>
+<h3 id="密码相似性"><a href="#密码相似性" class="headerlink" title="密码相似性"></a>密码相似性</h3><ul>
+<li>9个字符串的相似性度量：<ul>
+<li>Distance-like functions：基于距离<ul>
+<li>Manhattan, Cosine</li>
+<li>每个字符视作是一个维度，其频率是维度值</li>
+<li>每个字符串映射到多维空间中的一个点</li>
+<li>计算点之间的距离</li>
+</ul>
+</li>
+<li>Edit-distance like functions：基于编辑距离<ul>
+<li>Levenshtein，Damerau Levenshtein</li>
+<li>确定将一个字符串转换为另一个字符串所需的编辑操作（如插入、删除、替换、换位）的数量</li>
+</ul>
+</li>
+<li>Token-based distance functions：基于标记<ul>
+<li>Dice, Overlap</li>
+<li>将字符串分割成更小的标记，之后计算相似性</li>
+</ul>
+</li>
+<li>Alignment-like functions：基于对齐<ul>
+<li>Smith Waterman，Neddleman Wunsch，最大公共子序列（LCS）</li>
+<li>反映一对字符串之间最大对齐或子序列之间相似性分数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>密码分作三组<ul>
+<li>相同：在不同的web帐户上使用相同的密码</li>
+<li>子字符串：来自不同web帐户的密码是彼此的子字符串</li>
+<li>其他：密码要么完全不同，要么遵循更复杂的转换规则<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/8.PNG"><br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/3.PNG"></li>
+</ul>
+</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="调查"><a href="#调查" class="headerlink" title="调查"></a>调查</h2><ul>
+<li><p>对不同大学的用户进行匿名调查，收到224份答复，结果如下图：<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/4.PNG"></p>
+</li>
+<li><p>某些转换规则更为普遍。最常见的选择是在结尾或开头添加数字、字母大写和在结尾或开头添加符号</p>
+</li>
+<li><p>用户修改密码是为了满足不同网站的密码限制</p>
+</li>
+<li><p>大多数参与者在密码字符串的末尾插入数字，在开头插入大写字母</p>
+</li>
+<li><p>65%的参与者维护的密码类型不超过四种。大多数参与者（61%）记住了他们的密码</p>
+</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="猜测算法"><a href="#猜测算法" class="headerlink" title="猜测算法"></a>猜测算法</h2><ul>
+<li>背景：给定一个泄露的密码，攻击者试图猜测同一用户其他在线帐户的密码</li>
+</ul>
+<h3 id="主要的转换规则"><a href="#主要的转换规则" class="headerlink" title="主要的转换规则"></a>主要的转换规则</h3><ul>
+<li>在40%的泄漏密码中得到转换规则，并在剩余60%的数据上测试了猜测算法</li>
+<li>不考虑额外的转换——添加一些随机的额外字符或在结尾添加表情符号</li>
+<li>表中转换规则按概率递减的顺序排列<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/5.PNG"></li>
+</ul>
+<h3 id="猜测算法设计"><a href="#猜测算法设计" class="headerlink" title="猜测算法设计"></a>猜测算法设计</h3><ul>
+<li><p>算法生成一组有序的候选密码</p>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/6.PNG"></p>
+</li>
+<li><p>操作由几个阶段组成，每个阶段之后，检查是否已经猜到了所需的目标密码。在每一步之后，都会返回原始密码</p>
+<ul>
+<li>字符序列特征分析：<ul>
+<li>在输入密码中查找已知的模式序列，如键盘上的相邻键、字母顺序模式和顺序交替键（如输入密码时按住shift或control）——使用这种顺序模式的用户很可能在其他站点的密码中使用类似的模式</li>
+<li>将密码拆分为令牌，其中每个令牌表示属于某种模式的一系列字符，如“qwerasdf”将拆分为两个部分“qwer”和“asdf”</li>
+<li>尝试不同的令牌排列作为候选密码</li>
+<li>若不成功：<ul>
+<li>扩展令牌以包含序列中的下一个字符（qwert）</li>
+<li>用属于同一类别的类似大小的令牌替换令牌（1234）</li>
+<li>分析RockYou密码列表，以提高正确替换的可能性。文章末尾附上了常见的替换</li>
+<li>考虑反向顺序</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>删除：姐妹密码长度大于6，因为大多数网站要求密码长度大于6<ul>
+<li>尝试迭代删除属于以下集合{Digit，Symbol，Uppercase letter，Lowercase letter}的字符——人们通常会添加属于这些不同类别的字符，以实现不同的密码组合策略</li>
+<li>若不成功：尝试依次从字符串前面、后面、然后两者的组合中删除字符</li>
+</ul>
+</li>
+<li>插入：姐妹密码长度小于10，因为RockYou数据集中90％的密码长度小于或等于10<ul>
+<li>前面或结尾插入数字或符号是最常见的选择</li>
+<li>尝试在前端插入数字和符号</li>
+<li>首先判断姐妹密码中字符类型，之后插入除这些类型之外的单个字符——从RockYou密码列表中计算出各个字符的插入概率</li>
+<li>从RockYou列表中计算前20个可能的二元插入和三元插入</li>
+</ul>
+</li>
+<li>大写：<ul>
+<li>首先尝试将密码中的所有字母大写</li>
+<li>若失败<ul>
+<li>尝试将字符串前面的字母大写</li>
+<li>尝试将字符串后面的字母大写</li>
+<li>两者组合</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Leet：<ul>
+<li>尝试流行的Leet转换（o-&gt;0、a-&gt;@、s-&gt;$、i-&gt;1、e-&gt;3、t-&gt;7）</li>
+<li>尝试所有可能的Leet转换</li>
+</ul>
+</li>
+<li>子字符串移动：<ul>
+<li>将输入密码拆分为子字符串，其中定界字符属于集合{Digit，Symbol，Uppercase letter}</li>
+<li>如“xyz@123”拆作xyz @  123，则@为定界符，依次尝试子串的所有可能置换，则123@xyz作为结果</li>
+</ul>
+</li>
+<li>子词修改：<ul>
+<li>根据常用英文单词拆分输入密码，然后将每个单词的第一个字母大写</li>
+<li>尝试按不同的顺序重新排列单词</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>猜测算法本质上对输入密码应用固定顺序的转换，而不是尝试所有可能的转换 </p>
+</li>
+</ul>
+<h3 id="算法评估"><a href="#算法评估" class="headerlink" title="算法评估"></a>算法评估</h3><p>根据破解目标密码所需的猜测次数来评估猜测算法的性能<br>  <img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/7.PNG"></p>
+<ul>
+<li>重试次数限制在10次，猜测算法可以破解几乎30%的互为子串的密码对</li>
+<li>猜测算法在100次尝试内破解80%的互为子串的密码对</li>
+<li>ED Guesser需要数百万次尝试来破解最多65%的子串密码对</li>
+<li>猜测算法更适合于在线攻击场景</li>
+<li>研究无法破解的密码的相似性与破解了的密码的相似性：<ul>
+<li>破解：<ul>
+<li>大多数密码对相似性得分都在[0.8，1]的范围内<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/10.PNG"></li>
+</ul>
+</li>
+<li>未破解：<ul>
+<li>大多数密码对的相似性得分在[0.1,0.5]范围内<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/11.PNG"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>猜测算法能够成功地预测相似的密码，并且随后的回报率会迅速下降</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><h3 id="有效性"><a href="#有效性" class="headerlink" title="有效性"></a>有效性</h3><ul>
+<li>大多数调查参与者比普通人群年轻一些，受教育程度更高</li>
+<li>所有的密码数据集都代表真实的密码数据</li>
+<li>调查结果与泄露的密码数据集进行了比较，发现了类似的观察结果</li>
+</ul>
+<h3 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h3><ul>
+<li>研究仅涉及基于文本的密码</li>
+<li>猜测算法相对简单，没有利用可能提高性能的更先进的模型——更复杂的方法高度依赖于培训数据</li>
+<li>没有足够的数据来分析相似的网站类别是否影响了密码重用的选择</li>
+</ul>
+<h3 id="对策"><a href="#对策" class="headerlink" title="对策"></a>对策</h3><ul>
+<li>单点登录技术</li>
+<li>双因素身份验证——密码与手机验证码</li>
+<li>此密码猜测算法可作为测试工具，用户可以在不同的站点输入密码，并在本地评估跨站点猜测的难度</li>
+<li>开发一个在线服务，以进行跨站点密码安全度量。密码构造页面可以将用户输入的密码与站点可合法获取的用户密码进行比较</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>43%的用户直接在站点之间重复使用密码</li>
+<li>许多用户跨站点对其密码进行小的修改，并且许多用户的修改过程相似</li>
+<li>猜测算法能够在不到10次尝试中破解大约10%的非同一密码对，并且在少于100次尝试中破解大约30%的非同一密码对</li>
+</ul>
+<hr>
+</font>
+</font>]]></content>
+      <categories>
+        <category>论文</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
+        <tag>密码复用</tag>
       </tags>
   </entry>
 </search>

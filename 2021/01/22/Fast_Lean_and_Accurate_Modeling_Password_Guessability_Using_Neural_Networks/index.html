@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/image-20210127143042142.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/2.PNG">
 <meta property="article:published_time" content="2021-01-22T09:17:16.000Z">
-<meta property="article:modified_time" content="2021-01-27T06:47:00.034Z">
+<meta property="article:modified_time" content="2021-01-27T06:54:52.008Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="密码">
 <meta property="article:tag" content="密码猜测">
@@ -308,7 +308,9 @@
 <h2 id="背景和相关工作"><a href="#背景和相关工作" class="headerlink" title="背景和相关工作"></a>背景和相关工作</h2><h3 id="密码猜测攻击"><a href="#密码猜测攻击" class="headerlink" title="密码猜测攻击"></a>密码猜测攻击</h3><ul>
 <li>没有限速策略时，可以实施大规模猜测</li>
 <li>散列密码数据库被盗，即数据库被拖库，则可进行离线攻击【20，23，27，45，46，67，73，75，87】</li>
-<li>加密密钥从密码派生或受密码保护，此情况下也容易受到大规模猜测的攻击<h3 id="测量密码强度"><a href="#测量密码强度" class="headerlink" title="测量密码强度"></a>测量密码强度</h3></li>
+<li>加密密钥从密码派生或受密码保护，此情况下也容易受到大规模猜测的攻击</li>
+</ul>
+<h3 id="测量密码强度"><a href="#测量密码强度" class="headerlink" title="测量密码强度"></a>测量密码强度</h3><ul>
 <li>密码强度模型通常采用两种概念形式<ul>
 <li>依赖于纯粹的统计方法，如香农熵或其他先进的统计方法【21，22】——所需的样本量太大</li>
 <li>模拟对抗性密码猜测【34，65，89】</li>
@@ -331,14 +333,18 @@
 <li>损坏的Wordlist方法（Mangled Wordlist Methods）：<ul>
 <li>软件工具通常用这种方法于生成密码猜测</li>
 <li>这种类型的两种流行工具是Hashcat 和John the Ripper</li>
-<li>使用人工规则来转换词表（密码和字典条目），或者模拟人类编写密码的常见行为进行转换<h3 id="主动密码检查"><a href="#主动密码检查" class="headerlink" title="主动密码检查"></a>主动密码检查</h3></li>
+<li>使用人工规则来转换词表（密码和字典条目），或者模拟人类编写密码的常见行为进行转换</li>
 </ul>
 </li>
+</ul>
+<h3 id="主动密码检查"><a href="#主动密码检查" class="headerlink" title="主动密码检查"></a>主动密码检查</h3><ul>
 <li>以上密码猜测模型可以精确地模拟人工创建的密码，但它们需要数小时或数天以及兆字节或千兆字节的磁盘空间</li>
 <li>当前的实时密码检查程序可以根据它们是否完全运行在客户端进行分类</li>
 <li>服务器端组件在安全性上有很大问题——将密码发送到服务器进行密码检查会破坏所有安全保证，例如保护密钥的密码不应该离开用户的设备</li>
 <li>客户端的密码检查器，例如在浏览器运行的那种，往往根据密码的长度或包含的不同字符类来给密码打分【33，88】</li>
-<li>只有 zxcvbn 【94，95】使用了几十种更先进的启发式方法，给出了合理准确的强度估计——无法简洁地对模型进行编码和计算实时结果，不能直接模拟对抗性猜测<h3 id="神经网络"><a href="#神经网络" class="headerlink" title="神经网络"></a>神经网络</h3></li>
+<li>只有 zxcvbn 【94，95】使用了几十种更先进的启发式方法，给出了合理准确的强度估计——无法简洁地对模型进行编码和计算实时结果，不能直接模拟对抗性猜测</li>
+</ul>
+<h3 id="神经网络"><a href="#神经网络" class="headerlink" title="神经网络"></a>神经网络</h3><ul>
 <li>用于近似高维函数，擅长模糊分类问题和生成新序列</li>
 <li>基于前面的元素生成字符串中下一个元素的概率【49，84】</li>
 <li>序列可能是不精确的、新颖的序列【49】——神经网络可能适合于密码猜测</li>
@@ -349,59 +355,58 @@
 <font size="3">
 
 <h2 id="系统设计"><a href="#系统设计" class="headerlink" title="系统设计"></a>系统设计</h2><h3 id="密码强度测量"><a href="#密码强度测量" class="headerlink" title="密码强度测量"></a>密码强度测量</h3><ul>
-<li><p>神经网络：给定密码的前一个字符，训练产生密码的下一个字符</p>
-</li>
-<li><p>依赖于一个特殊的密码结束符号来模拟在一系列字符之后密码结束的概率</p>
-<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">For example, <span class="built_in">to</span> calculate <span class="keyword">the</span> probability <span class="keyword">of</span> <span class="keyword">the</span> entire password ‘bad’, we would <span class="built_in">start</span> <span class="keyword">with</span> <span class="keyword">an</span> <span class="literal">empty</span> password, <span class="keyword">and</span> query <span class="keyword">the</span> network <span class="keyword">for</span> <span class="keyword">the</span> probability <span class="keyword">of</span> seeing <span class="keyword">a</span> ‘b’, <span class="keyword">then</span> seeing <span class="keyword">an</span> ‘<span class="keyword">a</span>’ <span class="keyword">after</span> ‘b’, <span class="keyword">and</span> <span class="keyword">then</span> <span class="keyword">of</span> seeing <span class="keyword">a</span> ‘d’ <span class="keyword">after</span> ‘ba’, <span class="keyword">then</span> <span class="keyword">of</span> seeing <span class="keyword">a</span> complete password <span class="keyword">after</span> ‘bad’</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/1.PNG" alt="1.PNG"></p>
-</li>
-<li><p>使用改进的波束（beam）搜索【64】（深度优先和宽度优先的混合搜索）枚举概率高于给定阈值的所有可能密码，并筛选排序</p>
-</li>
-<li><p>可以在GPU上有效地实现</p>
-</li>
-<li><p>传统的通过枚举计算猜测数的方法，计算量较大。除了猜测数枚举之外，还可以使用 Monte Carlo 模拟来准确高效地估计猜测数【34】</p>
-<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3></li>
-<li><p>模型体系结构</p>
+<li>神经网络：给定密码的前一个字符，训练产生密码的下一个字符</li>
+<li>依赖于一个特殊的密码结束符号来模拟在一系列字符之后密码结束的概率</li>
+</ul>
+<blockquote>
+<pre><code> For example, to calculate the probability of the entire password ‘bad’, 
+ we would start with an empty password, and query the network for the probability of seeing a ‘b’, 
+ then seeing an ‘a’ after ‘b’, and then of seeing a ‘d’ after ‘ba’, then of seeing a complete password after ‘bad’</code></pre>
+</blockquote>
+<p>  <img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/1.PNG" alt="1.PNG"></p>
 <ul>
+<li>使用改进的波束（beam）搜索【64】（深度优先和宽度优先的混合搜索）枚举概率高于给定阈值的所有可能密码，并筛选排序</li>
+<li>可以在GPU上有效地实现</li>
+<li>传统的通过枚举计算猜测数的方法，计算量较大。除了猜测数枚举之外，还可以使用 Monte Carlo 模拟来准确高效地估计猜测数【34】</li>
+</ul>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ul>
+<li>模型体系结构<ul>
 <li>使用循环神经网络（RNN）</li>
 <li>网络中的连接可以按顺序处理元素，并使用内部记忆来记忆关于序列中先前元素的信息</li>
 <li>实现了两种不同的循环体系结构</li>
 </ul>
 </li>
-<li><p>字母表大小</p>
-<ul>
+<li>字母表大小<ul>
 <li>关注的是字符级模型，而不是更常见的单词级模型</li>
 <li>除了字符外，还允许神经网络对音节或标记等子单词单元进行建模</li>
 <li>基于【68】对2000个不同的标记建模，并以和字符相同的方法表示，以输出下一个字符为 a 或 pass 的概率</li>
 <li>对所有字母建模是不必要的开销，而且有些字符，比如大写字母和稀有字符，在神经网络之外建模更好——预测了 a 时，根据训练数据中 a 和 A 出现次数来预测是否大写</li>
 </ul>
 </li>
-<li><p>密码上下文</p>
-<ul>
+<li>密码上下文<ul>
 <li>尝试使用密码中所有前面的字符作为上下文，并且只使用前面的10个字符</li>
 <li>当少于十个上下文字符时，用零填充输入</li>
 <li>以相反的顺序提供上下文字符——例如，从“rowssap”预测“d”而不是“passwor”——有时被证明可以提高性能【48】</li>
 </ul>
 </li>
-<li><p>模型大小</p>
-<ul>
+<li>模型大小<ul>
 <li>评估改变模型大小对猜测成功率的影响，测试了一个有 15700675 个参数的大型神经网络和一个有 682851 个参数的小型网络</li>
 </ul>
 </li>
-<li><p>迁移学习</p>
-<ul>
+<li>迁移学习<ul>
 <li>利用迁移学习来训练神经网络——神经网络的不同部分学习在训练期间识别不同的现象【97】</li>
 <li>针对非传统密码策略的一个关键问题：几乎没有合适训练数据（训练样本的稀疏性）</li>
 <li>首先对模型进行训练集中所有密码的学习。然后，模型的下层被冻结。最后，该模型仅对训练集中符合策略的密码进行重新训练</li>
 <li>模型中的较低层学习数据的低级特征，而较高层学习数据的高级特征</li>
 </ul>
 </li>
-<li><p>训练数据</p>
-<ul>
+<li>训练数据<ul>
 <li>实验了不同的训练数据集</li>
-<li>后面使用了两组<h3 id="客户端模型"><a href="#客户端模型" class="headerlink" title="客户端模型"></a>客户端模型</h3></li>
+<li>后面使用了两组</li>
 </ul>
 </li>
+</ul>
+<h3 id="客户端模型"><a href="#客户端模型" class="headerlink" title="客户端模型"></a>客户端模型</h3><ul>
 <li><p>减少用户所经历的延迟，通过网络传输尽可能少的数据</p>
 </li>
 <li><p>模型尺寸优化：</p>
@@ -410,8 +415,9 @@
 </ul>
 </li>
 <li><p>包含四个步骤：权重量化、定点编码、锯齿形编码和无损压缩</p>
-  <figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">weight quantization, fixed-<span class="type">point</span> <span class="keyword">encoding</span>, ZigZag <span class="keyword">encoding</span>, <span class="keyword">and</span> lossless compression</span><br></pre></td></tr></table></figure>
-
+<blockquote>
+<p>weight quantization, fixed-point encoding, ZigZag encoding, and lossless compression</p>
+</blockquote>
 <ul>
 <li><p>权重量化：</p>
 <ul>
@@ -488,16 +494,22 @@
 <li>对所有的 Monte Carlo 模拟，建立了高达$10^{25}$个的猜测模型</li>
 </ul>
 </li>
-<li>对于测量 JtR 和 Hashcat 计算密码可猜测性，列举了两个方法所做的所有猜测。在不同测试集中，进行了大约10<sup>13</sup>到10<sup>15</sup>次猜测<h3 id="训练数据"><a href="#训练数据" class="headerlink" title="训练数据"></a>训练数据</h3></li>
+<li>对于测量 JtR 和 Hashcat 计算密码可猜测性，列举了两个方法所做的所有猜测。在不同测试集中，进行了大约10<sup>13</sup>到10<sup>15</sup>次猜测</li>
+</ul>
+<h3 id="训练数据"><a href="#训练数据" class="headerlink" title="训练数据"></a>训练数据</h3><ul>
 <li>混合使用了泄漏和破解的密码集</li>
 <li>第一组为密码猜测服务（PGS）训练集【89】，包含了 Rockyou【90】 和 Yahoo【43】 泄露的密码集。对于使用自然语言的猜测方法，还包括 web2【11】 列表、Google web【47】 语料库和词形变化字典【78】，共3300万个密码和590万个自然语言单词</li>
-<li>第二组（PGS++训练集）使用额外的泄漏和破解密码集【1、2、3、6、7、9、12、13、14、15、16、20、23、25、42、43、55、56、57、62、63、67、75、77、85、90】来扩充PGS训练集。使用自然语言的方法同上；共1.05亿个密码和590万个自然语言单词<h3 id="测试数据"><a href="#测试数据" class="headerlink" title="测试数据"></a>测试数据</h3></li>
+<li>第二组（PGS++训练集）使用额外的泄漏和破解密码集【1、2、3、6、7、9、12、13、14、15、16、20、23、25、42、43、55、56、57、62、63、67、75、77、85、90】来扩充PGS训练集。使用自然语言的方法同上；共1.05亿个密码和590万个自然语言单词</li>
+</ul>
+<h3 id="测试数据"><a href="#测试数据" class="headerlink" title="测试数据"></a>测试数据</h3><ul>
 <li>使用了五个测试数据集</li>
 <li>1class8：3062个为研究收集的密码，长度超过8个字符【59】</li>
 <li>1class16：2054个密码，长度超过16个字符【59】</li>
 <li>3class12：990个密码，必须包含至少三个字符类（大写字母、小写字母、符号、数字），并至少12个字符【80】</li>
 <li>4class8：2997个密码，必须包含所有四个字符类，并且至少8个字符【66】</li>
-<li>webhost：000webhost泄漏中至少包含8个字符的密码中，随机抽取30000个密码【40】<h3 id="猜测设置"><a href="#猜测设置" class="headerlink" title="猜测设置"></a>猜测设置</h3></li>
+<li>webhost：000webhost泄漏中至少包含8个字符的密码中，随机抽取30000个密码【40】</li>
+</ul>
+<h3 id="猜测设置"><a href="#猜测设置" class="headerlink" title="猜测设置"></a>猜测设置</h3><ul>
 <li>PCFG<ul>
 <li>带有终端平滑和混合结构的PCFG【60】</li>
 <li>训练数据中包含了自然语言词典，每个单词的加权数为密码的十分之一</li>
@@ -563,13 +575,17 @@
 </li>
 <li>循环架构<ul>
 <li>实验了两种不同类型的递归神经网络结构：长短期记忆（LSTM）模型和对LSTM模型的再改进</li>
-<li>网络的总体输出几乎没有影响，改进后的LSTM模型更精确 <h3 id="猜测有效性"><a href="#猜测有效性" class="headerlink" title="猜测有效性"></a>猜测有效性</h3></li>
+<li>网络的总体输出几乎没有影响，改进后的LSTM模型更精确 </li>
 </ul>
 </li>
+</ul>
+<h3 id="猜测有效性"><a href="#猜测有效性" class="headerlink" title="猜测有效性"></a>猜测有效性</h3><ul>
 <li>神经网络更善于在猜测次数更多的情况下以及针对更复杂或更长的密码策略时猜测密码，如 4class8， 1class16， 3class12<br>  <img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/2.PNG" alt="2.PNG"></li>
 <li>尽管神经网络的性能通常优于其他模型，但使用多种猜测方法仍应优于使用任何单一猜测方法进行准确的强度估计</li>
 <li>较大的神经网络模型更严格地适应低质量数据，因此泛化能力比较差</li>
-<li>网络较晚猜到但其他方法容易猜到的密码，通常与自然语言单词中的单词相似；反之，则是新颖的不同于训练集的密码<h3 id="浏览器实现"><a href="#浏览器实现" class="headerlink" title="浏览器实现"></a>浏览器实现</h3></li>
+<li>网络较晚猜到但其他方法容易猜到的密码，通常与自然语言单词中的单词相似；反之，则是新颖的不同于训练集的密码</li>
+</ul>
+<h3 id="浏览器实现"><a href="#浏览器实现" class="headerlink" title="浏览器实现"></a>浏览器实现</h3><ul>
 <li>比较压缩模型与所有服务器端模型（大型神经网络、PCFG、马尔可夫模型、JtR 和 Hashcat）的猜测有效性</li>
 <li>模型编码</li>
 <li>权重与概率曲线量化：预先计算从密码概率到猜测数的映射，并将映射发送到客户端——通过量化猜测数字曲线的概率</li>
@@ -874,7 +890,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">43</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -887,7 +903,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -963,12 +979,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">341k</span>
+    <span title="站点总字数">344k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5:10</span>
+    <span title="站点阅读时长">5:13</span>
 </div>
 
         
