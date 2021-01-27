@@ -10627,19 +10627,21 @@ def a_function_requiring_decoration():
 <li>首次研究了攻击者如何利用来自一个站点的已知密码，来更好的猜测该用户在其他站点的密码</li>
 <li>数据集为来自11个网站的几十万个泄露的密码。对密码重用进行了用户调查</li>
 <li>确定了一些用户通常用来在站点之间转换基本密码的简单技巧，攻击者可以使用这些技巧来大大简化密码猜测</li>
-<li>开发了第一个跨站点密码猜测算法，该算法能够在100次尝试内猜出30%的转换密码，而标准密码猜测算法在没有跨站点密码知识的情况下只能猜出14%</li>
+<li>开发了第一个跨站点密码猜测算法，该算法能够在100次尝试内猜出30%的转换密码，而标准密码猜测算法（JTR）在没有跨站点密码知识的情况下只能猜出14%</li>
 </ul>
 <hr>
 </font>
 <font size="3">
 
 <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>用户倾向于选择容易记忆的简单密码【20、33】</li>
 <li>在线服务经常使用密码组合策略或密码表来帮助用户了解密码的强度</li>
-<li>典型的互联网用户估计有25个不同的在线帐户，传统的组合策略或密码表无法防止密码重用</li>
+<li>典型的互联网用户估计有25个不同的在线帐户【10、11、32】，传统的组合策略或密码表无法防止密码重用，因为这些工具只能看到单个站点的密码</li>
 <li>用户通常使用简单的技巧来处理不同网站上的密码策略，例如对常用密码短语进行调整，这大大提高攻击者在其他站点猜测密码的能力</li>
 <li>贡献：<ul>
-<li>基于迄今为止，为此目的收集的最大数据集，对同一用户在不同网站帐户的直接密码重用率进行了经验估计</li>
-<li>揭示了用户如何修改密码以便跨不同站点重用</li>
+<li>基于迄今为止，为此目的收集的最大数据集，对同一用户在不同网站帐户的直接密码重用率进行了经验估计（43%）</li>
+<li>广泛分析同一用户在不同在线账户中密码不同的相似性，揭示了用户如何修改密码以便跨不同站点重用</li>
+<li>进行了一项调查，以了解用户在不同在线账户上构建密码的行为</li>
 <li>提出跨站点猜测算法，并评估了算法在离线和在线攻击场景下的可行性</li>
 </ul>
 </li>
@@ -10650,29 +10652,45 @@ def a_function_requiring_decoration():
 
 <h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h3 id="密码组合策略"><a href="#密码组合策略" class="headerlink" title="密码组合策略"></a>密码组合策略</h3><ul>
 <li>最难破解的密码是随机字符串</li>
+<li>用户通常会产生高度倾斜的密码选择分布，反映便于回忆的常见语义</li>
 <li>密码身份验证机制通常强制实施密码组合策略，即一组限制密码长度和格式的规则</li>
-<li>复杂的策略会使服务的可用性复杂化，会让用户写下密码列表，降低安全性</li>
+<li>复杂的策略会使服务的可用性复杂化，会让用户写下/电子存储密码列表，降低安全性</li>
+<li>【46、21】证明，使用密码表能够帮助用户理解密码的安全性</li>
 </ul>
 <h3 id="相关工作-1"><a href="#相关工作-1" class="headerlink" title="相关工作"></a>相关工作</h3><ul>
-<li>替代密码的方法：<ul>
+<li>替代密码的方法：【22】<ul>
 <li>生物测定、公钥证书和硬件令牌</li>
 <li>但需要定制硬件，不易部署，不易与现有服务合并等</li>
 </ul>
 </li>
-<li>密码组合策略和密码表的存在下，用户确实倾向于创建更强大的密码</li>
+<li>密码组合策略和密码计的存在下，用户确实倾向于创建更强大的密码<ul>
+<li>【46】探讨了用户对密码计提供的基于视觉和文本反馈的反应</li>
+<li>【21、35、41、44】研究了不同密码组合策略的优势</li>
+</ul>
+</li>
 <li>基于马尔可夫模型和概率上下文无关文法的密码猜测算法——使用训练集来得到生成具有一定长度的候选子串的概率</li>
-<li>前人创建了一个通用算法，可以根据用户以前的密码猜测未来的密码——分析是基于单一来源的密码</li>
+<li>所有这些工作都侧重于在离线场景中破解密码——本文设置攻击者的猜测次数有限，但利用了泄露的密码信息和用户如何跨站点修改密码的知识</li>
+<li>【32】在三个月的时间里监控了50万用户的密码习惯，然而，他们的研究只考虑了站点之间相同的密码，而没有考虑相关的密码，没有研究不同站点之间的转换规则或密码相似性</li>
+<li>【49】研究了当用户因密码过期政策而被迫更改密码时，他们是如何修改密码的。他们创建了一个通用算法，可以根据用户以前的密码猜测未来的密码——分析是基于单一来源的密码，因此所有密码都符合相同的密码组合策略。本文模拟了一个更普通的攻击者，不仅每个用户的训练数据更少，还必须为不同的网站处理不同的组合策略</li>
 </ul>
 <hr>
 </font>
 <font size="3">
 
 <h2 id="测量研究"><a href="#测量研究" class="headerlink" title="测量研究"></a>测量研究</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
-<li>数据集的来源各不相同，但大多数是SQL注入攻击或网络钓鱼活动的结果</li>
-<li>只使用同时带有邮件地址和密码的泄漏数据集,得到6077个用户，每个用户至少有两个从不同网站泄露的密码</li>
-<li>使用John the Ripper工具包反转了尽可能多的散列，以更好地比较密码字符串<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/1.PNG"></li>
+<li><p>数据集的来源各不相同，但大多数是 SQL 注入攻击或网络钓鱼活动的结果</p>
+</li>
+<li><p>只使用同时带有邮件地址和密码的泄漏数据集，得到6077个用户，每个用户至少有两个从不同网站泄露的密码</p>
+</li>
+<li><p>使用 John the Ripper 工具包反转了尽可能多的散列，以更好地比较密码字符串</p>
+</li>
+<li><p>剩余的散列，通过搜索一个最大的在线数据库——有87亿个 MD5 散列预映像【7】——破解，最终只有12个散列不能破解</p>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/1.PNG"></p>
+</li>
 </ul>
 <h3 id="不同站点的密码组合策略"><a href="#不同站点的密码组合策略" class="headerlink" title="不同站点的密码组合策略"></a>不同站点的密码组合策略</h3><ul>
+<li>手动调查所有泄露密码网站的密码组成策略</li>
+<li>下面描述了来自【3】的更广泛的网站密码组合策略，并从各个类别前25个站点随机选择一组受欢迎的网站，手动确定密码组成策略<ul>
 <li>Char5：至少5个字符</li>
 <li>Char6：至少6个字符</li>
 <li>Char8：至少8个字符</li>
@@ -10703,36 +10721,65 @@ def a_function_requiring_decoration():
 </ul>
 </li>
 </ul>
+</li>
+</ul>
 <h3 id="密码相似性"><a href="#密码相似性" class="headerlink" title="密码相似性"></a>密码相似性</h3><ul>
+<li>分析密码数据集，测量不同密码之间的相似性</li>
 <li>9个字符串的相似性度量：<ul>
 <li>Distance-like functions：基于距离<ul>
-<li>Manhattan, Cosine</li>
+<li>Manhattan【36】, Cosine【27】</li>
 <li>每个字符视作是一个维度，其频率是维度值</li>
 <li>每个字符串映射到多维空间中的一个点</li>
 <li>计算点之间的距离</li>
 </ul>
 </li>
 <li>Edit-distance like functions：基于编辑距离<ul>
-<li>Levenshtein，Damerau Levenshtein</li>
+<li>Levenshtein【38】，Damerau Levenshtein【28】</li>
 <li>确定将一个字符串转换为另一个字符串所需的编辑操作（如插入、删除、替换、换位）的数量</li>
 </ul>
 </li>
 <li>Token-based distance functions：基于标记<ul>
-<li>Dice, Overlap</li>
+<li>Dice【30】, Overlap【37】</li>
 <li>将字符串分割成更小的标记，之后计算相似性</li>
 </ul>
 </li>
 <li>Alignment-like functions：基于对齐<ul>
-<li>Smith Waterman，Neddleman Wunsch，最大公共子序列（LCS）</li>
+<li>Smith Waterman【45】，Neddleman Wunsch【40】，最大公共子序列（LCS）</li>
 <li>反映一对字符串之间最大对齐或子序列之间相似性分数</li>
 </ul>
 </li>
 </ul>
 </li>
-<li>密码分作三组<ul>
-<li>相同：在不同的web帐户上使用相同的密码</li>
-<li>子字符串：来自不同web帐户的密码是彼此的子字符串</li>
-<li>其他：密码要么完全不同，要么遵循更复杂的转换规则<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/8.PNG"><br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/3.PNG"></li>
+<li>调查同一个网站不同用户密码的相似度：<ul>
+<li>随机抽取1000个密码对（下图 a），计算相似性得分 CDF——同一网站内的用户使用几乎明显不同的密码</li>
+<li>从随机选择的用户中随机抽取了1000对密码（下图 b）——不同的人选择的密码有很大的不同</li>
+</ul>
+</li>
+</ul>
+<img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/image-20210127165113824.png" alt="image-20210127165113824" style="zoom:67%;">
+
+<ul>
+<li><p>调查给定用户在不同网站上选择密码的相似度</p>
+<ul>
+<li>（下图 a）几乎40%的密码具有在[0.9，1.0]范围内的相似性分数</li>
+<li>（下图 b）密码不相同的相似性分数，几乎30%的非相同密码具有在[0.8，1.0]范围内的相似性分数——用户在不同网站上使用的密码之间存在不小的相似性</li>
+</ul>
+<img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/image-20210127165533635.png" alt="image-20210127165533635" style="zoom: 80%;">
+</li>
+<li><p>密码分作三组</p>
+<ul>
+<li><p>相同：在不同的web帐户上使用相同的密码</p>
+</li>
+<li><p>子字符串：来自不同web帐户的密码是彼此的子字符串</p>
+</li>
+<li><p>其他：密码要么完全不同，要么遵循更复杂的转换规则</p>
+</li>
+</ul>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/8.PNG"></p>
+<ul>
+<li><p>最频繁的插入/删除操作发生在字符串的末尾</p>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/3.PNG"></p>
+</li>
 </ul>
 </li>
 </ul>
@@ -10741,16 +10788,12 @@ def a_function_requiring_decoration():
 <font size="3">
 
 <h2 id="调查"><a href="#调查" class="headerlink" title="调查"></a>调查</h2><ul>
-<li><p>对不同大学的用户进行匿名调查，收到224份答复，结果如下图：<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/4.PNG"></p>
-</li>
-<li><p>某些转换规则更为普遍。最常见的选择是在结尾或开头添加数字、字母大写和在结尾或开头添加符号</p>
-</li>
-<li><p>用户修改密码是为了满足不同网站的密码限制</p>
-</li>
-<li><p>大多数参与者在密码字符串的末尾插入数字，在开头插入大写字母</p>
-</li>
-<li><p>65%的参与者维护的密码类型不超过四种。大多数参与者（61%）记住了他们的密码</p>
-</li>
+<li>对不同大学的用户进行匿名调查，收到224份答复，结果如下图：<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/4.PNG"></li>
+<li>77%的参与者会修改或重用现有的密码</li>
+<li>某些转换规则更为普遍。最常见的选择是在结尾或开头添加数字、字母大写和在结尾或开头添加符号</li>
+<li>用户修改他们的密码，以满足不同网站实施的密码限制；倾向于对现有密码进行小的修改来满足这些限制</li>
+<li>大多数参与者在密码字符串的末尾插入数字，在开头插入大写字母</li>
+<li>65%的参与者维护的密码类型不超过四种。大多数参与者（61%）记住了他们的密码</li>
 </ul>
 <hr>
 </font>
@@ -10760,11 +10803,12 @@ def a_function_requiring_decoration():
 <li>背景：给定一个泄露的密码，攻击者试图猜测同一用户其他在线帐户的密码</li>
 </ul>
 <h3 id="主要的转换规则"><a href="#主要的转换规则" class="headerlink" title="主要的转换规则"></a>主要的转换规则</h3><ul>
-<li>在40%的泄漏密码中得到转换规则，并在剩余60%的数据上测试了猜测算法</li>
-<li>不考虑额外的转换——添加一些随机的额外字符或在结尾添加表情符号</li>
-<li>表中转换规则按概率递减的顺序排列<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/5.PNG"></li>
-</ul>
-<h3 id="猜测算法设计"><a href="#猜测算法设计" class="headerlink" title="猜测算法设计"></a>猜测算法设计</h3><ul>
+<li><p>在40%的泄漏密码中得到转换规则，并在剩余60%的数据上测试了猜测算法</p>
+</li>
+<li><p>不考虑额外的转换——添加一些随机的额外字符或在结尾添加表情符号</p>
+</li>
+<li><p>表中转换规则按概率递减的顺序排列<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/5.PNG"></p>
+<h3 id="猜测算法设计"><a href="#猜测算法设计" class="headerlink" title="猜测算法设计"></a>猜测算法设计</h3></li>
 <li><p>算法生成一组有序的候选密码</p>
 <p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/6.PNG"></p>
 </li>
@@ -10822,16 +10866,50 @@ def a_function_requiring_decoration():
 </li>
 </ul>
 </li>
+<li><p>对1000个随机非相同密码对进行采样，决定规则的排序</p>
+</li>
 <li><p>猜测算法本质上对输入密码应用固定顺序的转换，而不是尝试所有可能的转换 </p>
 </li>
 </ul>
-<h3 id="算法评估"><a href="#算法评估" class="headerlink" title="算法评估"></a>算法评估</h3><p>根据破解目标密码所需的猜测次数来评估猜测算法的性能<br>  <img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/7.PNG"></p>
+<h3 id="算法评估"><a href="#算法评估" class="headerlink" title="算法评估"></a>算法评估</h3><p>根据破解目标密码所需的猜测次数来评估猜测算法的性能</p>
+<ul>
+<li><p>对比算法</p>
+<ul>
+<li>RockYou guesser：<ul>
+<li>先建立一个单词列表以及可能的前缀后缀插入<ul>
+<li>对于给定的泄露密码，首先在词典【9】（Moby Words II）寻找这个单词，确定可能的前缀和后缀</li>
+<li>在其他密码中查看，是否给定密码为子串，确定前后缀</li>
+</ul>
+</li>
+<li>由此，得到一个可能的前缀后缀插入的映射</li>
+</ul>
+</li>
+<li>Edit Distance (ED) guesser：<ul>
+<li>使用【49】的基于 ED 的猜测器</li>
+<li>以从 RockYou 列表中计算出的概率递减顺序插入字符，在特定位置应用编辑转换</li>
+<li>编辑距离最大为 2，否则转换数目过大</li>
+</ul>
+</li>
+<li>JTR：<ul>
+<li>将数据集中每对密码中的一个附加到一个列表中</li>
+<li>生成剩余密码的 MD5 哈希，对它们运行 JTR</li>
+<li>使用默认的57个规则集，对密码列表进行转换，查看匹配率</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/7.PNG"></p>
+</li>
+<li><p>专注于评估不相同的密码对</p>
 <ul>
 <li>重试次数限制在10次，猜测算法可以破解几乎30%的互为子串的密码对</li>
 <li>猜测算法在100次尝试内破解80%的互为子串的密码对</li>
-<li>ED Guesser需要数百万次尝试来破解最多65%的子串密码对</li>
-<li>猜测算法更适合于在线攻击场景</li>
-<li>研究无法破解的密码的相似性与破解了的密码的相似性：<ul>
+<li>ED Guesser 需要数百万次尝试来破解最多65%的子串密码对</li>
+</ul>
+</li>
+<li><p>猜测算法更适合于在线攻击场景</p>
+</li>
+<li><p>研究无法破解的密码的相似性与破解了的密码的相似性：</p>
+<ul>
 <li>破解：<ul>
 <li>大多数密码对相似性得分都在[0.8，1]的范围内<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/10.PNG"></li>
 </ul>
@@ -10842,7 +10920,8 @@ def a_function_requiring_decoration():
 </li>
 </ul>
 </li>
-<li>猜测算法能够成功地预测相似的密码，并且随后的回报率会迅速下降</li>
+<li><p>猜测算法能够成功地预测相似的密码，并且随后的回报率会迅速下降</p>
+</li>
 </ul>
 <hr>
 </font>
@@ -10856,6 +10935,7 @@ def a_function_requiring_decoration():
 <h3 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h3><ul>
 <li>研究仅涉及基于文本的密码</li>
 <li>猜测算法相对简单，没有利用可能提高性能的更先进的模型——更复杂的方法高度依赖于培训数据</li>
+<li>主要目标是表明，即使使用一组相当简单的规则也能显著提高攻击性能</li>
 <li>没有足够的数据来分析相似的网站类别是否影响了密码重用的选择</li>
 </ul>
 <h3 id="对策"><a href="#对策" class="headerlink" title="对策"></a>对策</h3><ul>
@@ -10874,6 +10954,55 @@ def a_function_requiring_decoration():
 <li>猜测算法能够在不到10次尝试中破解大约10%的非同一密码对，并且在少于100次尝试中破解大约30%的非同一密码对</li>
 </ul>
 <hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] 55K Twitter Passwords Leaked. <a href="http://www.newser.com/story/145750/55k-twitter-passwords-leaked.html">http://www.newser.com/story/145750/55k-twitter-passwords-leaked.html</a>.</p>
+<p>[2] 6.46 million LinkedIn passwords leaked online. <a href="http://www.zdnet.com/blog/btl/6-46-million-linkedin-passwords-leaked-online/79290">http://www.zdnet.com/blog/btl/6-46-million-linkedin-passwords-leaked-online/79290</a>.</p>
+<p>[3] Alexa. <a href="http://www.alexa.com/">http://www.alexa.com</a>.</p>
+<p>[4] John the ripper password cracking toolkit. <a href="http://www.openwall.com/john/">http://www.openwall.com/john/</a>.</p>
+<p>[5] Leet Transformations. <a href="http://qntm.org/l33t">http://qntm.org/l33t</a>.</p>
+<p>[6] LinkedIn confirms password leak, encourages users to update passwords. <a href="http://www.cbsnews.com/8301-501465-162-57448443-501465/linkedin-confirms-password-leak-encourages-users-to-update-passwords/">http://www.cbsnews.com/8301-501465-162-57448443-501465/linkedin-confirms-password-leak-encourages-users-to-update-passwords/</a>.</p>
+<p>[7] MD5 Decryptor. <a href="http://www.md5decrypter.co.uk/">http://www.md5decrypter.co.uk/</a>.</p>
+<p>[8] Millions  of  LinkedIn  passwords  reportedly  leaked  online. <a href="http://news.cnet.com/8301-1009_3-57448079-83/millions-of-linkedin-passwords-reportedly-leaked-online/">http://news.cnet.com/8301-1009_3-57448079-83/millions-of-linkedin-passwords-reportedly-leaked-online/</a>.</p>
+<p>[9] Moby Words II. <a href="http://icon.shef.ac.uk/Moby/">http://icon.shef.ac.uk/Moby/</a>.</p>
+<p>[10] No wonder hackers have it easy: Most of us now have 26  different  online  accounts  -  but  only  five passwords. <a href="http://www.dailymail.co.uk/sciencetech/article-2174274/No-wonder-hackers-easy-Most-26-different-online-accounts--passwords.html">http://www.dailymail.co.uk/sciencetech/article-2174274/No-wonder-hackers-easy-Most-26-different-online-accounts--passwords.html</a>.</p>
+<p>[11] Online Passwords: Keep it Complicated. <a href="http://www.guardian.co.uk/technology/2012/oct/05/online-security-passwords-tricks-hacking">http://www.guardian.co.uk/technology/2012/oct/05/online-security-passwords-tricks-hacking</a>.</p>
+<p>[12] Over  55,000  Twitter  passwords  exposed,  posted  online. <a href="http://news.yahoo.com/blogs/technology-blog/over-55-000-twitter-passwords-exposed-posted-online-165625320.html">http://news.yahoo.com/blogs/technology-blog/over-55-000-twitter-passwords-exposed-posted-online-165625320.html</a>.</p>
+<p>[13] RockYou  leak. <a href="http://techcrunch.com/2009/12/14/rockyou-hack-security-myspace-facebook-passwords/">http://techcrunch.com/2009/12/14/rockyou-hack-security-myspace-facebook-passwords/</a>.</p>
+<p>[14] RockYou Password Analysis. <a href="http://thepasswordproject.com/rockyou_passpal_0.4_dump">http://thepasswordproject.com/rockyou_passpal_0.4_dump</a>.</p>
+<p>[15] Survey Questions. <a href="http://web.engr.illinois.edu/%E2%88%BCdas17/passwordreuse.html">http://web.engr.illinois.edu/∼das17/passwordreuse.html</a>.</p>
+<p>[16] Thousands of Twitter passwords exposed. <a href="http://news.cnet.com/8301-1009_3-57430475-83/thousands-of-twitter-passwords-exposed/">http://news.cnet.com/8301-1009_3-57430475-83/thousands-of-twitter-passwords-exposed/</a>.</p>
+<p>[17] Yahoo hacked, 450,000 passwords posted online. <a href="http://www.cnn.com/2012/07/12/tech/web/yahoo-users-hacked">http://www.cnn.com/2012/07/12/tech/web/yahoo-users-hacked</a>.</p>
+<p>[18] Yahoo V oice hack leaks 450,000 passwords. <a href="http://www.guardian.co.uk/technology/2012/jul/12/yahoo-voice-hack-attack-passwords-stolen">http://www.guardian.co.uk/technology/2012/jul/12/yahoo-voice-hack-attack-passwords-stolen</a>.</p>
+<p>[19] Yahoo’s password leak. <a href="http://news.cnet.com/8301-1009_3-57471178-83/yahoos-password-leak-what-you-need-to-know-faq/">http://news.cnet.com/8301-1009_3-57471178-83/yahoos-password-leak-what-you-need-to-know-faq/</a>.</p>
+<p>[20] A. Adams and M. A. Sasse, “Users Are Not The Enemy,” Commun. ACM, vol. 42, no. 12, pp. 40–46, 1999.</p>
+<p>[21] J. Bonneau, “The science of guessing: analyzing an anonymized corpus of 70 million passwords,” in Proceedings of the 33rd IEEE Symposium on Security and Privacy, ser. SP ’12, May 2012.</p>
+<p>[22] J. Bonneau, C. Herley, P . C. v. Oorschot, and F. Stajano, “The Quest to Replace Passwords: A Framework for Comparative Evaluation of Web Authentication Schemes,” in Proceedings of the 2012 IEEE Symposium on Security and Privacy, ser. SP ’12, 2012, pp. 553–567.</p>
+<p>[23] J. Bonneau, M. Just, and G. Matthews, “What’s in a Name? Evaluating Statistical Attacks on Personal Knowledge Questions,” in Proceedings of the 14th International conference on Financial Cryptography and Data Security, ser. FC’10, 2010, pp. 98–113.</p>
+<p>[24] J. Bonneau and S. Preibusch, “The password thicket: technical and market failures in human authentication on the web,” in Proceedings of the 9th Workshop on the Economics of Information Security, June 2016 [Online]. Available: <a href="http://www.jbonneau.com/doc/BP10-WEIS-password_thicket.pdf">http://www.jbonneau.com/doc/BP10-WEIS-password_thicket.pdf</a></p>
+<p>[25] W. E. Burr, D. F. Dodson, and W. T. Polk. (2006) Electronic Authentication Guideline. [Online]. Available: <a href="http://csrc.nist.gov/publications/nistpubs/800-63/SP800-63V1_0_2.pdf">http://csrc.nist.gov/publications/nistpubs/800-63/SP800-63V1_0_2.pdf</a></p>
+<p>[26] S. Chiasson, P . C. van Oorschot, and R. Biddle, “A Usability Study and Critique of Two Password Managers,” in Proceedings of the 15th conference on USENIX Security Symposium, ser. USENIX-SS’06, 2006.</p>
+<p>[27] W. W. Cohen, P . Ravikumar, and S. E. Fienberg, “A Comparison of String Distance Metrics for Name-Matching Tasks,” in Proceedings of IJCAI-03 Workshop on Information Integration, 2003, pp. 73–78.</p>
+<p>[28] F. J. Damerau, “A Technique for Computer Detection and Correction of Spelling Errors,” Commun. ACM, vol. 7, no. 3, pp. 171–176, Mar. 1964.</p>
+<p>[29] M. Dell’Amico, P . Michiardi, and Y . Roudier, “Password Strength: An Empirical Analysis,” in Proceedings of the 29th conference onInformation Communications, ser. INFOCOM’10, 2010, pp. 983–991.</p>
+<p>[30] L. R. Dice, “Measures of the Amount of Ecologic Association Between Species,” Ecology, vol. 26, no. 3, pp. 297–302, Jul. 1945.</p>
+<p>[31] S. Egelman, J. Bonneau, S. Chiasson, D. Dittrich, and S. Schechter, “It’s Not Stealing If Y ou Need It: A Panel on the Ethics of Performing Research Using Public Data of Illicit origin,” in Proceedings of the 3rd Workshop on Ethics in Computer Security Research, ser. WECSR ’12, 2012, pp. 124–132.</p>
+<p>[32] D. Florˆ encio and C. Herley, “A Large-Scale Study of Web Password Habits,” in Proceedings of the 16th International Conference on the World Wide Web, ser. WWW ’07, 2007, pp. 657–666.</p>
+<p>[33] S. Gaw and E. W. Felten, “Password Management Strategies for Online Accounts,” in Proceedings of the 2nd Symposium on Usable Privacy and Security, ser. SOUPS ’06, 2006, pp. 44–55.</p>
+<p>[34] P . G. Kelley, S. Komanduri, M. L. Mazurek, R. Shay, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, and J. Lopez, “Guess Again (and Again and Again): Measuring Password Strength by Simulating Password-Cracking Algorithms,” in Proceedings of the 33rd IEEE Symposium on Security and Privacy, ser. SP ’12, 2012, pp. 523–537.</p>
+<p>[35] S. Komanduri, R. Shay, P . G. Kelley, M. L. Mazurek, L. Bauer, N. Christin, L. F. Cranor, and S. Egelman, “Of Passwords and People: Measuring the Effect of Password-Composition Policies,” in Proceedings of the International Conference on Human Factors in Computing Systems, ser. CHI ’11, 2011, pp. 2595–2604.</p>
+<p>[36] E. F. Krause, Taxicab Geometry: An Adventure in Non-Euclidean Geometry. Dover Publications, 1987.</p>
+<p>[37] M. Levandowsky and D. Winter, “Distance between Sets,” Nature, vol. 234, no. 5, pp. 34–34, 1971.</p>
+<p>[38] V . I. Levenshtein, “Binary codes capable of correcting deletions, insertions, and reversals,” Soviet Physics Doklady, vol. 10, no. 8, pp. 707–710, 1966.</p>
+<p>[39] A. Narayanan and V . Shmatikov, “Fast Dictionary Attacks on Passwords Using Time-Space Tradeoff,” in Proceedings of the 12th ACM conference on Computer and communications security, ser. CCS ’05, 2005, pp. 364–372.</p>
+<p>[40] S. B. Needleman and C. D. Wunsch, “A General Method Applicable to the Search for Similarities in the Amino Acid Sequence of Two Proteins,” Journal of Molecular Biology, vol. 48, no. 3, pp. 443–453, 1970.</p>
+<p>[41] D. Perito, C. Castelluccia, and M. Duermuth, “Adaptive Password-Strength Meters from Markov Models,” in Proceedings of the 19th Network and Distributed Systems Security Symposium, ser. NDSS ’12, 2012.</p>
+<p>[42] S. Rane and W. Sun, “Privacy Preserving String Comparisons Based on Levenshtein Distance,” in Proceedings of IEEE International Workshop on Information F orensics and Security, ser. WIFS ’10, 2010.</p>
+<p>[43] B. Ross, C. Jackson, N. Miyake, D. Boneh, and J. C. Mitchell, “Stronger Password Authentication Using Browser Extensions,” in Proceedings of the 14th conference on USENIX Security Symposium, ser. USENIX-SS ’05, 2005.</p>
+<p>[44] R. Shay, S. Komanduri, P . G. Kelley, P . G. Leon, M. L. Mazurek, L. Bauer, N. Christin, and L. F. Cranor, “Encountering Stronger Password Requirements: User Attitudes and Behaviors,” in Proceedings of the 6th Symposium on Usable Privacy and Security, ser. SOUPS ’10, 2010, pp. 1–20.</p>
+<p>[45] T. Smith and M. Waterman, “Identification of Common Molecular Subsequences,” Journal of Molecular Biology, vol. 147, no. 1, pp. 195–197, 1981.</p>
+<p>[46] B. Ur, P . G. Kelley, S. Komanduri, J. Lee, M. Maass, M. L. Mazurek, T. Passaro, R. Shay, T. Vidas, L. Bauer, N. Christin, and L. F. Cranor, “How does your password measure up? The effect of strength meters on password creation,” in Proceedings of the 21st USENIX conference on Security symposium, ser. USENIX-SS ’12. USENIX Association, 2012, pp. 65–80.</p>
+<p>[47] M. Weir, S. Aggarwal, M. Collins, and H. Stern, “Testing Metrics for Password Creation Policies by Attacking Large Sets of Revealed Passwords,” in Proceedings of the 17th ACM conference on Computer and Communications Security, ser. CCS ’10, 2010, pp. 162–175.</p>
+<p>[48] M. Weir, S. Aggarwal, B. de Medeiros, and B. Glodek, “Password Cracking Using Probabilistic Context-Free Grammars,” in Proceedings of the 30th IEEE Symposium on Security and Privacy, ser. SP ’09, 2009, pp. 391–405.</p>
+<p>[49] Y . Zhang, F. Monrose, and M. K. Reiter, “The Security of Modern Password Expiration: An Algorithmic Framework and Empirical Analysis,” in Proceedings of the 17th ACM conference on Computer and communications security, ser. CCS ’10, 2010, pp. 176–186. </p>
 </font>
 </font>]]></content>
       <categories>
@@ -10881,7 +11010,7 @@ def a_function_requiring_decoration():
       </categories>
       <tags>
         <tag>密码</tag>
-        <tag>密码复用</tag>
+        <tag>密码重用</tag>
       </tags>
   </entry>
 </search>
