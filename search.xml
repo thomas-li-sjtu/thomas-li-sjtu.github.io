@@ -11466,4 +11466,125 @@ def a_function_requiring_decoration():
         <tag>密码破解</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Hands-on Machine Learning（1）</title>
+    <url>/2021/02/01/Hands_on_ML_1/</url>
+    <content><![CDATA[<p>《Hands-on Machine Learning》第二部分阅读笔记（1）</p>
+<a id="more"></a>
+
+<h2 id="Introduction-to-Artificial-Neural-Networks-with-Keras"><a href="#Introduction-to-Artificial-Neural-Networks-with-Keras" class="headerlink" title="Introduction to Artificial Neural Networks with Keras"></a>Introduction to Artificial Neural Networks with Keras</h2><h3 id="从生物神经元到人工神经元"><a href="#从生物神经元到人工神经元" class="headerlink" title="从生物神经元到人工神经元"></a>从生物神经元到人工神经元</h3><ul>
+<li>有大量的数据可用于训练神经网络，并且 ANN 在非常大和复杂的问题上经常优于其他最大似然技术</li>
+<li>计算能力的巨大增长使得在合理的时间内训练大型神经网络成为可能</li>
+<li>对训练算法进行了改进</li>
+<li>资金和进步的良性循环</li>
+<li>一些理论局限性在实践中被证明是良性的</li>
+</ul>
+<h4 id="生物神经元"><a href="#生物神经元" class="headerlink" title="生物神经元"></a>生物神经元</h4><img src="/2021/02/01/Hands_on_ML_1/image-20210201104941788.png" alt="image-20210201104941788" style="zoom:67%;">
+
+<ul>
+<li>高度复杂的计算可以由一个相当简单的神经元组成的巨大网络来完成</li>
+<li>神经元通常被组织在连续的层中</li>
+</ul>
+<h4 id="神经元逻辑计算"><a href="#神经元逻辑计算" class="headerlink" title="神经元逻辑计算"></a>神经元逻辑计算</h4><ul>
+<li>人工神经元<ul>
+<li>有一个或多个二进制(开/关)输入和一个二进制输出</li>
+<li>超过一定数量的输入活跃时，人工神经元简单地激活其输出</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201105156757.png" alt="image-20210201105156757"></p>
+<ul>
+<li>第一个网络：神经元 A 被激活，则神经元 C 也被激活</li>
+<li>第二个网络：只有当神经元 A 和 B 都被激活时，神经元 C 才被激活</li>
+<li>第三个网络：“或”逻辑</li>
+<li>第四个网络：稍复杂的逻辑</li>
+</ul>
+<h4 id="感知器"><a href="#感知器" class="headerlink" title="感知器"></a>感知器</h4><ul>
+<li><p>每个输入连接都与一个权重相关联</p>
+</li>
+<li><p>计算其输入的加权和</p>
+</li>
+<li><p>应用阶跃函数并输出结果（即为阈值逻辑单元，TLU）</p>
+</li>
+</ul>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201125945682.png" alt="image-20210201125945682" style="zoom:80%;">
+
+<ul>
+<li><p>感知器由一个单层的阈值逻辑单元组成</p>
+</li>
+<li><p>一层中的所有神经元都连接到上一层中的每个神经元（即其输入神经元）时，称为全连接层或密集层</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201132840554.png" alt="image-20210201132840554"></p>
+</li>
+</ul>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201130251405.png" alt="image-20210201130251405" style="zoom:80%;">
+
+<ul>
+<li><p>感知器学习算法支持随机梯度下降</p>
+</li>
+<li><p>感知器不输出类概率</p>
+</li>
+<li><p>通过堆叠多个感知器可以消除感知器的一些限制</p>
+  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># sklearn 中的感知器</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> Perceptron</span><br><span class="line"></span><br><span class="line">iris = load_iris()</span><br><span class="line">X = iris.data[:, (<span class="number">2</span>, <span class="number">3</span>)]  <span class="comment"># petal length, petal width</span></span><br><span class="line">y = (iris.target == <span class="number">0</span>).astype(np.<span class="built_in">int</span>)  <span class="comment"># Iris Setosa?</span></span><br><span class="line">per_clf = Perceptron()</span><br><span class="line">per_clf.fit(X, y)</span><br><span class="line">y_pred = per_clf.predict([[<span class="number">2</span>, <span class="number">0.5</span>]])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="多层感知器和反向传播"><a href="#多层感知器和反向传播" class="headerlink" title="多层感知器和反向传播"></a>多层感知器和反向传播</h4><ul>
+<li><p>MLP 由一个(直通)输入层、一个或多个被称为隐藏层的 TLU 层和最后一个被称为输出层的 TLU 层组成</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201133454042.png" alt="image-20210201133454042" style="zoom:67%;">
+</li>
+<li><p>使用一种有效的技术来自动计算梯度——仅仅两次遍历网络，反向传播算法能够计算每个模型参数的网络误差梯度，即找出每个连接权重和每个偏置项应该如何调整</p>
+</li>
+<li><p>具体算法</p>
+<ul>
+<li>每次处理一个 batch，一轮称为一个 epoch</li>
+<li>计算，前向传播，所有中间结果保留下来</li>
+<li>测量网络的输出误差</li>
+<li>计算每个输出连接对错误的贡献</li>
+<li>链式规则测量这些误差中有多少来自下面层的每个连接，以此类推，直到输入层——通过在网络中向后传播误差梯度来建立</li>
+<li>使用计算的误差梯度调整网络中的所有连接权重</li>
+</ul>
+</li>
+<li><p>必须随机初始化所有隐藏层的连接权重</p>
+</li>
+<li><p>替代阶跃函数</p>
+<ul>
+<li>logistic 函数</li>
+<li>tanh(z)</li>
+<li>ReLU(z)</li>
+</ul>
+</li>
+<li><p>如果层与层之间没有一些非线性变换，即使是一个很深的网络也相当于一个单层</p>
+</li>
+</ul>
+<h4 id="MLP-回归"><a href="#MLP-回归" class="headerlink" title="MLP 回归"></a>MLP 回归</h4><ul>
+<li><p>一般来说，当建立回归的 MLP 时，不对输出神经元使用任何激活函数</p>
+<ul>
+<li>想保证输出总是正的，可以使用 ReLU</li>
+<li>保证预测值落在给定的值范围内，可以使用逻辑函数或双曲正切函数，并标签缩放</li>
+</ul>
+</li>
+<li><p>损失函数通常是均方误差</p>
+</li>
+<li><p>如果训练集中有很多异常值，使用平均绝对误差</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201141121282.png" alt="image-20210201141121282" style="zoom: 80%;">
+
+</li>
+</ul>
+<h4 id="MLP-分类"><a href="#MLP-分类" class="headerlink" title="MLP 分类"></a>MLP 分类</h4><ul>
+<li><p>如果类是排他的，用 softmax</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201141253612.png" alt="image-20210201141253612" style="zoom:67%;">
+
+</li>
+</ul>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201141200750.png" alt="image-20210201141200750"></p>
+<h3 id="利用-Keras-实现-MLP"><a href="#利用-Keras-实现-MLP" class="headerlink" title="利用 Keras 实现 MLP"></a>利用 Keras 实现 MLP</h3><p>* </p>
+]]></content>
+      <categories>
+        <category>深度学习</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>TensorFlow</tag>
+      </tags>
+  </entry>
 </search>

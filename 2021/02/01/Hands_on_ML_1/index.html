@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Hands-on Machine Learning》第二部分阅读笔记（1）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hands-on Machine Learning（1）">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Hands-on Machine Learning》第二部分阅读笔记（1）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201104941788.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201105156757.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201125945682.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201132840554.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201130251405.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201133454042.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201141121282.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201141253612.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201141200750.png">
+<meta property="article:published_time" content="2021-02-01T02:27:00.000Z">
+<meta property="article:modified_time" content="2021-02-01T06:32:14.457Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="TensorFlow">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201104941788.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Hands-on Machine Learning（1） | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hands-on Machine Learning（1）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-01 10:27:00" itemprop="dateCreated datePublished" datetime="2021-02-01T10:27:00+08:00">2021-02-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Hands-on Machine Learning》第二部分阅读笔记（1）</p>
+<a id="more"></a>
+
+<h2 id="Introduction-to-Artificial-Neural-Networks-with-Keras"><a href="#Introduction-to-Artificial-Neural-Networks-with-Keras" class="headerlink" title="Introduction to Artificial Neural Networks with Keras"></a>Introduction to Artificial Neural Networks with Keras</h2><h3 id="从生物神经元到人工神经元"><a href="#从生物神经元到人工神经元" class="headerlink" title="从生物神经元到人工神经元"></a>从生物神经元到人工神经元</h3><ul>
+<li>有大量的数据可用于训练神经网络，并且 ANN 在非常大和复杂的问题上经常优于其他最大似然技术</li>
+<li>计算能力的巨大增长使得在合理的时间内训练大型神经网络成为可能</li>
+<li>对训练算法进行了改进</li>
+<li>资金和进步的良性循环</li>
+<li>一些理论局限性在实践中被证明是良性的</li>
+</ul>
+<h4 id="生物神经元"><a href="#生物神经元" class="headerlink" title="生物神经元"></a>生物神经元</h4><img src="/2021/02/01/Hands_on_ML_1/image-20210201104941788.png" alt="image-20210201104941788" style="zoom:67%;">
+
+<ul>
+<li>高度复杂的计算可以由一个相当简单的神经元组成的巨大网络来完成</li>
+<li>神经元通常被组织在连续的层中</li>
+</ul>
+<h4 id="神经元逻辑计算"><a href="#神经元逻辑计算" class="headerlink" title="神经元逻辑计算"></a>神经元逻辑计算</h4><ul>
+<li>人工神经元<ul>
+<li>有一个或多个二进制(开/关)输入和一个二进制输出</li>
+<li>超过一定数量的输入活跃时，人工神经元简单地激活其输出</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201105156757.png" alt="image-20210201105156757"></p>
+<ul>
+<li>第一个网络：神经元 A 被激活，则神经元 C 也被激活</li>
+<li>第二个网络：只有当神经元 A 和 B 都被激活时，神经元 C 才被激活</li>
+<li>第三个网络：“或”逻辑</li>
+<li>第四个网络：稍复杂的逻辑</li>
+</ul>
+<h4 id="感知器"><a href="#感知器" class="headerlink" title="感知器"></a>感知器</h4><ul>
+<li><p>每个输入连接都与一个权重相关联</p>
+</li>
+<li><p>计算其输入的加权和</p>
+</li>
+<li><p>应用阶跃函数并输出结果（即为阈值逻辑单元，TLU）</p>
+</li>
+</ul>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201125945682.png" alt="image-20210201125945682" style="zoom:80%;">
+
+<ul>
+<li><p>感知器由一个单层的阈值逻辑单元组成</p>
+</li>
+<li><p>一层中的所有神经元都连接到上一层中的每个神经元（即其输入神经元）时，称为全连接层或密集层</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201132840554.png" alt="image-20210201132840554"></p>
+</li>
+</ul>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201130251405.png" alt="image-20210201130251405" style="zoom:80%;">
+
+<ul>
+<li><p>感知器学习算法支持随机梯度下降</p>
+</li>
+<li><p>感知器不输出类概率</p>
+</li>
+<li><p>通过堆叠多个感知器可以消除感知器的一些限制</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sklearn 中的感知器</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> Perceptron</span><br><span class="line"></span><br><span class="line">iris = load_iris()</span><br><span class="line">X = iris.data[:, (<span class="number">2</span>, <span class="number">3</span>)]  <span class="comment"># petal length, petal width</span></span><br><span class="line">y = (iris.target == <span class="number">0</span>).astype(np.<span class="built_in">int</span>)  <span class="comment"># Iris Setosa?</span></span><br><span class="line">per_clf = Perceptron()</span><br><span class="line">per_clf.fit(X, y)</span><br><span class="line">y_pred = per_clf.predict([[<span class="number">2</span>, <span class="number">0.5</span>]])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="多层感知器和反向传播"><a href="#多层感知器和反向传播" class="headerlink" title="多层感知器和反向传播"></a>多层感知器和反向传播</h4><ul>
+<li><p>MLP 由一个(直通)输入层、一个或多个被称为隐藏层的 TLU 层和最后一个被称为输出层的 TLU 层组成</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201133454042.png" alt="image-20210201133454042" style="zoom:67%;">
+</li>
+<li><p>使用一种有效的技术来自动计算梯度——仅仅两次遍历网络，反向传播算法能够计算每个模型参数的网络误差梯度，即找出每个连接权重和每个偏置项应该如何调整</p>
+</li>
+<li><p>具体算法</p>
+<ul>
+<li>每次处理一个 batch，一轮称为一个 epoch</li>
+<li>计算，前向传播，所有中间结果保留下来</li>
+<li>测量网络的输出误差</li>
+<li>计算每个输出连接对错误的贡献</li>
+<li>链式规则测量这些误差中有多少来自下面层的每个连接，以此类推，直到输入层——通过在网络中向后传播误差梯度来建立</li>
+<li>使用计算的误差梯度调整网络中的所有连接权重</li>
+</ul>
+</li>
+<li><p>必须随机初始化所有隐藏层的连接权重</p>
+</li>
+<li><p>替代阶跃函数</p>
+<ul>
+<li>logistic 函数</li>
+<li>tanh(z)</li>
+<li>ReLU(z)</li>
+</ul>
+</li>
+<li><p>如果层与层之间没有一些非线性变换，即使是一个很深的网络也相当于一个单层</p>
+</li>
+</ul>
+<h4 id="MLP-回归"><a href="#MLP-回归" class="headerlink" title="MLP 回归"></a>MLP 回归</h4><ul>
+<li><p>一般来说，当建立回归的 MLP 时，不对输出神经元使用任何激活函数</p>
+<ul>
+<li>想保证输出总是正的，可以使用 ReLU</li>
+<li>保证预测值落在给定的值范围内，可以使用逻辑函数或双曲正切函数，并标签缩放</li>
+</ul>
+</li>
+<li><p>损失函数通常是均方误差</p>
+</li>
+<li><p>如果训练集中有很多异常值，使用平均绝对误差</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201141121282.png" alt="image-20210201141121282" style="zoom: 80%;">
+
+</li>
+</ul>
+<h4 id="MLP-分类"><a href="#MLP-分类" class="headerlink" title="MLP 分类"></a>MLP 分类</h4><ul>
+<li><p>如果类是排他的，用 softmax</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201141253612.png" alt="image-20210201141253612" style="zoom:67%;">
+
+</li>
+</ul>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201141200750.png" alt="image-20210201141200750"></p>
+<h3 id="利用-Keras-实现-MLP"><a href="#利用-Keras-实现-MLP" class="headerlink" title="利用 Keras 实现 MLP"></a>利用 Keras 实现 MLP</h3><p>* </p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\07\Python深度学习_1基础\" rel="bookmark">Python深度学习（1）基础</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Python深度学习》笔记整理：第一部分 深度学习基础</p>
+<p>代码基于 Keras 框架</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\07\简单粗暴TensorFlow2\" rel="bookmark">简单粗暴TensorFlow2</a></div>
+        <div class="popular-posts-excerpt"><p><p>基于<a target="_blank" rel="noopener" href="https://tf.wiki/">简单粗暴TensorFlow2</a>的笔记记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\19\Python深度学习_2实践\" rel="bookmark">Python深度学习（2）实践——CNN与RNN</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Python深度学习》笔记整理：第二部分 深度学习实践——CNN与RNN</p>
+<p>代码基于 Keras 框架</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\21\Python深度学习_3实践\" rel="bookmark">Python深度学习（3）实践——函数API与生成网络</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Python深度学习》笔记整理：第二部分 深度学习实践——函数API与生成网络</p>
+<p>代码基于 Keras 框架</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\03\Python编程：从入门到实践（1）基础知识\" rel="bookmark">《Python编程：从入门到实践》 （1）基础知识</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Python编程 从入门到实践》第一部分阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/" title="Hands-on Machine Learning（1）">https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/TensorFlow/" rel="tag"><i class="fa fa-tag"></i> TensorFlow</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/29/A-New-Password-Cracking-Model-With-Generative-Adversarial-Networks/" rel="prev" title="A New Password Cracking Model With Generative Adversarial Networks">
+      <i class="fa fa-chevron-left"></i> A New Password Cracking Model With Generative Adversarial Networks
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+    
+
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction-to-Artificial-Neural-Networks-with-Keras"><span class="nav-number">1.</span> <span class="nav-text">Introduction to Artificial Neural Networks with Keras</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83%E5%88%B0%E4%BA%BA%E5%B7%A5%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.</span> <span class="nav-text">从生物神经元到人工神经元</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.1.</span> <span class="nav-text">生物神经元</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E9%80%BB%E8%BE%91%E8%AE%A1%E7%AE%97"><span class="nav-number">1.1.2.</span> <span class="nav-text">神经元逻辑计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E5%99%A8"><span class="nav-number">1.1.3.</span> <span class="nav-text">感知器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E5%B1%82%E6%84%9F%E7%9F%A5%E5%99%A8%E5%92%8C%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">1.1.4.</span> <span class="nav-text">多层感知器和反向传播</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%9B%9E%E5%BD%92"><span class="nav-number">1.1.5.</span> <span class="nav-text">MLP 回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%88%86%E7%B1%BB"><span class="nav-number">1.1.6.</span> <span class="nav-text">MLP 分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8-Keras-%E5%AE%9E%E7%8E%B0-MLP"><span class="nav-number">1.2.</span> <span class="nav-text">利用 Keras 实现 MLP</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=29533718&auto=1&height=66">
+        </iframe>
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5656824337" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5656824337" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://i.sjtu.edu.cn/" title="SJTU → https:&#x2F;&#x2F;i.sjtu.edu.cn&#x2F;" rel="noopener" target="_blank"><i class="fab fa-sjtu fa-fw"></i>SJTU</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.baidu.com/" title="https:&#x2F;&#x2F;www.baidu.com&#x2F;" rel="noopener" target="_blank">Baidu</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">367k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:34</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
