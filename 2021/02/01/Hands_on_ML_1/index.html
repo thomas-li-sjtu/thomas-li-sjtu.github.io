@@ -42,8 +42,12 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201152823241.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201153811794.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201153958600.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201185644852.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201185940098.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201190504927.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201192643097.png">
 <meta property="article:published_time" content="2021-02-01T02:27:00.000Z">
-<meta property="article:modified_time" content="2021-02-01T08:53:53.186Z">
+<meta property="article:modified_time" content="2021-02-01T11:42:39.403Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="Python">
 <meta property="article:tag" content="TensorFlow">
@@ -256,14 +260,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>12k</span>
+              <span>15k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>11 分钟</span>
+              <span>13 分钟</span>
             </span>
 
         </div>
@@ -612,7 +616,83 @@
 </ul>
 </li>
 </ul>
-<h2 id="训练-DNN"><a href="#训练-DNN" class="headerlink" title="训练 DNN"></a>训练 DNN</h2><h3 id="梯度消失与梯度爆炸"><a href="#梯度消失与梯度爆炸" class="headerlink" title="梯度消失与梯度爆炸"></a>梯度消失与梯度爆炸</h3><h3 id="复用预训练的层"><a href="#复用预训练的层" class="headerlink" title="复用预训练的层"></a>复用预训练的层</h3><h3 id="更快的优化器"><a href="#更快的优化器" class="headerlink" title="更快的优化器"></a>更快的优化器</h3><h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3><h2 id="用-TensorFlow-训练"><a href="#用-TensorFlow-训练" class="headerlink" title="用 TensorFlow 训练"></a>用 TensorFlow 训练</h2><h2 id="加载和预处理数据"><a href="#加载和预处理数据" class="headerlink" title="加载和预处理数据"></a>加载和预处理数据</h2><h2 id="使用-CNN"><a href="#使用-CNN" class="headerlink" title="使用 CNN"></a>使用 CNN</h2>
+<h2 id="Training-Deep-Neural-Networks"><a href="#Training-Deep-Neural-Networks" class="headerlink" title="Training Deep Neural Networks"></a>Training Deep Neural Networks</h2><h3 id="梯度消失与梯度爆炸"><a href="#梯度消失与梯度爆炸" class="headerlink" title="梯度消失与梯度爆炸"></a>梯度消失与梯度爆炸</h3><ul>
+<li><p>随着算法向下推进到更低的层，梯度通常变得越来越小，梯度下降更新使低层连接权重几乎不变——梯度消失</p>
+</li>
+<li><p>梯度越来越大，许多层得到大权重更新，算法发散——梯度爆炸</p>
+</li>
+<li><p>深度神经网络受到不稳定梯度的影响；不同的层可以以不同的速度学习</p>
+</li>
+<li><p>对于 logistic 激活函数，函数在 0 或 1 时饱和，导数非常接近 0，反向传播开始时，实际上没有梯度通过网络传播回来</p>
+</li>
+<li><p>为了数据能双向流动，需要每一层输出的方差等于其输入的方差，需要梯度在反向流过一层之前和之后具有相等的方差</p>
+<ul>
+<li><p>每一层必须进行 Xavier initialization（Glorot initialization）</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201185644852.png" alt="image-20210201185644852" style="zoom:80%;">
+</li>
+<li><p>默认情况下，Keras 使用均匀分布的 Glorot initialization。可以通过在创建层时设置<code>kernel_initializer=&quot;he_uniform</code> 或<code>kernel_initializer=&quot;he_normal &quot;</code>更改为 He initialization</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201185940098.png" alt="image-20210201185940098"></p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;relu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>)</span><br><span class="line"><span class="comment"># 基于fan_avg</span></span><br><span class="line">he_avg_init = keras.initializers.VarianceScaling(scale=<span class="number">2.</span>, mode=<span class="string">&#x27;fan_avg&#x27;</span>,</span><br><span class="line">                                                 distribution=<span class="string">&#x27;uniform&#x27;</span>)</span><br><span class="line">keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;sigmoid&quot;</span>, kernel_initializer=he_avg_init)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="非饱和激活函数"><a href="#非饱和激活函数" class="headerlink" title="非饱和激活函数"></a>非饱和激活函数</h4><ul>
+<li><p>ReLU 对正值不饱和，但会导致训练过程中一些神经元死亡——它们只输出 0——尤其是使用了较高的学习率</p>
+</li>
+<li><p>leaky ReLU 解决此问题：在大型图像数据集上的表现明显优于 ReLU，但在较小的数据集上，有过拟合的风险（Keras 中必须先创建一个实例）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">leaky_relu = keras.layers.LeakyReLU(alpha=<span class="number">0.2</span>)</span><br><span class="line">layer = keras.layers.Dense(<span class="number">10</span>, activation=leaky_relu,</span><br><span class="line">                           kernel_initializer=<span class="string">&quot;he_normal&quot;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ELU：训练时间减少，神经网络在测试集上表现更好，但计算速度比 ReLU 及其变体慢</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201190504927.png" alt="image-20210201190504927"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ELU激活函数的一个缩放版本</span></span><br><span class="line">layer = keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;selu&quot;</span>,</span><br><span class="line">                           kernel_initializer=<span class="string">&quot;lecun_normal&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="Batch-Normalization"><a href="#Batch-Normalization" class="headerlink" title="Batch Normalization"></a>Batch Normalization</h4><ul>
+<li><p>以上显著减少训练开始时的梯度消失/爆炸问题</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201192643097.png" alt="image-20210201192643097" style="zoom: 80%;">
+</li>
+<li><p>在每个隐藏层的激活函数之前或之后在模型中添加一个操作，简单地对每个输入进行置零和归一化，然后每层使用两个新的参数向量来缩放和移动结果</p>
+</li>
+<li><p>增加模型的复杂性，预测变慢</p>
+</li>
+<li><p>Keras 中的 BN 层</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>每个 BN 层每个输入增加4个参数，其中两个参数增加4个参数，不可训练</p>
+</li>
+<li><p>论文的作者主张在激活函数之前而不是之后添加 BN 层，因此从隐藏层中移除激活功能（BN 层每个输入包含一个偏移参数，因此上一层可以移除偏移项）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>, use_bias=<span class="literal">False</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Activation(<span class="string">&quot;elu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>, use_bias=<span class="literal">False</span>),</span><br><span class="line">    keras.layers.Activation(<span class="string">&quot;elu&quot;</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>超参数<code>axis</code>（默认为 -1）：如果想处理 3D 数据（例如<code> [batch size, height, width]</code>），每一个都要归一化，需要设置<code>axis=[1, 2]</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="梯度裁剪"><a href="#梯度裁剪" class="headerlink" title="梯度裁剪"></a>梯度裁剪</h4><ul>
+<li><p>反向传播过程中简单地裁剪梯度，以防止超过某个阈值</p>
+</li>
+<li><p>常用于 RNN</p>
+</li>
+<li><p>Keras 中只需要创建优化器时设置<code>clipvalue</code>或<code>clipnorm</code>参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">optimizer = keras.optimizers.SGD(clipvalue=<span class="number">1.0</span>)</span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=optimizer)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>把梯度向量的每个分量裁剪为 -1.0 到 1.0 之间——损失的所有偏导数将被限制在此区间</li>
+<li>可能会改变梯度向量的方向——原始梯度向量为 [0.9，100.0]，主要指向第二个轴，但裁剪后得到 [0.9，1.0]，大致指向两个轴之间的对角线</li>
+<li>在实践中，这种方法效果很好</li>
+<li>要确保渐变裁剪不会改变渐变向量的方向，应该设置<code>clipnorm</code>而不是<code>clipvalue</code><ul>
+<li><code>clipnorm=1.0</code>时，裁剪为 [0.00899964，0.9999595]，其方向不变，但几乎消除第一个分量</li>
+<li>容易引起梯度爆炸/消失</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="复用预训练的层"><a href="#复用预训练的层" class="headerlink" title="复用预训练的层"></a>复用预训练的层</h3><h4 id="迁移学习"><a href="#迁移学习" class="headerlink" title="迁移学习"></a>迁移学习</h4><h4 id="无监督预训练"><a href="#无监督预训练" class="headerlink" title="无监督预训练"></a>无监督预训练</h4><h4 id="辅助任务上预训练"><a href="#辅助任务上预训练" class="headerlink" title="辅助任务上预训练"></a>辅助任务上预训练</h4><h3 id="更快的优化器"><a href="#更快的优化器" class="headerlink" title="更快的优化器"></a>更快的优化器</h3><h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3>
     </div>
 
     
@@ -766,7 +846,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction-to-Artificial-Neural-Networks-with-Keras"><span class="nav-number">1.</span> <span class="nav-text">Introduction to Artificial Neural Networks with Keras</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83%E5%88%B0%E4%BA%BA%E5%B7%A5%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.</span> <span class="nav-text">从生物神经元到人工神经元</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.1.</span> <span class="nav-text">生物神经元</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E9%80%BB%E8%BE%91%E8%AE%A1%E7%AE%97"><span class="nav-number">1.1.2.</span> <span class="nav-text">神经元逻辑计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E5%99%A8"><span class="nav-number">1.1.3.</span> <span class="nav-text">感知器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E5%B1%82%E6%84%9F%E7%9F%A5%E5%99%A8%E5%92%8C%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">1.1.4.</span> <span class="nav-text">多层感知器和反向传播</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%9B%9E%E5%BD%92"><span class="nav-number">1.1.5.</span> <span class="nav-text">MLP 回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%88%86%E7%B1%BB"><span class="nav-number">1.1.6.</span> <span class="nav-text">MLP 分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8-Keras-%E5%AE%9E%E7%8E%B0-MLP"><span class="nav-number">1.2.</span> <span class="nav-text">利用 Keras 实现 MLP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-tf-2-0-%E5%B9%B6%E6%BF%80%E6%B4%BB"><span class="nav-number">1.2.1.</span> <span class="nav-text">安装 tf 2.0 并激活</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential-API-%E5%AE%9E%E7%8E%B0%E5%9B%BE%E5%83%8F%E5%88%86%E7%B1%BB"><span class="nav-number">1.2.2.</span> <span class="nav-text">Sequential API 实现图像分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential-API-%E5%AE%9E%E7%8E%B0%E5%9B%9E%E5%BD%92"><span class="nav-number">1.2.3.</span> <span class="nav-text">Sequential API 实现回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-API-%E5%AE%9E%E7%8E%B0%E5%A4%8D%E6%9D%82%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.4.</span> <span class="nav-text">函数 API 实现复杂模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Subclassing-API-%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.5.</span> <span class="nav-text">Subclassing API 实现动态模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%9D%E5%AD%98%E4%B8%8E%E6%81%A2%E5%A4%8D%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.6.</span> <span class="nav-text">保存与恢复模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E8%B0%83"><span class="nav-number">1.2.7.</span> <span class="nav-text">回调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorBoard-%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="nav-number">1.2.8.</span> <span class="nav-text">TensorBoard 可视化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AE%E8%B0%83%E8%B6%85%E5%8F%82%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">微调超参数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%B1%82%E6%95%B0%E7%9B%AE"><span class="nav-number">1.3.1.</span> <span class="nav-text">隐藏层数目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%B1%82%E7%A5%9E%E7%BB%8F%E5%85%83%E6%95%B0%E7%9B%AE"><span class="nav-number">1.3.2.</span> <span class="nav-text">隐藏层神经元数目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E7%8E%87%EF%BC%8Cbatch-size%E7%AD%89"><span class="nav-number">1.3.3.</span> <span class="nav-text">学习率，batch size等</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83-DNN"><span class="nav-number">2.</span> <span class="nav-text">训练 DNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1%E4%B8%8E%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8"><span class="nav-number">2.1.</span> <span class="nav-text">梯度消失与梯度爆炸</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E7%94%A8%E9%A2%84%E8%AE%AD%E7%BB%83%E7%9A%84%E5%B1%82"><span class="nav-number">2.2.</span> <span class="nav-text">复用预训练的层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E5%BF%AB%E7%9A%84%E4%BC%98%E5%8C%96%E5%99%A8"><span class="nav-number">2.3.</span> <span class="nav-text">更快的优化器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E6%AD%A3%E5%88%99%E5%8C%96%E9%81%BF%E5%85%8D%E8%BF%87%E6%8B%9F%E5%90%88"><span class="nav-number">2.4.</span> <span class="nav-text">通过正则化避免过拟合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Practical-Guidelines"><span class="nav-number">2.5.</span> <span class="nav-text">Practical Guidelines</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8-TensorFlow-%E8%AE%AD%E7%BB%83"><span class="nav-number">3.</span> <span class="nav-text">用 TensorFlow 训练</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">4.</span> <span class="nav-text">加载和预处理数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-CNN"><span class="nav-number">5.</span> <span class="nav-text">使用 CNN</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction-to-Artificial-Neural-Networks-with-Keras"><span class="nav-number">1.</span> <span class="nav-text">Introduction to Artificial Neural Networks with Keras</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83%E5%88%B0%E4%BA%BA%E5%B7%A5%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.</span> <span class="nav-text">从生物神经元到人工神经元</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.1.</span> <span class="nav-text">生物神经元</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E9%80%BB%E8%BE%91%E8%AE%A1%E7%AE%97"><span class="nav-number">1.1.2.</span> <span class="nav-text">神经元逻辑计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E5%99%A8"><span class="nav-number">1.1.3.</span> <span class="nav-text">感知器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E5%B1%82%E6%84%9F%E7%9F%A5%E5%99%A8%E5%92%8C%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">1.1.4.</span> <span class="nav-text">多层感知器和反向传播</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%9B%9E%E5%BD%92"><span class="nav-number">1.1.5.</span> <span class="nav-text">MLP 回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%88%86%E7%B1%BB"><span class="nav-number">1.1.6.</span> <span class="nav-text">MLP 分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8-Keras-%E5%AE%9E%E7%8E%B0-MLP"><span class="nav-number">1.2.</span> <span class="nav-text">利用 Keras 实现 MLP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-tf-2-0-%E5%B9%B6%E6%BF%80%E6%B4%BB"><span class="nav-number">1.2.1.</span> <span class="nav-text">安装 tf 2.0 并激活</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential-API-%E5%AE%9E%E7%8E%B0%E5%9B%BE%E5%83%8F%E5%88%86%E7%B1%BB"><span class="nav-number">1.2.2.</span> <span class="nav-text">Sequential API 实现图像分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential-API-%E5%AE%9E%E7%8E%B0%E5%9B%9E%E5%BD%92"><span class="nav-number">1.2.3.</span> <span class="nav-text">Sequential API 实现回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-API-%E5%AE%9E%E7%8E%B0%E5%A4%8D%E6%9D%82%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.4.</span> <span class="nav-text">函数 API 实现复杂模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Subclassing-API-%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.5.</span> <span class="nav-text">Subclassing API 实现动态模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%9D%E5%AD%98%E4%B8%8E%E6%81%A2%E5%A4%8D%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.6.</span> <span class="nav-text">保存与恢复模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E8%B0%83"><span class="nav-number">1.2.7.</span> <span class="nav-text">回调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorBoard-%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="nav-number">1.2.8.</span> <span class="nav-text">TensorBoard 可视化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AE%E8%B0%83%E8%B6%85%E5%8F%82%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">微调超参数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%B1%82%E6%95%B0%E7%9B%AE"><span class="nav-number">1.3.1.</span> <span class="nav-text">隐藏层数目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%B1%82%E7%A5%9E%E7%BB%8F%E5%85%83%E6%95%B0%E7%9B%AE"><span class="nav-number">1.3.2.</span> <span class="nav-text">隐藏层神经元数目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E7%8E%87%EF%BC%8Cbatch-size%E7%AD%89"><span class="nav-number">1.3.3.</span> <span class="nav-text">学习率，batch size等</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Training-Deep-Neural-Networks"><span class="nav-number">2.</span> <span class="nav-text">Training Deep Neural Networks</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1%E4%B8%8E%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8"><span class="nav-number">2.1.</span> <span class="nav-text">梯度消失与梯度爆炸</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E9%A5%B1%E5%92%8C%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0"><span class="nav-number">2.1.1.</span> <span class="nav-text">非饱和激活函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Batch-Normalization"><span class="nav-number">2.1.2.</span> <span class="nav-text">Batch Normalization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A2%AF%E5%BA%A6%E8%A3%81%E5%89%AA"><span class="nav-number">2.1.3.</span> <span class="nav-text">梯度裁剪</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E7%94%A8%E9%A2%84%E8%AE%AD%E7%BB%83%E7%9A%84%E5%B1%82"><span class="nav-number">2.2.</span> <span class="nav-text">复用预训练的层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0"><span class="nav-number">2.2.1.</span> <span class="nav-text">迁移学习</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A0%E7%9B%91%E7%9D%A3%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.2.</span> <span class="nav-text">无监督预训练</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BE%85%E5%8A%A9%E4%BB%BB%E5%8A%A1%E4%B8%8A%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.3.</span> <span class="nav-text">辅助任务上预训练</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E5%BF%AB%E7%9A%84%E4%BC%98%E5%8C%96%E5%99%A8"><span class="nav-number">2.3.</span> <span class="nav-text">更快的优化器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E6%AD%A3%E5%88%99%E5%8C%96%E9%81%BF%E5%85%8D%E8%BF%87%E6%8B%9F%E5%90%88"><span class="nav-number">2.4.</span> <span class="nav-text">通过正则化避免过拟合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Practical-Guidelines"><span class="nav-number">2.5.</span> <span class="nav-text">Practical Guidelines</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -873,12 +953,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">377k</span>
+    <span title="站点总字数">380k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5:43</span>
+    <span title="站点阅读时长">5:46</span>
 </div>
 
         

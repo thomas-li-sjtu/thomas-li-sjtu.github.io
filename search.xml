@@ -11806,7 +11806,83 @@ def a_function_requiring_decoration():
 </ul>
 </li>
 </ul>
-<h2 id="训练-DNN"><a href="#训练-DNN" class="headerlink" title="训练 DNN"></a>训练 DNN</h2><h3 id="梯度消失与梯度爆炸"><a href="#梯度消失与梯度爆炸" class="headerlink" title="梯度消失与梯度爆炸"></a>梯度消失与梯度爆炸</h3><h3 id="复用预训练的层"><a href="#复用预训练的层" class="headerlink" title="复用预训练的层"></a>复用预训练的层</h3><h3 id="更快的优化器"><a href="#更快的优化器" class="headerlink" title="更快的优化器"></a>更快的优化器</h3><h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3><h2 id="用-TensorFlow-训练"><a href="#用-TensorFlow-训练" class="headerlink" title="用 TensorFlow 训练"></a>用 TensorFlow 训练</h2><h2 id="加载和预处理数据"><a href="#加载和预处理数据" class="headerlink" title="加载和预处理数据"></a>加载和预处理数据</h2><h2 id="使用-CNN"><a href="#使用-CNN" class="headerlink" title="使用 CNN"></a>使用 CNN</h2>]]></content>
+<h2 id="Training-Deep-Neural-Networks"><a href="#Training-Deep-Neural-Networks" class="headerlink" title="Training Deep Neural Networks"></a>Training Deep Neural Networks</h2><h3 id="梯度消失与梯度爆炸"><a href="#梯度消失与梯度爆炸" class="headerlink" title="梯度消失与梯度爆炸"></a>梯度消失与梯度爆炸</h3><ul>
+<li><p>随着算法向下推进到更低的层，梯度通常变得越来越小，梯度下降更新使低层连接权重几乎不变——梯度消失</p>
+</li>
+<li><p>梯度越来越大，许多层得到大权重更新，算法发散——梯度爆炸</p>
+</li>
+<li><p>深度神经网络受到不稳定梯度的影响；不同的层可以以不同的速度学习</p>
+</li>
+<li><p>对于 logistic 激活函数，函数在 0 或 1 时饱和，导数非常接近 0，反向传播开始时，实际上没有梯度通过网络传播回来</p>
+</li>
+<li><p>为了数据能双向流动，需要每一层输出的方差等于其输入的方差，需要梯度在反向流过一层之前和之后具有相等的方差</p>
+<ul>
+<li><p>每一层必须进行 Xavier initialization（Glorot initialization）</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201185644852.png" alt="image-20210201185644852" style="zoom:80%;">
+</li>
+<li><p>默认情况下，Keras 使用均匀分布的 Glorot initialization。可以通过在创建层时设置<code>kernel_initializer=&quot;he_uniform</code> 或<code>kernel_initializer=&quot;he_normal &quot;</code>更改为 He initialization</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201185940098.png" alt="image-20210201185940098"></p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;relu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>)</span><br><span class="line"><span class="comment"># 基于fan_avg</span></span><br><span class="line">he_avg_init = keras.initializers.VarianceScaling(scale=<span class="number">2.</span>, mode=<span class="string">&#x27;fan_avg&#x27;</span>,</span><br><span class="line">                                                 distribution=<span class="string">&#x27;uniform&#x27;</span>)</span><br><span class="line">keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;sigmoid&quot;</span>, kernel_initializer=he_avg_init)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="非饱和激活函数"><a href="#非饱和激活函数" class="headerlink" title="非饱和激活函数"></a>非饱和激活函数</h4><ul>
+<li><p>ReLU 对正值不饱和，但会导致训练过程中一些神经元死亡——它们只输出 0——尤其是使用了较高的学习率</p>
+</li>
+<li><p>leaky ReLU 解决此问题：在大型图像数据集上的表现明显优于 ReLU，但在较小的数据集上，有过拟合的风险（Keras 中必须先创建一个实例）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">leaky_relu = keras.layers.LeakyReLU(alpha=<span class="number">0.2</span>)</span><br><span class="line">layer = keras.layers.Dense(<span class="number">10</span>, activation=leaky_relu,</span><br><span class="line">                           kernel_initializer=<span class="string">&quot;he_normal&quot;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ELU：训练时间减少，神经网络在测试集上表现更好，但计算速度比 ReLU 及其变体慢</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210201190504927.png" alt="image-20210201190504927"></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ELU激活函数的一个缩放版本</span></span><br><span class="line">layer = keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;selu&quot;</span>,</span><br><span class="line">                           kernel_initializer=<span class="string">&quot;lecun_normal&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="Batch-Normalization"><a href="#Batch-Normalization" class="headerlink" title="Batch Normalization"></a>Batch Normalization</h4><ul>
+<li><p>以上显著减少训练开始时的梯度消失/爆炸问题</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201192643097.png" alt="image-20210201192643097" style="zoom: 80%;">
+</li>
+<li><p>在每个隐藏层的激活函数之前或之后在模型中添加一个操作，简单地对每个输入进行置零和归一化，然后每层使用两个新的参数向量来缩放和移动结果</p>
+</li>
+<li><p>增加模型的复杂性，预测变慢</p>
+</li>
+<li><p>Keras 中的 BN 层</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>每个 BN 层每个输入增加4个参数，其中两个参数增加4个参数，不可训练</p>
+</li>
+<li><p>论文的作者主张在激活函数之前而不是之后添加 BN 层，因此从隐藏层中移除激活功能（BN 层每个输入包含一个偏移参数，因此上一层可以移除偏移项）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>, use_bias=<span class="literal">False</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Activation(<span class="string">&quot;elu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>, use_bias=<span class="literal">False</span>),</span><br><span class="line">    keras.layers.Activation(<span class="string">&quot;elu&quot;</span>),</span><br><span class="line">    keras.layers.BatchNormalization(),</span><br><span class="line">    keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>超参数<code>axis</code>（默认为 -1）：如果想处理 3D 数据（例如<code> [batch size, height, width]</code>），每一个都要归一化，需要设置<code>axis=[1, 2]</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="梯度裁剪"><a href="#梯度裁剪" class="headerlink" title="梯度裁剪"></a>梯度裁剪</h4><ul>
+<li><p>反向传播过程中简单地裁剪梯度，以防止超过某个阈值</p>
+</li>
+<li><p>常用于 RNN</p>
+</li>
+<li><p>Keras 中只需要创建优化器时设置<code>clipvalue</code>或<code>clipnorm</code>参数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">optimizer = keras.optimizers.SGD(clipvalue=<span class="number">1.0</span>)</span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=optimizer)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>把梯度向量的每个分量裁剪为 -1.0 到 1.0 之间——损失的所有偏导数将被限制在此区间</li>
+<li>可能会改变梯度向量的方向——原始梯度向量为 [0.9，100.0]，主要指向第二个轴，但裁剪后得到 [0.9，1.0]，大致指向两个轴之间的对角线</li>
+<li>在实践中，这种方法效果很好</li>
+<li>要确保渐变裁剪不会改变渐变向量的方向，应该设置<code>clipnorm</code>而不是<code>clipvalue</code><ul>
+<li><code>clipnorm=1.0</code>时，裁剪为 [0.00899964，0.9999595]，其方向不变，但几乎消除第一个分量</li>
+<li>容易引起梯度爆炸/消失</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="复用预训练的层"><a href="#复用预训练的层" class="headerlink" title="复用预训练的层"></a>复用预训练的层</h3><h4 id="迁移学习"><a href="#迁移学习" class="headerlink" title="迁移学习"></a>迁移学习</h4><h4 id="无监督预训练"><a href="#无监督预训练" class="headerlink" title="无监督预训练"></a>无监督预训练</h4><h4 id="辅助任务上预训练"><a href="#辅助任务上预训练" class="headerlink" title="辅助任务上预训练"></a>辅助任务上预训练</h4><h3 id="更快的优化器"><a href="#更快的优化器" class="headerlink" title="更快的优化器"></a>更快的优化器</h3><h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3>]]></content>
       <categories>
         <category>深度学习</category>
       </categories>
