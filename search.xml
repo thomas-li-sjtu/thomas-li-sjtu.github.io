@@ -11577,8 +11577,64 @@ def a_function_requiring_decoration():
 </li>
 </ul>
 <p><img src="/2021/02/01/Hands_on_ML_1/image-20210201141200750.png" alt="image-20210201141200750"></p>
-<h3 id="利用-Keras-实现-MLP"><a href="#利用-Keras-实现-MLP" class="headerlink" title="利用 Keras 实现 MLP"></a>利用 Keras 实现 MLP</h3><p>* </p>
-]]></content>
+<h3 id="利用-Keras-实现-MLP"><a href="#利用-Keras-实现-MLP" class="headerlink" title="利用 Keras 实现 MLP"></a>利用 Keras 实现 MLP</h3><ul>
+<li>两种 Keras 实现（keras-team 和 tf.keras）</li>
+</ul>
+<h4 id="安装-tf-2-0-并激活"><a href="#安装-tf-2-0-并激活" class="headerlink" title="安装 tf 2.0 并激活"></a>安装 tf 2.0 并激活</h4><ul>
+<li><p>GPU 支持训练，需要安装 tensorflow-gpu</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> <span class="variable">$ML_PATH</span>              <span class="comment"># Your ML working directory (e.g., $HOME/ml)</span></span><br><span class="line">$ <span class="built_in">source</span> env/bin/activate  <span class="comment"># on Linux or MacOSX</span></span><br><span class="line">$ .\env\Scripts\activate   <span class="comment"># on Windows</span></span><br><span class="line">$ python3 -m pip install --upgrade tensorflow-gpu</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>验证：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> tensorflow <span class="keyword">import</span> keras</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>tf.__version__</span><br><span class="line"><span class="string">&#x27;2.0.0&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>keras.__version__</span><br><span class="line"><span class="string">&#x27;2.2.4-tf&#x27;</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="Sequential-API-实现图像分类"><a href="#Sequential-API-实现图像分类" class="headerlink" title="Sequential API 实现图像分类"></a>Sequential API 实现图像分类</h4><ul>
+<li><p>数据加载</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fashion_mnist = keras.datasets.fashion_mnist</span><br><span class="line">(X_train_full, y_train_full), (X_test, y_test) = fashion_mnist.load_data()</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建验证集，并转换像素范围</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">X_valid, X_train = X_train_full[:<span class="number">5000</span>] / <span class="number">255.0</span>, X_train_full[<span class="number">5000</span>:] / <span class="number">255.0</span></span><br><span class="line">y_valid, y_train = y_train_full[:<span class="number">5000</span>], y_train_full[<span class="number">5000</span>:]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分类字典</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">class_names = [<span class="string">&quot;T-shirt/top&quot;</span>, <span class="string">&quot;Trouser&quot;</span>, <span class="string">&quot;Pullover&quot;</span>, <span class="string">&quot;Dress&quot;</span>, <span class="string">&quot;Coat&quot;</span>,</span><br><span class="line">               <span class="string">&quot;Sandal&quot;</span>, <span class="string">&quot;Shirt&quot;</span>, <span class="string">&quot;Sneaker&quot;</span>, <span class="string">&quot;Bag&quot;</span>, <span class="string">&quot;Ankle boot&quot;</span>]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建模型</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential()</span><br><span class="line">model.add(keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]))</span><br><span class="line">model.add(keras.layers.Dense(<span class="number">300</span>, activation=<span class="string">&quot;relu&quot;</span>))</span><br><span class="line">model.add(keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;relu&quot;</span>))</span><br><span class="line">model.add(keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或者</span></span><br><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, activation=<span class="string">&quot;relu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;relu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>)</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;sparse_categorical_crossentropy&quot;</span>,</span><br><span class="line">              optimizer=<span class="string">&quot;sgd&quot;</span>,</span><br><span class="line">              metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>summary()</code>打印模型的层信息</p>
+</li>
+<li><p>可以得到一个模型的层列表，通过索引或层的名字来获取一个层</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>model.layers</span><br><span class="line">[&lt;tensorflow.python.keras.layers.core.Flatten at <span class="number">0x132414e48</span>&gt;,</span><br><span class="line"> &lt;tensorflow.python.keras.layers.core.Dense at <span class="number">0x1324149b0</span>&gt;,</span><br><span class="line"> &lt;tensorflow.python.keras.layers.core.Dense at <span class="number">0x1356ba8d0</span>&gt;,</span><br><span class="line"> &lt;tensorflow.python.keras.layers.core.Dense at <span class="number">0x13240d240</span>&gt;]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>model.layers[<span class="number">1</span>].name</span><br><span class="line"><span class="string">&#x27;dense_3&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>model.get_layer(<span class="string">&#x27;dense_3&#x27;</span>).name</span><br><span class="line"><span class="string">&#x27;dense_3&#x27;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>get_weights()</code>和<code>set_weights()</code>可以访问层的所有参数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">weights, biases = hidden1.get_weights()</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以在创建层时设置 <code>kernel_initializer </code>与<code>bias_initializer</code>实现初始化，否则会随机初始化权重</p>
+</li>
+<li><p>使用“稀疏_分类_交叉”损失，因为有稀疏标签——对于每个实例，只有一个目标类索引，并且类是排他的——如果对于每个实例，每个类都有一个目标概率，例如一个独热向量，则需要使用“分类_交叉熵”损失</p>
+</li>
+</ul>
+</li>
+<li><p>训练与评估</p>
+<ul>
+<li><p>使用<code>fit()</code>训练</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">history = model.fit(X_train, y_train, epochs=<span class="number">30</span>, validation_data=(X_valid, y_valid))</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="训练-DNN"><a href="#训练-DNN" class="headerlink" title="训练 DNN"></a>训练 DNN</h2><h2 id="用-TensorFlow-训练"><a href="#用-TensorFlow-训练" class="headerlink" title="用 TensorFlow 训练"></a>用 TensorFlow 训练</h2><h2 id="加载和预处理数据"><a href="#加载和预处理数据" class="headerlink" title="加载和预处理数据"></a>加载和预处理数据</h2><h2 id="使用-CNN"><a href="#使用-CNN" class="headerlink" title="使用 CNN"></a>使用 CNN</h2>]]></content>
       <categories>
         <category>深度学习</category>
       </categories>
