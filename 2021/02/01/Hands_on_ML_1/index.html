@@ -38,8 +38,12 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201141121282.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201141253612.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201141200750.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201150132670.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201152823241.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201153811794.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/01/Hands_on_ML_1/image-20210201153958600.png">
 <meta property="article:published_time" content="2021-02-01T02:27:00.000Z">
-<meta property="article:modified_time" content="2021-02-01T06:57:49.933Z">
+<meta property="article:modified_time" content="2021-02-01T07:59:44.871Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="Python">
 <meta property="article:tag" content="TensorFlow">
@@ -252,14 +256,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.7k</span>
+              <span>8.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>8 分钟</span>
             </span>
 
         </div>
@@ -388,6 +392,9 @@
 </li>
 <li><p>验证：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> tensorflow <span class="keyword">import</span> keras</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>tf.__version__</span><br><span class="line"><span class="string">&#x27;2.0.0&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>keras.__version__</span><br><span class="line"><span class="string">&#x27;2.2.4-tf&#x27;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>以下的代码都有：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> tensorflow <span class="keyword">import</span> keras</span><br><span class="line">output_layer = keras.layers.Dense(<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
 
 </li>
 </ul>
@@ -426,17 +433,103 @@
 <li><p>训练与评估</p>
 <ul>
 <li><p>使用<code>fit()</code>训练</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">history = model.fit(X_train, y_train, epochs=<span class="number">30</span>, validation_data=(X_valid, y_valid))</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">history = model.fit(X_train, y_train, epochs=<span class="number">50</span>, validation_data=(X_valid, y_valid))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果训练集非常倾斜，有些类的代表比例过高，而其他类的代表比例过低，需要设置<code>class_weight</code>参数，给代表比例过高的类一个较低的权重</p>
+</li>
+<li><p>如果需要实例的权重（某些实例为专家标注，其他为众包平台标记，前者需要更大权重），设置参数<code>class_weight</code></p>
+</li>
+<li><p>利用 history 绘图</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line">pd.DataFrame(history.history).plot(figsize=(<span class="number">8</span>, <span class="number">5</span>))</span><br><span class="line">plt.grid(<span class="literal">True</span>)</span><br><span class="line">plt.gca().set_ylim(<span class="number">0</span>, <span class="number">1</span>) <span class="comment"># set the vertical range to [0-1]</span></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
 
-
-
-
-
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201150132670.png" alt="image-20210201150132670" style="zoom:67%;">
+</li>
+<li><p>使用<code>model.evaluate(X_test, y_test)</code>评估</p>
+</li>
+<li><p>使用<code>model.predict(X_new).round(2)</code>预测</p>
 </li>
 </ul>
 </li>
 </ul>
-<h2 id="训练-DNN"><a href="#训练-DNN" class="headerlink" title="训练 DNN"></a>训练 DNN</h2><h2 id="用-TensorFlow-训练"><a href="#用-TensorFlow-训练" class="headerlink" title="用 TensorFlow 训练"></a>用 TensorFlow 训练</h2><h2 id="加载和预处理数据"><a href="#加载和预处理数据" class="headerlink" title="加载和预处理数据"></a>加载和预处理数据</h2><h2 id="使用-CNN"><a href="#使用-CNN" class="headerlink" title="使用 CNN"></a>使用 CNN</h2>
+<h4 id="Sequential-API-实现回归"><a href="#Sequential-API-实现回归" class="headerlink" title="Sequential API 实现回归"></a>Sequential API 实现回归</h4><ul>
+<li><p>用<code>sklearn</code>加载数据集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> fetch_california_housing</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line">housing = fetch_california_housing()</span><br><span class="line">X_train_full, X_test, y_train_full, y_test = train_test_split(</span><br><span class="line">    housing.data, housing.target)</span><br><span class="line">X_train, X_valid, y_train, y_valid = train_test_split(</span><br><span class="line">    X_train_full, y_train_full)</span><br><span class="line">scaler = StandardScaler()</span><br><span class="line">X_train_scaled = scaler.fit_transform(X_train)</span><br><span class="line">X_valid_scaled = scaler.transform(X_valid)</span><br><span class="line">X_test_scaled = scaler.transform(X_test)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数据集噪音较大，因此只用一个隐层且限制神经元数目，避免过拟合</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;relu&quot;</span>, input_shape=X_train.shape[<span class="number">1</span>:]),</span><br><span class="line">    keras.layers.Dense(<span class="number">1</span>)</span><br><span class="line">])</span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mean_squared_error&quot;</span>, optimizer=<span class="string">&quot;sgd&quot;</span>)</span><br><span class="line">history = model.fit(X_train, y_train, epochs=<span class="number">20</span>,</span><br><span class="line">                    validation_data=(X_valid, y_valid))</span><br><span class="line">mse_test = model.evaluate(X_test, y_test)</span><br><span class="line">X_new = X_test[:<span class="number">3</span>] <span class="comment"># pretend these are new instances</span></span><br><span class="line">y_pred = model.predict(X_new)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="函数-API-实现复杂模型"><a href="#函数-API-实现复杂模型" class="headerlink" title="函数 API 实现复杂模型"></a>函数 API 实现复杂模型</h4><ul>
+<li><p>非顺序神经网络的一个例子是宽深度神经网络，将所有或部分输入直接连接到输出层，学习深度模式（使用深度路径）和简单规则（通过短路径）</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201152823241.png" alt="image-20210201152823241" style="zoom: 50%;">
+</li>
+<li><p>实现上面的预测网络</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">input</span> = keras.layers.Input(shape=X_train.shape[<span class="number">1</span>:])  <span class="comment"># 创建一个输入对象</span></span><br><span class="line">hidden1 = keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;relu&quot;</span>)(<span class="built_in">input</span>)  <span class="comment"># 创建一个密集层，并像调用一个函数一样调用它，把输入传递给它</span></span><br><span class="line">hidden2 = keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;relu&quot;</span>)(hidden1)</span><br><span class="line">concat = keras.layers.Concatenate()([<span class="built_in">input</span>, hidden2])  <span class="comment"># 创建一个Concatenate()层，连接第二个隐藏层的输出和输入</span></span><br><span class="line">output = keras.layers.Dense(<span class="number">1</span>)(concat)  <span class="comment"># 创建输出层</span></span><br><span class="line">model = keras.models.Model(inputs=[<span class="built_in">input</span>], outputs=[output])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>如果存在多个输入：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">input_A = keras.layers.Input(shape=[<span class="number">5</span>])</span><br><span class="line">input_B = keras.layers.Input(shape=[<span class="number">6</span>])</span><br><span class="line">hidden1 = keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;relu&quot;</span>)(input_B)</span><br><span class="line">hidden2 = keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;relu&quot;</span>)(hidden1)</span><br><span class="line">concat = keras.layers.concatenate([input_A, hidden2])</span><br><span class="line">output = keras.layers.Dense(<span class="number">1</span>)(concat)</span><br><span class="line">model = keras.models.Model(inputs=[input_A, input_B], outputs=[output])</span><br></pre></td></tr></table></figure>
+
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201153811794.png" alt="image-20210201153811794" style="zoom:50%;">
+
+<ul>
+<li>此时，调用<code>fit()</code>方法时，必须传递一对矩阵<code>(X_train_A，X_train_B)</code></li>
+</ul>
+</li>
+<li><p>如果存在多个输入和输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[...] <span class="comment"># Same as above, up to the main output layer</span></span><br><span class="line">output = keras.layers.Dense(<span class="number">1</span>)(concat)</span><br><span class="line">aux_output = keras.layers.Dense(<span class="number">1</span>)(hidden2)</span><br><span class="line">model = keras.models.Model(inputs=[input_A, input_B],</span><br><span class="line">                           outputs=[output, aux_output])</span><br><span class="line"></span><br><span class="line">model.<span class="built_in">compile</span>(loss=[<span class="string">&quot;mse&quot;</span>, <span class="string">&quot;mse&quot;</span>], loss_weights=[<span class="number">0.9</span>, <span class="number">0.1</span>], optimizer=<span class="string">&quot;sgd&quot;</span>)</span><br><span class="line">history = model.fit(</span><br><span class="line">    [X_train_A, X_train_B], [y_train, y_train], epochs=<span class="number">20</span>,</span><br><span class="line">    validation_data=([X_valid_A, X_valid_B], [y_valid, y_valid]))</span><br><span class="line"></span><br><span class="line">total_loss, main_loss, aux_loss = model.evaluate(</span><br><span class="line">    [X_test_A, X_test_B], [y_test, y_test])</span><br><span class="line">y_pred_main, y_pred_aux = model.predict([X_new_A, X_new_B])</span><br></pre></td></tr></table></figure>
+
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201153958600.png" alt="image-20210201153958600" style="zoom:50%;">
+
+<ul>
+<li>每个输出需要它自己的损失函数，并给主输出的损失一个更大的权重</li>
+<li>训练模型时，也需要为每个输出提供标签</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Subclassing-API-实现动态模型"><a href="#Subclassing-API-实现动态模型" class="headerlink" title="Subclassing API 实现动态模型"></a>Subclassing API 实现动态模型</h4><ul>
+<li><p>Sequential API 和 Functional API 可以推张量形状、检查类型，因为整个模型只是一个静态的层次图</p>
+</li>
+<li><p>一些模型涉及循环、变化的形状、条件分支和其他动态行为，此时需要 Subclassing API</p>
+</li>
+<li><p>只需将模型类子类化，在构造函数中创建需要的层，并在<code>call()</code>方法中执行想要的计算</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WideAndDeepModel</span>(<span class="params">keras.models.Model</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, units=<span class="number">30</span>, activation=<span class="string">&quot;relu&quot;</span>, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs) <span class="comment"># handles standard args (e.g., name)</span></span><br><span class="line">        self.hidden1 = keras.layers.Dense(units, activation=activation)</span><br><span class="line">        self.hidden2 = keras.layers.Dense(units, activation=activation)</span><br><span class="line">        self.main_output = keras.layers.Dense(<span class="number">1</span>)</span><br><span class="line">        self.aux_output = keras.layers.Dense(<span class="number">1</span>)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        input_A, input_B = inputs</span><br><span class="line">        hidden1 = self.hidden1(input_B)</span><br><span class="line">        hidden2 = self.hidden2(hidden1)</span><br><span class="line">        concat = keras.layers.concatenate([input_A, hidden2])</span><br><span class="line">        main_output = self.main_output(concat)</span><br><span class="line">        aux_output = self.aux_output(hidden2)</span><br><span class="line">        <span class="keyword">return</span> main_output, aux_output</span><br><span class="line">model = WideAndDeepModel()</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>不需要创建输入</li>
+<li>将构造函数中层的创建与它们在<code>call()</code>中的使用分开</li>
+<li>可以在<code>call()</code>中做任何事</li>
+<li>模型的架构隐藏在<code>call()</code>，Keras 不能很好地检查、保存或克隆；调用<code>summary()</code>时，只获得一个层的列表，没有关于它们如何相互连接的任何信息</li>
+<li>除非真的需要额外的灵活性，否则应该坚持使用 Sequential API 和 Functional API</li>
+</ul>
+</li>
+</ul>
+<h4 id="保存与恢复模型"><a href="#保存与恢复模型" class="headerlink" title="保存与恢复模型"></a>保存与恢复模型</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">model.save(<span class="string">&quot;my_keras_model.h5&quot;</span>)</span><br><span class="line"></span><br><span class="line">model = keras.models.load_model(<span class="string">&quot;my_keras_model.h5&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>适用于 Sequential API 和 Functional API</li>
+<li>Subclassing API，使用<code>save_weights()</code>与<code>load_weights()</code>保存与恢复模型参数，其他内容需要自己保存和恢复</li>
+</ul>
+<h4 id="回调"><a href="#回调" class="headerlink" title="回调"></a>回调</h4><ul>
+<li><p>在训练期间定期保存检查点</p>
+</li>
+<li><p><code>fit()</code>接受一个回调参数，该参数允许指定一个对象列表；Keras 将在训练开始和结束时、每个 epoch 开始和结束时、甚至在处理每个 batch 之前和之后调用该列表</p>
+</li>
+<li><p><code>save_best_only</code>设置为 true 时，则会保存在验证集上的性能最好地模型</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">checkpoint_cb = keras.callbacks.ModelCheckpoint(<span class="string">&quot;my_keras_model.h5&quot;</span>,</span><br><span class="line">                                                save_best_only=<span class="literal">True</span>)</span><br><span class="line">early_stopping_cb = keras.callbacks.EarlyStopping(patience=<span class="number">10</span>,</span><br><span class="line">                                                  restore_best_weights=<span class="literal">True</span>)</span><br><span class="line">history = model.fit(X_train, y_train, epochs=<span class="number">10</span>,</span><br><span class="line">                    validation_data=(X_valid, y_valid),</span><br><span class="line">                    callbacks=[checkpoint_cb, early_stopping_cb])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>自定义（可参见其他文章，如《Python 深度学习》）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PrintValTrainRatioCallback</span>(<span class="params">keras.callbacks.Callback</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">on_epoch_end</span>(<span class="params">self, epoch, logs</span>):</span></span><br><span class="line">        print(<span class="string">&quot;\nval/train: &#123;:.2f&#125;&quot;</span>.<span class="built_in">format</span>(logs[<span class="string">&quot;val_loss&quot;</span>] / logs[<span class="string">&quot;loss&quot;</span>]))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="TensorBoard-可视化"><a href="#TensorBoard-可视化" class="headerlink" title="TensorBoard 可视化"></a>TensorBoard 可视化</h4><ul>
+<li><h3 id="微调超参数"><a href="#微调超参数" class="headerlink" title="微调超参数"></a>微调超参数</h3></li>
+</ul>
+<h4 id="隐藏层数目"><a href="#隐藏层数目" class="headerlink" title="隐藏层数目"></a>隐藏层数目</h4><h4 id="隐藏层神经元数目"><a href="#隐藏层神经元数目" class="headerlink" title="隐藏层神经元数目"></a>隐藏层神经元数目</h4><h4 id="学习率，batch-size等"><a href="#学习率，batch-size等" class="headerlink" title="学习率，batch size等"></a>学习率，batch size等</h4><h2 id="训练-DNN"><a href="#训练-DNN" class="headerlink" title="训练 DNN"></a>训练 DNN</h2><h2 id="用-TensorFlow-训练"><a href="#用-TensorFlow-训练" class="headerlink" title="用 TensorFlow 训练"></a>用 TensorFlow 训练</h2><h2 id="加载和预处理数据"><a href="#加载和预处理数据" class="headerlink" title="加载和预处理数据"></a>加载和预处理数据</h2><h2 id="使用-CNN"><a href="#使用-CNN" class="headerlink" title="使用 CNN"></a>使用 CNN</h2>
     </div>
 
     
@@ -590,7 +683,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction-to-Artificial-Neural-Networks-with-Keras"><span class="nav-number">1.</span> <span class="nav-text">Introduction to Artificial Neural Networks with Keras</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83%E5%88%B0%E4%BA%BA%E5%B7%A5%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.</span> <span class="nav-text">从生物神经元到人工神经元</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.1.</span> <span class="nav-text">生物神经元</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E9%80%BB%E8%BE%91%E8%AE%A1%E7%AE%97"><span class="nav-number">1.1.2.</span> <span class="nav-text">神经元逻辑计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E5%99%A8"><span class="nav-number">1.1.3.</span> <span class="nav-text">感知器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E5%B1%82%E6%84%9F%E7%9F%A5%E5%99%A8%E5%92%8C%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">1.1.4.</span> <span class="nav-text">多层感知器和反向传播</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%9B%9E%E5%BD%92"><span class="nav-number">1.1.5.</span> <span class="nav-text">MLP 回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%88%86%E7%B1%BB"><span class="nav-number">1.1.6.</span> <span class="nav-text">MLP 分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8-Keras-%E5%AE%9E%E7%8E%B0-MLP"><span class="nav-number">1.2.</span> <span class="nav-text">利用 Keras 实现 MLP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-tf-2-0-%E5%B9%B6%E6%BF%80%E6%B4%BB"><span class="nav-number">1.2.1.</span> <span class="nav-text">安装 tf 2.0 并激活</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential-API-%E5%AE%9E%E7%8E%B0%E5%9B%BE%E5%83%8F%E5%88%86%E7%B1%BB"><span class="nav-number">1.2.2.</span> <span class="nav-text">Sequential API 实现图像分类</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83-DNN"><span class="nav-number">2.</span> <span class="nav-text">训练 DNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8-TensorFlow-%E8%AE%AD%E7%BB%83"><span class="nav-number">3.</span> <span class="nav-text">用 TensorFlow 训练</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">4.</span> <span class="nav-text">加载和预处理数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-CNN"><span class="nav-number">5.</span> <span class="nav-text">使用 CNN</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction-to-Artificial-Neural-Networks-with-Keras"><span class="nav-number">1.</span> <span class="nav-text">Introduction to Artificial Neural Networks with Keras</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83%E5%88%B0%E4%BA%BA%E5%B7%A5%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.</span> <span class="nav-text">从生物神经元到人工神经元</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%9F%E7%89%A9%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="nav-number">1.1.1.</span> <span class="nav-text">生物神经元</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E9%80%BB%E8%BE%91%E8%AE%A1%E7%AE%97"><span class="nav-number">1.1.2.</span> <span class="nav-text">神经元逻辑计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E5%99%A8"><span class="nav-number">1.1.3.</span> <span class="nav-text">感知器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E5%B1%82%E6%84%9F%E7%9F%A5%E5%99%A8%E5%92%8C%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">1.1.4.</span> <span class="nav-text">多层感知器和反向传播</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%9B%9E%E5%BD%92"><span class="nav-number">1.1.5.</span> <span class="nav-text">MLP 回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MLP-%E5%88%86%E7%B1%BB"><span class="nav-number">1.1.6.</span> <span class="nav-text">MLP 分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8-Keras-%E5%AE%9E%E7%8E%B0-MLP"><span class="nav-number">1.2.</span> <span class="nav-text">利用 Keras 实现 MLP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-tf-2-0-%E5%B9%B6%E6%BF%80%E6%B4%BB"><span class="nav-number">1.2.1.</span> <span class="nav-text">安装 tf 2.0 并激活</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential-API-%E5%AE%9E%E7%8E%B0%E5%9B%BE%E5%83%8F%E5%88%86%E7%B1%BB"><span class="nav-number">1.2.2.</span> <span class="nav-text">Sequential API 实现图像分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential-API-%E5%AE%9E%E7%8E%B0%E5%9B%9E%E5%BD%92"><span class="nav-number">1.2.3.</span> <span class="nav-text">Sequential API 实现回归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-API-%E5%AE%9E%E7%8E%B0%E5%A4%8D%E6%9D%82%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.4.</span> <span class="nav-text">函数 API 实现复杂模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Subclassing-API-%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.5.</span> <span class="nav-text">Subclassing API 实现动态模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%9D%E5%AD%98%E4%B8%8E%E6%81%A2%E5%A4%8D%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.6.</span> <span class="nav-text">保存与恢复模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E8%B0%83"><span class="nav-number">1.2.7.</span> <span class="nav-text">回调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorBoard-%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="nav-number">1.2.8.</span> <span class="nav-text">TensorBoard 可视化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AE%E8%B0%83%E8%B6%85%E5%8F%82%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">微调超参数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%B1%82%E6%95%B0%E7%9B%AE"><span class="nav-number">1.3.1.</span> <span class="nav-text">隐藏层数目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%B1%82%E7%A5%9E%E7%BB%8F%E5%85%83%E6%95%B0%E7%9B%AE"><span class="nav-number">1.3.2.</span> <span class="nav-text">隐藏层神经元数目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E7%8E%87%EF%BC%8Cbatch-size%E7%AD%89"><span class="nav-number">1.3.3.</span> <span class="nav-text">学习率，batch size等</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83-DNN"><span class="nav-number">2.</span> <span class="nav-text">训练 DNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8-TensorFlow-%E8%AE%AD%E7%BB%83"><span class="nav-number">3.</span> <span class="nav-text">用 TensorFlow 训练</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">4.</span> <span class="nav-text">加载和预处理数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-CNN"><span class="nav-number">5.</span> <span class="nav-text">使用 CNN</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -697,12 +790,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">369k</span>
+    <span title="站点总字数">374k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5:36</span>
+    <span title="站点阅读时长">5:40</span>
 </div>
 
         
