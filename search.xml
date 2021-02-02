@@ -11882,7 +11882,192 @@ def a_function_requiring_decoration():
 </ul>
 </li>
 </ul>
-<h3 id="复用预训练的层"><a href="#复用预训练的层" class="headerlink" title="复用预训练的层"></a>复用预训练的层</h3><h4 id="迁移学习"><a href="#迁移学习" class="headerlink" title="迁移学习"></a>迁移学习</h4><h4 id="无监督预训练"><a href="#无监督预训练" class="headerlink" title="无监督预训练"></a>无监督预训练</h4><h4 id="辅助任务上预训练"><a href="#辅助任务上预训练" class="headerlink" title="辅助任务上预训练"></a>辅助任务上预训练</h4><h3 id="更快的优化器"><a href="#更快的优化器" class="headerlink" title="更快的优化器"></a>更快的优化器</h3><h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3>]]></content>
+<h3 id="复用预训练的层"><a href="#复用预训练的层" class="headerlink" title="复用预训练的层"></a>复用预训练的层</h3><ul>
+<li>原始模型的输出层通常应该被替换，因为它很可能对新任务一点用都没有</li>
+<li>原始模型的上层隐藏层不太可能像下层那样有用，因为对新任务最有用的高层特征可能与对原始任务最有用的特征有显著不同</li>
+<li>首先尝试冻结所有重用的层，然后训练自己模型，看看它如何执行；尝试解冻一两个顶级隐藏层，看看性能是否有所提高</li>
+<li>如果几乎没有训练数据，尝试删除顶部隐藏层，然后再次冻结所有剩余的隐藏层，迭代，直到找到合适的层数来重用</li>
+<li>如果有大量的训练数据，可以尝试替换顶部的隐藏层，甚至添加更多的隐藏层</li>
+</ul>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210201195121262.png" alt="image-20210201195121262" style="zoom:80%;">
+
+<h4 id="迁移学习"><a href="#迁移学习" class="headerlink" title="迁移学习"></a>迁移学习</h4><ul>
+<li><p>举例：假设 fashion-MNIST 数据集只包含除凉鞋和衬衫之外的8个类别，有人在该集合上构建并训练了一个 Keras 模型 A；现在想训练一个二分类器 B（正=衬衫，负=凉鞋）；数据集非常小</p>
+</li>
+<li><p>加载模型 A，并基于模型 A 创建一个新模型</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model_A = keras.models.load_model(<span class="string">&quot;my_model_A.h5&quot;</span>)</span><br><span class="line">model_B_on_A = keras.models.Sequential(model_A.layers[:<span class="number">-1</span>])</span><br><span class="line">model_B_on_A.add(keras.layers.Dense(<span class="number">1</span>, activation=<span class="string">&quot;sigmoid&quot;</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>当训练 model_B_on_A 时，也会影响 model_A，如果想避免这种情况，需要先克隆 model_A</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 克隆模型</span></span><br><span class="line">model_A_clone = keras.models.clone_model(model_A)</span><br><span class="line">model_A_clone.set_weights(model_A.get_weights())</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>冻结层</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> layer <span class="keyword">in</span> model_B_on_A.layers[:<span class="number">-1</span>]:</span><br><span class="line">    layer.trainable = <span class="literal">False</span></span><br><span class="line">model_B_on_A.<span class="built_in">compile</span>(loss=<span class="string">&quot;binary_crossentropy&quot;</span>, optimizer=<span class="string">&quot;sgd&quot;</span>,</span><br><span class="line">                     metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>训练数个 epoch 后，解冻并继续训练（通常需要降低学习率）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">history = model_B_on_A.fit(X_train_B, y_train_B, epochs=<span class="number">4</span>,</span><br><span class="line">                           validation_data=(X_valid_B, y_valid_B))</span><br><span class="line"><span class="keyword">for</span> layer <span class="keyword">in</span> model_B_on_A.layers[:<span class="number">-1</span>]:</span><br><span class="line">    layer.trainable = <span class="literal">True</span></span><br><span class="line">optimizer = keras.optimizers.SGD(lr=<span class="number">1e-4</span>) <span class="comment"># the default lr is 1e-3</span></span><br><span class="line">model_B_on_A.<span class="built_in">compile</span>(loss=<span class="string">&quot;binary_crossentropy&quot;</span>, optimizer=optimizer,</span><br><span class="line">                     metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br><span class="line">history = model_B_on_A.fit(X_train_B, y_train_B, epochs=<span class="number">16</span>,</span><br><span class="line">                           validation_data=(X_valid_B, y_valid_B))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>转移学习在小而密集的网络中效果不太好，在深度卷积神经网络中效果最好</p>
+</li>
+</ul>
+<h4 id="无监督预训练"><a href="#无监督预训练" class="headerlink" title="无监督预训练"></a>无监督预训练</h4><img src="/2021/02/01/Hands_on_ML_1/image-20210201195306144.png" alt="image-20210201195306144" style="zoom:67%;">
+
+<ul>
+<li>场景：处理一个复杂的任务，但没有多少标记的训练数据，也找不到一个为类似任务训练的模型</li>
+<li>如果可以收集大量未标记的训练数据，可以尝试使用无监督的特征检测器算法，如限制性玻尔兹曼机（RBMs）或自动编码器（现在通常使用后者）</li>
+<li>每个正在训练的层都是在先前训练的层的输出上训练的</li>
+<li>一旦所有层都以这种方式进行了训练，就可以为目标任务添加输出层，并使用监督学习(即使用标记的训练示例)来微调最终的网络</li>
+</ul>
+<h4 id="辅助任务上预训练"><a href="#辅助任务上预训练" class="headerlink" title="辅助任务上预训练"></a>辅助任务上预训练</h4><ul>
+<li>场景：没有太多标记的训练数据</li>
+<li>在辅助任务上训练第一个神经网络，以轻松获得或生成标记的训练数据，然后为实际任务重用该网络的较低层</li>
+<li>如果想建立一个识别人脸的系统，可能只有每个人的几张照片<ul>
+<li>在网上收集大量随机人物的照片，并训练第一个神经网络来检测两张不同的照片是否表示同一个人</li>
+<li>重用它的底层将允许你使用很少的训练数据，来训练好的人脸分类器</li>
+</ul>
+</li>
+<li>对 NLP，可以下载数百万个文本文档，并从中自动生成标记数据<ul>
+<li>例如，可以随机屏蔽掉一些单词，训练一个模型来预测缺少的单词是什么</li>
+<li>如果能训练一个模型在这个任务上达到良好的性能，那么它就已经对语言有了相当多的了解，可以在实际任务中复用</li>
+</ul>
+</li>
+</ul>
+<h3 id="更快的优化器"><a href="#更快的优化器" class="headerlink" title="更快的优化器"></a>更快的优化器</h3><p>加速训练的方法：</p>
+<ul>
+<li>对连接权重应用良好的初始化策略</li>
+<li>使用良好的激活函数</li>
+<li>使用批处理规范化</li>
+<li>重用部分预训练网络</li>
+<li>使用更好的优化器</li>
+</ul>
+<h4 id="动量优化"><a href="#动量优化" class="headerlink" title="动量优化"></a>动量优化</h4><ul>
+<li><p>思想：保龄球在光滑的表面上沿着一个缓坡滚下，开始时很慢，但它会很快获得动量，直到它最终达到极限速度</p>
+</li>
+<li><p>原始的梯度下降不关心早期的梯度是什么，因此如果局部梯度很小，参数更迭会很慢</p>
+</li>
+<li><p>每次迭代中，动量优化从动量向量 m 中减去局部梯度（乘以学习速率），并通过简单地添加这个动量向量来更新权重</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210202125222117.png" alt="image-20210202125222117"></p>
+</li>
+<li><p>为了模拟某种摩擦机制并防止动量增长过大，该算法引入了一个新的超参数$\beta$，设置在 0（高摩擦）和 1（无摩擦）之间，一般为 0.9</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">optimizer = keras.optimizers.SGD(lr=<span class="number">0.001</span>, momentum=<span class="number">0.9</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>缺点在于增加了另一个需要调整的超参数，但经验上取值为 0.9 能获得足够好的效果</p>
+</li>
+</ul>
+<h4 id="Nesterov-Accelerated-Gradient"><a href="#Nesterov-Accelerated-Gradient" class="headerlink" title="Nesterov Accelerated Gradient"></a>Nesterov Accelerated Gradient</h4><ul>
+<li><p>对上面方法的优化：计算损失函数的梯度时，不在当前的位置，而是在动量方向的前方</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210202125650631.png" alt="image-20210202125650631"></p>
+</li>
+<li><p>思想：一般来说动量矢量会指向正确的方向（即朝向最佳值），所以使用在那个方向上稍微远一点测量的梯度会比使用在原始位置的梯度稍微精确一些</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">optimizer = keras.optimizers.SGD(lr=<span class="number">0.001</span>, momentum=<span class="number">0.9</span>, nesterov=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<img src="/2021/02/01/Hands_on_ML_1/image-20210202125934814.png" alt="image-20210202125934814" style="zoom:67%;">
+
+</li>
+</ul>
+<h4 id="AdaGrad"><a href="#AdaGrad" class="headerlink" title="AdaGrad"></a>AdaGrad</h4><ul>
+<li><p>思想：梯度下降从最陡峭的坡度开始，然后缓慢地沿着谷底下降；算法需要能及早检测到这一点，并纠正其方向，使其更多地指向全局最优</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210202130127050.png" alt="image-20210202130127050"></p>
+<ul>
+<li>梯度的平方累加到向量 s 中（梯度需要逐个元素相乘），如果损失函数沿第 i 维陡峭，则 s 的元素$s_i$将在每次迭代中变得越来越大</li>
+<li>$\epsilon$是一个平滑量，避免除以零</li>
+<li>按元素除</li>
+</ul>
+</li>
+<li><p>算法降低了学习速度，但是对于陡峭的维度，学习速度比坡度平缓的维度更快，有助于将结果更新更直接地指向全局最优，并且对学习率的调整更少</p>
+<img src="/2021/02/01/Hands_on_ML_1/image-20210202130532892.png" alt="image-20210202130532892" style="zoom:67%;">
+</li>
+<li><p>对于简单的二分类问题通常表现良好，但经常早停，因此不适合训练深度神经网络（对于线性回归等更简单的任务可能很有效）</p>
+</li>
+</ul>
+<h4 id="RMSProp"><a href="#RMSProp" class="headerlink" title="RMSProp"></a>RMSProp</h4><ul>
+<li><p>通过仅累加来自最近迭代的梯度（而不是自训练开始以来的所有梯度）来解决 AdaGrad 不会收敛到全局最优值</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210202130744388.png" alt="image-20210202130744388"></p>
+</li>
+<li><p>在第一步中使用指数衰减，超参数衰减速率$\beta$通常为 0.9</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">optimizer = keras.optimizers.RMSprop(lr=<span class="number">0.001</span>, rho=<span class="number">0.9</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在 Adam 优化出现之前，它一直是首选优化算法</p>
+</li>
+</ul>
+<h4 id="Adam-and-Nadam-Optimization"><a href="#Adam-and-Nadam-Optimization" class="headerlink" title="Adam and Nadam Optimization"></a>Adam and Nadam Optimization</h4><ul>
+<li><p>Adam 结合了动量优化和 RMSProp 的特点</p>
+<ul>
+<li><p>跟踪过去梯度的指数衰减平均值</p>
+</li>
+<li><p>跟踪过去平方梯度的指数衰减平均值</p>
+<p><img src="/2021/02/01/Hands_on_ML_1/image-20210202131418291.png" alt="image-20210202131418291"></p>
+</li>
+</ul>
+</li>
+<li><p>动量衰减超参数$\beta1$通常为 0.9，标度衰减超参数$\beta2$通常为 0.999，平滑项通常为很小的数$10^{-7}$</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">optimizer = keras.optimizers.Adam(lr=<span class="number">0.001</span>, beta_1=<span class="number">0.9</span>, beta_2=<span class="number">0.999</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Adam 是一种自适应学习率算法，对学习率超参数的调整要求更少</p>
+</li>
+<li><p>两种变体</p>
+<ul>
+<li>Adamax</li>
+<li>Nadam optimization</li>
+</ul>
+</li>
+<li><p>如果性能不好，可以尝试 NAG，数据集可能对自适应梯度“过敏”</p>
+</li>
+</ul>
+<h4 id="学习率调度"><a href="#学习率调度" class="headerlink" title="学习率调度"></a>学习率调度</h4><ul>
+<li><p>从高学习率开始，一旦快速下降停止就降低它</p>
+</li>
+<li><p>具体策略为：</p>
+<ul>
+<li>Power scheduling<ul>
+<li>学习速率设置为迭代次数 t 的函数 $\eta(t)=\eta_0/(1+t/k)^c$</li>
+<li>指数 c 通常为 1，k 为超参数，经过 k 此迭代后，学习率下降为初始学习率的一半</li>
+</ul>
+</li>
+<li>Exponential scheduling<ul>
+<li>$\eta(t)=\eta_00.1^{t/s}$</li>
+<li>每 s 次迭代会下降 10 倍学习率</li>
+</ul>
+</li>
+<li>Piecewise constant scheduling<ul>
+<li>一些 epoch (5)用较大的学习率，一些 epoch (50)用较小的学习率</li>
+</ul>
+</li>
+<li>Performance scheduling<ul>
+<li>每 N 次迭代测量一次验证误差</li>
+<li>当误差停止下降时，学习率降低$\lambda$倍</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Keras 实现 Power scheduling：只需要设置超参数<code>decay</code>（k 的倒数），keras 默认指数为 1</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">optimizer = keras.optimizers.SGD(lr=<span class="number">0.01</span>, decay=<span class="number">1e-4</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Keras 实现 Exponential scheduling：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">ef exponential_decay(lr0, s):</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">exponential_decay_fn</span>(<span class="params">epoch</span>):</span></span><br><span class="line">        <span class="keyword">return</span> lr0 * <span class="number">0.1</span>**(epoch / s)</span><br><span class="line">    <span class="keyword">return</span> exponential_decay_fn</span><br><span class="line">exponential_decay_fn = exponential_decay(lr0=<span class="number">0.01</span>, s=<span class="number">20</span>)</span><br><span class="line"></span><br><span class="line">lr_scheduler = keras.callbacks.LearningRateScheduler(exponential_decay_fn)</span><br><span class="line">history = model.fit(X_train_scaled, y_train, [...], callbacks=[lr_scheduler])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>LearningRateScheduler 将在 epoch 开始时更新优化器的<code>learning_rate</code>属性</li>
+<li>保存模型时，epoch 不会被保存，因此每次调用<code>fit()</code>都会被重置为 0，因此可以手动设置<code>fit()</code>的<code>initial_epoch</code>参数</li>
+</ul>
+</li>
+<li><p>Keras 实现 Piecewise constant scheduling：（如果需要，可以定义一个更通用的函数，并创建一个回调同上）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">ef piecewise_constant_fn(epoch):</span><br><span class="line">    <span class="keyword">if</span> epoch &lt; <span class="number">5</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0.01</span></span><br><span class="line">    <span class="keyword">elif</span> epoch &lt; <span class="number">15</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0.005</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0.001</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Keras 实现 performance scheduling：使用 ReduceLROnPlateau 回调</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">lr_scheduler = keras.callbacks.ReduceLROnPlateau(factor=<span class="number">0.5</span>, patience=<span class="number">5</span>)</span><br><span class="line"><span class="comment"># 只要连续5个epoch内最佳验证损失没有改善，它就会将学习率乘以0.5</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><h4 id="ℓ1-and-ℓ2-Regularization"><a href="#ℓ1-and-ℓ2-Regularization" class="headerlink" title="ℓ1 and ℓ2 Regularization"></a>ℓ1 and ℓ2 Regularization</h4><h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3><img src="/2021/02/01/Hands_on_ML_1/image-20210202123843270.png" alt="image-20210202123843270" style="zoom:80%;">
+
+<ul>
+<li>模型自正则化——添加 alpha dropout</li>
+<li>模型不能自正则化——使用 ELU/添加BN/使用max-norm（$l_2$）正则化</li>
+<li>需要一个稀疏的模型——$l_1$正则化</li>
+<li>运行速度快——不用BN，改为 ReLU</li>
+<li>风险敏感——使用 MC Dropout 提高性能</li>
+</ul>
+]]></content>
       <categories>
         <category>深度学习</category>
       </categories>
