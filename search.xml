@@ -12058,7 +12058,69 @@ def a_function_requiring_decoration():
 
 </li>
 </ul>
-<h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><h4 id="ℓ1-and-ℓ2-Regularization"><a href="#ℓ1-and-ℓ2-Regularization" class="headerlink" title="ℓ1 and ℓ2 Regularization"></a>ℓ1 and ℓ2 Regularization</h4><h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3><img src="/2021/02/01/Hands_on_ML_1/image-20210202123843270.png" alt="image-20210202123843270" style="zoom:80%;">
+<h3 id="通过正则化避免过拟合"><a href="#通过正则化避免过拟合" class="headerlink" title="通过正则化避免过拟合"></a>通过正则化避免过拟合</h3><p>已经提过的正则化技术：提前停止，BN</p>
+<h4 id="ℓ1-and-ℓ2-Regularization"><a href="#ℓ1-and-ℓ2-Regularization" class="headerlink" title="ℓ1 and ℓ2 Regularization"></a>ℓ1 and ℓ2 Regularization</h4><ul>
+<li><p>用于约束神经网络的连接权重，而不是 bias</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">layer = keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;elu&quot;</span>,</span><br><span class="line">                           kernel_initializer=<span class="string">&quot;he_normal&quot;</span>,</span><br><span class="line">                           kernel_regularizer=keras.regularizers.l2(<span class="number">0.01</span>))</span><br><span class="line"><span class="comment"># keras.regularizers.l1() 指定l1</span></span><br><span class="line"><span class="comment"># keras.regularizers.l1_l2() 指定两个值</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以使用<code>functools.partial()</code>：它允许为任何可调用的函数创建一个封装，带有一些默认的参数值</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> partial</span><br><span class="line">RegularizedDense = partial(keras.layers.Dense,</span><br><span class="line">                           activation=<span class="string">&quot;elu&quot;</span>,</span><br><span class="line">                           kernel_initializer=<span class="string">&quot;he_normal&quot;</span>,</span><br><span class="line">                           kernel_regularizer=keras.regularizers.l2(<span class="number">0.01</span>))</span><br><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    RegularizedDense(<span class="number">300</span>),</span><br><span class="line">    RegularizedDense(<span class="number">100</span>),</span><br><span class="line">    RegularizedDense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>,</span><br><span class="line">                     kernel_initializer=<span class="string">&quot;glorot_uniform&quot;</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="Dropout"><a href="#Dropout" class="headerlink" title="Dropout"></a>Dropout</h4><img src="/2021/02/01/Hands_on_ML_1/image-20210202140836394.png" alt="image-20210202140836394" style="zoom:67%;">
+
+<ul>
+<li><p>潜在逻辑：不能依靠任何一个神经元来执行任何关键任务；神经元必须学会与许多神经元合作，而不仅仅是少数几个；最终对输入的微小变化不太敏感</p>
+</li>
+<li><p>Keras 实现</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.Dropout(rate=<span class="number">0.2</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>),</span><br><span class="line">    keras.layers.Dropout(rate=<span class="number">0.2</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>),</span><br><span class="line">    keras.layers.Dropout(rate=<span class="number">0.2</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果观察到模型过拟合，可以增加 dropout</p>
+</li>
+<li><p>会显著降低收敛速度</p>
+</li>
+<li><p>常规的 dropout 会破坏自正则化（self-normalizing）</p>
+</li>
+</ul>
+<h4 id="Monte-Carlo-MC-Dropout"><a href="#Monte-Carlo-MC-Dropout" class="headerlink" title="Monte-Carlo (MC) Dropout"></a>Monte-Carlo (MC) Dropout</h4><ul>
+<li><p>提供对模型不确定性的度量</p>
+</li>
+<li><p>实现：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">with</span> keras.backend.learning_phase_scope(<span class="number">1</span>): <span class="comment"># force training mode = dropout on</span></span><br><span class="line">    y_probas = np.stack([model.predict(X_test_scaled)</span><br><span class="line">                         <span class="keyword">for</span> sample <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>)])</span><br><span class="line">y_proba = y_probas.mean(axis=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>首先强制开启训练模式（通过 with）</li>
+<li>在测试集预测 100 次后，叠加</li>
+<li>由于是训练模式，dropout 开启，每次预测都不同。如果测试集为10000个实例且分为10类，则得到数组 [100,10000,10]</li>
+<li>求平均，得到 [10000,10]——多次预测提供了一个蒙特卡洛估计</li>
+</ul>
+</li>
+<li><p>预测模式下，可能对一个样本的分类为 <code>[0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.01, 0.  , 0.99]</code>，但估计下，该样本结果为<code> [0.  , 0.  , 0.  , 0.  , 0.  , 0.22, 0.  , 0.16, 0.  , 0.62]</code>，说明该样本分类存在不确定性</p>
+</li>
+<li><p>如果模型包含其他层 ，如 BN 层，则不应该强制开启训练模式，而是用 MCDropout 类替换 dropout 层，强制参数<code>training</code>为真</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MCDropout</span>(<span class="params">keras.layers.Dropout</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>().call(inputs, training=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="Max-Norm-Regularization"><a href="#Max-Norm-Regularization" class="headerlink" title="Max-Norm Regularization"></a>Max-Norm Regularization</h4><ul>
+<li><p>对每个神经元，约束引入了权重，使得权重的$l_2$范数不大于一个超参数$r$</p>
+</li>
+<li><p>不会将正则化损失项添加到总损失函数中</p>
+</li>
+<li><p>减少$r$会增加正则化的数量，并有助于减少过拟合</p>
+</li>
+<li><p>Keras 实现：设置每个隐藏层的 kernel_constraint 参数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>,</span><br><span class="line">                   kernel_constraint=keras.constraints.max_norm(<span class="number">1.</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以定义自己的自定义约束函数，并作为参数传入</p>
+</li>
+<li><p>可以设置<code>bias_constraint</code>参数来设置 bias 的约束</p>
+</li>
+<li><p><code>max_norm()</code>有一个默认为0的轴参数，因为密集层通常为 [number of inputs, number of neurons]，此时最大范数约束将独立应用于每个神经元的权重向量；对于卷积层，需要设置为<code>axis=[0, 1, 2]</code></p>
+</li>
+</ul>
+<h3 id="Practical-Guidelines"><a href="#Practical-Guidelines" class="headerlink" title="Practical Guidelines"></a>Practical Guidelines</h3><img src="/2021/02/01/Hands_on_ML_1/image-20210202123843270.png" alt="image-20210202123843270" style="zoom:80%;">
 
 <ul>
 <li>模型自正则化——添加 alpha dropout</li>
