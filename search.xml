@@ -10599,9 +10599,9 @@ def a_function_requiring_decoration():
       </tags>
   </entry>
   <entry>
-    <title>Java核心技术卷I （2）</title>
+    <title>Java核心技术卷I （2）继承与接口</title>
     <url>/2021/02/02/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-2/</url>
-    <content><![CDATA[<p>《Java核心技术卷I》阅读笔记</p>
+    <content><![CDATA[<p>《Java核心技术卷I》阅读笔记 ——继承与接口</p>
 <a id="more"></a>
 
 <h2 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h2><h3 id="类、超类、子类"><a href="#类、超类、子类" class="headerlink" title="类、超类、子类"></a>类、超类、子类</h3><p>关系“is-a”是继承的一个明显特征</p>
@@ -10755,7 +10755,52 @@ def a_function_requiring_decoration():
 <li><p>println 方法会直接调用 toString</p>
 </li>
 </ul>
-<h3 id="泛型数组列表"><a href="#泛型数组列表" class="headerlink" title="泛型数组列表"></a>泛型数组列表</h3><h4 id="访问数组列表元素"><a href="#访问数组列表元素" class="headerlink" title="访问数组列表元素"></a>访问数组列表元素</h4><h4 id="类型化与原始数组列表兼容性"><a href="#类型化与原始数组列表兼容性" class="headerlink" title="类型化与原始数组列表兼容性"></a>类型化与原始数组列表兼容性</h4><h3 id="对象包装器与自动装箱"><a href="#对象包装器与自动装箱" class="headerlink" title="对象包装器与自动装箱"></a>对象包装器与自动装箱</h3><h3 id="方法参数数量可变"><a href="#方法参数数量可变" class="headerlink" title="方法参数数量可变"></a>方法参数数量可变</h3><h3 id="枚举类"><a href="#枚举类" class="headerlink" title="枚举类"></a>枚举类</h3><h3 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h3><h3 id="继承的设计"><a href="#继承的设计" class="headerlink" title="继承的设计"></a>继承的设计</h3><h2 id="接口、lambda表达式"><a href="#接口、lambda表达式" class="headerlink" title="接口、lambda表达式"></a>接口、lambda表达式</h2><h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><h3 id="接口示例"><a href="#接口示例" class="headerlink" title="接口示例"></a>接口示例</h3><h3 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h3><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3><h2 id="异常、断言"><a href="#异常、断言" class="headerlink" title="异常、断言"></a>异常、断言</h2>]]></content>
+<h3 id="泛型数组列表"><a href="#泛型数组列表" class="headerlink" title="泛型数组列表"></a>泛型数组列表</h3><ul>
+<li><p>Java 允许在运行时确定数组的大小 <code>Employee[] staff=new Employee[actualSize];</code></p>
+</li>
+<li><p>使用 Java 中 ArrayList 类——采用类型参数的泛型类，需要用一对尖括号将类名括起来加在后面</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;Employee&gt; staff = <span class="keyword">new</span> ArrayList();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用 add 将元素添加到数组列表</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">staff.add(<span class="keyword">new</span> Employee(<span class="string">&quot;Harry Hacker&quot;</span>,...));</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>如果调用 add 且内部数组已满，数组列表将自动地创建一个更大的数组，并将所有的对象从较小的数组中拷贝到较大的数组</p>
+</li>
+<li><p>可以在填充数组之前调用 ensureCapacity，分配一个内部数组并调用多次 add</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">staff.ensureCapacity(<span class="number">100</span>);</span><br><span class="line"><span class="comment">//或者</span></span><br><span class="line">ArrayList&lt;Employee&gt; staff = <span class="keyword">new</span> ArrayList(<span class="number">100</span>);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>完成初始化构造之后，数组列表不含有任何元素</p>
+</li>
+<li><p>staff.size() 返回 staff 数组列表的当前元素数量</p>
+</li>
+<li><p>确认数组列表的大小不再发生变化，调用 trimToSize，存储区域的大小调整为当前元素数量所需要的存储空间数目，回收多余空间</p>
+</li>
+</ul>
+<h4 id="访问数组列表元素"><a href="#访问数组列表元素" class="headerlink" title="访问数组列表元素"></a>访问数组列表元素</h4><ul>
+<li><p>增加了访问元素语法的复杂度——使用 get 和 set 实现访问或改变数组元素，不能用 [ ]</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">staff.set(i, harry); <span class="comment">//a[i] = harry;</span></span><br><span class="line">Employee e = staff.get(i); <span class="comment">//Employee e = a[i];</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>只有 i 小于或等于数组列表的大小（不是 capicity！）时，才能调用 set</p>
+</li>
+<li><p>删除元素：remove，返回被删除的元素，参数为被删除元素的下标</p>
+</li>
+</ul>
+<h4 id="类型化与原始数组列表兼容性"><a href="#类型化与原始数组列表兼容性" class="headerlink" title="类型化与原始数组列表兼容性"></a>类型化与原始数组列表兼容性</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EmployeeDB</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(ArrayList list)</span> </span>&#123;...&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> ArrayList <span class="title">find</span><span class="params">(String query)</span> </span>&#123;...&#125;</span><br><span class="line">&#125;</span><br><span class="line">ArrayList&lt;Employee&gt; staff = . . .;</span><br><span class="line">employeeDB.update(staff);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>以上并不安全（数组列表元素可能不是 Employee 类型），但不会给出警告</p>
+</li>
+<li><p>将一个原始 ArrayList 赋给一个类型化 ArrayList 会得到一个警告 <code>ArrayList&lt;Employee&gt; result = employeeDB.find(query);</code>，此时使用类型转换并不能避免出现警告</p>
+</li>
+<li><p>使用标注来标记这个变量能接受类型转换</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span> ArrayList&lt;Employee&gt; result=</span><br><span class="line">	(ArrayList&lt;Employee&gt;) employeeDB.find(query);<span class="comment">//yields another warning</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="对象包装器与自动装箱"><a href="#对象包装器与自动装箱" class="headerlink" title="对象包装器与自动装箱"></a>对象包装器与自动装箱</h3><h3 id="方法参数数量可变"><a href="#方法参数数量可变" class="headerlink" title="方法参数数量可变"></a>方法参数数量可变</h3><h3 id="枚举类"><a href="#枚举类" class="headerlink" title="枚举类"></a>枚举类</h3><h3 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h3><h3 id="继承的设计"><a href="#继承的设计" class="headerlink" title="继承的设计"></a>继承的设计</h3><h2 id="接口、lambda表达式"><a href="#接口、lambda表达式" class="headerlink" title="接口、lambda表达式"></a>接口、lambda表达式</h2><h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><h3 id="接口示例"><a href="#接口示例" class="headerlink" title="接口示例"></a>接口示例</h3><h3 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h3><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3><h2 id="异常、断言"><a href="#异常、断言" class="headerlink" title="异常、断言"></a>异常、断言</h2>]]></content>
       <categories>
         <category>编程语言</category>
       </categories>
