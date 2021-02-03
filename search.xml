@@ -10800,7 +10800,114 @@ def a_function_requiring_decoration():
 
 </li>
 </ul>
-<h3 id="对象包装器与自动装箱"><a href="#对象包装器与自动装箱" class="headerlink" title="对象包装器与自动装箱"></a>对象包装器与自动装箱</h3><h3 id="方法参数数量可变"><a href="#方法参数数量可变" class="headerlink" title="方法参数数量可变"></a>方法参数数量可变</h3><h3 id="枚举类"><a href="#枚举类" class="headerlink" title="枚举类"></a>枚举类</h3><h3 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h3><h3 id="继承的设计"><a href="#继承的设计" class="headerlink" title="继承的设计"></a>继承的设计</h3><h2 id="接口、lambda表达式"><a href="#接口、lambda表达式" class="headerlink" title="接口、lambda表达式"></a>接口、lambda表达式</h2><h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><h3 id="接口示例"><a href="#接口示例" class="headerlink" title="接口示例"></a>接口示例</h3><h3 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h3><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3><h2 id="异常、断言"><a href="#异常、断言" class="headerlink" title="异常、断言"></a>异常、断言</h2>]]></content>
+<h3 id="对象包装器与自动装箱"><a href="#对象包装器与自动装箱" class="headerlink" title="对象包装器与自动装箱"></a>对象包装器与自动装箱</h3><ul>
+<li>将 int 这样的基本类型转换为对象——所有的基本类型都冇一个与之对应的类，即包装器（ wrapper）</li>
+<li>Integer、Long、Float、Double、Short、Byte、Character、Void 和 Boolean</li>
+<li>一旦构造了包装器，就不允许更改包装在其中的值</li>
+<li>不能定义包装器的子类</li>
+<li>定义一个整型数组列表：<code>ArrayList&lt;Integer&gt; list = new ArrayList&lt;&gt;();</code></li>
+<li><code>list.add(3);</code>将自动变换为<code>list.add(Integer.value0f(3));</code>，即自动装箱；而将 Integer 对象赋给 int 时，会自动拆箱<code>int n = list.get(i);</code>等价于<code>int n = list.get(i).intValue();</code></li>
+<li>算术表达式中也能够自动地装箱和拆箱</li>
+<li>如果在一个条件表达式中混合使用 Integer 和 Double类型，则会先拆箱、提升类型、再装箱</li>
+<li>装箱和拆箱是编译器认可的，而不是虚拟机</li>
+<li>数字字符串转为数值：<code>int x = Integer.parselnt(s);</code></li>
+</ul>
+<h3 id="方法参数数量可变"><a href="#方法参数数量可变" class="headerlink" title="方法参数数量可变"></a>方法参数数量可变</h3><ul>
+<li><p>printf 方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrintStream</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> PrintStream <span class="title">printf</span><span class="params">(String fmt, Object... args)</span> </span>&#123; <span class="keyword">return</span> format(fmt, args); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>省略号表明这个方法可以接收任意数量的对象</p>
+</li>
+<li><p>方法接收两个参数，一个是格式字符串，另一个是Object[ ] 数组 args</p>
+</li>
+<li><p>类似的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">max</span><span class="params">(<span class="keyword">double</span>... values)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">double</span> largest = Double.NEGATIVE_INFINITY;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">double</span> v : values) </span><br><span class="line">        <span class="keyword">if</span> (v &gt; largest) </span><br><span class="line">            largest = v;</span><br><span class="line">	<span class="keyword">return</span> largest;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">double</span> m = max(<span class="number">3.1</span>, <span class="number">40.4</span>, -<span class="number">5</span>);</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="枚举类"><a href="#枚举类" class="headerlink" title="枚举类"></a>枚举类</h3><ul>
+<li><code>public enum Size &#123; SMALL, MEDIUM, LARGE, EXTRA_LARGE&#125;;</code>定义的类型是一个类，刚好有 4 个实例</li>
+<li>比较两个枚举类型的值时，可以直接用 ==</li>
+<li>可以在枚举类型中添加一些构造器、方法和域</li>
+</ul>
+<h3 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h3><p>反射库（reflection library）提供了一个非常丰富且精心设计的工具集；能够分析类能力的程序称为反射</p>
+<h4 id="Class-类"><a href="#Class-类" class="headerlink" title="Class 类"></a>Class 类</h4><ul>
+<li><p>Java 运行时系统始终为所有的对象维护一个被称为运行时的类型标识，这个信息跟踪着每个对象所属的类。保存这些信息的类被称为 Class</p>
+</li>
+<li><p>Object 类中的`getClass()将会返回一个 Class 类型的实例；最常用的 Class方法是 getName</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">System.out.println(e.getClass().getName() + <span class="string">&quot; &quot;</span> + e.getName());</span><br><span class="line"><span class="comment">//打印Employee Harry Hacker</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果类在一个包里，包的名字也作为类名的一部分</p>
+</li>
+<li><p>调用静态方法 forName 获得类名对应的 Class 对象——只有在 className 是类名或接口名时才能够执行</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String className = <span class="string">&quot;java.util.Random&quot;</span>;</span><br><span class="line">Class cl = Class.forName(className);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>T 是任意的 Java 类型，T.class 代表匹配的类对象</p>
+</li>
+</ul>
+<h4 id="捕获异常"><a href="#捕获异常" class="headerlink" title="捕获异常"></a>捕获异常</h4><ul>
+<li><p>异常有两种类型：未检查异常和已检查异常；对于已检查异常，编译器将会检查是否提供了处理器</p>
+</li>
+<li><p>将可能抛出已检査异常的一个或多个方法调用代码放在 try 块中，在 catch子句中提供处理器代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span></span><br><span class="line">&#123;</span><br><span class="line">	statements that might <span class="keyword">throw</span> exceptions</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">catch</span> (Exception e)</span><br><span class="line">&#123;</span><br><span class="line">	handler action</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="利用反射分析类的能力"><a href="#利用反射分析类的能力" class="headerlink" title="利用反射分析类的能力"></a>利用反射分析类的能力</h4><ul>
+<li>java.lang.reflect 包中三个类 Field、Method 和 Constructor 分别用于描述类的域、方法和构造器</li>
+<li>Field：<ul>
+<li>getName 方法</li>
+<li>getType 方法</li>
+<li>getModifiers 方法：返回整数值，用不同的位开关描述 public 和 static 这样的修饰符使用状况</li>
+</ul>
+</li>
+<li>Method：<ul>
+<li>getName 方法</li>
+<li>报告参数类型</li>
+<li>报告返回类型</li>
+<li>getModifiers 方法：返回整数值，用不同的位开关描述 public 和 static 这样的修饰符使用状况</li>
+</ul>
+</li>
+<li>Constructor：<ul>
+<li>getName 方法</li>
+<li>报告参数类型</li>
+<li>getModifiers 方法：返回整数值，用不同的位开关描述 public 和 static 这样的修饰符使用状况</li>
+</ul>
+</li>
+<li>利用 java.lang.reflect 包 Modifier 类的静态方法分析 getModifiers 返回的整型数值</li>
+<li>Class 类中的 getFields、getMethods 和 getConstructors 方法将分别返回类提供的 public 域、方法和构造器数组，包括超类公有成员</li>
+<li>Class 类 getDeclareFields、getDeclareMethods 和 getDeclaredConstructors 方法将分别返回类中声明的全部域、方法和构<br>造器，其中包括私有和受保护成员，但不包括超类的成员</li>
+</ul>
+<h4 id="使用反射分析对象"><a href="#使用反射分析对象" class="headerlink" title="使用反射分析对象"></a>使用反射分析对象</h4><ul>
+<li>查看对象域的关键方法是 Field 类中的 get 方法</li>
+<li>略</li>
+</ul>
+<h4 id="使用反射编写泛型数组"><a href="#使用反射编写泛型数组" class="headerlink" title="使用反射编写泛型数组"></a>使用反射编写泛型数组</h4><ul>
+<li>略</li>
+</ul>
+<h4 id="调用任意方法"><a href="#调用任意方法" class="headerlink" title="调用任意方法"></a>调用任意方法</h4><ul>
+<li>略</li>
+</ul>
+<h3 id="继承的设计"><a href="#继承的设计" class="headerlink" title="继承的设计"></a>继承的设计</h3><ul>
+<li><p>将公共操作和域放在超类</p>
+</li>
+<li><p>不要使用受保护的域</p>
+</li>
+<li><p>使用继承实现“is-a”关系</p>
+</li>
+<li><p>除非所有继承的方法都有意义，否则不要使用继承</p>
+</li>
+<li><p>覆盖方法时，不要改变预期的行为</p>
+</li>
+<li><p>使用多态，而非类型信息</p>
+<figure class="highlight lisp"><table><tr><td class="code"><pre><span class="line">if (<span class="name">x</span> is of type1)</span><br><span class="line">	action1(<span class="name">x</span>)</span><br><span class="line">elseif (<span class="name">x</span> is of type2)</span><br><span class="line">	action2(<span class="name">x</span>)<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>对于上面这种形式的代码，考虑使用多态性</p>
+</li>
+<li><p>不要过多地使用反射</p>
+</li>
+</ul>
+<h2 id="接口、lambda表达式"><a href="#接口、lambda表达式" class="headerlink" title="接口、lambda表达式"></a>接口、lambda表达式</h2><h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><h3 id="接口示例"><a href="#接口示例" class="headerlink" title="接口示例"></a>接口示例</h3><h3 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h3><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3><h2 id="异常、断言"><a href="#异常、断言" class="headerlink" title="异常、断言"></a>异常、断言</h2>]]></content>
       <categories>
         <category>编程语言</category>
       </categories>
