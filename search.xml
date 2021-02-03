@@ -12334,4 +12334,304 @@ def a_function_requiring_decoration():
         <tag>TensorFlow</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Hands-on Machine Learning（2）</title>
+    <url>/2021/02/03/Hands-on-ML-2/</url>
+    <content><![CDATA[<p>《Hands-on Machine Learning》第二部分阅读笔记（2）用 tf 自定义模型训练网络</p>
+<a id="more"></a>
+
+<h2 id="Custom-Models-and-Training-with-TensorFlow"><a href="#Custom-Models-and-Training-with-TensorFlow" class="headerlink" title="Custom Models and Training with TensorFlow"></a>Custom Models and Training with TensorFlow</h2><h3 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h3><ul>
+<li><p>核心类似 Numpy</p>
+</li>
+<li><p>支持分布式与 GPU 计算</p>
+</li>
+<li><p>从 Python 函数中提取计算图，并优化</p>
+</li>
+<li><p>计算图可以导出为可移植格式</p>
+</li>
+<li><p>提供了一些优化器</p>
+</li>
+<li><p>数据加载（tf.data）、预处理（tf.io）、图像处理（tf.image）、信号处理（tf.signal）</p>
+<img src="/2021/02/03/Hands-on-ML-2/image-20210203122841444.png" alt="image-20210203122841444" style="zoom:80%;">
+</li>
+<li><p>每个张量流操作都是使用 C++ 实现</p>
+</li>
+<li><p>许多操作有多个实现（内核），每个内核专用于特定的设备类型</p>
+<img src="/2021/02/03/Hands-on-ML-2/image-20210203123034098.png" alt="image-20210203123034098" style="zoom:67%;">
+</li>
+<li><p>TensorFlow Lite——移动端；TensorFlow.js——浏览器运行；TensorFlow Hub——下载和重用预训练神经网络</p>
+</li>
+</ul>
+<h3 id="Using-TensorFlow-like-NumPy"><a href="#Using-TensorFlow-like-NumPy" class="headerlink" title="Using TensorFlow like NumPy"></a>Using TensorFlow like NumPy</h3><h4 id="张量与操作"><a href="#张量与操作" class="headerlink" title="张量与操作"></a>张量与操作</h4><ul>
+<li><code>tf.constant()</code>根据输入矩阵创建张量，有属性 shape 和 dtype</li>
+<li>张量索引类似 Numpy</li>
+<li>张量运算：<code>tf.add()</code>、<code>tf.multiply()</code>、<code>tf.square()</code>、<code>tf.exp()</code>、<code>tf.sqrt()</code>等。很多命名类似于 Numpy，但也有部分不同</li>
+</ul>
+<h4 id="张量和Numpy"><a href="#张量和Numpy" class="headerlink" title="张量和Numpy"></a>张量和Numpy</h4><ul>
+<li><p>可以从 NumPy 数组创建张量，反之亦然</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = np.array([<span class="number">2.</span>, <span class="number">4.</span>, <span class="number">5.</span>])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>tf.constant(a)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以对 NumPy 数组应用张量流操作，对张量应用 NumPy 操作</p>
+</li>
+<li><p>默认情况下，NumPy 使用64位精度，而张量流使用32位精度，因此转换的时候设置<code>dtype = tf.float32</code></p>
+</li>
+</ul>
+<h4 id="类型转换"><a href="#类型转换" class="headerlink" title="类型转换"></a>类型转换</h4><ul>
+<li><p>TensorFlow 不会自动执行任何类型转换，因为类型转换会严重影响性能</p>
+</li>
+<li><p>不能使浮点张量和整数张量相加，甚至不能使32位浮点和64位浮点相加</p>
+</li>
+<li><p><code>tf.cast()</code>转换数据类型</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">tf.constant(<span class="number">2.0</span>) + tf.cast(t2, tf.float32)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h4><ul>
+<li><p>上面是张量常量</p>
+</li>
+<li><p>张量变量：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">v = tf.Variable([[<span class="number">1.</span>, <span class="number">2.</span>, <span class="number">3.</span>], [<span class="number">4.</span>, <span class="number">5.</span>, <span class="number">6.</span>]])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以用张量变量执行相同的操作，同 Numpy 共同使用</p>
+</li>
+<li><p>其他的变量方法：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">v.assign(<span class="number">2</span> * v)           <span class="comment"># =&gt; [[2., 4., 6.], [8., 10., 12.]]</span></span><br><span class="line">v[<span class="number">0</span>, <span class="number">1</span>].assign(<span class="number">42</span>)        <span class="comment"># =&gt; [[2., 42., 6.], [8., 10., 12.]]</span></span><br><span class="line">v[:, <span class="number">2</span>].assign([<span class="number">0.</span>, <span class="number">1.</span>])  <span class="comment"># =&gt; [[2., 42., 0.], [8., 10., 1.]]</span></span><br><span class="line">v.scatter_nd_update(indices=[[<span class="number">0</span>, <span class="number">0</span>], [<span class="number">1</span>, <span class="number">2</span>]], updates=[<span class="number">100.</span>, <span class="number">200.</span>])</span><br><span class="line">                          <span class="comment"># =&gt; [[100., 42., 0.], [8., 10., 200.]]</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="其他数据结构"><a href="#其他数据结构" class="headerlink" title="其他数据结构"></a>其他数据结构</h4><ul>
+<li>Sparse tensors（tf.SparseTensor）：表示大部分为 0 的张量，tf.sparse 包有稀疏张量的运算</li>
+<li>Tensor arrays（tf.TensorArray）：张量列表，默认情况下大小固定，包含的所有张量必须具有相同的形状和数据类型</li>
+<li>Ragged tensors（tf.RaggedTensor）：张量列表的静态列表，每个张量具有相同的形状和数据类型。包 tf.ragged 包含了其运算</li>
+<li>String tensors（tf.string）：张量实际上表示的是字节字符串，将被自动编码为 UTF-8；可以使用 tf.int32 类型的张量表示 Unicode 字符串；包 tf.strings 包含字节字符串和 Unicode 字符串的操作</li>
+<li>Sets</li>
+<li>Queues：包括先进先出队列、优先级队列、随机无序队列、填充无序队列</li>
+</ul>
+<h3 id="定制模型和训练算法"><a href="#定制模型和训练算法" class="headerlink" title="定制模型和训练算法"></a>定制模型和训练算法</h3><h4 id="自定义损失函数"><a href="#自定义损失函数" class="headerlink" title="自定义损失函数"></a>自定义损失函数</h4><ul>
+<li><p>训练一个回归模型，但数据噪音大，自定义 huber 损失（API 中没有）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">huber_fn</span>(<span class="params">y_true, y_pred</span>):</span></span><br><span class="line">    error = y_true - y_pred</span><br><span class="line">    is_small_error = tf.<span class="built_in">abs</span>(error) &lt; <span class="number">1</span></span><br><span class="line">    squared_loss = tf.square(error) / <span class="number">2</span></span><br><span class="line">    linear_loss  = tf.<span class="built_in">abs</span>(error) - <span class="number">0.5</span></span><br><span class="line">    <span class="keyword">return</span> tf.where(is_small_error, squared_loss, linear_loss)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用矢量化实现</li>
+<li>只使用 TensorFlow 操作</li>
+</ul>
+</li>
+<li><p>编译</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.<span class="built_in">compile</span>(loss=huber_fn, optimizer=<span class="string">&quot;nadam&quot;</span>)</span><br><span class="line">model.fit(X_train, y_train, [...])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="保存和加载包含自定义组件的模型"><a href="#保存和加载包含自定义组件的模型" class="headerlink" title="保存和加载包含自定义组件的模型"></a>保存和加载包含自定义组件的模型</h4><ul>
+<li><p>加载模型时需要提供一个将函数名映射到实际函数的字典——Keras只是保存了函数的名称</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.load_model(<span class="string">&quot;my_model_with_a_custom_loss.h5&quot;</span>,</span><br><span class="line">                                custom_objects=&#123;<span class="string">&quot;huber_fn&quot;</span>: huber_fn&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>改良：创建一个配置损失函数的函数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_huber</span>(<span class="params">threshold=<span class="number">1.0</span></span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">huber_fn</span>(<span class="params">y_true, y_pred</span>):</span></span><br><span class="line">        error = y_true - y_pred</span><br><span class="line">        is_small_error = tf.<span class="built_in">abs</span>(error) &lt; threshold</span><br><span class="line">        squared_loss = tf.square(error) / <span class="number">2</span></span><br><span class="line">        linear_loss  = threshold * tf.<span class="built_in">abs</span>(error) - threshold**<span class="number">2</span> / <span class="number">2</span></span><br><span class="line">        <span class="keyword">return</span> tf.where(is_small_error, squared_loss, linear_loss)</span><br><span class="line">    <span class="keyword">return</span> huber_fn</span><br><span class="line">model.<span class="built_in">compile</span>(loss=create_huber(<span class="number">2.0</span>), optimizer=<span class="string">&quot;nadam&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>保存模型时，阈值将不会被保存，因此加载模型时指定阈值</p>
+</li>
+<li><p>注意，要使用的名称是“huber_fn”，是传给 Keras 的函数名，而不是创建它的函数名</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.load_model(<span class="string">&quot;my_model_with_a_custom_loss_threshold_2.h5&quot;</span>,</span><br><span class="line">                                custom_objects=&#123;<span class="string">&quot;huber_fn&quot;</span>: create_huber(<span class="number">2.0</span>)&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>改良：创建 keras.losses.Loss 的子类，并执行<code>get_config()</code>方法</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HuberLoss</span>(<span class="params">keras.losses.Loss</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, threshold=<span class="number">1.0</span>, **kwargs</span>):</span></span><br><span class="line">        self.threshold = threshold</span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, y_true, y_pred</span>):</span></span><br><span class="line">        error = y_true - y_pred</span><br><span class="line">        is_small_error = tf.<span class="built_in">abs</span>(error) &lt; self.threshold</span><br><span class="line">        squared_loss = tf.square(error) / <span class="number">2</span></span><br><span class="line">        linear_loss  = self.threshold * tf.<span class="built_in">abs</span>(error) - self.threshold**<span class="number">2</span> / <span class="number">2</span></span><br><span class="line">        <span class="keyword">return</span> tf.where(is_small_error, squared_loss, linear_loss)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_config</span>(<span class="params">self</span>):</span></span><br><span class="line">        base_config = <span class="built_in">super</span>().get_config()</span><br><span class="line">        <span class="keyword">return</span> &#123;**base_config, <span class="string">&quot;threshold&quot;</span>: self.threshold&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>构造函数接收 **kwargs，父构造函数处理标准超参数</p>
+</li>
+<li><p><code>call()</code>接收标签和预测，计算所有实例损失</p>
+</li>
+<li><p><code>get_config() </code>返回字典，将每个超参数名称映射到其值，先调用父类的<code>get_config()</code>，再将新的超参数添加到该字典中</p>
+</li>
+<li><p>保存模型时，阈值将与它一起保存，只需要将类名映射到类本身</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.load_model(<span class="string">&quot;my_model_with_a_custom_loss_class.h5&quot;</span>,</span><br><span class="line">                                custom_objects=&#123;<span class="string">&quot;HuberLoss&quot;</span>: HuberLoss&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>保存模型时，Keras 调用实例的<code>get_config()</code>，将配置保存为 HDF5 文件中的 JSON。加载模型，调用 HuberLoss 类的<code>from_config()</code>（由基类 Loss 实现）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="自定义激活函数、初始化、正则化和约束"><a href="#自定义激活函数、初始化、正则化和约束" class="headerlink" title="自定义激活函数、初始化、正则化和约束"></a>自定义激活函数、初始化、正则化和约束</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">my_softplus</span>(<span class="params">z</span>):</span> <span class="comment"># return value is just tf.nn.softplus(z)</span></span><br><span class="line">    <span class="keyword">return</span> tf.math.log(tf.exp(z) + <span class="number">1.0</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">my_glorot_initializer</span>(<span class="params">shape, dtype=tf.float32</span>):</span></span><br><span class="line">    stddev = tf.sqrt(<span class="number">2.</span> / (shape[<span class="number">0</span>] + shape[<span class="number">1</span>]))</span><br><span class="line">    <span class="keyword">return</span> tf.random.normal(shape, stddev=stddev, dtype=dtype)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">my_l1_regularizer</span>(<span class="params">weights</span>):</span></span><br><span class="line">    <span class="keyword">return</span> tf.reduce_sum(tf.<span class="built_in">abs</span>(<span class="number">0.01</span> * weights))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">my_positive_weights</span>(<span class="params">weights</span>):</span> <span class="comment"># return value is just tf.nn.relu(weights)</span></span><br><span class="line">    <span class="keyword">return</span> tf.where(weights &lt; <span class="number">0.</span>, tf.zeros_like(weights), weights)</span><br><span class="line"></span><br><span class="line">layer = keras.layers.Dense(<span class="number">30</span>, activation=my_softplus,</span><br><span class="line">                           kernel_initializer=my_glorot_initializer,</span><br><span class="line">                           kernel_regularizer=my_l1_regularizer,</span><br><span class="line">                           kernel_constraint=my_positive_weights)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>如果一个函数有一些超参数需要和模型一起保存，那么就需要子类化合适的类（keras.regularizers.Regularizer、keras.constraints.Constraint、keras.initializers.Initializer、keras.layers.Layer）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyL1Regularizer</span>(<span class="params">keras.regularizers.Regularizer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, factor</span>):</span></span><br><span class="line">        self.factor = factor</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__call__</span>(<span class="params">self, weights</span>):</span></span><br><span class="line">        <span class="keyword">return</span> tf.reduce_sum(tf.<span class="built_in">abs</span>(self.factor * weights))</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_config</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">&quot;factor&quot;</span>: self.factor&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>必须为损失、层（包括激活函数）和模型实现<code>call()</code></p>
+</li>
+<li><p>为正则化、初始化和约束实现<code>__call__()</code></p>
+</li>
+</ul>
+<h4 id="自定义指标"><a href="#自定义指标" class="headerlink" title="自定义指标"></a>自定义指标</h4><ul>
+<li><p>指标可以是不可微的或者在任何地方都具有 0 梯度（如，准确率）</p>
+</li>
+<li><p>在大多数情况下，定义自定义度量函数与定义自定义损失函数完全相同</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=<span class="string">&quot;nadam&quot;</span>, metrics=[create_huber(<span class="number">2.0</span>)])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>自定义 Huber 指标</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HuberMetric</span>(<span class="params">keras.metrics.Metric</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, threshold=<span class="number">1.0</span>, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs) <span class="comment"># handles base args (e.g., dtype)</span></span><br><span class="line">        self.threshold = threshold</span><br><span class="line">        self.huber_fn = create_huber(threshold)</span><br><span class="line">        self.total = self.add_weight(<span class="string">&quot;total&quot;</span>, initializer=<span class="string">&quot;zeros&quot;</span>)</span><br><span class="line">        self.count = self.add_weight(<span class="string">&quot;count&quot;</span>, initializer=<span class="string">&quot;zeros&quot;</span>)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">update_state</span>(<span class="params">self, y_true, y_pred, sample_weight=<span class="literal">None</span></span>):</span></span><br><span class="line">        metric = self.huber_fn(y_true, y_pred)</span><br><span class="line">        self.total.assign_add(tf.reduce_sum(metric))</span><br><span class="line">        self.count.assign_add(tf.cast(tf.size(y_true), tf.float32))</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">result</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="keyword">return</span> self.total / self.count</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_config</span>(<span class="params">self</span>):</span></span><br><span class="line">        base_config = <span class="built_in">super</span>().get_config()</span><br><span class="line">        <span class="keyword">return</span> &#123;**base_config, <span class="string">&quot;threshold&quot;</span>: self.threshold&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>add_weight()</code>创建跟踪多个批次的指标状态所需的变量</li>
+<li><code>update_state() </code>更新一批给定的标签和预测的变量</li>
+<li><code>result()</code>计算并返回最终结果，本例中是所有实例的平均 Huber 度量</li>
+<li><code>get_config()</code>确保阈值与模型一起保存</li>
+<li><code>reset_states()</code>默认执行，将所有变量重置为0.0</li>
+</ul>
+</li>
+<li><p>有些指标，比如精度，不能简单地按批次平均——只能实现 streaming metric</p>
+</li>
+</ul>
+<h4 id="自定义层"><a href="#自定义层" class="headerlink" title="自定义层"></a>自定义层</h4><ul>
+<li><p>有些层没有权重，因此如果自定义一个没有权重的层，最简单的方法是用 keras.layers.Lambda 层包装自定义的函数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 对输入应用指数函数</span></span><br><span class="line">exponential_layer = keras.layers.Lambda(<span class="keyword">lambda</span> x: tf.exp(x))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建一个有参数的层</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyDense</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, units, activation=<span class="literal">None</span>, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">        self.units = units</span><br><span class="line">        self.activation = keras.activations.get(activation)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">build</span>(<span class="params">self, batch_input_shape</span>):</span></span><br><span class="line">        self.kernel = self.add_weight(</span><br><span class="line">            name=<span class="string">&quot;kernel&quot;</span>, shape=[batch_input_shape[<span class="number">-1</span>], self.units],</span><br><span class="line">            initializer=<span class="string">&quot;glorot_normal&quot;</span>)</span><br><span class="line">        self.bias = self.add_weight(</span><br><span class="line">            name=<span class="string">&quot;bias&quot;</span>, shape=[self.units], initializer=<span class="string">&quot;zeros&quot;</span>)</span><br><span class="line">        <span class="built_in">super</span>().build(batch_input_shape) <span class="comment"># must be at the end</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, X</span>):</span></span><br><span class="line">        <span class="keyword">return</span> self.activation(X @ self.kernel + self.bias)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">compute_output_shape</span>(<span class="params">self, batch_input_shape</span>):</span></span><br><span class="line">        <span class="keyword">return</span> tf.TensorShape(batch_input_shape.as_list()[:<span class="number">-1</span>] + [self.units])</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_config</span>(<span class="params">self</span>):</span></span><br><span class="line">        base_config = <span class="built_in">super</span>().get_config()</span><br><span class="line">        <span class="keyword">return</span> &#123;**base_config, <span class="string">&quot;units&quot;</span>: self.units,</span><br><span class="line">                <span class="string">&quot;activation&quot;</span>: keras.activations.serialize(self.activation)&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>构造函数将所有的超参数作为参数；调用父构造函数传入<code>**kwargs</code>（处理标准参数，如input_shape、trainable、name）</li>
+<li>将超参数保存为属性，<code>keras.activations.get()</code>将激活参数转换为适当的激活函数</li>
+<li><code>build()</code>：调用<code>add_weight()</code>创建层的变量，Keras 将知道该层输入的形状；末尾必须调用父类的<code>build()</code>告知 Keras 层已经构建好</li>
+<li><code>call()</code>实际执行所需的操作</li>
+<li><code>compute_output_shape()</code>简单地返回该层输出的形状；在 tf.keras 中，shape 是 tf.TensorShape 类的实例，因此可以用<code>as_list()</code>转化为 Python 的列表</li>
+<li><code>get_config()</code></li>
+</ul>
+</li>
+<li><p>接收多个输入返回多个输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyMultiLayer</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, X</span>):</span></span><br><span class="line">        X1, X2 = X</span><br><span class="line">        <span class="keyword">return</span> [X1 + X2, X1 * X2, X1 / X2]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">compute_output_shape</span>(<span class="params">self, batch_input_shape</span>):</span></span><br><span class="line">        b1, b2 = batch_input_shape</span><br><span class="line">        <span class="keyword">return</span> [b1, b1, b1] <span class="comment"># should probably handle broadcasting rules</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>call()</code>的参数应该是包含所有输入的元组</li>
+<li><code>compute_output_shape()</code>参数应该是包含每个输入的批处理形状的元组</li>
+</ul>
+</li>
+<li><p>层在训练和测试期间需要有不同的行为（如 Dropout）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyGaussianNoise</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, stddev, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">        self.stddev = stddev</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, X, training=<span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="keyword">if</span> training:</span><br><span class="line">            noise = tf.random.normal(tf.shape(X), stddev=self.stddev)</span><br><span class="line">            <span class="keyword">return</span> X + noise</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> X</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">compute_output_shape</span>(<span class="params">self, batch_input_shape</span>):</span></span><br><span class="line">        <span class="keyword">return</span> batch_input_shape</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>必须向<code>call()</code>添加一个训练参数，并使用该参数来决定要做什么</li>
+</ul>
+</li>
+</ul>
+<h4 id="自定义模型"><a href="#自定义模型" class="headerlink" title="自定义模型"></a>自定义模型</h4><img src="/2021/02/03/Hands-on-ML-2/image-20210203140623534.png" alt="image-20210203140623534" style="zoom:67%;">
+
+<ul>
+<li><p>创建 Residual Block</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ResidualBlock</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, n_layers, n_neurons, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">        self.hidden = [keras.layers.Dense(n_neurons, activation=<span class="string">&quot;elu&quot;</span>,</span><br><span class="line">                                          kernel_initializer=<span class="string">&quot;he_normal&quot;</span>)</span><br><span class="line">                       <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(n_layers)]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        Z = inputs</span><br><span class="line">        <span class="keyword">for</span> layer <span class="keyword">in</span> self.hidden:</span><br><span class="line">            Z = layer(Z)</span><br><span class="line">        <span class="keyword">return</span> inputs + Z</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Keras 自动检测到 hidden 属性包含的可跟踪对象</li>
+</ul>
+</li>
+<li><p>模型定义</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ResidualRegressor</span>(<span class="params">keras.models.Model</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, output_dim, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">        self.hidden1 = keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;elu&quot;</span>,</span><br><span class="line">                                          kernel_initializer=<span class="string">&quot;he_normal&quot;</span>)</span><br><span class="line">        self.block1 = ResidualBlock(<span class="number">2</span>, <span class="number">30</span>)</span><br><span class="line">        self.block2 = ResidualBlock(<span class="number">2</span>, <span class="number">30</span>)</span><br><span class="line">        self.out = keras.layers.Dense(output_dim)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        Z = self.hidden1(inputs)</span><br><span class="line">        <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span> + <span class="number">3</span>):</span><br><span class="line">            Z = self.block1(Z)</span><br><span class="line">        Z = self.block2(Z)</span><br><span class="line">        <span class="keyword">return</span> self.out(Z)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>模型类实际上是层类的子类，一个模型也有一些额外的功能，如<code>compile()</code>，<code>fit()</code>，<code>evaluate()</code>和<code>predict() </code></p>
+</li>
+</ul>
+<h4 id="基于模型内部的损失和指标"><a href="#基于模型内部的损失和指标" class="headerlink" title="基于模型内部的损失和指标"></a>基于模型内部的损失和指标</h4><ul>
+<li><p>之前定义的自定义损失和指标都是基于标签和预测</p>
+</li>
+<li><p>要定义基于模型内部的自定义损失，只需计算想要的模型的任何部分，然后将结果传递给<code>add_loss()</code></p>
+</li>
+<li><p>举例：标准的 MLP 回归，5个隐藏层，最后一个隐藏层的上面增加了一个额外的密集层用于重建模型的输入</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReconstructingRegressor</span>(<span class="params">keras.models.Model</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, output_dim, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">        self.hidden = [keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;selu&quot;</span>,</span><br><span class="line">                                          kernel_initializer=<span class="string">&quot;lecun_normal&quot;</span>)</span><br><span class="line">                        <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>)]</span><br><span class="line">        self.out = keras.layers.Dense(output_dim)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">build</span>(<span class="params">self, batch_input_shape</span>):</span></span><br><span class="line">        n_inputs = batch_input_shape[<span class="number">-1</span>]</span><br><span class="line">        self.reconstruct = keras.layers.Dense(n_inputs)</span><br><span class="line">        <span class="built_in">super</span>().build(batch_input_shape)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        Z = inputs</span><br><span class="line">        <span class="keyword">for</span> layer <span class="keyword">in</span> self.hidden:</span><br><span class="line">            Z = layer(Z)</span><br><span class="line">        reconstruction = self.reconstruct(Z)</span><br><span class="line">        recon_loss = tf.reduce_mean(tf.square(reconstruction - inputs))</span><br><span class="line">        self.add_loss(<span class="number">0.05</span> * recon_loss)</span><br><span class="line">        <span class="keyword">return</span> self.out(Z)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>计算重建和输入之间的均方差，调用<code>add_loss()</code>将该值（乘以0.05）添加到模型的损失列表中，Keras 会将这一损失加入到主要损失</li>
+</ul>
+</li>
+</ul>
+<h4 id="Computing-Gradients-Using-Autodiff"><a href="#Computing-Gradients-Using-Autodiff" class="headerlink" title="Computing Gradients Using Autodiff"></a>Computing Gradients Using Autodiff</h4><ul>
+<li><p><code>tf.GradientTape()</code>自动记录涉及变量的每个操作</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">w1, w2 = tf.Variable(<span class="number">5.</span>), tf.Variable(<span class="number">3.</span>)</span><br><span class="line"><span class="keyword">with</span> tf.GradientTape() <span class="keyword">as</span> tape:</span><br><span class="line">    z = f(w1, w2)</span><br><span class="line">gradients = tape.gradient(z, [w1, w2])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用<code>tape.gradient()</code>后，tape 会被回收，因此如果两次调用，则会报错——设置<code>persistent=True</code></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.GradientTape(persistent=<span class="literal">True</span>) <span class="keyword">as</span> tape:</span><br><span class="line">    z = f(w1, w2)</span><br><span class="line">dz_dw1 = tape.gradient(z, w1) <span class="comment"># =&gt; tensor 36.0</span></span><br><span class="line">dz_dw2 = tape.gradient(z, w2) <span class="comment"># =&gt; tensor 10.0, works fine now!</span></span><br><span class="line"><span class="keyword">del</span> tape</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>tape 默认只跟踪涉及变量的操作，但可以强迫 tape 跟踪任何张量，记录每一个涉及它们的操作</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.GradientTape() <span class="keyword">as</span> tape:</span><br><span class="line">    tape.watch(c1)</span><br><span class="line">    tape.watch(c2)</span><br><span class="line">    z = f(c1, c2)</span><br><span class="line">gradients = tape.gradient(z, [c1, c2])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>计算二阶导数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.GradientTape(persistent=<span class="literal">True</span>) <span class="keyword">as</span> hessian_tape:</span><br><span class="line">    <span class="keyword">with</span> tf.GradientTape() <span class="keyword">as</span> jacobian_tape:</span><br><span class="line">        z = f(w1, w2)</span><br><span class="line">    jacobians = jacobian_tape.gradient(z, [w1, w2])</span><br><span class="line">hessians = [hessian_tape.gradient(jacobian, [w1, w2])</span><br><span class="line">            <span class="keyword">for</span> jacobian <span class="keyword">in</span> jacobians]</span><br><span class="line"><span class="keyword">del</span> hessian_tape</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>阻止某些网络部分反向传播</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">f</span>(<span class="params">w1, w2</span>):</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">3</span> * w1 ** <span class="number">2</span> + tf.stop_gradient(<span class="number">2</span> * w1 * w2)</span><br><span class="line"><span class="keyword">with</span> tf.GradientTape() <span class="keyword">as</span> tape:</span><br><span class="line">    z = f(w1, w2) <span class="comment"># same result as without stop_gradient()</span></span><br><span class="line">gradients = tape.gradient(z, [w1, w2]) <span class="comment"># =&gt; returns [tensor 30., None]</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="自定义训练循环"><a href="#自定义训练循环" class="headerlink" title="自定义训练循环"></a>自定义训练循环</h4><ul>
+<li><p><code>fit()</code>可能不够灵活——只使用一个优化器</p>
+</li>
+<li><p>模型建立</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">l2_reg = keras.regularizers.l2(<span class="number">0.05</span>)</span><br><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;elu&quot;</span>, kernel_initializer=<span class="string">&quot;he_normal&quot;</span>,</span><br><span class="line">                       kernel_regularizer=l2_reg),</span><br><span class="line">    keras.layers.Dense(<span class="number">1</span>, kernel_regularizer=l2_reg)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>batch 处理</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">random_batch</span>(<span class="params">X, y, batch_size=<span class="number">32</span></span>):</span></span><br><span class="line">    idx = np.random.randint(<span class="built_in">len</span>(X), size=batch_size)</span><br><span class="line">    <span class="keyword">return</span> X[idx], y[idx]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>状态打印</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_status_bar</span>(<span class="params">iteration, total, loss, metrics=<span class="literal">None</span></span>):</span></span><br><span class="line">    metrics = <span class="string">&quot; - &quot;</span>.join([<span class="string">&quot;&#123;&#125;: &#123;:.4f&#125;&quot;</span>.<span class="built_in">format</span>(m.name, m.result())</span><br><span class="line">                         <span class="keyword">for</span> m <span class="keyword">in</span> [loss] + (metrics <span class="keyword">or</span> [])])</span><br><span class="line">    end = <span class="string">&quot;&quot;</span> <span class="keyword">if</span> iteration &lt; total <span class="keyword">else</span> <span class="string">&quot;\n&quot;</span></span><br><span class="line">    print(<span class="string">&quot;\r&#123;&#125;/&#123;&#125; - &quot;</span>.<span class="built_in">format</span>(iteration, total) + metrics,</span><br><span class="line">          end=end)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>超参数设置</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">n_epochs = <span class="number">5</span></span><br><span class="line">batch_size = <span class="number">32</span></span><br><span class="line">n_steps = <span class="built_in">len</span>(X_train) // batch_size</span><br><span class="line">optimizer = keras.optimizers.Nadam(lr=<span class="number">0.01</span>)</span><br><span class="line">loss_fn = keras.losses.mean_squared_error</span><br><span class="line">mean_loss = keras.metrics.Mean()</span><br><span class="line">metrics = [keras.metrics.MeanAbsoluteError()]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>自定义循环</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, n_epochs + <span class="number">1</span>):</span><br><span class="line">    print(<span class="string">&quot;Epoch &#123;&#125;/&#123;&#125;&quot;</span>.<span class="built_in">format</span>(epoch, n_epochs))</span><br><span class="line">    <span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, n_steps + <span class="number">1</span>):</span><br><span class="line">        X_batch, y_batch = random_batch(X_train_scaled, y_train)</span><br><span class="line">        <span class="keyword">with</span> tf.GradientTape() <span class="keyword">as</span> tape:</span><br><span class="line">            y_pred = model(X_batch, training=<span class="literal">True</span>)</span><br><span class="line">            main_loss = tf.reduce_mean(loss_fn(y_batch, y_pred))</span><br><span class="line">            loss = tf.add_n([main_loss] + model.losses)</span><br><span class="line">        gradients = tape.gradient(loss, model.trainable_variables)</span><br><span class="line">        optimizer.apply_gradients(<span class="built_in">zip</span>(gradients, model.trainable_variables))</span><br><span class="line">        mean_loss(loss)</span><br><span class="line">        <span class="keyword">for</span> metric <span class="keyword">in</span> metrics:</span><br><span class="line">            metric(y_batch, y_pred)</span><br><span class="line">        print_status_bar(step * batch_size, <span class="built_in">len</span>(y_train), mean_loss, metrics)</span><br><span class="line">    print_status_bar(<span class="built_in">len</span>(y_train), <span class="built_in">len</span>(y_train), mean_loss, metrics)</span><br><span class="line">    <span class="keyword">for</span> metric <span class="keyword">in</span> [mean_loss] + metrics:</span><br><span class="line">        metric.reset_states()</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h3 id="TensorFlow-函数和图"><a href="#TensorFlow-函数和图" class="headerlink" title="TensorFlow 函数和图"></a>TensorFlow 函数和图</h3><ul>
+<li><p>举例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cube</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> x ** <span class="number">3</span></span><br><span class="line"><span class="comment"># 将Python函数转为TF 函数</span></span><br><span class="line">tf_cube = tf.function(cube)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>tf.function()</code>分析<code>cube()</code>执行的计算并生成一个等效的计算图</p>
+</li>
+<li><p>通常使用<code>tf.function</code>作为装饰器</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@tf.function</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">tf_cube</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> x ** <span class="number">3</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>仍可通过属性<code>python_function</code>获得原始的 Python 函数</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>tf_cube.python_function(<span class="number">2</span>)</span><br><span class="line"><span class="number">8</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>TF 优化计算图，修剪未使用的节点，简化表达式，一个 TF 函数通常会比最初的 Python 函数运行得快</p>
+</li>
+<li><p>编写自定义损失函数、自定义度量、自定义图层或任何其他自定义函数，并在 Keras 模型中使用时，Keras 会自动将函数转换为 TF 函数，无需使用<code>tf.function()</code></p>
+</li>
+</ul>
+<h4 id="Autograph-and-Tracing"><a href="#Autograph-and-Tracing" class="headerlink" title="Autograph and Tracing"></a>Autograph and Tracing</h4><ul>
+<li><p>分析 Python 函数的源代码，捕获所有的控制流语句，例如 for 循环和 while 循环、if 语句以及 break、continue 和 return 语句——Autograph</p>
+</li>
+<li><p>分析了函数的代码之后，输出该函数的升级版本，控制流语句都被适当的 TensorFlow 操作所替换</p>
+<img src="/2021/02/03/Hands-on-ML-2/image-20210203144523682.png" alt="image-20210203144523682" style="zoom:80%;">
+</li>
+<li><p>TF 调用这个“升级的”函数，但是没有传递实际的参数，而是传递了一个符号张量（只有一个名称、一个数据类型和一个形状）——每个 TF 操作将在图形中添加一个节点来表示它自己和它的输出张量，此时称为紧急执行或紧急模式（eager mode）</p>
+</li>
+</ul>
+<h4 id="TF-函数规则"><a href="#TF-函数规则" class="headerlink" title="TF 函数规则"></a>TF 函数规则</h4><ul>
+<li><p>把一个执行 TensorFlow 操作的 Python 函数转换成 TF 函数代价很小</p>
+</li>
+<li><p>TF 图只能包含 TF 构造，NumPy 甚至标准库不属于图的一部分——一定要用<code>tf.reduce_sum()</code>代替<code>np.sum()</code>，以此类推</p>
+</li>
+<li><p>通常最好在 TF 函数之外创建变量</p>
+</li>
+<li><p>TF 只捕获迭代张量或数据集的循环，因此必须是<code>for i in tf.range(10)</code></p>
+</li>
+<li><p>尽可能地选择矢量化实现，而不是使用循环</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>深度学习</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>TensorFlow</tag>
+      </tags>
+  </entry>
 </search>
