@@ -10907,7 +10907,77 @@ def a_function_requiring_decoration():
 <li><p>不要过多地使用反射</p>
 </li>
 </ul>
-<h2 id="接口、lambda表达式"><a href="#接口、lambda表达式" class="headerlink" title="接口、lambda表达式"></a>接口、lambda表达式</h2><h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><h3 id="接口示例"><a href="#接口示例" class="headerlink" title="接口示例"></a>接口示例</h3><h3 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h3><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3><h2 id="异常、断言"><a href="#异常、断言" class="headerlink" title="异常、断言"></a>异常、断言</h2>]]></content>
+<h2 id="接口、lambda表达式"><a href="#接口、lambda表达式" class="headerlink" title="接口、lambda表达式"></a>接口、lambda表达式</h2><h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><h4 id="接口概念"><a href="#接口概念" class="headerlink" title="接口概念"></a>接口概念</h4><ul>
+<li><p>接口不是类，而是对类的一组需求描述，这些类要遵从接口描述的统一格式进行定义</p>
+</li>
+<li><p>接口中的所有方法自动地属于 public。因此在接口中声明方法时，不必提供关键字 public</p>
+</li>
+<li><p>接口可能包含多个方法，也可以定义常量</p>
+</li>
+<li><p>接口绝不能含有实例域</p>
+</li>
+<li><p>举例：任何实现 Comparable 接口的类都需要包含 compareTo 方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Comparable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">compareTo</span><span class="params">(Object other)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span> <span class="keyword">implements</span> <span class="title">Comparable</span>&lt;<span class="title">Employee</span>&gt;</span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compareTo</span><span class="params">(Employee other)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Double.compare(salary, other.salary);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>将类声明为实现给定的接口</li>
+<li>对接口中的所有方法进行定义</li>
+<li>在实现接口时，必须把方法声明为 public</li>
+</ul>
+</li>
+<li><p>可以将接口看成是没有实例域的抽象类</p>
+</li>
+</ul>
+<h4 id="接口特性"><a href="#接口特性" class="headerlink" title="接口特性"></a>接口特性</h4><ul>
+<li><p>接口不是类，不能使用 new 实例化一个接口；但能声明接口的变量，接口变量必须引用实现了接口的类对象</p>
+</li>
+<li><p>可以用 instanceof 检查一个对象是否实现了某个特定的接口 <code>if(anObject instanceof Comparable)&#123;...&#125;</code></p>
+</li>
+<li><p>接口也可以被扩展</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Moveable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">move</span><span class="params">(<span class="keyword">double</span> x, <span class="keyword">double</span> y)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Powered</span> <span class="keyword">extends</span> <span class="title">Moveable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">double</span> <span class="title">milesPerGallon</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="keyword">double</span> SPEED_LIMIT = <span class="number">95</span>;  <span class="comment">////a public static final constant</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>接口中的域将被自动设为 public static final</p>
+</li>
+<li><p>每个类只能够拥有一个超类，但却可以实现多个接口</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span> <span class="keyword">implements</span> <span class="title">Cloneable</span>, <span class="title">Comparable</span></span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="接口与抽象类"><a href="#接口与抽象类" class="headerlink" title="接口与抽象类"></a>接口与抽象类</h4><ul>
+<li>如果使用抽象类表示通用属性，则每个类只能扩展于一个类</li>
+<li>接口可以提供多重继承的大多数好处，还能避免多重继承的复杂性和低效性</li>
+</ul>
+<h4 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h4><ul>
+<li>允许在接口中增加静态方法，但有违于将接口作为抽象规范的初衷</li>
+<li>通常的做法都是将静态方法放在伴随类</li>
+</ul>
+<h4 id="默认方法"><a href="#默认方法" class="headerlink" title="默认方法"></a>默认方法</h4><ul>
+<li><p>为接口方法提供一个默认实现，必须用 default 修饰符标记</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Comparable</span>&lt;<span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">default</span> <span class="keyword">int</span> <span class="title">compareTo</span><span class="params">(T other)</span> </span>&#123; <span class="keyword">return</span> <span class="number">0</span>; &#125;</span><br><span class="line">	<span class="comment">//By default, all elements are the same</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>默认方法可以调用任何其他方法</p>
+</li>
+<li><p>事实上每一个实际实现都要覆盖这个方法</p>
+</li>
+</ul>
+<h4 id="解决默认方法冲突"><a href="#解决默认方法冲突" class="headerlink" title="解决默认方法冲突"></a>解决默认方法冲突</h4><ul>
+<li><p>先在一个接口中将一个方法定义为默认方法，又在超类或另一个接口中定义了同样的方法</p>
+<ul>
+<li>超类优先：同名且参数类型相同的默认方法被忽略</li>
+<li>接口冲突：无论是否默认，都必须覆盖这个方法解决冲突</li>
+</ul>
+</li>
+<li><p>在两个冲突方法中选择一个</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> <span class="keyword">implements</span> <span class="title">Person</span>, <span class="title">Named</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> Person.<span class="keyword">super</span>.getName(); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果两个接口都没有为共享方法提供默认实现，则不存在冲突，此时可以实现这个方法，或者不实现——此时类为抽象类</p>
+</li>
+</ul>
+<h3 id="接口示例"><a href="#接口示例" class="headerlink" title="接口示例"></a>接口示例</h3><h4 id="接口与回调"><a href="#接口与回调" class="headerlink" title="接口与回调"></a>接口与回调</h4><ul>
+<li>回调可以指出某个特定事件发生时应该采取的动作</li>
+</ul>
+<h4 id="Comparator-接口"><a href="#Comparator-接口" class="headerlink" title="Comparator 接口"></a>Comparator 接口</h4><h4 id="对象克隆"><a href="#对象克隆" class="headerlink" title="对象克隆"></a>对象克隆</h4><h3 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h3><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3><p>略</p>
+]]></content>
       <categories>
         <category>编程语言</category>
       </categories>
