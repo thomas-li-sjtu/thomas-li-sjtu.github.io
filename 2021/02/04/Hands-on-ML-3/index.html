@@ -32,7 +32,7 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204130307646.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204130654015.png">
 <meta property="article:published_time" content="2021-02-04T03:26:24.000Z">
-<meta property="article:modified_time" content="2021-02-04T05:10:48.884Z">
+<meta property="article:modified_time" content="2021-02-04T08:02:45.594Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="Python">
 <meta property="article:tag" content="TensorFlow">
@@ -245,14 +245,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.8k</span>
+              <span>7.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>7 分钟</span>
             </span>
 
         </div>
@@ -342,7 +342,109 @@
 
 </li>
 </ul>
-<h3 id="TFRecord-格式"><a href="#TFRecord-格式" class="headerlink" title="TFRecord 格式"></a>TFRecord 格式</h3><h3 id="Features-API"><a href="#Features-API" class="headerlink" title="Features API"></a>Features API</h3><h2 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h2><h3 id="卷积层"><a href="#卷积层" class="headerlink" title="卷积层"></a>卷积层</h3><h3 id="池化层"><a href="#池化层" class="headerlink" title="池化层"></a>池化层</h3><h3 id="CNN-结构"><a href="#CNN-结构" class="headerlink" title="CNN 结构"></a>CNN 结构</h3><h3 id="Keras-实现-ResNet-34-CNN"><a href="#Keras-实现-ResNet-34-CNN" class="headerlink" title="Keras 实现 ResNet-34 CNN"></a>Keras 实现 ResNet-34 CNN</h3><h3 id="使用-Keras-中预训练网络"><a href="#使用-Keras-中预训练网络" class="headerlink" title="使用 Keras 中预训练网络"></a>使用 Keras 中预训练网络</h3>
+<h3 id="TFRecord-格式"><a href="#TFRecord-格式" class="headerlink" title="TFRecord 格式"></a>TFRecord 格式</h3><ul>
+<li><p>TFRecord 格式是 TensorFlow 存储大量数据并高效读取数据的首选格式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 写</span></span><br><span class="line"><span class="keyword">with</span> tf.io.TFRecordWriter(<span class="string">&quot;my_data.tfrecord&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.write(<span class="string">b&quot;This is the first record&quot;</span>)</span><br><span class="line">    f.write(<span class="string">b&quot;And this is the second record&quot;</span>)</span><br><span class="line"><span class="comment"># 读取</span></span><br><span class="line">filepaths = [<span class="string">&quot;my_data.tfrecord&quot;</span>]</span><br><span class="line">dataset = tf.data.TFRecordDataset(filepaths)</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> dataset:</span><br><span class="line">    print(item)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h4><ul>
+<li><p>设置参数即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">options = tf.io.TFRecordOptions(compression_type=<span class="string">&quot;GZIP&quot;</span>)</span><br><span class="line"><span class="keyword">with</span> tf.io.TFRecordWriter(<span class="string">&quot;my_compressed.tfrecord&quot;</span>, options) <span class="keyword">as</span> f:</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>读取时也要说明压缩类型</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dataset = tf.data.TFRecordDataset([<span class="string">&quot;my_compressed.tfrecord&quot;</span>],</span><br><span class="line">                                  compression_type=<span class="string">&quot;GZIP&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="协议缓冲区"><a href="#协议缓冲区" class="headerlink" title="协议缓冲区"></a>协议缓冲区</h4><ul>
+<li><p>记录文件通常包含序列化的协议缓冲区——可移植、可扩展且高效的二进制格式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">&quot;proto3&quot;</span>;</span><br><span class="line">message Person &#123;</span><br><span class="line">  string name = <span class="number">1</span>;</span><br><span class="line">  int32 <span class="built_in">id</span> = <span class="number">2</span>;</span><br><span class="line">  repeated string email = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用 protobuf 格式版本3</li>
+<li>对象 person 有一个字符串的名称，一个类型 int32 的 id，以及零个或多个电子邮件字段</li>
+<li>数字1、2和3是字段标识符</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> person_pb2 <span class="keyword">import</span> Person  <span class="comment"># import the generated access class</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person = Person(name=<span class="string">&quot;Al&quot;</span>, <span class="built_in">id</span>=<span class="number">123</span>, email=[<span class="string">&quot;a@b.com&quot;</span>])  <span class="comment"># create a Person</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(person)  <span class="comment"># display the Person</span></span><br><span class="line">name: <span class="string">&quot;Al&quot;</span></span><br><span class="line"><span class="built_in">id</span>: <span class="number">123</span></span><br><span class="line">email: <span class="string">&quot;a@b.com&quot;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person.email.append(<span class="string">&quot;c@d.com&quot;</span>)  <span class="comment"># add an email address</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>s = person.SerializeToString()  <span class="comment"># serialize the object to a byte string</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>s</span><br><span class="line"><span class="string">b&#x27;\n\x05Alice\x10&#123;\x1a\x07a@b.com\x1a\x07c@d.com&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person2 = Person()  <span class="comment"># create a new Person</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person2.ParseFromString(s)  <span class="comment"># parse the byte string (27 bytes long)</span></span><br><span class="line"><span class="number">27</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person == person2  <span class="comment"># now they are equal</span></span><br><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="TensorFlow-的协议缓冲区"><a href="#TensorFlow-的协议缓冲区" class="headerlink" title="TensorFlow 的协议缓冲区"></a>TensorFlow 的协议缓冲区</h4><p>略</p>
+<h4 id="加载和解析示例"><a href="#加载和解析示例" class="headerlink" title="加载和解析示例"></a>加载和解析示例</h4><p>略</p>
+<h4 id="Handling-Lists-of-Lists-Using-the-SequenceExample-Protobuf"><a href="#Handling-Lists-of-Lists-Using-the-SequenceExample-Protobuf" class="headerlink" title="Handling Lists of Lists Using the SequenceExample Protobuf"></a>Handling Lists of Lists Using the SequenceExample Protobuf</h4><p>略</p>
+<h3 id="Features-API"><a href="#Features-API" class="headerlink" title="Features API"></a>Features API</h3><ul>
+<li><p>处理数据的特征</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">housing_median_age = tf.feature_column.numeric_column(</span><br><span class="line">    <span class="string">&quot;housing_median_age&quot;</span>, normalizer_fn=<span class="keyword">lambda</span> x: (x - age_mean) / age_std)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>参数<code>normalizer_fn</code>用于指定一个正则化函数，前一个参数是对应数据的一个特征名</li>
+</ul>
+</li>
+<li><p>对数据分块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">median_income = tf.feature_column.numeric_column(<span class="string">&quot;median_income&quot;</span>)</span><br><span class="line">bucketized_income = tf.feature_column.bucketized_column(</span><br><span class="line">    median_income, boundaries=[<span class="number">1.5</span>, <span class="number">3.</span>, <span class="number">4.5</span>, <span class="number">6.</span>])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="分类特征"><a href="#分类特征" class="headerlink" title="分类特征"></a>分类特征</h4><ul>
+<li><p>如果一个特征已经表示为一个类别标识，则使用<code>categorical_column_with_identity() </code>，否则</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ocean_prox_vocab = [<span class="string">&#x27;&lt;1H OCEAN&#x27;</span>, <span class="string">&#x27;INLAND&#x27;</span>, <span class="string">&#x27;ISLAND&#x27;</span>, <span class="string">&#x27;NEAR BAY&#x27;</span>, <span class="string">&#x27;NEAR OCEAN&#x27;</span>]</span><br><span class="line">ocean_proximity = tf.feature_column.categorical_column_with_vocabulary_list(</span><br><span class="line">    <span class="string">&quot;ocean_proximity&quot;</span>, ocean_prox_vocab)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>从文件加载：<code>categorical_column_with_vocabulary_file()</code></p>
+</li>
+<li><p>以上两个函数将每个类别映射到它在词汇表中的索引</p>
+</li>
+<li><p>对于具有大量词汇的分类列，可以使用<code>categorical_column_with_hash_bucket()</code>编码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">city_hash = tf.feature_column.categorical_column_with_hash_bucket(</span><br><span class="line">    <span class="string">&quot;city&quot;</span>, hash_bucket_size=<span class="number">1000</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="交叉分类特征"><a href="#交叉分类特征" class="headerlink" title="交叉分类特征"></a>交叉分类特征</h4><ul>
+<li><p>可能两个（或更多）分类特征在联合使用时更有意义</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bucketized_age = tf.feature_column.bucketized_column(</span><br><span class="line">    housing_median_age, boundaries=[<span class="number">-1.</span>, <span class="number">-0.5</span>, <span class="number">0.</span>, <span class="number">0.5</span>, <span class="number">1.</span>]) <span class="comment"># age was scaled</span></span><br><span class="line">age_and_ocean_proximity = tf.feature_column.crossed_column(</span><br><span class="line">    [bucketized_age, ocean_proximity], hash_bucket_size=<span class="number">100</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将纬度和经度交叉到一个分类要素中</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">latitude = tf.feature_column.numeric_column(<span class="string">&quot;latitude&quot;</span>)</span><br><span class="line">longitude = tf.feature_column.numeric_column(<span class="string">&quot;longitude&quot;</span>)</span><br><span class="line">bucketized_latitude = tf.feature_column.bucketized_column(</span><br><span class="line">    latitude, boundaries=<span class="built_in">list</span>(np.linspace(<span class="number">32.</span>, <span class="number">42.</span>, <span class="number">20</span> - <span class="number">1</span>)))</span><br><span class="line">bucketized_longitude = tf.feature_column.bucketized_column(</span><br><span class="line">    longitude, boundaries=<span class="built_in">list</span>(np.linspace(<span class="number">-125.</span>, <span class="number">-114.</span>, <span class="number">20</span> - <span class="number">1</span>)))</span><br><span class="line">location = tf.feature_column.crossed_column(</span><br><span class="line">    [bucketized_latitude, bucketized_longitude], hash_bucket_size=<span class="number">1000</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="独热编码分类特征"><a href="#独热编码分类特征" class="headerlink" title="独热编码分类特征"></a>独热编码分类特征</h4><ul>
+<li><p>必须先对特征进行编码，然后才能将其输入神经网络</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ocean_proximity_one_hot = tf.feature_column.indicator_column(ocean_proximity)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>一个独热向量有字典长度的大小</p>
+</li>
+</ul>
+<h4 id="Embedding-编码分类特征"><a href="#Embedding-编码分类特征" class="headerlink" title="Embedding 编码分类特征"></a>Embedding 编码分类特征</h4><ul>
+<li><p>Embedding：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ocean_proximity_embed = tf.feature_column.embedding_column(ocean_proximity,</span><br><span class="line">                                                           dimension=<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>每个类别编码为二维张量，得到一个 5*2 的矩阵</p>
+</li>
+<li><p>嵌入结果是可学习的</p>
+</li>
+</ul>
+<h4 id="使用特征列进行分析"><a href="#使用特征列进行分析" class="headerlink" title="使用特征列进行分析"></a>使用特征列进行分析</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">columns = [bucketized_age, ....., median_house_value] <span class="comment"># all features + target</span></span><br><span class="line">feature_descriptions = tf.feature_column.make_parse_example_spec(columns)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>make_parse_example_spec()</code>生成特性描述</p>
+</li>
+<li><p>使用这些特性描述来解析序列化的示例，并将目标列与输入特性分开</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_examples</span>(<span class="params">serialized_examples</span>):</span></span><br><span class="line">    examples = tf.io.parse_example(serialized_examples, feature_descriptions)</span><br><span class="line">    targets = examples.pop(<span class="string">&quot;median_house_value&quot;</span>) <span class="comment"># separate the targets</span></span><br><span class="line">    <span class="keyword">return</span> examples, targets</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建一个 TFRecordDataset，读取成批的序列化示例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">batch_size = <span class="number">32</span></span><br><span class="line">dataset = tf.data.TFRecordDataset([<span class="string">&quot;my_data_with_features.tfrecords&quot;</span>])</span><br><span class="line">dataset = dataset.repeat().shuffle(<span class="number">10000</span>).batch(batch_size).<span class="built_in">map</span>(parse_examples)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="在模型中使用特征列"><a href="#在模型中使用特征列" class="headerlink" title="在模型中使用特征列"></a>在模型中使用特征列</h4><ul>
+<li><p>特征列也可以直接在模型中使用，将所有输入特征转换成神经网络可以处理的单一密集向量</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">columns_without_target = columns[:<span class="number">-1</span>]</span><br><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.DenseFeatures(feature_columns=columns_without_target),</span><br><span class="line">    keras.layers.Dense(<span class="number">1</span>)</span><br><span class="line">])</span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=<span class="string">&quot;sgd&quot;</span>, metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br><span class="line">steps_per_epoch = <span class="built_in">len</span>(X_train) // batch_size</span><br><span class="line">history = model.fit(dataset, steps_per_epoch=steps_per_epoch, epochs=<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DenseFeatures 层将负责将每个输入要素转换为密集表示</p>
+</li>
+</ul>
+<h2 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h2><h3 id="卷积层"><a href="#卷积层" class="headerlink" title="卷积层"></a>卷积层</h3><h3 id="池化层"><a href="#池化层" class="headerlink" title="池化层"></a>池化层</h3><h3 id="CNN-结构"><a href="#CNN-结构" class="headerlink" title="CNN 结构"></a>CNN 结构</h3><h3 id="Keras-实现-ResNet-34-CNN"><a href="#Keras-实现-ResNet-34-CNN" class="headerlink" title="Keras 实现 ResNet-34 CNN"></a>Keras 实现 ResNet-34 CNN</h3><h3 id="使用-Keras-中预训练网络"><a href="#使用-Keras-中预训练网络" class="headerlink" title="使用 Keras 中预训练网络"></a>使用 Keras 中预训练网络</h3>
     </div>
 
     
@@ -496,7 +598,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TF-%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">1.</span> <span class="nav-text">TF 加载和预处理数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Data-API"><span class="nav-number">1.1.</span> <span class="nav-text">Data API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E8%BD%AC%E6%8D%A2"><span class="nav-number">1.1.1.</span> <span class="nav-text">链接转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%93%E4%B9%B1%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.2.</span> <span class="nav-text">打乱数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.3.</span> <span class="nav-text">预处理数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E4%BB%A5%E4%B8%8A%E8%BF%87%E7%A8%8B"><span class="nav-number">1.1.4.</span> <span class="nav-text">合并以上过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A2%84%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.5.</span> <span class="nav-text">预取数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TFRecord-%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text">TFRecord 格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Features-API"><span class="nav-number">1.3.</span> <span class="nav-text">Features API</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CNN"><span class="nav-number">2.</span> <span class="nav-text">CNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B7%E7%A7%AF%E5%B1%82"><span class="nav-number">2.1.</span> <span class="nav-text">卷积层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B1%A0%E5%8C%96%E5%B1%82"><span class="nav-number">2.2.</span> <span class="nav-text">池化层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CNN-%E7%BB%93%E6%9E%84"><span class="nav-number">2.3.</span> <span class="nav-text">CNN 结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Keras-%E5%AE%9E%E7%8E%B0-ResNet-34-CNN"><span class="nav-number">2.4.</span> <span class="nav-text">Keras 实现 ResNet-34 CNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-Keras-%E4%B8%AD%E9%A2%84%E8%AE%AD%E7%BB%83%E7%BD%91%E7%BB%9C"><span class="nav-number">2.5.</span> <span class="nav-text">使用 Keras 中预训练网络</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TF-%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">1.</span> <span class="nav-text">TF 加载和预处理数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Data-API"><span class="nav-number">1.1.</span> <span class="nav-text">Data API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E8%BD%AC%E6%8D%A2"><span class="nav-number">1.1.1.</span> <span class="nav-text">链接转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%93%E4%B9%B1%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.2.</span> <span class="nav-text">打乱数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.3.</span> <span class="nav-text">预处理数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E4%BB%A5%E4%B8%8A%E8%BF%87%E7%A8%8B"><span class="nav-number">1.1.4.</span> <span class="nav-text">合并以上过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A2%84%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.5.</span> <span class="nav-text">预取数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TFRecord-%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text">TFRecord 格式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9"><span class="nav-number">1.2.1.</span> <span class="nav-text">压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">1.2.2.</span> <span class="nav-text">协议缓冲区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorFlow-%E7%9A%84%E5%8D%8F%E8%AE%AE%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">1.2.3.</span> <span class="nav-text">TensorFlow 的协议缓冲区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E5%92%8C%E8%A7%A3%E6%9E%90%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.2.4.</span> <span class="nav-text">加载和解析示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Handling-Lists-of-Lists-Using-the-SequenceExample-Protobuf"><span class="nav-number">1.2.5.</span> <span class="nav-text">Handling Lists of Lists Using the SequenceExample Protobuf</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Features-API"><span class="nav-number">1.3.</span> <span class="nav-text">Features API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.1.</span> <span class="nav-text">分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A4%E5%8F%89%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.2.</span> <span class="nav-text">交叉分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%8B%AC%E7%83%AD%E7%BC%96%E7%A0%81%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.3.</span> <span class="nav-text">独热编码分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Embedding-%E7%BC%96%E7%A0%81%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.4.</span> <span class="nav-text">Embedding 编码分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%89%B9%E5%BE%81%E5%88%97%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90"><span class="nav-number">1.3.5.</span> <span class="nav-text">使用特征列进行分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%A8%E6%A8%A1%E5%9E%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%89%B9%E5%BE%81%E5%88%97"><span class="nav-number">1.3.6.</span> <span class="nav-text">在模型中使用特征列</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CNN"><span class="nav-number">2.</span> <span class="nav-text">CNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B7%E7%A7%AF%E5%B1%82"><span class="nav-number">2.1.</span> <span class="nav-text">卷积层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B1%A0%E5%8C%96%E5%B1%82"><span class="nav-number">2.2.</span> <span class="nav-text">池化层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CNN-%E7%BB%93%E6%9E%84"><span class="nav-number">2.3.</span> <span class="nav-text">CNN 结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Keras-%E5%AE%9E%E7%8E%B0-ResNet-34-CNN"><span class="nav-number">2.4.</span> <span class="nav-text">Keras 实现 ResNet-34 CNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-Keras-%E4%B8%AD%E9%A2%84%E8%AE%AD%E7%BB%83%E7%BD%91%E7%BB%9C"><span class="nav-number">2.5.</span> <span class="nav-text">使用 Keras 中预训练网络</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -603,12 +705,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">412k</span>
+    <span title="站点总字数">416k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:14</span>
+    <span title="站点阅读时长">6:19</span>
 </div>
 
         
