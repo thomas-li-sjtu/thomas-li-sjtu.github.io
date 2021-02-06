@@ -13283,13 +13283,17 @@ def a_function_requiring_decoration():
 </li>
 <li><p>循环神经元层： 在每个时间步<code>t</code>，每个神经元都接收输入向量<code>x[t]</code>和前一个时间步<code>y[t - 1]</code>的输出向量；此时输入和输出都是向量（当只有一个神经元时，输出是一个标量）</p>
 <ul>
-<li>两组权重：<ul>
-<li>用于输入<code>x[t]</code>——<code>w[x]</code></li>
-<li>用于前一时间步长<code>y[t - 1]</code>的输出——<code>w[y]</code></li>
-<li><img src="/2021/02/06/Hands-on-ML-4/image-20210206123642476.png" alt="image-20210206123642476"></li>
+<li><p>两组权重：</p>
+<ul>
+<li><p>用于输入<code>x[t]</code>——<code>w[x]</code></p>
+</li>
+<li><p>用于前一时间步长<code>y[t - 1]</code>的输出——<code>w[y]</code></p>
+<img src="/2021/02/06/Hands-on-ML-4/image-20210206123642476.png" alt="image-20210206123642476" style="zoom:80%;">
+</li>
 </ul>
 </li>
-<li>将所有输入和时间步<code>t</code>放到输入矩阵<code>X[t]</code>，一次计算出整个 batch 的输出</li>
+<li><p>将所有输入和时间步<code>t</code>放到输入矩阵<code>X[t]</code>，一次计算出整个 batch 的输出</p>
+</li>
 </ul>
 </li>
 </ul>
@@ -13415,10 +13419,46 @@ def a_function_requiring_decoration():
 </li>
 <li><p>LSTM 单元：状态分为两个向量<code>h[t]</code>（短期记忆状态）与<code>c[t]</code>（长期记忆状态）</p>
 <img src="/2021/02/06/Hands-on-ML-4/image-20210206133708898.png" alt="image-20210206133708898" style="zoom:67%;">
-
+* 长期状态`c[t-1]`从左向右传播，先经过遗忘门丢弃一些记忆，后通过添加操作增加一些记忆（从输入门中选择一些记忆）
+* 长期状态复制后经过 tanh 激活，被输出门过滤，得到短期状态`h[t]`
+* 输入向量`x[t]`和前一时刻的短期状态`h[t-1]`传给四个不同的全连接层
+  * 输出`g[t]`的层是主要层，分析当前的输入`x[t]`和前一时刻的短时状态`h[t-1]`
+  * 其它三个全连接层是门控制器，采用 Logistic 作为激活函数，输出范围在 0 到 1 之间，提供逐元素乘法操作
+    * 遗忘门（`f[t]`控制）决定哪些长期记忆需要被删除
+    * 输入门（`i[t]`控制） 决定哪部分`g[t]`应该被添加到长期状态
+    * 输出门（`o[t]`控制）决定长期状态的哪些部分要读取和输出为`h[t]`和`y[t]`
+* 学习识别重要输入（输入门），存储进长期状态，并保存必要的记忆（遗忘门）
+</li>
+<li><p>Keras 中，<code>LSTM</code>层基于<code>keras.layers.LSTMCell</code>单元</p>
+</li>
+<li><p><code>tf.keras.experimental.PeepholeLSTMCell</code>支持窥孔——各个门控制器都可窥视长期状态，获取一些上下文信息</p>
 </li>
 </ul>
-<h5 id="GRU"><a href="#GRU" class="headerlink" title="GRU"></a>GRU</h5><h5 id="一维卷积层"><a href="#一维卷积层" class="headerlink" title="一维卷积层"></a>一维卷积层</h5>]]></content>
+<h5 id="GRU"><a href="#GRU" class="headerlink" title="GRU"></a>GRU</h5><ul>
+<li>LSTM 的简化版本，实现同样的性能<ul>
+<li>长期状态和短期状态合并为一个向量<code>h[t]</code></li>
+<li>一个门控制器<code>z[t]</code>控制遗忘门和输入门，输出 1 则遗忘门打开输入门关闭</li>
+<li>取消了输出门，每个时间步输出全态向量</li>
+<li>增加一个控制门<code>r[t]</code>控制前一状态的哪些部分呈现给主层<code>g[t]</code></li>
+</ul>
+</li>
+<li>Keras 提供<code>keras.layers.GRU</code>层（基于<code>keras.layers.GRUCell</code>记忆单元）；只需将<code>SimpleRNN</code>或<code>LSTM</code>替换为<code>GRU</code></li>
+</ul>
+<h5 id="一维卷积层"><a href="#一维卷积层" class="headerlink" title="一维卷积层"></a>一维卷积层</h5><ul>
+<li><p>1D 卷积层在序列上滑动卷积核，每个核产生一个 1D 特征映射，学到一个非常短序列模式——用 10 个核，则输出会包括 10 个 1 维的序列（长度相同）</p>
+</li>
+<li><p>如果 1D 卷积层的步长是 1，填充为 same，则输出序列的长度和输入序列相同</p>
+</li>
+<li><p>通过缩短序列，卷积层可以帮助 GRU 检测长模式</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Conv1D(filters=<span class="number">20</span>, kernel_size=<span class="number">4</span>, strides=<span class="number">2</span>, padding=<span class="string">&quot;valid&quot;</span>,</span><br><span class="line">                        input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.GRU(<span class="number">20</span>, return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.GRU(<span class="number">20</span>, return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.TimeDistributed(keras.layers.Dense(<span class="number">10</span>))</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=<span class="string">&quot;adam&quot;</span>, metrics=[last_time_step_mse])</span><br><span class="line">history = model.fit(X_train, Y_train[:, <span class="number">3</span>::<span class="number">2</span>], epochs=<span class="number">20</span>,</span><br><span class="line">                    validation_data=(X_valid, Y_valid[:, <span class="number">3</span>::<span class="number">2</span>]))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>核大小比步长大，则所有输入会被用来计算输出</li>
+<li>必须裁剪<code>Y_train</code>中的前三个时间步，因为核大小是 4，卷积层的第一个输出基于输入时间步 0 到 3；并用因子 2 对<code>Y_train</code>做降采样</li>
+</ul>
+</li>
+</ul>
+]]></content>
       <categories>
         <category>深度学习</category>
       </categories>
