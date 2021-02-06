@@ -13265,4 +13265,166 @@ def a_function_requiring_decoration():
         <tag>TensorFlow</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Hands-on Machine Learning（4）</title>
+    <url>/2021/02/06/Hands-on-ML-4/</url>
+    <content><![CDATA[<p>《Hands-on Machine Learning》第二部分阅读笔记（4）RNN 和 1D CNN 处理序列</p>
+<a id="more"></a>
+
+<h2 id="使用-RNN-和-CNN-处理序列"><a href="#使用-RNN-和-CNN-处理序列" class="headerlink" title="使用 RNN 和 CNN 处理序列"></a>使用 RNN 和 CNN 处理序列</h2><h3 id="循环神经元和层"><a href="#循环神经元和层" class="headerlink" title="循环神经元和层"></a>循环神经元和层</h3><ul>
+<li><p>最简单的 RNN：由一个神经元接收输入，产生一个输出，并将输出发送回自己</p>
+<ul>
+<li><p>在每个时间步<code>t</code>（称为一个帧），循环神经元接收输入<code>x[t]</code>以及它自己的前一时间步长<code>y[t - 1]</code>的输出</p>
+</li>
+<li><p>可用时间轴来表示这个微小的网络</p>
+<img src="/2021/02/06/Hands-on-ML-4/image-20210206123451440.png" alt="image-20210206123451440" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>循环神经元层： 在每个时间步<code>t</code>，每个神经元都接收输入向量<code>x[t]</code>和前一个时间步<code>y[t - 1]</code>的输出向量；此时输入和输出都是向量（当只有一个神经元时，输出是一个标量）</p>
+<ul>
+<li>两组权重：<ul>
+<li>用于输入<code>x[t]</code>——<code>w[x]</code></li>
+<li>用于前一时间步长<code>y[t - 1]</code>的输出——<code>w[y]</code></li>
+<li><img src="/2021/02/06/Hands-on-ML-4/image-20210206123642476.png" alt="image-20210206123642476"></li>
+</ul>
+</li>
+<li>将所有输入和时间步<code>t</code>放到输入矩阵<code>X[t]</code>，一次计算出整个 batch 的输出</li>
+</ul>
+</li>
+</ul>
+<h4 id="记忆单元"><a href="#记忆单元" class="headerlink" title="记忆单元"></a>记忆单元</h4><ul>
+<li>保留一些跨越时间步长的状态，称为记忆单元</li>
+<li>单个循环神经元或循环神经元层是非常基本的单元，只能学习短期规律，通常是 10 个时间步</li>
+<li>时间步<code>t</code>的单元状态，记为<code>h[t]</code>，是该时间步的某些输入和前一时间步状态的函数</li>
+</ul>
+<h4 id="输入和输出序列"><a href="#输入和输出序列" class="headerlink" title="输入和输出序列"></a>输入和输出序列</h4><ul>
+<li><p>可以同时输入序列并输出序列</p>
+</li>
+<li><p>可以向网络输入一个序列，忽略除最后一项之外的所有输出——序列到向量；例如输入评论单词序列，输出情感评分</p>
+</li>
+<li><p>可以向网络重复输入相同的向量，输出一个序列——向量到序列；例如输入图像（或 CNN 输出），输出该图像标题</p>
+</li>
+<li><p>序列到向量 + 向量到序列：编码解码器；比用单个序列到序列的 RNN 实时地进行翻译要好得多，因为句子的最后一个单词可以影响翻译的第一句话</p>
+<img src="/2021/02/06/Hands-on-ML-4/image-20210206124754793.png" alt="image-20210206124754793" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="训练RNN"><a href="#训练RNN" class="headerlink" title="训练RNN"></a>训练RNN</h3><ul>
+<li><p>在时间上展开，然后反向传播（BPTT）</p>
+</li>
+<li><p>展开的网络先有正向传播，使用损失函数<code>C(Y[0], Y[1], …Y[T]])</code>评估输出序列（可能会忽略一些输出），梯度在损失函数所使用的所有输出中反向流动</p>
+</li>
+<li><p>如图，梯度流经损失函数使用的最后三个输出<code>Y[2]</code>，<code>Y[3]</code>和<code>Y[4]</code>，但不通过<code>Y[0]</code>和<code>Y[1]</code></p>
+<img src="/2021/02/06/Hands-on-ML-4/image-20210206125113110.png" alt="image-20210206125113110" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="预测时间序列"><a href="#预测时间序列" class="headerlink" title="预测时间序列"></a>预测时间序列</h3><ul>
+<li><p><code>generate_time_series()</code>生成随机的时间序列，长度为<code>n_steps</code>，返回形状 [batch size, 时间步数, 1] 的 NumPy 数组</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">generate_time_series</span>(<span class="params">batch_size, n_steps</span>):</span></span><br><span class="line">    freq1, freq2, offsets1, offsets2 = np.random.rand(<span class="number">4</span>, batch_size, <span class="number">1</span>)</span><br><span class="line">    time = np.linspace(<span class="number">0</span>, <span class="number">1</span>, n_steps)</span><br><span class="line">    series = <span class="number">0.5</span> * np.sin((time - offsets1) * (freq1 * <span class="number">10</span> + <span class="number">10</span>))  <span class="comment">#   wave 1</span></span><br><span class="line">    series += <span class="number">0.2</span> * np.sin((time - offsets2) * (freq2 * <span class="number">20</span> + <span class="number">20</span>)) <span class="comment"># + wave 2</span></span><br><span class="line">    series += <span class="number">0.1</span> * (np.random.rand(batch_size, n_steps) - <span class="number">0.5</span>)   <span class="comment"># + noise</span></span><br><span class="line">    <span class="keyword">return</span> series[..., np.newaxis].astype(np.float32) </span><br><span class="line">    </span><br><span class="line">n_steps = <span class="number">50</span></span><br><span class="line">series = generate_time_series(<span class="number">10000</span>, n_steps + <span class="number">1</span>)</span><br><span class="line">X_train, y_train = series[:<span class="number">7000</span>, :n_steps], series[:<span class="number">7000</span>, <span class="number">-1</span>]</span><br><span class="line">X_valid, y_valid = series[<span class="number">7000</span>:<span class="number">9000</span>, :n_steps], series[<span class="number">7000</span>:<span class="number">9000</span>, <span class="number">-1</span>]</span><br><span class="line">X_test, y_test = series[<span class="number">9000</span>:, :n_steps], series[<span class="number">9000</span>:, <span class="number">-1</span>] </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<blockquote>
+<p>输入特征通常用 3D 数组来表示，其形状是<code>[批次大小, 时间步数, 维度]</code>，对于单变量时间序列，其维度是 1，多变量时间序列的维度是其维度数</p>
+</blockquote>
+<h4 id="基线指标（Baseline-metrics）"><a href="#基线指标（Baseline-metrics）" class="headerlink" title="基线指标（Baseline metrics）"></a>基线指标（Baseline metrics）</h4><ul>
+<li><p>使用 RNN 最好有基线指标：朴素预测（预测每个序列的最后一个值），或使用全连接网络</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">50</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">1</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>MSE 损失、Adam 优化器、 20 个周期</p>
+</li>
+</ul>
+<h4 id="简单-RNN-实现"><a href="#简单-RNN-实现" class="headerlink" title="简单 RNN 实现"></a>简单 RNN 实现</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">  keras.layers.SimpleRNN(<span class="number">1</span>, input_shape=[<span class="literal">None</span>, <span class="number">1</span>])</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>默认时，Keras 循环层只返回最后一个输出。要返回每个时间步的输出，必须设置<code>return_sequences=True</code></p>
+</blockquote>
+<ul>
+<li>循环神经网络可以处理任意的时间步，所以第一个输入维度设为<code>None</code></li>
+<li><code>SimpleRNN</code>默认使用双曲正切函数激活</li>
+<li>初始状态<code>h[init]</code>为 0，和时间序列的第一个值<code>x[0]</code>传递给神经元。神经元计算两个值的加权和，使用双曲正切激活，得到<code>y[0]</code>。简单 RNN 中，这个输出也是新状态<code>h[0]</code>。新状态和下一个输入值<code>x[1]</code>按此流程重复，直到输出最后一个值<code>y[49]</code></li>
+</ul>
+<blockquote>
+<p>某些模型需要先移出趋势和季节性，例如，研究网站的活跃用户数，它每月会增长 10%，需要去掉这个趋势。训练好模型之后可以将趋势加回，做最终预测</p>
+</blockquote>
+<h4 id="深度-RNN"><a href="#深度-RNN" class="headerlink" title="深度 RNN"></a>深度 RNN</h4><ul>
+<li><p>将多个层堆叠</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>, return_sequences=<span class="literal">True</span>, input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>, return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">1</span>)</span><br><span class="line">]) </span><br></pre></td></tr></table></figure>
+
+<img src="/2021/02/06/Hands-on-ML-4/image-20210206130517288.png" alt="image-20210206130517288" style="zoom:67%;">
+* 所有循环层一定要设置`return_sequences=True`，否则输出的是 2D 数组，即只有最终时间步的输出
+</li>
+<li><p>优化：一个神经元表示隐藏态只有一个值。RNN 大部分使用其他循环层的隐藏态的所有信息</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>, return_sequences=<span class="literal">True</span>, input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">1</span>)</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="预测多个时间步"><a href="#预测多个时间步" class="headerlink" title="预测多个时间步"></a>预测多个时间步</h4><ul>
+<li><p>使用训练好的模型预测出下一个值，将这个值添加到输入中再预测下一个值——错误可能会累积</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">series = generate_time_series(<span class="number">1</span>, n_steps + <span class="number">10</span>)</span><br><span class="line">X_new, Y_new = series[:, :n_steps], series[:, n_steps:]</span><br><span class="line">X = X_new</span><br><span class="line"><span class="keyword">for</span> step_ahead <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    y_pred_one = model.predict(X[:, step_ahead:])[:, np.newaxis, :]</span><br><span class="line">    X = np.concatenate([X, y_pred_one], axis=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">Y_pred = X[:, n_steps:] </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>一次预测10个值</p>
+<ul>
+<li><p>修改输入向量，每个时间步有 10 个值</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">series = generate_time_series(<span class="number">10000</span>, n_steps + <span class="number">10</span>)</span><br><span class="line">X_train, Y_train = series[:<span class="number">7000</span>, :n_steps], series[:<span class="number">7000</span>, <span class="number">-10</span>:, <span class="number">0</span>]</span><br><span class="line">X_valid, Y_valid = series[<span class="number">7000</span>:<span class="number">9000</span>, :n_steps], series[<span class="number">7000</span>:<span class="number">9000</span>, <span class="number">-10</span>:, <span class="number">0</span>]</span><br><span class="line">X_test, Y_test = series[<span class="number">9000</span>:, :n_steps], series[<span class="number">9000</span>:, <span class="number">-10</span>:, <span class="number">0</span>] </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修改输出层</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>, return_sequences=<span class="literal">True</span>, input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">10</span>)</span><br><span class="line">])</span><br><span class="line">Y_pred = model.predict(X_new) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>优化：之前是最后一个时间步预测 10 个值，可以在每个时间步预测接下来的 10 个值——时间步 0，模型输出一个包含时间步 1 到 10 的预测向量，在时间步 1，模型输出一个包含时间步 2 到 11 的预测向量，以此类推</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 目标序列，目标要包含出现在输入中的值（X_train 和 Y_train有许多重复）</span></span><br><span class="line">Y = np.empty((<span class="number">10000</span>, n_steps, <span class="number">10</span>)) <span class="comment"># each target is a sequence of 10D vectors</span></span><br><span class="line"><span class="keyword">for</span> step_ahead <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">10</span> + <span class="number">1</span>):</span><br><span class="line">    Y[:, :, step_ahead - <span class="number">1</span>] = series[:, step_ahead:step_ahead + n_steps, <span class="number">0</span>]</span><br><span class="line">Y_train = Y[:<span class="number">7000</span>]</span><br><span class="line">Y_valid = Y[<span class="number">7000</span>:<span class="number">9000</span>]</span><br><span class="line">Y_test = Y[<span class="number">9000</span>:]</span><br><span class="line"></span><br><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>, return_sequences=<span class="literal">True</span>, input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.SimpleRNN(<span class="number">20</span>, return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.TimeDistributed(keras.layers.Dense(<span class="number">10</span>))</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">last_time_step_mse</span>(<span class="params">Y_true, Y_pred</span>):</span></span><br><span class="line">    <span class="keyword">return</span> keras.metrics.mean_squared_error(Y_true[:, <span class="number">-1</span>], Y_pred[:, <span class="number">-1</span>])</span><br><span class="line"></span><br><span class="line">optimizer = keras.optimizers.Adam(lr=<span class="number">0.01</span>)</span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=optimizer, metrics=[last_time_step_mse]) </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>必须在每个时间步添加全连接输出层，因此使用<code>TimeDistributed</code>层：将任意层（比如，紧密层）包装，在输入序列的每个时间步上使用，即输入从<code>[批次大小, 时间步数, 输入维度]</code>变形为<code>[批次大小 × 时间步数, 输入维度]</code>，运行全连接层，将输出从<code>[批次大小 × 时间步数, 输出维度]</code>变形为<code>[批次大小, 时间步数, 输出维度]</code></li>
+<li>此例子中，输入维度为 20，因为 SimpleRNN 维度为 20；输出为 10，因为包装的全连接层维度为 10</li>
+<li>预测和评估时，只需最后时间步的输出，需要自定义指标</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="处理长序列"><a href="#处理长序列" class="headerlink" title="处理长序列"></a>处理长序列</h3><h4 id="不稳定梯度"><a href="#不稳定梯度" class="headerlink" title="不稳定梯度"></a>不稳定梯度</h4><ul>
+<li><p>运行许多时间步，则展开的 RNN 是一个很深的网络</p>
+</li>
+<li><p>不能在时间步骤之间使用 BN，只能在循环层之间使用</p>
+</li>
+<li><p>层归一化：不在批次维度上做归一化，在特征维度上归一化；通常用在输入和隐藏态的线型组合之后</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LNSimpleRNNCell</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, units, activation=<span class="string">&quot;tanh&quot;</span>, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">        self.state_size = units</span><br><span class="line">        self.output_size = units</span><br><span class="line">        self.simple_rnn_cell = keras.layers.SimpleRNNCell(units,</span><br><span class="line">                                                          activation=<span class="literal">None</span>)</span><br><span class="line">        self.layer_norm = keras.layers.LayerNormalization()</span><br><span class="line">        self.activation = keras.activations.get(activation)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs, states</span>):</span></span><br><span class="line">        outputs, new_states = self.simple_rnn_cell(inputs, states)</span><br><span class="line">        norm_outputs = self.activation(self.layer_norm(outputs))</span><br><span class="line">        <span class="keyword">return</span> norm_outputs, [norm_outputs] </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>call()</code>接收：当前时间步的<code>inputs</code>和上一时间步的隐藏<code>states</code>；<code>call()</code>先使用简单 RNN 单元，计算当前输入和上一隐藏态的线性组合，之后归一化，激活，返回输出和新的隐藏态</p>
+</li>
+<li><p>构造器创建<code>LayerNormalization</code>层</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.RNN(LNSimpleRNNCell(<span class="number">20</span>), return_sequences=<span class="literal">True</span>,</span><br><span class="line">                     input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.RNN(LNSimpleRNNCell(<span class="number">20</span>), return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.TimeDistributed(keras.layers.Dense(<span class="number">10</span>))</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="短期记忆问题"><a href="#短期记忆问题" class="headerlink" title="短期记忆问题"></a>短期记忆问题</h4><ul>
+<li>数据在 RNN 中流动时会经历转换，每个时间步都损失了一定信息，一定时间后，第一个输入会在 RNN 的状态中消失</li>
+</ul>
+<h5 id="LSTM"><a href="#LSTM" class="headerlink" title="LSTM"></a>LSTM</h5><ul>
+<li><p>设置 LSTM 层</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.LSTM(<span class="number">20</span>, return_sequences=<span class="literal">True</span>, input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.LSTM(<span class="number">20</span>, return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.TimeDistributed(keras.layers.Dense(<span class="number">10</span>))</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置 LSTMCell 参数（此方法使用较少，因为<code>RNN</code>大多用来自定义层）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.RNN(keras.layers.LSTMCell(<span class="number">20</span>), return_sequences=<span class="literal">True</span>,</span><br><span class="line">                     input_shape=[<span class="literal">None</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.RNN(keras.layers.LSTMCell(<span class="number">20</span>), return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.TimeDistributed(keras.layers.Dense(<span class="number">10</span>))</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>LSTM 单元：状态分为两个向量<code>h[t]</code>（短期记忆状态）与<code>c[t]</code>（长期记忆状态）</p>
+<img src="/2021/02/06/Hands-on-ML-4/image-20210206133708898.png" alt="image-20210206133708898" style="zoom:67%;">
+
+</li>
+</ul>
+<h5 id="GRU"><a href="#GRU" class="headerlink" title="GRU"></a>GRU</h5><h5 id="一维卷积层"><a href="#一维卷积层" class="headerlink" title="一维卷积层"></a>一维卷积层</h5>]]></content>
+      <categories>
+        <category>深度学习</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>TensorFlow</tag>
+      </tags>
+  </entry>
 </search>
