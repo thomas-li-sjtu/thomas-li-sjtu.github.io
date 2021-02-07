@@ -32,8 +32,10 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/07/Hands-on-ML-6/image-20210207123736286.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/07/Hands-on-ML-6/image-20210207140126299.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/07/Hands-on-ML-6/740eb69bb6b3b4e1ca5891bd3ff61dcd.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/07/Hands-on-ML-6/d644e896b4f43cb67ea5f6f6503e951e.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/07/Hands-on-ML-6/9e3e02ea9caa5692e6a4ac2c14d5c68a.png">
 <meta property="article:published_time" content="2021-02-07T02:33:38.000Z">
-<meta property="article:modified_time" content="2021-02-07T06:23:31.518Z">
+<meta property="article:modified_time" content="2021-02-07T06:30:26.793Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="Python">
 <meta property="article:tag" content="TensorFlow">
@@ -246,7 +248,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.2k</span>
+              <span>3.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -349,12 +351,35 @@
 </li>
 </ul>
 <h4 id="多头注意力"><a href="#多头注意力" class="headerlink" title="多头注意力"></a>多头注意力</h4><ul>
-<li>收缩点积注意力层（Scaled Dot-Product Attention）<ul>
-<li>假设编码器分析输入句子<code>They played chess</code>，编码器分析出<code>They</code>是主语，<code>played</code>是动词，然后用词的表征编码这些信息；假设解码器已经翻译了主语</li>
-<li>需要从输入句子取动词：解码器想查找键<code>verb</code>对应的值是什么。但是，模型没有离散的标记来表示键（比如<code>subject</code>或<code>verb</code>）；它只有这些（训练中学到的）信息的向量化表征所以用来查询的键，不会完美对应前面字典中的键——计算查询词和键的相似度，用 softmax 函数计算概率权重</li>
+<li><p>收缩点积注意力层（Scaled Dot-Product Attention）</p>
+<ul>
+<li><p>假设编码器分析输入句子<code>They played chess</code>，编码器分析出<code>They</code>是主语，<code>played</code>是动词，然后用词的表征编码这些信息；假设解码器已经翻译了主语</p>
+</li>
+<li><p>需要从输入句子取动词：解码器想查找键<code>verb</code>对应的值是什么。但是，模型没有离散的标记来表示键（比如<code>subject</code>或<code>verb</code>）；它只有这些（训练中学到的）信息的向量化表征所以用来查询的键，不会完美对应前面字典中的键——计算查询词和键的相似度，用 softmax 函数计算概率权重</p>
+<p><img src="/2021/02/07/Hands-on-ML-6/d644e896b4f43cb67ea5f6f6503e951e.png" alt="img"></p>
+<ul>
+<li><code>Q</code>矩阵每行是一个查询词。它的形状是<code>[n_queries, d_keys]</code>，<code>n_queries</code>是查询数，<code>d_keys</code>是每次查询和每个键的维度数</li>
+<li><code>K</code>矩阵每行是一个键。它的形状是<code>[n_keys, d_keys]</code>，<code>n_keys</code>是键和值的数量</li>
+<li><code>V</code>矩阵每行是一个值。它的形状是<code>[n_keys, d_values]</code>，<code>d_values</code>是每个值的数</li>
+<li>编码器中，公式应用到批次中的每个句子，<code>Q</code>、<code>K</code>、<code>V</code>等于输入句中的词列表</li>
+<li>解码器的遮挡注意力层中，这个公式会应用到批次中每个目标句上，但要用遮挡，防止每个词和后面的词比较</li>
 </ul>
 </li>
-<li>TensorFlow 2 还没有<code>Transformer</code>类或<code>MultiHeadAttention</code>类；可以查看 TensorFlow 教程：<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://homl.info/transformertuto">创建语言理解的 Transformer 模型</a></li>
+<li><p><code>keras.layers.Attention</code>层实现了缩放点积注意力，它的输入是<code>Q</code>、<code>K</code>、<code>V</code>，还有一个批次维度</p>
+</li>
+</ul>
+</li>
+<li><p>多头注意力层</p>
+<img src="/2021/02/07/Hands-on-ML-6/9e3e02ea9caa5692e6a4ac2c14d5c68a.png" alt="img" style="zoom: 33%;">
+
+<ul>
+<li>包括一组缩放点积注意力层，每个前面有一个值、键、查询的线性变换</li>
+<li>所有输出简单连接起来，再通过一个最终的线性变换</li>
+<li>让模型将词表征投影到不同的亚空间，每个关注于词特性的一个子集，缩放点积注意力做查询操作，最后将所有结果串起来，在投射到原始空间</li>
+</ul>
+</li>
+<li><p>TensorFlow 2 还没有<code>Transformer</code>类或<code>MultiHeadAttention</code>类；可以查看 TensorFlow 教程：<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://homl.info/transformertuto">创建语言理解的 Transformer 模型</a></p>
+</li>
 </ul>
 <h3 id="语言模型的最新进展"><a href="#语言模型的最新进展" class="headerlink" title="语言模型的最新进展"></a>语言模型的最新进展</h3><ul>
 <li>Matthew Peters 的 <a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://homl.info/elmo">ELMo 论文</a>，介绍了语言模型的嵌入，学习深度双向语言模型的内部状态，得到的上下文词嵌入</li>
