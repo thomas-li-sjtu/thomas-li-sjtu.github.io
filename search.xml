@@ -13864,4 +13864,248 @@ def a_function_requiring_decoration():
         <tag>TensorFlow</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Hands-on Machine Learning（7）</title>
+    <url>/2021/02/08/Hands-on-ML-7/</url>
+    <content><![CDATA[<p>《Hands-on Machine Learning》第二部分阅读笔记（7）</p>
+<a id="more"></a>
+
+<h2 id="自动编码器与表征学习"><a href="#自动编码器与表征学习" class="headerlink" title="自动编码器与表征学习"></a>自动编码器与表征学习</h2><ul>
+<li>编码是自编码器在一些限制下学习恒等函数的副产品</li>
+</ul>
+<h3 id="有效的数据表征"><a href="#有效的数据表征" class="headerlink" title="有效的数据表征"></a>有效的数据表征</h3><ul>
+<li>自编码器查看输入信息，转换为高效的潜在表征，输出一些（希望）非常接近输入的东西</li>
+<li>自编码器：<ul>
+<li>将输入转换为潜在表征的编码器——识别网络</li>
+<li>将潜在表征转换为输出的解码器——生成网络</li>
+</ul>
+</li>
+<li>自编码器通常与 MLP 体系结构相同，但输出层神经元数量必须等于输入数量</li>
+<li>输出通常被称为重建，损失函数包含重建损失</li>
+<li>内部表征具有比输入数据更低的维度，自编码器被迫学习输入数据中最重要的特征，并删除不重要的特征</li>
+</ul>
+<h3 id="不完整的线性自编码器实现PCA"><a href="#不完整的线性自编码器实现PCA" class="headerlink" title="不完整的线性自编码器实现PCA"></a>不完整的线性自编码器实现PCA</h3><ul>
+<li><p>自编码器仅使用线性激活且损失函数是均方误差 MSE——实现主成分分析</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tensorflow <span class="keyword">import</span> keras</span><br><span class="line"></span><br><span class="line">encoder = keras.models.Sequential([keras.layers.Dense(<span class="number">2</span>, input_shape=[<span class="number">3</span>])])</span><br><span class="line">decoder = keras.models.Sequential([keras.layers.Dense(<span class="number">3</span>, input_shape=[<span class="number">2</span>])])</span><br><span class="line">autoencoder = keras.models.Sequential([encoder, decoder])</span><br><span class="line"></span><br><span class="line">autoencoder.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=keras.optimizers.SGD(lr=<span class="number">0.1</span>)) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编码器和解码器都是<code>Sequential</code>模型，每个含有一个 Dense</p>
+</li>
+<li><p>自编码器的输出等于输入</p>
+</li>
+<li><p>简单 PCA 不需要激活函数</p>
+</li>
+<li><p>可以将自编码器当做某种形式的自监督学习，即带有自动生成标签功能的监督学习</p>
+</li>
+</ul>
+<h3 id="栈式自编码器"><a href="#栈式自编码器" class="headerlink" title="栈式自编码器"></a>栈式自编码器</h3><ul>
+<li><p>自编码器有多个隐藏层：栈式自编码器（或深度自编码器）</p>
+</li>
+<li><p>中央隐藏层（编码层）为中心通常是对称的</p>
+<img src="/2021/02/08/Hands-on-ML-7/2eb643c0821b45d0728233dbf25d1e46.png" alt="img" style="zoom: 50%;">
+
+</li>
+</ul>
+<h4 id="Keras-实现栈式自编码器"><a href="#Keras-实现栈式自编码器" class="headerlink" title="Keras 实现栈式自编码器"></a>Keras 实现栈式自编码器</h4><ul>
+<li><p>代码如下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">stacked_encoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">])</span><br><span class="line">stacked_decoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>, input_shape=[<span class="number">30</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">28</span> * <span class="number">28</span>, activation=<span class="string">&quot;sigmoid&quot;</span>),</span><br><span class="line">    keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>])</span><br><span class="line">])</span><br><span class="line">stacked_ae = keras.models.Sequential([stacked_encoder, stacked_decoder])</span><br><span class="line">stacked_ae.<span class="built_in">compile</span>(loss=<span class="string">&quot;binary_crossentropy&quot;</span>,</span><br><span class="line">                   optimizer=keras.optimizers.SGD(lr=<span class="number">1.5</span>))</span><br><span class="line">history = stacked_ae.fit(X_train, X_train, epochs=<span class="number">10</span>,</span><br><span class="line">                         validation_data=[X_valid, X_valid]) </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>包括两个子模块：编码器和解码器</li>
+<li>编码器接收<code>28 × 28</code>像素的灰度图片，打平为 784 的向量，用两个 Dense 层处理</li>
+<li>解码器接收编码器的输出，用两个 Dense 层处理，最后的向量转换为<code>28 × 28</code>的数组，使解码器的输出和编码器的输入形状相同</li>
+</ul>
+</li>
+</ul>
+<h4 id="可视化重建"><a href="#可视化重建" class="headerlink" title="可视化重建"></a>可视化重建</h4><ul>
+<li><p>绘制重建结果与实际的图片</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">plot_image</span>(<span class="params">image</span>):</span></span><br><span class="line">    plt.imshow(image, cmap=<span class="string">&quot;binary&quot;</span>)</span><br><span class="line">    plt.axis(<span class="string">&quot;off&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show_reconstructions</span>(<span class="params">model, n_images=<span class="number">5</span></span>):</span></span><br><span class="line">    reconstructions = model.predict(X_valid[:n_images])</span><br><span class="line">    fig = plt.figure(figsize=(n_images * <span class="number">1.5</span>, <span class="number">3</span>))</span><br><span class="line">    <span class="keyword">for</span> image_index <span class="keyword">in</span> <span class="built_in">range</span>(n_images):</span><br><span class="line">        plt.subplot(<span class="number">2</span>, n_images, <span class="number">1</span> + image_index)</span><br><span class="line">        plot_image(X_valid[image_index])</span><br><span class="line">        plt.subplot(<span class="number">2</span>, n_images, <span class="number">1</span> + n_images + image_index)</span><br><span class="line">        plot_image(reconstructions[image_index])</span><br><span class="line"></span><br><span class="line">show_reconstructions(stacked_ae) </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="可视化-Fashion-MNIST-数据集"><a href="#可视化-Fashion-MNIST-数据集" class="headerlink" title="可视化 Fashion MNIST 数据集"></a>可视化 Fashion MNIST 数据集</h4><ul>
+<li><p>可以利用自编码器将数据集降维到一个合理的水平，使用另外一个降维算法做可视化</p>
+</li>
+<li><p>举例：栈式自编码器的编码器将维度降到 30，使用 Scikit-Learn 的 t-SNE 算法将维度降到 2 并做可视化</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.manifold <span class="keyword">import</span> TSNE</span><br><span class="line"></span><br><span class="line">X_valid_compressed = stacked_encoder.predict(X_valid)</span><br><span class="line">tsne = TSNE()</span><br><span class="line">X_valid_2D = tsne.fit_transform(X_valid_compressed) </span><br><span class="line"></span><br><span class="line">plt.scatter(X_valid_2D[:, <span class="number">0</span>], X_valid_2D[:, <span class="number">1</span>], c=y_valid, s=<span class="number">10</span>, cmap=<span class="string">&quot;tab10&quot;</span>) </span><br></pre></td></tr></table></figure>
+
+<img src="/2021/02/08/Hands-on-ML-7/fc72779301071ddc44cc9423b21732bc.png" alt="img" style="zoom: 33%;">
+
+</li>
+</ul>
+<h4 id="栈式自编码器实现无监督预训练"><a href="#栈式自编码器实现无监督预训练" class="headerlink" title="栈式自编码器实现无监督预训练"></a>栈式自编码器实现无监督预训练</h4><ul>
+<li><p>如果有一个大数据集，但大部分实例是无标签的，可以用全部数据训练一个栈式自编码器，然后使用其底层创建一个神经网络，再用有标签数据来训练</p>
+</li>
+<li><p>当训练分类器时，如果标签数据不足，可以冻住预训练层</p>
+<img src="/2021/02/08/Hands-on-ML-7/6a262b3ada6d315c0ff9d176785f0e0d.png" alt="img" style="zoom:50%;">
+
+</li>
+</ul>
+<h4 id="关联权重"><a href="#关联权重" class="headerlink" title="关联权重"></a>关联权重</h4><ul>
+<li><p>将解码器层的权重与编码器层的权重相关联，以减半模型中的权重数量，加快训练速度，并限制过拟合的风险</p>
+</li>
+<li><p><code>W[L]</code>表示第<code>L</code>层的连接权重，解码器层权重可以简单地定义为：<code>W[N–L+1] = W[L]^T</code>（其中<code>L = 1, 2, ..., N/2</code>）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DenseTranspose</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, dense, activation=<span class="literal">None</span>, **kwargs</span>):</span></span><br><span class="line">        self.dense = dense</span><br><span class="line">        self.activation = keras.activations.get(activation)</span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">build</span>(<span class="params">self, batch_input_shape</span>):</span></span><br><span class="line">        self.biases = self.add_weight(name=<span class="string">&quot;bias&quot;</span>, initializer=<span class="string">&quot;zeros&quot;</span>,</span><br><span class="line">                                      shape=[self.dense.input_shape[<span class="number">-1</span>]])</span><br><span class="line">        <span class="built_in">super</span>().build(batch_input_shape)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        z = tf.matmul(inputs, self.dense.weights[<span class="number">0</span>], transpose_b=<span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">return</span> self.activation(z + self.biases) </span><br></pre></td></tr></table></figure>
+<ul>
+<li>使用另一个 Dense 层的权重，并且做了转置（设置<code>transpose_b=True</code>等同于转置第二个参数）。但使用自己的偏置向量</li>
+</ul>
+</li>
+<li><p>关联</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">dense_1 = keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>)</span><br><span class="line">dense_2 = keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;selu&quot;</span>)</span><br><span class="line"></span><br><span class="line">tied_encoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    dense_1,</span><br><span class="line">    dense_2</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">tied_decoder = keras.models.Sequential([</span><br><span class="line">    DenseTranspose(dense_2, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    DenseTranspose(dense_1, activation=<span class="string">&quot;sigmoid&quot;</span>),</span><br><span class="line">    keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>])</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">tied_ae = keras.models.Sequential([tied_encoder, tied_decoder]) </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="浅自编码器堆叠"><a href="#浅自编码器堆叠" class="headerlink" title="浅自编码器堆叠"></a>浅自编码器堆叠</h4><ul>
+<li><p>一次训练一个浅自编码器，然后将所有自编码器堆叠到一个栈式自编码器</p>
+<img src="/2021/02/08/Hands-on-ML-7/2e97115a3976ddb176e401dcfa95b53c.png" alt="img" style="zoom: 33%;">
+</li>
+<li><p>第一个自编码器学习重构输入，整个训练集训练第一个自编码器，得到一个压缩过的训练集</p>
+</li>
+<li><p>这个数据集训练第二个自编码器</p>
+</li>
+<li><p>最后把每个自编码器的隐藏层叠起，再加上输出层</p>
+</li>
+</ul>
+<h3 id="卷积自编码器"><a href="#卷积自编码器" class="headerlink" title="卷积自编码器"></a>卷积自编码器</h3><ul>
+<li><p>用自编码器来处理图片：无监督预训练或降维</p>
+</li>
+<li><p>代码如下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">conv_encoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>], input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.Conv2D(<span class="number">16</span>, kernel_size=<span class="number">3</span>, padding=<span class="string">&quot;same&quot;</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.MaxPool2D(pool_size=<span class="number">2</span>),</span><br><span class="line">    keras.layers.Conv2D(<span class="number">32</span>, kernel_size=<span class="number">3</span>, padding=<span class="string">&quot;same&quot;</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.MaxPool2D(pool_size=<span class="number">2</span>),</span><br><span class="line">    keras.layers.Conv2D(<span class="number">64</span>, kernel_size=<span class="number">3</span>, padding=<span class="string">&quot;same&quot;</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.MaxPool2D(pool_size=<span class="number">2</span>)</span><br><span class="line">])</span><br><span class="line">conv_decoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Conv2DTranspose(<span class="number">32</span>, kernel_size=<span class="number">3</span>, strides=<span class="number">2</span>, padding=<span class="string">&quot;valid&quot;</span>,</span><br><span class="line">                                 activation=<span class="string">&quot;selu&quot;</span>,</span><br><span class="line">                                 input_shape=[<span class="number">3</span>, <span class="number">3</span>, <span class="number">64</span>]),</span><br><span class="line">    keras.layers.Conv2DTranspose(<span class="number">16</span>, kernel_size=<span class="number">3</span>, strides=<span class="number">2</span>, padding=<span class="string">&quot;same&quot;</span>,</span><br><span class="line">                                 activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.Conv2DTranspose(<span class="number">1</span>, kernel_size=<span class="number">3</span>, strides=<span class="number">2</span>, padding=<span class="string">&quot;same&quot;</span>,</span><br><span class="line">                                 activation=<span class="string">&quot;sigmoid&quot;</span>),</span><br><span class="line">    keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>])</span><br><span class="line">])</span><br><span class="line">conv_ae = keras.models.Sequential([conv_encoder, conv_decoder]) </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>编码器是一个包含卷积层和池化层的常规 CNN</li>
+<li>通常降低输入的空间维度（即，高和宽），同时增加深度（即，特征映射的数量）</li>
+</ul>
+</li>
+</ul>
+<h3 id="循环自编码器"><a href="#循环自编码器" class="headerlink" title="循环自编码器"></a>循环自编码器</h3><ul>
+<li><p>处理序列：对时间序列或文本无监督学习和降维</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">recurrent_encoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.LSTM(<span class="number">100</span>, return_sequences=<span class="literal">True</span>, input_shape=[<span class="literal">None</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.LSTM(<span class="number">30</span>)</span><br><span class="line">])</span><br><span class="line">recurrent_decoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.RepeatVector(<span class="number">28</span>, input_shape=[<span class="number">30</span>]),</span><br><span class="line">    keras.layers.LSTM(<span class="number">100</span>, return_sequences=<span class="literal">True</span>),</span><br><span class="line">    keras.layers.TimeDistributed(keras.layers.Dense(<span class="number">28</span>, activation=<span class="string">&quot;sigmoid&quot;</span>))</span><br><span class="line">])</span><br><span class="line">recurrent_ae = keras.models.Sequential([recurrent_encoder, recurrent_decoder]) </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>编码器是一个序列到向量的 RNN，而解码器是向量到序列的 RNN</li>
+<li>解码器第一层用<code>RepeatVector</code>，以保证在每个时间步将输入向量传给解码器</li>
+</ul>
+</li>
+</ul>
+<h3 id="降噪自编码器"><a href="#降噪自编码器" class="headerlink" title="降噪自编码器"></a>降噪自编码器</h3><ul>
+<li><p>一种强制自编码器学习特征的方法是为其输入添加噪声，对其进行训练以恢复原始的无噪声输入</p>
+</li>
+<li><p>噪声可以是添加到输入的纯高斯噪声，或者可以随机关闭输入，就像丢弃</p>
+<img src="/2021/02/08/Hands-on-ML-7/34a85484de696688796d6e35f8e7a0a3.png" alt="img" style="zoom: 33%;">
+</li>
+<li><p>常规的栈式自编码器中添加一个应用于输入的<code>Dropout</code>层（或使用<code>GaussianNoise</code>层）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">dropout_encoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.Dropout(<span class="number">0.5</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">30</span>, activation=<span class="string">&quot;selu&quot;</span>)</span><br><span class="line">])</span><br><span class="line">dropout_decoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>, input_shape=[<span class="number">30</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">28</span> * <span class="number">28</span>, activation=<span class="string">&quot;sigmoid&quot;</span>),</span><br><span class="line">    keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>])</span><br><span class="line">])</span><br><span class="line">dropout_ae = keras.models.Sequential([dropout_encoder, dropout_decoder]) </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="稀疏自编码器"><a href="#稀疏自编码器" class="headerlink" title="稀疏自编码器"></a>稀疏自编码器</h3><ul>
+<li><p>良好特征提取的另一种约束是稀疏性：通过向损失函数添加适当的项，让自编码器减少编码层中活动神经元的数量，即让编码层中平均只有 5% 的活跃神经元，迫使自编码器将每个输入表示为少量激活的组合</p>
+</li>
+<li><p>使用 sigmoid 激活函数实现；添加一个编码层并给编码层的激活函数添加<code>ℓ1</code>正则</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">sparse_l1_encoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, activation=<span class="string">&quot;sigmoid&quot;</span>),</span><br><span class="line">    keras.layers.ActivityRegularization(l1=<span class="number">1e-3</span>)</span><br><span class="line">])</span><br><span class="line">sparse_l1_decoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>, input_shape=[<span class="number">300</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">28</span> * <span class="number">28</span>, activation=<span class="string">&quot;sigmoid&quot;</span>),</span><br><span class="line">    keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>])</span><br><span class="line">])</span><br><span class="line">sparse_l1_ae = keras.models.Sequential([sparse_l1_encoder, sparse_l1_decoder]) </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>ActivityRegularization</code>只是返回输入，但新增了训练损失，大小等于输入的绝对值之和（这个层只在训练中起作用）</li>
+<li>可以移出<code>ActivityRegularization</code>，并在前一层设置<code>activity_regularizer=keras.regularizers.l1(1e-3)</code></li>
+</ul>
+</li>
+<li><p>另一种更好的方法是在每次训练迭代中测量编码层的实际稀疏度，当偏移目标值，就惩罚模型</p>
+</li>
+<li><p>KL 散度：衡量两个离散的概率分布<code>P</code>和<code>Q</code>距离</p>
+<img src="/2021/02/08/Hands-on-ML-7/84f8b1f35d7af4b1e2321b25be6f00d9.png" alt="img" style="zoom:50%;">
+</li>
+<li><p>基于 KL 散度的稀疏自编码器</p>
+<ul>
+<li><p>自定义正则器实现 KL 散度正则</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">K = keras.backend</span><br><span class="line">kl_divergence = keras.losses.kullback_leibler_divergence</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">KLDivergenceRegularizer</span>(<span class="params">keras.regularizers.Regularizer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, weight, target=<span class="number">0.1</span></span>):</span></span><br><span class="line">        self.weight = weight</span><br><span class="line">        self.target = target</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__call__</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        mean_activities = K.mean(inputs, axis=<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> self.weight * (</span><br><span class="line">            kl_divergence(self.target, mean_activities) +</span><br><span class="line">            kl_divergence(<span class="number">1</span>\. - self.target, <span class="number">1</span>\. - mean_activities)) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用正则器作为编码层的激活函数，创建稀疏自编码器</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">kld_reg = KLDivergenceRegularizer(weight=<span class="number">0.05</span>, target=<span class="number">0.1</span>)</span><br><span class="line">sparse_kl_encoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Flatten(input_shape=[<span class="number">28</span>, <span class="number">28</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>),</span><br><span class="line">    keras.layers.Dense(<span class="number">300</span>, activation=<span class="string">&quot;sigmoid&quot;</span>, activity_regularizer=kld_reg)</span><br><span class="line">])</span><br><span class="line">sparse_kl_decoder = keras.models.Sequential([</span><br><span class="line">    keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>, input_shape=[<span class="number">300</span>]),</span><br><span class="line">    keras.layers.Dense(<span class="number">28</span> * <span class="number">28</span>, activation=<span class="string">&quot;sigmoid&quot;</span>),</span><br><span class="line">    keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>])</span><br><span class="line">])</span><br><span class="line">sparse_kl_ae = keras.models.Sequential([sparse_kl_encoder, sparse_kl_decoder]) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>训练好稀疏自编码器，编码层中的神经元的激活大部分接近 0，所有神经元的平均激活值在 0.1 附近</p>
+<img src="/2021/02/08/Hands-on-ML-7/2de4723c6249ec91b3cb15bc31d64b7f.png" alt="img" style="zoom:50%;">
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="变分自编码器"><a href="#变分自编码器" class="headerlink" title="变分自编码器"></a>变分自编码器</h3><ul>
+<li><p>是概率自编码器，即使在训练之后，它们的输出部分也是偶然确定的</p>
+</li>
+<li><p>是生成自编码器，可以生成看起来像从训练集中采样的新实例</p>
+</li>
+<li><p>不是直接为给定的输入生成编码 ，而是编码器产生平均<code>μ</code>和标准差<code>σ</code>，然后从平均值<code>μ</code>和标准差<code>σ</code>的高斯分布随机采样实际编码；解码器正常解码采样的编码</p>
+<img src="/2021/02/08/Hands-on-ML-7/7c9060e3ee9cbc624bfadb3ac589452a.png" alt="img" style="zoom: 33%;">
+
+<ul>
+<li><p>输入可能具有非常复杂的分布，但 VAE 倾向于产生看起来从简单高斯分布采样的编码</p>
+</li>
+<li><p>训练期间，损失函数推动编码在编码空间（也称为潜在空间）内逐渐迁移，以形成看起来像高斯点集成的云的大致（超）球形区域</p>
+</li>
+<li><p>损失函数</p>
+<ul>
+<li><p>重建损失，推动自编码器重现其输入（使用交叉熵）</p>
+</li>
+<li><p>潜在的损失，推动自编码器使编码看起来像是从简单的高斯分布中采样</p>
+<ul>
+<li><p>使用目标分布（高斯分布）与编码实际分布之间的 KL 散度</p>
+<img src="/2021/02/08/Hands-on-ML-7/9273964ee58f08a1c76543fe9af21c40.png" alt="img" style="zoom:50%;">
+</li>
+<li><p><code>L</code>是潜在损失，<code>n</code>是编码维度，<code>μ[i]</code>和<code>σ[i]</code>是编码的第<code>i</code>个成分的平均值和标准差。向量<code>μ</code>和<code>σ</code>是编码器的输出</p>
+</li>
+<li><p>常见的变体是训练编码器输出<code>γ= log(σ^2)</code>而不是<code>σ</code>，则潜在损失为</p>
+<img src="/2021/02/08/Hands-on-ML-7/8d10a31df92b1efadc78aa7882e885c0.png" alt="img" style="zoom:50%;">
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>使用变体的例子：</p>
+<ul>
+<li><p>自定义层从编码采样</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sampling</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        mean, log_var = inputs</span><br><span class="line">        <span class="keyword">return</span> K.random_normal(tf.shape(log_var)) * K.exp(log_var / <span class="number">2</span>) + mean </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>接收两个输入：<code>mean (μ)</code> 和 <code>log_var (γ)</code></li>
+<li><code>K.random_normal()</code>根据正态分布随机采样向量（形状为<code>γ</code>）</li>
+</ul>
+</li>
+<li><p>创建编码器</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">codings_size = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">inputs = keras.layers.Input(shape=[<span class="number">28</span>, <span class="number">28</span>])</span><br><span class="line">z = keras.layers.Flatten()(inputs)</span><br><span class="line">z = keras.layers.Dense(<span class="number">150</span>, activation=<span class="string">&quot;selu&quot;</span>)(z)</span><br><span class="line">z = keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>)(z)</span><br><span class="line">codings_mean = keras.layers.Dense(codings_size)(z)  <span class="comment"># μ</span></span><br><span class="line">codings_log_var = keras.layers.Dense(codings_size)(z)  <span class="comment"># γ</span></span><br><span class="line">codings = Sampling()([codings_mean, codings_log_var])</span><br><span class="line">variational_encoder = keras.Model(</span><br><span class="line">    inputs=[inputs], outputs=[codings_mean, codings_log_var, codings]) </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>输出<code>codings_mean</code> （<code>μ</code>）和<code>codings_log_var</code> （<code>γ</code>）的 Dense 层，有同样的输入（即，第二个 Dense 层的输出）</li>
+<li><code>codings_mean</code>和<code>codings_log_var</code>传给<code>Sampling</code>层</li>
+<li><code>variational_encoder</code>模型有三个输出，可以用来检查<code>codings_mean</code>和<code>codings_log_var</code>的值</li>
+</ul>
+</li>
+<li><p>创建解码器</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">decoder_inputs = keras.layers.Input(shape=[codings_size])</span><br><span class="line">x = keras.layers.Dense(<span class="number">100</span>, activation=<span class="string">&quot;selu&quot;</span>)(decoder_inputs)</span><br><span class="line">x = keras.layers.Dense(<span class="number">150</span>, activation=<span class="string">&quot;selu&quot;</span>)(x)</span><br><span class="line">x = keras.layers.Dense(<span class="number">28</span> * <span class="number">28</span>, activation=<span class="string">&quot;sigmoid&quot;</span>)(x)</span><br><span class="line">outputs = keras.layers.Reshape([<span class="number">28</span>, <span class="number">28</span>])(x)</span><br><span class="line">variational_decoder = keras.Model(inputs=[decoder_inputs], outputs=[outputs]) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建变分自编码器</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">_, _, codings = variational_encoder(inputs)</span><br><span class="line">reconstructions = variational_decoder(codings)</span><br><span class="line">variational_ae = keras.Model(inputs=[inputs], outputs=[reconstructions]) </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>忽略了编码器的前两个输出</li>
+</ul>
+</li>
+<li><p>编译：必须将潜在损失和重建损失加起</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">latent_loss = <span class="number">-0.5</span> * K.<span class="built_in">sum</span>(</span><br><span class="line">    <span class="number">1</span> + codings_log_var - K.exp(codings_log_var) - K.square(codings_mean),</span><br><span class="line">    axis=<span class="number">-1</span>)</span><br><span class="line">variational_ae.add_loss(K.mean(latent_loss) / <span class="number">784.</span>)</span><br><span class="line">variational_ae.<span class="built_in">compile</span>(loss=<span class="string">&quot;binary_crossentropy&quot;</span>, optimizer=<span class="string">&quot;rmsprop&quot;</span>) </span><br><span class="line"></span><br><span class="line">history = variational_ae.fit(X_train, X_train, epochs=<span class="number">50</span>, batch_size=<span class="number">128</span>,</span><br><span class="line">                             validation_data=[X_valid, X_valid]) </span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>变分自编码器流行几年后，被 GAN 超越了，后者可以生成更为真实的图片</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>深度学习</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>TensorFlow</tag>
+      </tags>
+  </entry>
 </search>
