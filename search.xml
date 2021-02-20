@@ -14248,4 +14248,71 @@ def a_function_requiring_decoration():
         <tag>TensorFlow</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</title>
+    <url>/2020/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/</url>
+    <content><![CDATA[<p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>与传统的暴力破解攻击和字典攻击相比，密码猜测模型通过泄露的密码库生成猜测密码，期望通过更少的猜测覆盖尽可能多的目标密码</li>
+<li>本文分析了 8 个泄露密码库的密码模式<code>password patterns</code>，并对比研究两种主要的概率模型（马尔可夫、PCFG）和 PassGAN（目前最具代表性的深度学习方法）<ul>
+<li>对马尔可夫模型应用拉普拉斯平滑</li>
+<li>对 PCFG 应用语义模式<code>semantic patterns</code></li>
+</ul>
+</li>
+<li>结果显示：<ul>
+<li>马尔可夫模型可以覆盖大部分测试集的密码</li>
+<li>PassGAN 的表现非常差</li>
+<li>考虑到攻击者会调整训练集，PCFG 将优于马尔可夫模型</li>
+<li>暴力攻击与概率模型结合使用时（破解4-8位纯数字口令），original-PCFG 与 modified-PCFG 能分别提高 11% 和 8.5%</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>文本密码容易使用且对存储空间的需求低。在将来文本密码不太可能被其他的方法【2】替代【1】</li>
+<li>大多网站使用严格的密码生成策略，以引导用户创建更强的密码。密码强度会实时反馈给用户<ul>
+<li>NIST【3】推荐用密码的信息熵<code>password&#39;s information entropy</code>——现代密码攻击下，此方法效果不好【4】</li>
+<li>密码安全的关键在于密码猜测攻击<ul>
+<li>攻击者创建一个候选密码集</li>
+<li>攻击者依此一个一个测试，直到猜测密码和目标密码匹配，或者穷尽候选集</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>暴力攻击：是最基本的策略：在特定的密码空间上尝试所有可能的猜测，直到得到正确的密码空间——不现实，时间和存储空间成本随着密码空间的增加而增加——完全覆盖给定空间需要的猜测次数：$Guess_Number = \sum_{k=i}^n x^k$</li>
+<li>字典攻击：比前者节省空间。猜测时，攻击者从预定义的字典中逐一尝试可能的密码（构成词典的条目通常被认为是用户更可能用来创建密码的字符串）；攻击者可以通过规则集合<code>mangling-rules</code>，生成更多的猜测</li>
+<li>一些开创性工作引入了密码猜测概率模型和深度学习模型</li>
+<li>猜测攻击的有效性很大程度上取决于使用的猜测模型</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h2 id="数据集分析"><a href="#数据集分析" class="headerlink" title="数据集分析"></a>数据集分析</h2><h3 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h3><h3 id="密码模式"><a href="#密码模式" class="headerlink" title="密码模式"></a>密码模式</h3><h2 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h2><h3 id="Original-PCFG"><a href="#Original-PCFG" class="headerlink" title="Original-PCFG"></a>Original-PCFG</h3><h3 id="M-Order-Markov-Model"><a href="#M-Order-Markov-Model" class="headerlink" title="M-Order Markov Model"></a>M-Order Markov Model</h3><h3 id="PassGAN"><a href="#PassGAN" class="headerlink" title="PassGAN"></a>PassGAN</h3><h3 id="Modified-PCFG"><a href="#Modified-PCFG" class="headerlink" title="Modified-PCFG"></a>Modified-PCFG</h3><h2 id="执行结果"><a href="#执行结果" class="headerlink" title="执行结果"></a>执行结果</h2><h3 id="Markov-vs-PCFG"><a href="#Markov-vs-PCFG" class="headerlink" title="Markov vs PCFG"></a>Markov vs PCFG</h3><h3 id="PassGAN-vs-概率模型"><a href="#PassGAN-vs-概率模型" class="headerlink" title="PassGAN vs 概率模型"></a>PassGAN vs 概率模型</h3><h3 id="联合攻击"><a href="#联合攻击" class="headerlink" title="联合攻击"></a>联合攻击</h3><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>Zhu, B., Yan, J., Bao, G., Yang, M., Xu, N.: Captcha as graphical passwords- a new security primitive based on hard AI problems. IEEE Trans. Inf. Forensics Secur. 9, 234–240 (2014)</li>
+<li>van Herley, C., Oorschot, P.: A research agenda acknowledging the persistence of passwords. IEEE Secur. Priv. 10, 28–36 (2012)</li>
+<li>Burr, W.E., et al.: NIST SP800-63-2: Electronic authentication guideline. National Institute of Standards and Technology, Reston, V A, Technical report, Special Publication (NIST SP) - 800–63-1 (2011)</li>
+<li>Matt, W., Sudhir, A., et al.: Testing metrics for password creation policies by attacking large sets of revealed passwords. In: ACM CCS 2010, pp. 162–175 (2010)</li>
+<li>Matt, W., Sudhir, A., et al.: Password cracking using probabilistic context-free grammars. In: IEEE Symposium on Security and Privacy, pp. 391–405 (2009)</li>
+<li>Houshmand, S., Aggarwal, S., Flood, R.: Next gen PCFG password cracking. IEEE Trans. Inf. Forensics Secur. 10, 1776–1791 (2015)</li>
+<li>Wang, D., Cheng, H., et al.: Understanding Passwords of Chinese Users: Characteristics, Security and Implications, July 2014. <a href="https://www.researchgate.net/profile/Ding_Wang12/publication/269101022_Understanding_Passwords_of_Chinese_Users_Characteristics_Security_and_Implications/links/5544e2700cf23ff7168696a8.pdf">https://www.researchgate.net/profile/Ding_Wang12/publication/269101022_Understanding_Passwords_of_Chinese_Users_Characteristics_Security_and_Implications/links/5544e2700cf23ff7168696a8.pdf</a></li>
+<li>Veras, R., Collins, C., Thorpe, J.: On the semantic patterns of passwords and their security impact. In: Network and Distributed System Security Symposium (2014)</li>
+<li>Arvind, N., Vitaly, S.: Fast dictionary attacks on passwords using time-space trade-off. In: ACM CCS 2005, pp. 364–372 (2005)</li>
+<li>Ma, J., Yang, W., Luo, M., Li, N.: A study of probabilistic password models. In: Proceedings of IEEE Symposium on Security and Privacy, pp. 689–704 (2014)</li>
+<li>Hitaj, B., Gasti, P., Ateniese, G., Pérez-Cruz, F.: PassGAN: a deep learning approach for password guessing. CoRR abs/1709.00440 (2017)</li>
+<li><strong>Xu, L., Ge, C., et al.: Password guessing based on LSTM recurrent neural networks. In: IEEE International Conference on Computational Science and Engineering, pp. 785–788 (2017)</strong></li>
+<li>Li, Y., Wang, H., Sun, K.: A study of personal information in human-chosen passwords and its security implications. In: IEEE INFOCOM, pp. 1-9 (2016)</li>
+<li>Wang, D., Zhang, Z., Wang, P., Yan, J., Huang, X.: An underestimated threat. In: ACM CCS, Targeted Online Password Guessing (2016)</li>
+<li>ChineseTone. <a href="https://github.com/letiantian/ChineseTone">https://github.com/letiantian/ChineseTone</a></li>
+<li>ssa.gov. <a href="https://www.ssa.gov/oact/babynames/limits.html">https://www.ssa.gov/oact/babynames/limits.html</a></li>
+<li>English words. <a href="http://www.mieliestronk.com/wordlist.html">http://www.mieliestronk.com/wordlist.html</a></li>
+<li>Gulrajani, I., Ahmed, F., et al.: Improved Training of Wasserstein GANs. CoRRabs/1704.00028 (2017). <a href="http://arxiv.org/abs/1704.00028">http://arxiv.org/abs/1704.00028</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>论文</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
+        <tag>密码猜测</tag>
+        <tag>GAN</tag>
+      </tags>
+  </entry>
 </search>
