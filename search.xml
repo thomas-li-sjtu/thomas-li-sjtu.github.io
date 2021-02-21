@@ -11835,8 +11835,8 @@ def a_function_requiring_decoration():
       </categories>
       <tags>
         <tag>密码</tag>
+        <tag>密码猜测</tag>
         <tag>GAN</tag>
-        <tag>密码破解</tag>
       </tags>
   </entry>
   <entry>
@@ -14496,12 +14496,183 @@ def a_function_requiring_decoration():
     <content><![CDATA[<p>《Password Guessing Based on LSTM Recurrent Neural Networks》论文阅读笔记</p>
 <a id="more"></a>
 
-<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] M. Weir, S. Aggarwal, B. d. Medeiros and B. Glodek, “Password Cracking Using Probabilistic Context-Free Grammars,” in 30th IEEE Symposium on Security and Privacy, 2009, pp. 391-405. </p>
-<p>[2]㼿 C. Castelluccia, M. Dürmuth and D. Perito, “Adaptive Password-<br>Strength Meters from Markov Models,” in NDSS, 2012. </p>
-<p>[3]㼿 J. Steube, “hashcat - advanced password recovery,” [Online].<br>Available: <a href="http://www.hashcat.net/">www.hashcat.net</a>.<br>[4]㼿 J. Ma, W. Yang, M. Luo and N. Li, “A study of probabilistic password<br>models,” in 2014 IEEE Symposium on Security and Privacy, 2014, pp.<br>689-704.<br>[5]㼿 Z. Li, W. Han and W. Xu, “A large-scale empirical analysis of chinese<br>web passwords,” in 23rd USENIX Security Symposium, 2014, pp.<br>559-574.<br>[6]㼿 B. Ur, S. M. Segreti, L. Bauer, N. Christin, L. F. Cranor, S. Komanduri<br>and R. Shay, “Measuring real-world accuracies and biases in modeling<br>password guessability,” in 24th USENIX Security Symposium, 2015,<br>pp. 463-481.<br>[7]㼿 H. C. Chou, H. C. Lee, H. J. Yu, F. P. Lai, K. H. Huang and C. W.<br>Hsueh, “Password cracking based on learned patterns from disclosed<br>passwords,”  International  Journal  of  Innovative  Computing,<br>Information and Control, vol. 9, Feb. 2013, pp. 821-839.<br>[8]㼿 M. Dürmuth, F. Angelstorf, C. Castelluccia, D. Perito and A.<br>Chaabane, “OMEN: Faster password guessing using an ordered<br>markov enumerator,” in International Symposium on Engineering<br>Secure Software and Systems, 2015, pp. 119-132.<br>[9]㼿 Z. C. Lipton, J. Berkowitz and C. Elkan, “A critical review of recurrent<br>neural  networks  for  sequence  learning,”.  Available:<br>arxiv.org/pdf/1506.00019.pdf.<br>[10]㼿 A. Narayanan and V. Shmatikov, “Fast dictionary attacks on passwords<br>using time-space tradeoff,” in Proceedings of the 12th ACM<br>conference on Computer and communications security, 2005, pp. 364-</p>
-<ol start="372">
-<li>[11]㼿 S. Designer,  “John the Ripper password cracker,” [Online]. Available:<br><a href="http://www.openwall.com/john">www.openwall.com/john</a>.<br>[12]㼿 D. Wang, Z. Zhang, P. Wang, J. Yan and X. Huang, “Targeted online<br>password guessing: An underestimated threat,” in Proceedings of the<br>2016 ACM SIGSAC Conference on Computer and Communications<br>Security, 2016, pp. 1242-1254.<br>[13]㼿 S. Houshmand, S. Aggarwal and R. Flood, “Next gen PCFG password<br>cracking,” IEEE Transactions on Information Forensics and<br>Security, vol 10, Aug. 2015, pp. 1776-1791.<br>[14]㼿 R. Veras, C. Collins and J. Thorpe, “On Semantic Patterns of<br>Passwords and their Security Impact,” in NDSS, 2014.<br>[15]㼿 W. Melicher, B. Ur, S. M. Segreti, S. Komanduri, L. Bauer, N. Christin,<br>and L. F. Cranor, “Fast, lean and accurate: Modeling password<br>guessability using neural network,” in Proceedings of USENIX<br>Security, 2016.<br>[16]㼿 Stanford UFLDL. “Softmax Regression” [Online]. Available:<br><a href="http://ufldl.stanford.edu/wiki/index.php/Softmax_Regression">http://ufldl.stanford.edu/wiki/index.php/Softmax_Regression</a>. </li>
-</ol>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>人们倾向于选择有意义的单词或数字作为密码，许多密码很容易猜测</li>
+<li>介绍了一种基于 LSTM 的密码猜测方法</li>
+<li>在用 Rockyou 数据集的 3000 万个密码训练 LSTM 神经网络之后，生成 33.5 亿个密码可以覆盖剩余 Rockyou 数据集的 81.52%。与 PCFG 方法和马尔可夫方法相比，该方法具有更高的覆盖率</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>密码猜测旨在生成密码字典或数据集，以最小的大小覆盖尽可能多的用户密码<ul>
+<li>生成的密码可以检测用户密码的安全风险</li>
+<li>生成的密码可以提升字典攻击的性能</li>
+</ul>
+</li>
+<li>近年的密码生成研究：<ul>
+<li>使用更好的模板【1，5，7，13，14】</li>
+<li>使用字符之间的相互关系——马尔可夫模型【2，8，10】</li>
+</ul>
+</li>
+<li>递归神经网络具有揭示密码中所有字符之间相互关系的能力，而基于马尔可夫的模型仅考虑几个相邻字符之间关系</li>
+<li>本文用泄露的密码训练网络，用搜索算法生成密码<ul>
+<li>实现了基于 LSTM 神经网络的密码猜测</li>
+<li>对不同层数/神经元进行了比较</li>
+</ul>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>PCFG：<ul>
+<li>Weir【1】提出 PCFG，从训练密码生成模板并用字典填充模板用于密码猜测</li>
+<li>Chou【7】开发了 TDT 模型来生成更精确的模板和字典</li>
+<li>Li 【5】改进了 PCFG，增加了中文拼音和规则</li>
+<li>Veras【14】用语义和句法标签建立 PCFG</li>
+<li>Houshmand【13】等人用键盘模式<code>keyboard patterns</code>和多字模式<code>multiword patterns</code>优化了猜测效率【13】</li>
+</ul>
+</li>
+<li>Markov<ul>
+<li>Narayanan【10】在字典攻击中首次引入马尔可夫模型</li>
+<li>Castelluccia【2】将马尔可夫模型用于密码强度衡量</li>
+<li>Dürmuth【8】实现基于马尔可夫模型的的密码破解工具 OMEN，通过生成 100 亿个密码，猜中了 260 万个 Rockyou 密码的80%以上</li>
+</ul>
+</li>
+<li>JTR【11】 与 Hashcat【3】<ul>
+<li>被用于有针对性的在线密码猜测【12】</li>
+<li>【4、6】侧重于这两个模型的组合与评估</li>
+<li>【4】显示，基于马尔可夫的模型比基于模板的模型显示出更好的结果</li>
+</ul>
+</li>
+<li>Melicher【15】提出神经网络用于密码强度测量，使用 PGS 和 PGS+ 数据集训练数据，并用 MTurk 和 000Webhost 数据集测试</li>
+</ul>
+<h3 id="LSTM-循环神经网络"><a href="#LSTM-循环神经网络" class="headerlink" title="LSTM 循环神经网络"></a>LSTM 循环神经网络</h3><ul>
+<li><p>递归神经网络能够从序列中学习</p>
+</li>
+<li><p>递归神经网络中的神经元用长短期记忆（LSTM）神经元代替【9】，以避免梯度消失问题</p>
+</li>
+<li><p>LSTM 层的外部输入是一个数据向量矩阵，矩阵的行长度代表序列的长度，等于时间步长的数量。矩阵的列长表示批次中的序列数（批次大小）；在每个时间步长，LSTM 层的外部输入是矩阵的列向量；一层的输出向量在下一个时间步会反馈给同一层的神经元</p>
+<img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221162407761.png" alt="image-20210221162407761">
+
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221162515540.png" alt="image-20210221162515540"></p>
+</li>
+</ul>
+<h3 id="softmax-回归"><a href="#softmax-回归" class="headerlink" title="softmax 回归"></a>softmax 回归</h3><ul>
+<li><p>Softmax 回归为多分类问题设计【16】</p>
+</li>
+<li><p>标签（类别）组成子集 C，标签个数为|C|</p>
+</li>
+<li><p>分类概率可以估计（$y$ 代表标签，$\theta$ 代表回归的参数）：</p>
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221162719730.png" alt="image-20210221162719730"></p>
+</li>
+</ul>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="密码猜测模型"><a href="#密码猜测模型" class="headerlink" title="密码猜测模型"></a>密码猜测模型</h3><ul>
+<li>本文神经网络包括一个输入层，几个 LSTM 层，一个 softmax 层和一个输出层</li>
+<li>基本的假设：<ul>
+<li>密码 $p_1p_2…p_{len}$ 是一个序列 $x(1)=p_1,x(x)=p_2,…,x(len)=p_{len}$</li>
+<li>$x(t)$ 与前面的所有字符相关</li>
+</ul>
+</li>
+<li>基本的思路：<ul>
+<li>$x(t)$ 的分布可以通过向网络输入 $x(1), x(2),…,x(t-1)$ 获得</li>
+<li>泄露密码集训练网络</li>
+<li>训练后给定前缀，下一个字符可以根据概率分布，由选择算法来决定</li>
+<li>密码中的每个字符（除了第一个字符）可以根据顺序预测</li>
+</ul>
+</li>
+</ul>
+<h3 id="密码预处理"><a href="#密码预处理" class="headerlink" title="密码预处理"></a>密码预处理</h3><ul>
+<li>泄露的密码分为3个部分：训练集、验证集（防止过拟合）和测试集</li>
+<li>预处理：<ul>
+<li>数据清洗<ul>
+<li>确定密码的字符字典（添加特殊终止字符），以及密码长度范围</li>
+<li>删除包含不良字符的密码</li>
+<li>删除超过限制长度的密码</li>
+<li>打乱密码</li>
+</ul>
+</li>
+<li>数据格式转换<ul>
+<li>密码字符替换</li>
+<li>序列变换：将 $L(p_1)L(p_2)…L(p_{len})$ 转换为 $x^{(1)}=L(p_1),x^{(2)}=L(p_2),…,x^{(len)}=L(p_{len}),x^{(len+1)}=L(END)$</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="训练"><a href="#训练" class="headerlink" title="训练"></a>训练</h3><ul>
+<li>给定训练数据 $x^{(1)}=L(p_1),x^{(2)}=L(p_2),…,x^{(len)}=L(p_{len}),x^{(len+1)}=L(END)$，监督的标签为  $y^{(1)}=x^{(2)},y^{(2)}=x^{(3)},…, y^{(len)}=x^{(len+1)}=L(END)$</li>
+<li>这里介绍了训练的原理（略）</li>
+</ul>
+<h3 id="密码生成"><a href="#密码生成" class="headerlink" title="密码生成"></a>密码生成</h3><ul>
+<li><p>由于能够预测字符的概率分布，每个密码前缀出现的可能性可以通过概率乘法公式来估计</p>
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221165456608.png" alt="image-20210221165456608"></p>
+</li>
+</ul>
+<h3 id="测试指标"><a href="#测试指标" class="headerlink" title="测试指标"></a>测试指标</h3><ul>
+<li><p>覆盖率</p>
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221165730503.png" alt="image-20210221165730503"></p>
+</li>
+</ul>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="RNN-的重要参数"><a href="#RNN-的重要参数" class="headerlink" title="RNN 的重要参数"></a>RNN 的重要参数</h3><h4 id="Hidden-Layers-Number-HLN"><a href="#Hidden-Layers-Number-HLN" class="headerlink" title="Hidden Layers Number (HLN)"></a>Hidden Layers Number (HLN)</h4><ul>
+<li><p>实现了三个具有不同数量 LSTM 隐藏层（1、2、3层）的网络</p>
+</li>
+<li><p>实验在小规模生成数据集上进行，密码生成阈值为 $10^{-6}、10^{-7}、10^{-8}、10^{-9}$</p>
+</li>
+<li><p>下图为结果。x 轴代表生成密码数目的对数；HLN 的增加给结果带来轻微的、不明显的增加(在相同的阈值下仅约1%)</p>
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221170033895.png" alt="image-20210221170033895"></p>
+</li>
+</ul>
+<h4 id="Neurons-Number-per-Layer-NNPL"><a href="#Neurons-Number-per-Layer-NNPL" class="headerlink" title="Neurons Number per Layer (NNPL)"></a>Neurons Number per Layer (NNPL)</h4><ul>
+<li><p>实现了五个两层的 LSTM 网络，每层神经元数目分别为32，64，128，256，512</p>
+</li>
+<li><p>实验在小规模生成数据集中进行，阈值同上</p>
+</li>
+<li><p>下图为结果</p>
+<ul>
+<li><p>随着 NNPL 的增加，覆盖率增加</p>
+</li>
+<li><p>覆盖率的增加逐渐减少</p>
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221170354340.png" alt="image-20210221170354340"></p>
+</li>
+</ul>
+</li>
+<li><p>随着 HLN 和 NNPL 的增加，覆盖率在相同的阈值下增加，但训练和生成速度降低</p>
+<ul>
+<li><p>后面的实验，选择了具有 2 个隐藏 LSTM 层、每个 LSTM 层有 256 个神经元的 RNN</p>
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221170544776.png" alt="image-20210221170544776"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="与过往研究的对比"><a href="#与过往研究的对比" class="headerlink" title="与过往研究的对比"></a>与过往研究的对比</h3><ul>
+<li><p>采样一些大规模数据集，与过去的研究对比</p>
+</li>
+<li><p>LSTM 模型包含 2 个隐藏的 LSTM 层，每层有 256 个神经元，由 3000 万个 Rockyou（RY）密码训练，包括 2700 万的训练集和 300 万的验证集</p>
+</li>
+<li><p>测试集：Rockyou 260万密码；Myspace 密码；Facebook 密码</p>
+</li>
+<li><p>与 OMEN-4Gram、概率上下文无关语法（PCFG）、JtR 马尔可夫模式和 JtR 增量模式<code>JtR incremental mode</code>进行比较</p>
+<p><img src="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/image-20210221163301563.png" alt="image-20210221163301563"></p>
+</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>LSTM 递归神经网络可以应用于密码猜测</li>
+<li>神经网络优于基于模板和基于马尔可夫的模型</li>
+<li>了获得更好的结果，可以进一步调整神经网络的结构</li>
+<li>未来的工作可能侧重于不同数据集之间的差异，研究常见或特定的神经网络</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] M. Weir, S. Aggarwal, B. d. Medeiros and B. Glodek, “Password Cracking Using Probabilistic Context-Free Grammars,” in 30th IEEE Symposium on Security and Privacy, 2009, pp. 391-405. </p>
+<p>[2] C. Castelluccia, M. Dürmuth and D. Perito, “Adaptive Password Strength Meters from Markov Models,” in NDSS, 2012. </p>
+<p>[3] J. Steube, “hashcat - advanced password recovery,” [Online]. Available: <a href="http://www.hashcat.net/">www.hashcat.net</a>. </p>
+<p>[4] J. Ma, W. Yang, M. Luo and N. Li, “A study of probabilistic password models,” in 2014 IEEE Symposium on Security and Privacy, 2014, pp. 689-704. </p>
+<p>[5] Z. Li, W. Han and W. Xu, “A large-scale empirical analysis of chinese web passwords,” in 23rd USENIX Security Symposium, 2014, pp. 559-574. </p>
+<p>[6] B. Ur, S. M. Segreti, L. Bauer, N. Christin, L. F. Cranor, S. Komanduri and R. Shay, “Measuring real-world accuracies and biases in modeling password guessability,” in 24th USENIX Security Symposium, 2015, pp. 463-481. </p>
+<p>[7] H. C. Chou, H. C. Lee, H. J. Yu, F. P. Lai, K. H. Huang and C. W. Hsueh, “Password cracking based on learned patterns from disclosed passwords,”  International  Journal  of  Innovative  Computing, Information and Control, vol. 9, Feb. 2013, pp. 821-839. </p>
+<p>[8] M. Dürmuth, F. Angelstorf, C. Castelluccia, D. Perito and A. Chaabane, “OMEN: Faster password guessing using an ordered markov enumerator,” in International Symposium on Engineering Secure Software and Systems, 2015, pp. 119-132. </p>
+<p>[9] Z. C. Lipton, J. Berkowitz and C. Elkan, “A critical review of recurrent neural  networks  for  sequence  learning,”.  Available: arxiv.org/pdf/1506.00019.pdf. </p>
+<p>[10] A. Narayanan and V. Shmatikov, “Fast dictionary attacks on passwords using time-space tradeoff,” in Proceedings of the 12th ACM conference on Computer and communications security, 2005, pp. 364-372</p>
+<p>[11] S. Designer,  “John the Ripper password cracker,” [Online]. Available:  <a href="http://www.openwall.com/john">www.openwall.com/john</a>. </p>
+<p>[12] D. Wang, Z. Zhang, P. Wang, J. Yan and X. Huang, “Targeted online password guessing: An underestimated threat,” in Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security, 2016, pp. 1242-1254. </p>
+<p>[13] S. Houshmand, S. Aggarwal and R. Flood, “Next gen PCFG password cracking,” IEEE Transactions on Information Forensics and Security, vol 10, Aug. 2015, pp. 1776-1791. </p>
+<p>[14] R. Veras, C. Collins and J. Thorpe, “On Semantic Patterns of Passwords and their Security Impact,” in NDSS, 2014. </p>
+<p>[15] W. Melicher, B. Ur, S. M. Segreti, S. Komanduri, L. Bauer, N. Christin, and L. F. Cranor, “Fast, lean and accurate: Modeling password guessability using neural network,” in Proceedings of USENIX Security, 2016. </p>
+<p>[16] Stanford UFLDL. “Softmax Regression” [Online]. Available: <a href="http://ufldl.stanford.edu/wiki/index.php/Softmax_Regression">http://ufldl.stanford.edu/wiki/index.php/Softmax_Regression</a>. </p>
 ]]></content>
       <categories>
         <category>论文</category>
