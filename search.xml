@@ -5759,7 +5759,7 @@ def a_function_requiring_decoration():
 </li>
 <li><p>对每个状态$s$，降序排列所有的转换$t_{s,i}$</p>
 </li>
-<li><p>**预计算一个累计概率数组$C_s$**，$C_s[i]=\sum_{j=1}^iP(t_{s,j}|s)=C_s[i-1]+P(t_{s,i}|s)$。对此数组可使用二分查找</p>
+<li><p>预计算一个累计概率数组$C_s$，$C_s[i]=\sum_{j=1}^iP(t_{s,j}|s)=C_s[i-1]+P(t_{s,i}|s)$。对此数组可使用二分查找</p>
 </li>
 <li><p>计算的概率可能非常小，因此<strong>存储并计算概率的$log_2$对数</strong>，而不是概率本身（后面的方法同样如此）</p>
 </li>
@@ -5786,8 +5786,8 @@ def a_function_requiring_decoration():
 </li>
 <li><p>BackOff【19】</p>
 <ul>
-<li>通过考虑所有长度的 n-grams 来处理稀疏性，并丢弃出现次数小于阈值$\tau$的那些——对于每一个新字符的选择，模型考虑了前面字符在训练集中出现至少$τ$次的最长序列</li>
-<li>具体如下图（一个字符的概率时字符在训练集出现的频率）</li>
+<li>通过考虑所有长度的 n-grams 来解决稀疏性，并丢弃出现次数小于阈值$\tau$的那些——对于每一个新字符的选择，模型考虑了前面字符在训练集中出现至少$τ$次的最长序列</li>
+<li>具体如下图（一个字符的概率是字符在训练集出现的频率）</li>
 </ul>
 <img src="/2021/01/12/Monte_Carlo_Strength_Evaluation_Fast_and_Reliable_Password_Checking/3.PNG" alt="3.PNG" style="zoom:67%;">
 
@@ -14669,6 +14669,57 @@ def a_function_requiring_decoration():
         <tag>密码</tag>
         <tag>密码猜测</tag>
         <tag>RNN</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>A Study of Probabilistic Password Models</title>
+    <url>/2021/02/25/A-Study-of-Probabilistic-Password-Models/</url>
+    <content><![CDATA[<p>《A Study of Probabilistic Password Models》阅读记录</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>概率密码模型为每个字符串分配一个概率值</li>
+<li>由密码模型生成的猜测数图是密码研究中广泛使用的方法。本文证明了概率阈值图比猜测数图具有重要的优势——计算速度要快得多，提供的信息也超出了猜测数字图的范围</li>
+<li>对大量概率密码模型进行了系统评估，包括使用不同归一化和平滑方法的马尔可夫模型</li>
+<li>马尔可夫模型在正确使用时性能明显优于 Weir【25】 提出的 PCFG 模型</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h2 id="密码模型与指标"><a href="#密码模型与指标" class="headerlink" title="密码模型与指标"></a>密码模型与指标</h2><h2 id="密码模型设计"><a href="#密码模型设计" class="headerlink" title="密码模型设计"></a>密码模型设计</h2><h2 id="实验方法"><a href="#实验方法" class="headerlink" title="实验方法"></a>实验方法</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><h3 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h3><h3 id="数据分析"><a href="#数据分析" class="headerlink" title="数据分析"></a>数据分析</h3><ul>
+<li><p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210225221622123.png" alt="image-20210225221622123"></p>
+</li>
+</ul>
+<h3 id="训练与测试场景"><a href="#训练与测试场景" class="headerlink" title="训练与测试场景"></a>训练与测试场景</h3><h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Passwords, 2009. <a href="http://wiki.skullsecurity.org/Passwords">http://wiki.skullsecurity.org/Passwords</a>.</p>
+<p>[2] Csdn cleartext passwords, 2011. <a href="http://dazzlepod.com/csdn/">http://dazzlepod.com/csdn/</a>.</p>
+<p>[3] John the ripper password cracker, 2013. <a href="http://www.openwall.com/john/">http://www.openwall.com/john/</a>.</p>
+<p>[4] Openwall wordlists collection, 2013.<a href="http://www.openwall.com/wordlists/">http://www.openwall.com/wordlists/</a>.</p>
+<p>[5] J. Bonneau. Guessing human-chosen secrets. Thesis, University of Cambridge, 2012.</p>
+<p>[6] J. Bonneau. The science of guessing: analyzing an anonymized corpus of 70 million passwords. In Proceedings of IEEE Symposium on Security and Privacy, pages 538–552. IEEE, 2012.</p>
+<p>[7] W. E. Burr, D. F. Dodson, and W. T. Polk. Electronic authentication guideline. US Department of Commerce, Technology Administration, National Institute of Standards and Technology, 2004.</p>
+<p>[8] C. Castelluccia, M. Dürmuth, and D. Perito. Adaptive password-strength meters from Markov models. In Proceedings of NDSS, 2012.</p>
+<p>[9] M. Dell’Amico, P. Michiardi, and Y . Roudier. Password strength: an empirical analysis. In Proceedings of INFOCOM, pages 1–9, 2010.</p>
+<p>[10] S. Egelman, A. Sotirakopoulos, I. Muslukhov, K. Beznosov, and C. Herley. Does my password go up to eleven?: The impact of password meters on password selection. In Proceedings of CHI, pages 2379–2388, 2013.</p>
+<p>[11] D. Florencio and C. Herley. A large-scale study of web password habits. In Proceedings of WWW, pages 657–666, 2007.</p>
+<p>[12] A. Forget, S. Chiasson, P . C. van Oorschot, and R. Biddle. Improving text passwords through persuasion. In Proceedings of SOUPS, pages 1–12, 2008.</p>
+<p>[13] W. A. Gale and G. Sampson. Good-turing frequency estimation without tears. Journal of Quantitative Linguistics, 2(1):217–237, 1995.</p>
+<p>[14] C. Herley and P. C. van Oorschot. A research agenda acknowledging the persistence of passwords. IEEE Security &amp; Privacy, 10(1):28–36, 2012.</p>
+<p>[15] S. Houshmand and S. Aggarwal.  Building better passwords using probabilistic techniques. In Proceedings of ACSAC, pages 109–118, 2012.</p>
+<p>[16] S. M. Katz.  Estimation of probabilities from sparse data for the language model component of a speech recogniser. IEEE Transactions on Acoustics, Speech, and Signal Processing, 35(3):400401, 1987.</p>
+<p>[17] P. G. Kelley, S. Komanduri, M. L. Mazurek, R. Shay, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, and J. Lopez. Guess again (and again and again): Measuring password strength by simulating password-cracking algorithms. In IEEE Symposium on Security and Privacy, pages 523–537, 2012.</p>
+<p>[18] S. Komanduri, R. Shay, P. G. Kelley, M. L. Mazurek, L. Bauer, N. Christin, L. F. Cranor, and S. Egelman. Of passwords and people: measuring the effect of password-composition policies. In CHI, pages 2595–2604, 2011.</p>
+<p>[19] D. Malone and K. Maher. Investigating the distribution of password choices. In Proceedings of WWW, pages 301–310, 2012.</p>
+<p>[20] M. L. Mazurek, S. Komanduri, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, P. G. Kelley, R. Shay, and B. Ur.  Measuring password guessability for an entire university. In Proceedings of ACM CCS, pages 173–186, Berlin, Germany, 2013. ACM.</p>
+<p>[21] A. Narayanan and V . Shmatikov. Fast dictionary attacks on passwords using time-space tradeoff. In Proceedings of ACM CCS, pages 364–372, 2005.</p>
+<p>[22] R. Shay, S. Komanduri, P. G. Kelley, P. G. Leon, M. L. Mazurek, L. Bauer, N. Christin, and L. F. Cranor. Encountering stronger password requirements: user attitudes and behaviors. In Proceedings of the Sixth Symposium on Usable Privacy and Security, SOUPS ’10, pages 2:1–2:20, New Y ork, NY , USA, 2010. ACM.</p>
+<p>[23] B. Ur, P. G. Kelley, S. Komanduri, J. Lee, M. Maass, M. Mazurek, T. Passaro, R. Shay, T. Vidas, L. Bauer, et al. How does your password measure up? the effect of strength meters on password creation. In Proceedings of USENIX Security Symposium, 2012.</p>
+<p>[24] M. Weir, S. Aggarwal, M. Collins, and H. Stern.  Testing metrics for password creation policies by attacking large sets of revealed passwords. In Proceedings of the 17th ACM conference on Computer and communications security, pages 162–175, 2010.</p>
+<p>[25] M. Weir, S. Aggarwal, B. de Medeiros, and B. Glodek. Password cracking using probabilistic context-free grammars. In IEEE Symposium<br>on Security and Privacy, pages 391–405, 2009.</p>
+<p>[26] Y . Zhang, F. Monrose, and M. K. Reiter. The security of modern password expiration: An algorithmic framework and empirical analysis. In Proceedings of ACM CCS, pages 176–186, 2010.</p>
+]]></content>
+      <categories>
+        <category>论文</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
+        <tag>密码猜测</tag>
       </tags>
   </entry>
 </search>
