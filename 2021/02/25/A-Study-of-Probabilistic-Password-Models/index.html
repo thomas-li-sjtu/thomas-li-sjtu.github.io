@@ -30,10 +30,12 @@
 <meta property="og:description" content="《A Study of Probabilistic Password Models》论文阅读记录">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226133632274.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226192320553.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210225221622123.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226145404013.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226194041132.png">
 <meta property="article:published_time" content="2021-02-25T06:25:30.000Z">
-<meta property="article:modified_time" content="2021-02-26T09:54:49.859Z">
+<meta property="article:modified_time" content="2021-02-26T11:42:48.394Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="密码">
 <meta property="article:tag" content="密码猜测">
@@ -246,14 +248,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>7.7k</span>
+              <span>9.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
+              <span>8 分钟</span>
             </span>
 
         </div>
@@ -394,20 +396,79 @@
 <li>在每个密码前面加上开始符号</li>
 </ul>
 <h4 id="正则化"><a href="#正则化" class="headerlink" title="正则化"></a>正则化</h4><ul>
-<li><p>【3】、【8】模型不是概率模型，所有的概率之和为 最大密码长度-最小密码长度+1（分配给固定长度的所有字符串概率之和为1）证明（当阶数为 1 时）：</p>
+<li><p>【3】、【8】模型不是概率模型，<strong>所有的概率之和为 最大密码长度-最小密码长度+1（分配给固定长度的所有字符串概率之和为1）</strong>证明（当阶数为 1 时）：</p>
 <ul>
 <li><p>$\sum_{c_1 \in \Sigma}P(“c_1”)= \frac{\sum_{c_1\in\Sigma}count(c_0c_1)}{count(c_0\cdot)}=1$ 因此所有 length-1 字符串的概率和为 1</p>
 </li>
 <li><p>假设所有 length-l 字符串的概率和也为 1，则对于 length-(l+1) 的字符串概率和：<br>$$<br>\sum_{c_1c_2…c_{l+1}\in\Sigma^{l+1}}P(“c_1c_2…c_{l+1}”) \ = \sum_{c_1c_2…c_l\in\Sigma^l}P(“c_1c_2…c_l”) \times \sum_{c_{l+1}\in\Sigma}P(c_{l+1}|c_l) \ =  \sum_{c_1c_2…c_l\in\Sigma^l}P(“c_1c_2…c_l”) =1<br>$$</p>
 </li>
+<li><p>阶数为 n 的时候同理</p>
+</li>
+<li><p>需要归一化</p>
+</li>
+</ul>
+</li>
+<li><p><code>Direct normalization</code>：每个概率除以（最大密码长度-最小密码长度+1）；此时假设每个长度的密码的总概率是相同的，但和下面的表不符</p>
+</li>
+<li><p><code>Distribution-based normalization</code>：基于不同长度密码的分布标准化，即对于每个长度为 m 密码对应概率乘 $\frac{passwords\ of\ length\ m \ in \ training}{total\  passwords\ in\ training}$；可能导致过拟合，训练和测试数据集可能具有不同的长度分布</p>
+</li>
+<li><p><code>End-symbol normalization</code>：在训练和测试中在每个密码附加一个结束符号，则 $P(c_1|c_0)P(c_2|c_1)…P(c_l|c_{l-1})P(c_e|c_l)$，对最大长度密码，定义 $P(c_e|c_U)=1$；此方法考虑了哪些子字符串更有可能出现在密码的末尾，前面的方法中 “passwor” 将分配到比 “password” 更高的概率；且保证了，当阶数大于等于最小密码长度 L 时，分配给所有字符串的概率之和为 1</p>
+</li>
+<li><p>马尔可夫链阶数、平滑方法</p>
+<ul>
+<li><strong>高阶马尔可夫链能够使用比低阶马尔可夫链更深的历史信息，但容易过拟合，且存在稀疏性问题——从非常小的计数结果计算转移概率，或者许多字符串被指定概率为 0</strong></li>
+<li>拉普拉斯平滑：将 $\delta$ 加到每个子字符串的计数结果上</li>
+<li>Good-Turing 平滑【13】</li>
+</ul>
+</li>
+<li><p><strong>Backoff【16】：同时解决顺序、平滑和稀疏性问题的另一种方法是使用可变阶马尔可夫链</strong></p>
+<ul>
+<li>选择一个阈值并存储计数超过阈值的所有子字符串</li>
+<li>令 $\pi_{i,j}$ 表示 $s_0s_1…s_l$ 中从 $s_i$ 到 $s_j$ 的子串<ul>
+<li>计算 $s_0s_1…s_{l-1}$ 到 $s_0s_1…s_l$ 的转移概率时，寻找最小的 $i$ 使得 $\pi_{i,l-1}$ 有超过阈值的计数</li>
+<li>当有计数时，直接得到 $\frac{count(\pi_{i,l})}{count(\pi_{i,l-1})}$</li>
+<li>当 $\pi_{i,j}$ 没有计数，则只能靠较短的历史分配概率<ul>
+<li>计算通过第一种情况将转移概率分配给所有字符后留下的概率 $b$</li>
+<li>使用更短的前缀 $\pi_{i+1,l-1}$ 计算所有其他字符的概率，归一化使其相加为 $b$</li>
 </ul>
 </li>
 </ul>
-<ul>
-<li>Direct normalization</li>
-<li></li>
+</li>
+<li>backoff 模型比其他马尔可夫模型要慢得多</li>
 </ul>
-<h3 id="Template-based-Models"><a href="#Template-based-Models" class="headerlink" title="Template-based Models"></a>Template-based Models</h3><h3 id="Password-Generation"><a href="#Password-Generation" class="headerlink" title="Password Generation"></a>Password Generation</h3><h2 id="实验方法"><a href="#实验方法" class="headerlink" title="实验方法"></a>实验方法</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+</li>
+</ul>
+<h3 id="Template-based-Models"><a href="#Template-based-Models" class="headerlink" title="Template-based Models"></a>Template-based Models</h3><ul>
+<li><p>根据字符的类别将密码划分为不同的模板，并计算模板对应的字段概率：$P(“passwd123”)=P(“\alpha^6\beta^3”)P(“passwd”|\alpha^6)P(“123”|\beta^3)$</p>
+</li>
+<li><p>模板概率</p>
+<ul>
+<li>分配给每个模板的概率仅仅是使用该模板的密码数量除以密码总数——使用未出现在训练数据集中的模板的密码概率为 0</li>
+<li>改良：<ul>
+<li><strong>将密码根据（小写字母、数字、大写字母、符号）分割为字段</strong></li>
+<li><strong>学习马尔可夫模型，利用马尔可夫模型将概率分配给模板</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>字段概率：“123”的概率是“123”作为训练数据集中的 3 位片段出现的次数除以训练数据集中的 3 位片段的数量，或通过马尔可夫模型生成概率</p>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226192320553.png" alt="image-20210226192320553"></p>
+</li>
+</ul>
+<h3 id="Password-Generation"><a href="#Password-Generation" class="headerlink" title="Password Generation"></a>Password Generation</h3><ul>
+<li>基于全串马尔可夫：<ul>
+<li>搜索空间建模为一棵搜索树</li>
+<li>优先级队列方法不是存储器效率高的，并且不能用于生成大量密码</li>
+<li>优化：阈值搜索（不适用于基于模板的模型）<ul>
+<li>对搜索树进行多次深度优先遍历：第 i 次迭代，通过深度优先遍历搜索树，对概率小于 $\rho_i$ 的所有节点剪枝，生成概率在 $(\rho_i,\tau_i)$ 之间的密码</li>
+<li>为了生成 n 个猜测密码，从 $(\rho_1=\frac{1}{n},\tau_1=1)$ 开始迭代，若第 i 次迭代后共生成 m 个密码，则 $(\rho_{i+1}=\frac{\rho_i}{max(2, 1.5n/m)},\tau_{i+1}=\rho_i)$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>本文中，除了PCFGW模型之外，不为基于模板的模型生成密码（阈值搜索不适用于基于模板的模型）</li>
+</ul>
+<h2 id="实验方法"><a href="#实验方法" class="headerlink" title="实验方法"></a>实验方法</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
 <li>RockYou【1】包含2009年12月从社交应用网站 Rockyou 泄露的 3200 多万个密码</li>
 <li>PhpBB【1】包括布兰登·恩莱特在2009年1月从 PhpBB 泄露的 MD5 散列中破解的大约 25 万个密码</li>
 <li>Yahoo 数据集包括名为 D33Ds 的黑客组织在 2012 年 7 月公布的大约 45 万个密码</li>
@@ -436,14 +497,11 @@
 <p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226145404013.png" alt="image-20210226145404013"></p>
 </li>
 </ul>
-<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><ul>
-<li><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2></li>
-<li><p>引入概率阈值图来评估密码数据集</p>
-</li>
-<li><p>将丰富的统计语言建模文献中的知识和技术引入密码建模</p>
-</li>
-<li><p>对许多密码模型进行了系统的研究，并获得了一些发现——已经被认为是最先进的并被广泛用于密码研究的 PCFG（Weir 提出的） 模型的性能不如全串马尔可夫模型</p>
-</li>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="实验图"><a href="#实验图" class="headerlink" title="实验图"></a>实验图</h3><h3 id="ANLL-表"><a href="#ANLL-表" class="headerlink" title="ANLL 表"></a>ANLL 表</h3><p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226194041132.png" alt="image-20210226194041132"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>引入概率阈值图来评估密码数据集</li>
+<li>将丰富的统计语言建模文献中的知识和技术引入密码建模</li>
+<li>对许多密码模型进行了系统的研究，并获得了一些发现——已经被认为是最先进的并被广泛用于密码研究的 PCFG（Weir 提出的） 模型的性能不如全串马尔可夫模型</li>
 </ul>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Passwords, 2009. <a target="_blank" rel="noopener" href="http://wiki.skullsecurity.org/Passwords">http://wiki.skullsecurity.org/Passwords</a>.</p>
 <p>[2] Csdn cleartext passwords, 2011. <a target="_blank" rel="noopener" href="http://dazzlepod.com/csdn/">http://dazzlepod.com/csdn/</a>.</p>
@@ -622,7 +680,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%8C%87%E6%A0%87"><span class="nav-number">4.</span> <span class="nav-text">密码模型与指标</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Guess-number-graphs"><span class="nav-number">4.1.</span> <span class="nav-text">Guess-number graphs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Probability-threshold-graphs"><span class="nav-number">4.2.</span> <span class="nav-text">Probability-threshold graphs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Average-Negative-Log-Likelihood-ANLL-and-ANLL-theta"><span class="nav-number">4.3.</span> <span class="nav-text">Average-Negative-Log-Likelihood ($ANLL$) and $ANLL_\theta$</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1"><span class="nav-number">5.</span> <span class="nav-text">密码模型设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Whole-String-Markov-Models"><span class="nav-number">5.1.</span> <span class="nav-text">Whole-String Markov Models</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A3%E5%88%99%E5%8C%96"><span class="nav-number">5.1.1.</span> <span class="nav-text">正则化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Template-based-Models"><span class="nav-number">5.2.</span> <span class="nav-text">Template-based Models</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Generation"><span class="nav-number">5.3.</span> <span class="nav-text">Password Generation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%96%B9%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">实验方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">6.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97"><span class="nav-number">6.2.</span> <span class="nav-text">数据清洗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90"><span class="nav-number">6.3.</span> <span class="nav-text">数据分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%B5%8B%E8%AF%95%E5%9C%BA%E6%99%AF"><span class="nav-number">6.4.</span> <span class="nav-text">训练与测试场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">7.</span> <span class="nav-text">实验结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%8C%87%E6%A0%87"><span class="nav-number">4.</span> <span class="nav-text">密码模型与指标</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Guess-number-graphs"><span class="nav-number">4.1.</span> <span class="nav-text">Guess-number graphs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Probability-threshold-graphs"><span class="nav-number">4.2.</span> <span class="nav-text">Probability-threshold graphs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Average-Negative-Log-Likelihood-ANLL-and-ANLL-theta"><span class="nav-number">4.3.</span> <span class="nav-text">Average-Negative-Log-Likelihood ($ANLL$) and $ANLL_\theta$</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1"><span class="nav-number">5.</span> <span class="nav-text">密码模型设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Whole-String-Markov-Models"><span class="nav-number">5.1.</span> <span class="nav-text">Whole-String Markov Models</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A3%E5%88%99%E5%8C%96"><span class="nav-number">5.1.1.</span> <span class="nav-text">正则化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Template-based-Models"><span class="nav-number">5.2.</span> <span class="nav-text">Template-based Models</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Generation"><span class="nav-number">5.3.</span> <span class="nav-text">Password Generation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%96%B9%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">实验方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">6.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97"><span class="nav-number">6.2.</span> <span class="nav-text">数据清洗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90"><span class="nav-number">6.3.</span> <span class="nav-text">数据分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%B5%8B%E8%AF%95%E5%9C%BA%E6%99%AF"><span class="nav-number">6.4.</span> <span class="nav-text">训练与测试场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">7.</span> <span class="nav-text">实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%9B%BE"><span class="nav-number">7.1.</span> <span class="nav-text">实验图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ANLL-%E8%A1%A8"><span class="nav-number">7.2.</span> <span class="nav-text">ANLL 表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -729,12 +787,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">482k</span>
+    <span title="站点总字数">483k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:18</span>
+    <span title="站点阅读时长">7:19</span>
 </div>
 
         
