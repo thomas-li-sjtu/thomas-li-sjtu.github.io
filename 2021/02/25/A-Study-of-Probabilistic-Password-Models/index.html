@@ -33,9 +33,11 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226192320553.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210225221622123.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226145404013.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195246353.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195301634.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226194041132.png">
 <meta property="article:published_time" content="2021-02-25T06:25:30.000Z">
-<meta property="article:modified_time" content="2021-02-26T11:42:48.394Z">
+<meta property="article:modified_time" content="2021-02-26T12:41:01.934Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="密码">
 <meta property="article:tag" content="密码猜测">
@@ -248,14 +250,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>9.3k</span>
+              <span>10k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>8 分钟</span>
+              <span>9 分钟</span>
             </span>
 
         </div>
@@ -497,7 +499,51 @@
 <p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226145404013.png" alt="image-20210226145404013"></p>
 </li>
 </ul>
-<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="实验图"><a href="#实验图" class="headerlink" title="实验图"></a>实验图</h3><h3 id="ANLL-表"><a href="#ANLL-表" class="headerlink" title="ANLL 表"></a>ANLL 表</h3><p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226194041132.png" alt="image-20210226194041132"></p>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><ul>
+<li>实验结果的表示：猜测数字图、概率阈值图以及 ANLL 表</li>
+<li>全字符串模型用 ws 开头<ul>
+<li>$ws-mc-b10$：具有退避和频率阈值 10 的马尔可夫链</li>
+<li>$ws-mc_i$：i 阶马尔可夫模型，拉普拉斯平滑，$\delta=0.01$</li>
+<li>-end、-dir 和 -dis 表示三种规范化方法</li>
+<li>-gts 为 Good-Turing 平滑</li>
+</ul>
+</li>
+<li>基于模板的模型以 tb 开头<ul>
+<li>$tb-co-mc_i$：基于计数的方法将概率分配给模板，用 i 阶马尔可夫模型实例化字段</li>
+<li>$tb-co-co$：Weir 的 PCFG 从训练集生成字典</li>
+</ul>
+</li>
+</ul>
+<h3 id="实验图"><a href="#实验图" class="headerlink" title="实验图"></a>实验图</h3><ul>
+<li>(a) 显示 5 阶马尔可夫模型不同正则化方式下，密码排名与概率的图；不同曲线的间隙在 x 增加时逐渐减小，一种猜测是由于每个模型的概率加起来为1，这些曲线必须在某个点相交</li>
+<li>(b) 显示猜测-数字图；$wc-mc_5-end$、三种 PCFGW 的实例、三种不同模式的 JTR；后二者明显差于前者</li>
+<li>(c) 将 3 个模型的猜测数曲线和概率阈值曲线绘制在同一图上，如果将猜测数曲线向右移动，可以看到任意模型的猜测数曲线与概率阈值曲线大致匹配</li>
+<li>(d) 显示了所有基于模板的模型和一个完整字符串模型的概率阈值曲线；使用 DIC-0294 的 PCFGW 性能最差，使用 Openwall 字典的 PCFGW 性能稍好；在 PCFGW 中，从数据集学习比使用现有词典要好。用马尔可夫模型代替计数来实例化片段时，在更高的概率阈值上看到了另一个显著的改进</li>
+</ul>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195246353.png" alt="image-20210226195246353"></p>
+<ul>
+<li>(e) 比较了不同平滑方式在 4 阶、5阶马尔可夫模型上的结果</li>
+<li>(f) 比较了马尔可夫链模型中不同阶数的影响</li>
+<li>(g) 显示直接归一化性能最差，而基于分布的归一化性能略好于结束符号归一化</li>
+<li>(h) 仅使用至少8个字符的密码进行评估，结果与 (d) 的曲线相似，因此结果对“密码长度大于8”的网站也有参考性</li>
+</ul>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195301634.png" alt="image-20210226195301634"></p>
+<ul>
+<li>图 3 与图 4 略</li>
+</ul>
+<h3 id="ANLL-表"><a href="#ANLL-表" class="headerlink" title="ANLL 表"></a>ANLL 表</h3><ul>
+<li>使用结束符号归一化的 backoff 总体上给出了最好的结果——使用一个足够高但又不是太高阶数的马尔可夫，并利用一些方法处理过拟合</li>
+<li>对于大多数其他模型，基于分布的归一化执行得最好，其次是结束符号归一化，文献中隐含使用的直接归一化的性能最差；backoff 模型使用变长的马尔可夫链，可以适当地结束密码，而不需要只依赖于密码的长度进行标准化</li>
+<li>在平滑效果上，Good-Turing 平滑的表现出人意料地差，特别是高阶马尔可夫链</li>
+<li>对于大多数模型，给出最佳结果的马尔可夫链阶数因场景而异<ul>
+<li>训练数据集略小，则阶数 3 和阶数 4 通常优于阶数 5</li>
+<li>中文数据集使用的数字比字母多得多，从而低阶马尔可夫链带来更好的性能</li>
+</ul>
+</li>
+<li>比较场景 5 和 1 以及场景 6 和 2，可以看到在类似数据集上进行训练的重要性</li>
+<li>比较场景 2、3 和 4，可以看到 178 显然是 3 个场景中最弱的密码数据集</li>
+</ul>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226194041132.png" alt="image-20210226194041132"></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
 <li>引入概率阈值图来评估密码数据集</li>
 <li>将丰富的统计语言建模文献中的知识和技术引入密码建模</li>
@@ -787,12 +833,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">483k</span>
+    <span title="站点总字数">484k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:19</span>
+    <span title="站点阅读时长">7:20</span>
 </div>
 
         
