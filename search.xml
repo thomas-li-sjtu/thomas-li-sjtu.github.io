@@ -14674,7 +14674,7 @@ def a_function_requiring_decoration():
   <entry>
     <title>A Study of Probabilistic Password Models</title>
     <url>/2021/02/25/A-Study-of-Probabilistic-Password-Models/</url>
-    <content><![CDATA[<p>《A Study of Probabilistic Password Models》阅读记录</p>
+    <content><![CDATA[<p>《A Study of Probabilistic Password Models》论文阅读记录</p>
 <a id="more"></a>
 
 <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
@@ -14683,7 +14683,59 @@ def a_function_requiring_decoration():
 <li>对大量概率密码模型进行了系统评估，包括使用不同归一化和平滑方法的马尔可夫模型</li>
 <li>马尔可夫模型在正确使用时性能明显优于 Weir【25】 提出的 PCFG 模型</li>
 </ul>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h2 id="密码模型与指标"><a href="#密码模型与指标" class="headerlink" title="密码模型与指标"></a>密码模型与指标</h2><h2 id="密码模型设计"><a href="#密码模型设计" class="headerlink" title="密码模型设计"></a>密码模型设计</h2><h2 id="实验方法"><a href="#实验方法" class="headerlink" title="实验方法"></a>实验方法</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><h3 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h3><h3 id="数据分析"><a href="#数据分析" class="headerlink" title="数据分析"></a>数据分析</h3><ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>密码既易于理解和使用，又易于实施——基于密码的身份验证可能会继续作为安全的重要组成部分【14】</li>
+<li>密码模型分为两类，全字符串模型和基于模板的模型<ul>
+<li>全字符串模型不将密码分成段，如【8】中的马尔可夫模型</li>
+<li>基于模板的模型通常将将密码分成几个部分，同一类别的连续字符分成一个片段，独立地为每个片段生成概率，如【21】，【25】</li>
+</ul>
+</li>
+<li>认为密码模型研究分两类<ul>
+<li>第一类研究旨在了解是什么让用户选择更安全的密码——密码模型比较这些密码集的相对强度<ul>
+<li>【17】、【18】、【22】、【23】、【26】研究了不同场景下用户密码选择的质量</li>
+<li>用特别方法估计一组密码的信息熵【7】，主要基于密码长度</li>
+<li>【25】开发 PCFG</li>
+<li>往往绘制猜测数字图——需要计算密码的猜测数，这在计算上是昂贵的，而且往往只能探索一部分搜索空间</li>
+</ul>
+</li>
+<li>第二类研究旨在寻找最佳密码模型——模型用于评估所选密码的安全级别</li>
+</ul>
+</li>
+<li>本文认为<ul>
+<li>对于第一类研究，比较两组密码的相对强度没有必要计算所有密码的猜测数，只需计算所有密码的概率，绘制概率阈值与密码破解百分比的曲线<ul>
+<li>计算速度快</li>
+<li>曲线显示了集合中的密码质量</li>
+</ul>
+</li>
+<li>以往的工作只考虑了非常简单的马尔可夫模型<ul>
+<li>许多平滑技术可以帮助解决高阶马尔可夫模型中的稀疏和过拟合问题，包括拉普拉斯平滑、古德图灵平滑【13】和回退【16】</li>
+<li><strong>密码具有非常确定的长度分布，但 n-gram 最后分配给所有固定长度字符串的概率加起来为1，隐含地假设了长度分布是均匀的</strong></li>
+<li>不同的密码建模方法尚未得到系统的评估或相互比较</li>
+</ul>
+</li>
+<li>本文对比了 3 个英文数据库，3 个中文数据库</li>
+<li>PCFG 使用了三种字典：【25】的字典、OpenWall 字典、训练集生成的字典</li>
+<li>马尔可夫使用三种规范化：长度均匀分布、基于训练集长度分布、基于结束符号</li>
+<li>高阶马尔可夫链表现出不同程度的过拟合——在破解高概率密码方面表现良好</li>
+<li>backoff 方法本质上是可变阶马尔可夫链，与基于结束符号的规范化结合，效果最好</li>
+</ul>
+</li>
+<li>本文贡献<ul>
+<li>介绍了概率阈值图进行密码研究</li>
+<li>从 n-gram 模型的丰富文献中引入知识和技术到密码建模中</li>
+<li>对许多密码模型进行了系统的评估并取得了一些发现</li>
+</ul>
+</li>
+</ul>
+<h2 id="密码模型与指标"><a href="#密码模型与指标" class="headerlink" title="密码模型与指标"></a>密码模型与指标</h2><ul>
+<li>设置字符集 $\Sigma$ 为 95 个可打印的 ASCII 字符，子集称为字符类别，密码长度为 4-40</li>
+<li>使用以下三种指标：<ul>
+<li>对于类型一的研究，模型对比不同的数据集</li>
+<li>对于类型二的研究，固定一个数据集，对比不同的模型</li>
+</ul>
+</li>
+</ul>
+<h3 id="Guess-number-graphs"><a href="#Guess-number-graphs" class="headerlink" title="Guess-number graphs"></a>Guess-number graphs</h3><h3 id="Probability-threshold-graphs"><a href="#Probability-threshold-graphs" class="headerlink" title="Probability-threshold graphs"></a>Probability-threshold graphs</h3><h3 id="Average-Negative-Log-Likelihood-ANLL-and-ANLL-theta"><a href="#Average-Negative-Log-Likelihood-ANLL-and-ANLL-theta" class="headerlink" title="Average-Negative-Log-Likelihood ($ANLL$) and $ANLL_\theta$"></a>Average-Negative-Log-Likelihood ($ANLL$) and $ANLL_\theta$</h3><h2 id="密码模型设计"><a href="#密码模型设计" class="headerlink" title="密码模型设计"></a>密码模型设计</h2><h2 id="实验方法"><a href="#实验方法" class="headerlink" title="实验方法"></a>实验方法</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><h3 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h3><h3 id="数据分析"><a href="#数据分析" class="headerlink" title="数据分析"></a>数据分析</h3><ul>
 <li><p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210225221622123.png" alt="image-20210225221622123"></p>
 </li>
 </ul>
