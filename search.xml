@@ -15110,11 +15110,29 @@ def a_function_requiring_decoration():
 <li>JtR 有一个规则预处理器，允许多个相似的规则被紧凑地表示为一个规则</li>
 </ul>
 <h2 id="规则倒置和猜测计数"><a href="#规则倒置和猜测计数" class="headerlink" title="规则倒置和猜测计数"></a>规则倒置和猜测计数</h2><ul>
-<li>规则倒置：<ul>
+<li><p>规则倒置：</p>
+<ul>
 <li>$regex\leftarrow invert_rule(rule,pw)$</li>
-<li>函数 $$</li>
+<li>函数 $invert_rule$ 将规则 $rule$ 和目标密码 $pw$ 作为输入，输出一个正则表达式 $regex$</li>
+<li>正则式决定了规则下 $pw$ 的转换结果集合</li>
+<li>简单的正则表达式不使用 $*$ 和 $+$ 运算符，只由一系列字符组成；复杂的正则表达式使用</li>
+<li>当可以为一个规则计算一个简单正则表达式时，称这个规则可全转换，否则称为不可转换</li>
 </ul>
 </li>
+<li><p>为 JTR 的 52 个转换中的 44 个构建简单正则表达式</p>
+</li>
+<li><p>规则反转的用途是确定单词列表中的任何条目，是否能猜到某个规则下的 $pw$，通过正则表达式，能够更加实现更快速的检查</p>
+</li>
+<li><p>猜测计数：给定单词列表 $ wlist $ 和规则 $rule$，JtR 生成的猜测数<br>$$<br>feat_grps\leftarrow extract_features(rlist) \</p>
+<p>aux_info\leftarrow precompute(feat_grps,wlist) \<br>num \leftarrow guess_count(aux_info,rule).<br>$$</p>
+<ul>
+<li>第一个函数和第二个函数实现预计算；第一个函数输出 $feat_grps$ 表示什么抽象属性与 $wlist$ 中的规则所做的猜测相关；第二个函数输出辅助信息，使得能通过要给查找表快速计算具有属性组合的单词</li>
+<li>第三个函数在不执行规则的情况下预估 JTR 的运行时间</li>
+</ul>
+</li>
+</ul>
+<h3 id="规则反转"><a href="#规则反转" class="headerlink" title="规则反转"></a>规则反转</h3><h4 id="单个转换"><a href="#单个转换" class="headerlink" title="单个转换"></a>单个转换</h4><ul>
+<li>对大多数由单个转换组成的规则，此方法很简单</li>
 </ul>
 <h2 id="评估数据集"><a href="#评估数据集" class="headerlink" title="评估数据集"></a>评估数据集</h2><ul>
 <li><p>在三个单词列表、六个规则列表和六组评估密码上分析我们的技术</p>
@@ -15157,7 +15175,7 @@ def a_function_requiring_decoration():
 </ul>
 </li>
 </ul>
-<h2 id="猜数计算器的评估"><a href="#猜数计算器的评估" class="headerlink" title="猜数计算器的评估"></a>猜数计算器的评估</h2><h2 id="优化一：有序的规则列表"><a href="#优化一：有序的规则列表" class="headerlink" title="优化一：有序的规则列表"></a>优化一：有序的规则列表</h2><h2 id="优化二：有序的单词列表"><a href="#优化二：有序的单词列表" class="headerlink" title="优化二：有序的单词列表"></a>优化二：有序的单词列表</h2><h2 id="与现有算法的比较"><a href="#与现有算法的比较" class="headerlink" title="与现有算法的比较"></a>与现有算法的比较</h2><h2 id="结论与讨论"><a href="#结论与讨论" class="headerlink" title="结论与讨论"></a>结论与讨论</h2><ul>
+<h2 id="猜数计算器的评估"><a href="#猜数计算器的评估" class="headerlink" title="猜数计算器的评估"></a>猜数计算器的评估</h2><h2 id="优化一：有序的规则列表"><a href="#优化一：有序的规则列表" class="headerlink" title="优化一：有序的规则列表"></a>优化一：有序的规则列表</h2><h2 id="优化二：有序的单词列表"><a href="#优化二：有序的单词列表" class="headerlink" title="优化二：有序的单词列表"></a>优化二：有序的单词列表</h2><h2 id="优化三：规则列表完整性"><a href="#优化三：规则列表完整性" class="headerlink" title="优化三：规则列表完整性"></a>优化三：规则列表完整性</h2><h2 id="优化四：单词列表完整性"><a href="#优化四：单词列表完整性" class="headerlink" title="优化四：单词列表完整性"></a>优化四：单词列表完整性</h2><h2 id="与现有算法的比较"><a href="#与现有算法的比较" class="headerlink" title="与现有算法的比较"></a>与现有算法的比较</h2><h2 id="结论与讨论"><a href="#结论与讨论" class="headerlink" title="结论与讨论"></a>结论与讨论</h2><ul>
 <li>提供了第一个计算高效的密码安全分析</li>
 <li>展示了本文的技术如何实现四种数据驱动的优化，以提高规则列表和单词列表的顺序和完整性</li>
 <li>先前的研究发现，当不鼓励【29】或禁止【7】使用弱密码时，用户很少选择下一个最有可能被允许的密码；因此未来的实证研究需要捕捉人类的适应机制【55】，并且攻击者可能会将这些行为编码到新的转换规则中</li>

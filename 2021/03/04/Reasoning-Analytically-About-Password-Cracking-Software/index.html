@@ -32,7 +32,7 @@
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/04/Reasoning-Analytically-About-Password-Cracking-Software/image-20210306124714603.png">
 <meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/04/Reasoning-Analytically-About-Password-Cracking-Software/image-20210306160423795.png">
 <meta property="article:published_time" content="2021-03-04T05:10:22.000Z">
-<meta property="article:modified_time" content="2021-03-06T10:04:52.453Z">
+<meta property="article:modified_time" content="2021-03-06T11:19:52.453Z">
 <meta property="article:author" content="Thomas-Li">
 <meta property="article:tag" content="密码">
 <meta property="article:tag" content="密码规则">
@@ -245,14 +245,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>11k</span>
+              <span>12k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>10 分钟</span>
+              <span>11 分钟</span>
             </span>
 
         </div>
@@ -381,11 +381,29 @@
 <li>JtR 有一个规则预处理器，允许多个相似的规则被紧凑地表示为一个规则</li>
 </ul>
 <h2 id="规则倒置和猜测计数"><a href="#规则倒置和猜测计数" class="headerlink" title="规则倒置和猜测计数"></a>规则倒置和猜测计数</h2><ul>
-<li>规则倒置：<ul>
+<li><p>规则倒置：</p>
+<ul>
 <li>$regex\leftarrow invert_rule(rule,pw)$</li>
-<li>函数 $$</li>
+<li>函数 $invert_rule$ 将规则 $rule$ 和目标密码 $pw$ 作为输入，输出一个正则表达式 $regex$</li>
+<li>正则式决定了规则下 $pw$ 的转换结果集合</li>
+<li>简单的正则表达式不使用 $*$ 和 $+$ 运算符，只由一系列字符组成；复杂的正则表达式使用</li>
+<li>当可以为一个规则计算一个简单正则表达式时，称这个规则可全转换，否则称为不可转换</li>
 </ul>
 </li>
+<li><p>为 JTR 的 52 个转换中的 44 个构建简单正则表达式</p>
+</li>
+<li><p>规则反转的用途是确定单词列表中的任何条目，是否能猜到某个规则下的 $pw$，通过正则表达式，能够更加实现更快速的检查</p>
+</li>
+<li><p>猜测计数：给定单词列表 $ wlist $ 和规则 $rule$，JtR 生成的猜测数<br>$$<br>feat_grps\leftarrow extract_features(rlist) \</p>
+<p>aux_info\leftarrow precompute(feat_grps,wlist) \<br>num \leftarrow guess_count(aux_info,rule).<br>$$</p>
+<ul>
+<li>第一个函数和第二个函数实现预计算；第一个函数输出 $feat_grps$ 表示什么抽象属性与 $wlist$ 中的规则所做的猜测相关；第二个函数输出辅助信息，使得能通过要给查找表快速计算具有属性组合的单词</li>
+<li>第三个函数在不执行规则的情况下预估 JTR 的运行时间</li>
+</ul>
+</li>
+</ul>
+<h3 id="规则反转"><a href="#规则反转" class="headerlink" title="规则反转"></a>规则反转</h3><h4 id="单个转换"><a href="#单个转换" class="headerlink" title="单个转换"></a>单个转换</h4><ul>
+<li>对大多数由单个转换组成的规则，此方法很简单</li>
 </ul>
 <h2 id="评估数据集"><a href="#评估数据集" class="headerlink" title="评估数据集"></a>评估数据集</h2><ul>
 <li><p>在三个单词列表、六个规则列表和六组评估密码上分析我们的技术</p>
@@ -428,7 +446,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="猜数计算器的评估"><a href="#猜数计算器的评估" class="headerlink" title="猜数计算器的评估"></a>猜数计算器的评估</h2><h2 id="优化一：有序的规则列表"><a href="#优化一：有序的规则列表" class="headerlink" title="优化一：有序的规则列表"></a>优化一：有序的规则列表</h2><h2 id="优化二：有序的单词列表"><a href="#优化二：有序的单词列表" class="headerlink" title="优化二：有序的单词列表"></a>优化二：有序的单词列表</h2><h2 id="与现有算法的比较"><a href="#与现有算法的比较" class="headerlink" title="与现有算法的比较"></a>与现有算法的比较</h2><h2 id="结论与讨论"><a href="#结论与讨论" class="headerlink" title="结论与讨论"></a>结论与讨论</h2><ul>
+<h2 id="猜数计算器的评估"><a href="#猜数计算器的评估" class="headerlink" title="猜数计算器的评估"></a>猜数计算器的评估</h2><h2 id="优化一：有序的规则列表"><a href="#优化一：有序的规则列表" class="headerlink" title="优化一：有序的规则列表"></a>优化一：有序的规则列表</h2><h2 id="优化二：有序的单词列表"><a href="#优化二：有序的单词列表" class="headerlink" title="优化二：有序的单词列表"></a>优化二：有序的单词列表</h2><h2 id="优化三：规则列表完整性"><a href="#优化三：规则列表完整性" class="headerlink" title="优化三：规则列表完整性"></a>优化三：规则列表完整性</h2><h2 id="优化四：单词列表完整性"><a href="#优化四：单词列表完整性" class="headerlink" title="优化四：单词列表完整性"></a>优化四：单词列表完整性</h2><h2 id="与现有算法的比较"><a href="#与现有算法的比较" class="headerlink" title="与现有算法的比较"></a>与现有算法的比较</h2><h2 id="结论与讨论"><a href="#结论与讨论" class="headerlink" title="结论与讨论"></a>结论与讨论</h2><ul>
 <li>提供了第一个计算高效的密码安全分析</li>
 <li>展示了本文的技术如何实现四种数据驱动的优化，以提高规则列表和单词列表的顺序和完整性</li>
 <li>先前的研究发现，当不鼓励【29】或禁止【7】使用弱密码时，用户很少选择下一个最有可能被允许的密码；因此未来的实证研究需要捕捉人类的适应机制【55】，并且攻击者可能会将这些行为编码到新的转换规则中</li>
@@ -639,7 +657,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%BC%BA%E5%BA%A6%E6%8C%87%E6%A0%87"><span class="nav-number">3.1.</span> <span class="nav-text">密码强度指标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E7%A0%B4%E8%A7%A3%E7%AE%97%E6%B3%95"><span class="nav-number">3.2.</span> <span class="nav-text">密码破解算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%95%88%E5%88%86%E6%9E%90%E5%AF%86%E7%A0%81%E7%A0%B4%E8%A7%A3%E7%AE%97%E6%B3%95"><span class="nav-number">3.3.</span> <span class="nav-text">高效分析密码破解算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">4.</span> <span class="nav-text">背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E8%BD%AC%E6%8D%A2%E7%9A%84%E4%B9%B1%E7%A0%81%E5%88%97%E8%A1%A8%E6%94%BB%E5%87%BB"><span class="nav-number">4.1.</span> <span class="nav-text">基于转换的乱码列表攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AC%E6%8D%A2%E8%A7%84%E5%88%99%E7%9A%84%E8%AF%AD%E8%A8%80"><span class="nav-number">4.2.</span> <span class="nav-text">转换规则的语言</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.2.1.</span> <span class="nav-text">简单转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8B%92%E7%BB%9D%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.2.2.</span> <span class="nav-text">拒绝转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.2.3.</span> <span class="nav-text">内存转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JtR-%E8%A7%84%E5%88%99%E9%A2%84%E5%A4%84%E7%90%86%E5%99%A8"><span class="nav-number">4.2.4.</span> <span class="nav-text">JtR 规则预处理器</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%84%E5%88%99%E5%80%92%E7%BD%AE%E5%92%8C%E7%8C%9C%E6%B5%8B%E8%AE%A1%E6%95%B0"><span class="nav-number">5.</span> <span class="nav-text">规则倒置和猜测计数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">6.</span> <span class="nav-text">评估数据集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A6%E7%90%86"><span class="nav-number">7.</span> <span class="nav-text">伦理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8C%9C%E6%95%B0%E8%AE%A1%E7%AE%97%E5%99%A8%E7%9A%84%E8%AF%84%E4%BC%B0"><span class="nav-number">8.</span> <span class="nav-text">猜数计算器的评估</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E4%B8%80%EF%BC%9A%E6%9C%89%E5%BA%8F%E7%9A%84%E8%A7%84%E5%88%99%E5%88%97%E8%A1%A8"><span class="nav-number">9.</span> <span class="nav-text">优化一：有序的规则列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E4%BA%8C%EF%BC%9A%E6%9C%89%E5%BA%8F%E7%9A%84%E5%8D%95%E8%AF%8D%E5%88%97%E8%A1%A8"><span class="nav-number">10.</span> <span class="nav-text">优化二：有序的单词列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E%E7%8E%B0%E6%9C%89%E7%AE%97%E6%B3%95%E7%9A%84%E6%AF%94%E8%BE%83"><span class="nav-number">11.</span> <span class="nav-text">与现有算法的比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA%E4%B8%8E%E8%AE%A8%E8%AE%BA"><span class="nav-number">12.</span> <span class="nav-text">结论与讨论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#APPENDIX"><span class="nav-number">13.</span> <span class="nav-text">APPENDIX</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">14.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%BC%BA%E5%BA%A6%E6%8C%87%E6%A0%87"><span class="nav-number">3.1.</span> <span class="nav-text">密码强度指标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E7%A0%B4%E8%A7%A3%E7%AE%97%E6%B3%95"><span class="nav-number">3.2.</span> <span class="nav-text">密码破解算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%95%88%E5%88%86%E6%9E%90%E5%AF%86%E7%A0%81%E7%A0%B4%E8%A7%A3%E7%AE%97%E6%B3%95"><span class="nav-number">3.3.</span> <span class="nav-text">高效分析密码破解算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">4.</span> <span class="nav-text">背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E8%BD%AC%E6%8D%A2%E7%9A%84%E4%B9%B1%E7%A0%81%E5%88%97%E8%A1%A8%E6%94%BB%E5%87%BB"><span class="nav-number">4.1.</span> <span class="nav-text">基于转换的乱码列表攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AC%E6%8D%A2%E8%A7%84%E5%88%99%E7%9A%84%E8%AF%AD%E8%A8%80"><span class="nav-number">4.2.</span> <span class="nav-text">转换规则的语言</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.2.1.</span> <span class="nav-text">简单转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8B%92%E7%BB%9D%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.2.2.</span> <span class="nav-text">拒绝转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.2.3.</span> <span class="nav-text">内存转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JtR-%E8%A7%84%E5%88%99%E9%A2%84%E5%A4%84%E7%90%86%E5%99%A8"><span class="nav-number">4.2.4.</span> <span class="nav-text">JtR 规则预处理器</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%84%E5%88%99%E5%80%92%E7%BD%AE%E5%92%8C%E7%8C%9C%E6%B5%8B%E8%AE%A1%E6%95%B0"><span class="nav-number">5.</span> <span class="nav-text">规则倒置和猜测计数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%84%E5%88%99%E5%8F%8D%E8%BD%AC"><span class="nav-number">5.1.</span> <span class="nav-text">规则反转</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%B8%AA%E8%BD%AC%E6%8D%A2"><span class="nav-number">5.1.1.</span> <span class="nav-text">单个转换</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">6.</span> <span class="nav-text">评估数据集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A6%E7%90%86"><span class="nav-number">7.</span> <span class="nav-text">伦理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8C%9C%E6%95%B0%E8%AE%A1%E7%AE%97%E5%99%A8%E7%9A%84%E8%AF%84%E4%BC%B0"><span class="nav-number">8.</span> <span class="nav-text">猜数计算器的评估</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E4%B8%80%EF%BC%9A%E6%9C%89%E5%BA%8F%E7%9A%84%E8%A7%84%E5%88%99%E5%88%97%E8%A1%A8"><span class="nav-number">9.</span> <span class="nav-text">优化一：有序的规则列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E4%BA%8C%EF%BC%9A%E6%9C%89%E5%BA%8F%E7%9A%84%E5%8D%95%E8%AF%8D%E5%88%97%E8%A1%A8"><span class="nav-number">10.</span> <span class="nav-text">优化二：有序的单词列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E4%B8%89%EF%BC%9A%E8%A7%84%E5%88%99%E5%88%97%E8%A1%A8%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="nav-number">11.</span> <span class="nav-text">优化三：规则列表完整性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E5%9B%9B%EF%BC%9A%E5%8D%95%E8%AF%8D%E5%88%97%E8%A1%A8%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="nav-number">12.</span> <span class="nav-text">优化四：单词列表完整性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E%E7%8E%B0%E6%9C%89%E7%AE%97%E6%B3%95%E7%9A%84%E6%AF%94%E8%BE%83"><span class="nav-number">13.</span> <span class="nav-text">与现有算法的比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA%E4%B8%8E%E8%AE%A8%E8%AE%BA"><span class="nav-number">14.</span> <span class="nav-text">结论与讨论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#APPENDIX"><span class="nav-number">15.</span> <span class="nav-text">APPENDIX</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">16.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -746,12 +764,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">495k</span>
+    <span title="站点总字数">496k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:30</span>
+    <span title="站点阅读时长">7:31</span>
 </div>
 
         
