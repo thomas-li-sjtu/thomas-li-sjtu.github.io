@@ -11652,6 +11652,7 @@ def a_function_requiring_decoration():
       <tags>
         <tag>密码</tag>
         <tag>密码重用</tag>
+        <tag>密码规则</tag>
       </tags>
   </entry>
   <entry>
@@ -14987,6 +14988,242 @@ def a_function_requiring_decoration():
       <tags>
         <tag>密码</tag>
         <tag>密码猜测</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Reasoning Analytically About Password-Cracking Software</title>
+    <url>/2021/03/04/Reasoning-Analytically-About-Password-Cracking-Software/</url>
+    <content><![CDATA[<p>《Reasoning Analytically About Password-Cracking Software》论文阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>大量文献介绍用模拟密码破解算法来估计密码强度——只适用于概率密码模型</li>
+<li>本文介绍能够分析软件工具（JTR 与 Hashcat）中基于转换的密码方法</li>
+<li>定义两个操作：规则反转、猜测计数<ul>
+<li>分析软件工具，而不需要枚举猜测</li>
+<li>估计密码强度所需的时间减少了几个数量级</li>
+</ul>
+</li>
+<li>展示了本文的技术如何利用密码数据来改进转换规则的排序，并识别攻击配置中可能缺失的规则和单词</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>许多密码破解算法都是概率性的：创建一个模型，为每个可能的密码分配一个概率，攻击者以概率递减的顺序理性地猜测密码——密码的强度与具有更高概率的密码数量成比例</p>
+</li>
+<li><p>主要的概率算法：马尔可夫模型【10】-【12】，神经网络【13】，概率上下文无关文法【7、10、14】</p>
+</li>
+<li><p>实际攻击者很少使用概率工具，更多使用 JTR、Hashcat【15】 等软件——概率算法在猜测的表现良好，但它们产生猜测的计算成本很高【8】，而软件工具破解数量相当的密码更快</p>
+</li>
+<li><p>JtR 和 Hashcat 的乱码列表（mangled-wordlist ）攻击是最常用的【15】</p>
+<ul>
+<li><blockquote>
+<p>passwords tend to differ in small and predictable ways</p>
+</blockquote>
+</li>
+<li><p>攻击者创建一个包含常用密码和自然语言内容的单词列表，一个由该工具指定的转换语言编写的规则列表</p>
+</li>
+<li><p>密码的实际强度受到工具是否以及何时猜测的强烈影响</p>
+</li>
+</ul>
+</li>
+<li><p>第一个贡献：模拟基于转换的密码猜测的分析方法</p>
+<ul>
+<li>设计并实现分析计算 JtR 和 Hashcat 属性的工具，包括它们是否会生成特定的密码以及每个规则生成多少次猜测，可以计算在攻击之前会猜到多少密码，从而估计密码的强度</li>
+<li>第一个为广泛使用的破解软件建模评估方法</li>
+<li>规则反演：计算描述密码的规则的原像集的紧凑表示，以看到规则是否被应用</li>
+<li>猜测计数：计算规则生成的猜测次数，而不运行规则</li>
+</ul>
+</li>
+<li><p>第二个贡献：配置工具/实验</p>
+<ul>
+<li>猜测工具对配置非常敏感，包括单词列表和规则列表中包含哪些单词和规则，以及这些单词和规则是如何排序的</li>
+<li>扩展了本文的分析方法来设计、实现和评估四种优化技术，优化了规则列表和单词列表的顺序和完整性；规则列表 SpiderLab 【18】的顺序可以得到实质性的改进，Megatron 【19】的顺序已接近于最优</li>
+</ul>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>虽然实时服务器上的密码猜测可能会受到速率限制，但大规模离线猜测仍然是一个重要的威胁<ul>
+<li>人们经常在不同帐户之间重复使用密码【20】</li>
+<li>限速并不总是正确实施【21】</li>
+<li>对加密文件的猜测（密钥是从密码中得到）如果不相应地增加合法访问的成本，则不会受到速率限制</li>
+</ul>
+</li>
+</ul>
+<h3 id="密码强度指标"><a href="#密码强度指标" class="headerlink" title="密码强度指标"></a>密码强度指标</h3><ul>
+<li>熵在历史上被用作密码强度的度量标准。然而，熵是为分布计算的，而不是单独的一个密码</li>
+<li>使用启发式算法估计单个密码的熵通常是不准确的【7、9、22】</li>
+</ul>
+<h3 id="密码破解算法"><a href="#密码破解算法" class="headerlink" title="密码破解算法"></a>密码破解算法</h3><ul>
+<li>马尔可夫模型：【31】提出使用自然语言的马尔可夫模型来猜测密码；【6】提出了根据密码训练的自适应马尔可夫模型；【12】提出更有效列举猜测的机制；【11】分析了马尔可夫模型猜测不同密码集的能力，提出使用加性平滑的 6-gram 马尔可夫模型来有效地猜测英语密码【11】</li>
+<li>PCFG：【14】提出了概率上下文无关文法，将口令的概率建模为其字符类（或语义【32】）结构的概率乘以其组成字符串的概率</li>
+<li>神经网络：【13】使用多层神经网络，基于前面的字符计算候选密码中后续字符的概率</li>
+</ul>
+<h3 id="高效分析密码破解算法"><a href="#高效分析密码破解算法" class="headerlink" title="高效分析密码破解算法"></a>高效分析密码破解算法</h3><ul>
+<li>【7】通过接受时空折衷来快速查找密码的猜测数，预计算出非常大的 PCFG 结构和终端字符串概率的查找表</li>
+<li>【10】利用蒙特卡罗方法估计给定口令的概率与概率较高的口令数目之间的映射，计算马尔可夫模型和 PCFG 的猜测数</li>
+<li>【13】将蒙特卡罗方法扩展到神经网络</li>
+<li>【11】引入了概率-阈值图，可以高效地计算，并能够比较密码集的相对强度，但不能直接用来计算猜数</li>
+<li>【5】显示，真正的攻击者很少使用这样的模型</li>
+<li>这些技术不能应用于攻击者实际使用的软件，因为这些工具不能对概率进行建模【15】</li>
+</ul>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><ul>
+<li>最佳实践要求使用计算开销较大的哈希函数存储加密和哈希的密码，尽管快速哈希函（例如，MD5）被广泛使用【30】</li>
+<li>当数据泄露发生时，攻击者生成可能的候选项，对它们进行散列，并将这些散列与泄露的散列进行比较。破解受密码保护的文件时也会发生类似的过程</li>
+<li>在超出范围的有针对性的攻击中，猜测的最佳来源是用户的个人信息【37】和与先前入侵的相同用户名相关联的密码【20】</li>
+<li>对于离线攻击，最好的猜测来源是任何以前按频率降序排列的真实密码【8】</li>
+<li>为了产生更多的猜测，攻击者使用数据驱动的方法来修改泄漏的数据</li>
+</ul>
+<h3 id="基于转换的乱码列表攻击"><a href="#基于转换的乱码列表攻击" class="headerlink" title="基于转换的乱码列表攻击"></a>基于转换的乱码列表攻击</h3><ul>
+<li>将单词列表和规则列表作为输入<ul>
+<li>单词表通常包含数据泄露的密码、字典中的单词和自然语言数据(例如短语)【15】</li>
+<li>规则是用特定工具的语言编写的单个转换的组合</li>
+<li>JtR 和 Hashcat 的猜测顺序不同：<ul>
+<li>JtR 按照规则为主的顺序进行，在进行下一个规则之前，将规则列表中的给定规则应用于单词列表中的所有单词</li>
+<li>Hashcat 遵循单词为主的顺序，在前进到下一个单词之前，将规则列表中的许多规则应用到给定的单词</li>
+</ul>
+</li>
+<li>JtR 对规则列表的排序特别敏感，Hashcat 对单词列表的顺序更敏感</li>
+</ul>
+</li>
+<li>规则列表中包含的大多数规则，最初是由人类专家利用他们对人类如何通过转换自然语言，或手动检查已发布密码集中的模式来创建密码的直觉，创建的【18】</li>
+<li>Marechal 提出了基于他们在给定评估集中破解的密码数量的排序规则【38】，Hashcat 的 generated2.rule 是通过随机生成规则并测试其破解密码集的有效性来创建的【8】</li>
+</ul>
+<h3 id="转换规则的语言"><a href="#转换规则的语言" class="headerlink" title="转换规则的语言"></a>转换规则的语言</h3><ul>
+<li><p>术语“转换”指代单个命令——改变一个输入单词来生成一个新的候选猜测，或表达与是否进行猜测相关的条件逻辑</p>
+</li>
+<li><p>JtR 支持 52 个独立的转换【40】，而Hashcat支持55个独立的转换【41】；有 32 个相同的转换</p>
+</li>
+<li><p>下表给出对每个工具支持转换的分类，以及转换是否可以通过分析来推理</p>
+<p><img src="/2021/03/04/Reasoning-Analytically-About-Password-Cracking-Software/image-20210306124714603.png" alt="image-20210306124714603"></p>
+</li>
+<li><p>每个规则都由一个或多个转换组成，并从左到右进行解析</p>
+</li>
+</ul>
+<h4 id="简单转换"><a href="#简单转换" class="headerlink" title="简单转换"></a>简单转换</h4><ul>
+<li>直接修改输入单词的某些方面</li>
+<li>改变输入单词中字母的大小写、插入或删除一个字符或一组字符、替代字符、重新排列、将单词转换为过去时或动名词形式</li>
+</ul>
+<h4 id="拒绝转换"><a href="#拒绝转换" class="headerlink" title="拒绝转换"></a>拒绝转换</h4><ul>
+<li>除非满足条件，否则不进行转换</li>
+<li>Hashcat 只在特殊情况下才这样做（出于性能原因）</li>
+</ul>
+<h4 id="内存转换"><a href="#内存转换" class="headerlink" title="内存转换"></a>内存转换</h4><h4 id="JtR-规则预处理器"><a href="#JtR-规则预处理器" class="headerlink" title="JtR 规则预处理器"></a>JtR 规则预处理器</h4><ul>
+<li>JtR 有一个规则预处理器，允许多个相似的规则被紧凑地表示为一个规则</li>
+</ul>
+<h2 id="规则倒置和猜测计数"><a href="#规则倒置和猜测计数" class="headerlink" title="规则倒置和猜测计数"></a>规则倒置和猜测计数</h2><ul>
+<li>规则倒置：<ul>
+<li>$regex\leftarrow invert_rule(rule,pw)$</li>
+<li>函数 $$</li>
+</ul>
+</li>
+</ul>
+<h2 id="评估数据集"><a href="#评估数据集" class="headerlink" title="评估数据集"></a>评估数据集</h2><ul>
+<li><p>在三个单词列表、六个规则列表和六组评估密码上分析我们的技术</p>
+</li>
+<li><p>单词列表</p>
+<ul>
+<li>它们更典型地被有经验的攻击者使用【15】</li>
+<li>XATO 是一组 1000 万个密码（5，189，378个唯一条目），从数千个泄露的密码集中抽取，由安全顾问在2015年发布【44】，以前曾被用于研究【22】</li>
+<li>PGS （19，436，159个词条）是 CMU 密码猜测服务【8】中使用的密码和字典的组合</li>
+<li>LinkedIn 是 LinkedIn 数据泄露的一组密码（60，169，992个唯一条目）【45】。虽然不是明文泄露，超过97%已经被破解</li>
+<li>取初始集合，清理非 ASCII 字符，并按频率排序，去掉重复</li>
+</ul>
+</li>
+<li><p>规则列表</p>
+<ul>
+<li>为每个工具选择三个典型的规则列表</li>
+<li>John（151 个规则）代表 JtR 的默认规则；SpiderLabs（5，146条规则）是 KoreLogic 发布的，由人类专家按照预期的有效性顺序重新排序；Megatron（15，329 个规则）结合了 Openwall【19】的两套 m3g9tr0n 规则</li>
+<li>Hashcat 自带；Best64（77条规则）是 Hashcat 的默认最佳规则，在社区竞赛中创建和完善的。T0XlC （4，085个规则）和 Generated2  (65，117个规则)是由 Hashcat 团队成员创建的更广泛的集合。</li>
+</ul>
+</li>
+<li><p>评估列表</p>
+<ul>
+<li>将非 ASCII 字符转换为 ASCII</li>
+<li>删除了超过 32 个字符的密码</li>
+<li>删除了不符合组合策略的密码——可能是遗留帐户或错误</li>
+<li>每组中随机抽取了 25，000 个密码</li>
+</ul>
+<p><img src="/2021/03/04/Reasoning-Analytically-About-Password-Cracking-Software/image-20210306160423795.png" alt="image-20210306160423795"></p>
+</li>
+</ul>
+<h2 id="伦理"><a href="#伦理" class="headerlink" title="伦理"></a>伦理</h2><ul>
+<li>评估集和一些单词表包含以前被盗，在网上泄露的密码，使用这些数据会引发伦理问题</li>
+<li>清除除密码之外的所有数据，意味着本文分析的数据中没有识别信息</li>
+<li>这些密码列表已经在网上公开，因此本文对数据的使用不会加剧已经对用户造成的伤害</li>
+<li>本文开发的猜测数字计算器支持实时密码检查，预计这将帮助用户创建更安全的密码</li>
+<li>虽然攻击者可以使用本文的技术来改进攻击，但不认为发布我们的工具会给攻击者带来实质性的优势<ul>
+<li>破解社区的成员已经投入了大量的计算来开发和完善他们自己的规则列表和单词列表【38】，经验丰富的攻击者精心策划的单词列表是严格保密的秘密，很少公开分享</li>
+<li>在密码破解竞赛【17】、先前的学术评估【8】和媒体文章【5】中，它们的表现明显优于公开发布的单词列表</li>
+<li>虽然一些攻击者可能会从我们的工具中受益，但我们希望我们的工具主要是为了更好地将学术界的模型与专家的非公开列表和配置结合起来</li>
+</ul>
+</li>
+</ul>
+<h2 id="猜数计算器的评估"><a href="#猜数计算器的评估" class="headerlink" title="猜数计算器的评估"></a>猜数计算器的评估</h2><h2 id="优化一：有序的规则列表"><a href="#优化一：有序的规则列表" class="headerlink" title="优化一：有序的规则列表"></a>优化一：有序的规则列表</h2><h2 id="优化二：有序的单词列表"><a href="#优化二：有序的单词列表" class="headerlink" title="优化二：有序的单词列表"></a>优化二：有序的单词列表</h2><h2 id="与现有算法的比较"><a href="#与现有算法的比较" class="headerlink" title="与现有算法的比较"></a>与现有算法的比较</h2><h2 id="结论与讨论"><a href="#结论与讨论" class="headerlink" title="结论与讨论"></a>结论与讨论</h2><ul>
+<li>提供了第一个计算高效的密码安全分析</li>
+<li>展示了本文的技术如何实现四种数据驱动的优化，以提高规则列表和单词列表的顺序和完整性</li>
+<li>先前的研究发现，当不鼓励【29】或禁止【7】使用弱密码时，用户很少选择下一个最有可能被允许的密码；因此未来的实证研究需要捕捉人类的适应机制【55】，并且攻击者可能会将这些行为编码到新的转换规则中</li>
+</ul>
+<h2 id="APPENDIX"><a href="#APPENDIX" class="headerlink" title="APPENDIX"></a>APPENDIX</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] J. Bonneau, “The Science of Guessing: Analyzing an Anonymized Corpus of 70 Million Passwords,” in Proc. IEEE S&amp;P, 2012.</p>
+<p>[2] M. L. Mazurek, S. Komanduri, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, P . G. Kelley, R. Shay, and B. Ur, “Measuring Password Guessability for an Entire University,” in Proc. CCS, 2013.</p>
+<p>[3] D.  Goodin,  “13  Million  Plaintext  Passwords  Belonging to  Webhost  Users  Leaked  Online,”  October  28,  2015, <a href="https://arstechnica.com/information-technology/2015/10/13-million-plaintext-passwords-belonging-to-webhost-users-leaked-online/">https://arstechnica.com/information-technology/2015/10/13-million-plaintext-passwords-belonging-to-webhost-users-leaked-online/</a>.</p>
+<p>[4] X. Yang, “Chinese Internet Suffers the Most Serious User Data Leak in History,” F orcepoint Blog, December 26, 2011, <a href="https://blogs.forcepoint.com/security-labs/chinese-internet-suffers-most-serious-user-data-leak-history">https://blogs.forcepoint.com/security-labs/chinese-internet-suffers-most-serious-user-data-leak-history</a>.</p>
+<p>[5] D. Goodin, “Why Passwords Have Never Been Weaker – And Crackers Have Never Been Stronger,” Ars Technica, August 20, 2012, <a href="http://arstechnica.com/security/2012/08/passwords-under-assault/">http://arstechnica.com/security/2012/08/passwords-under-assault/</a>.</p>
+<p>[6] C. Castelluccia, M. Dürmuth, and D. Perito, “Adaptive Password Strength Meters from Markov Models,” in Proc. NDSS, 2012.</p>
+<p>[7] P . Kelley, S. Kom, M. L. Mazurek, R. Shay, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, and J. López, “Guess Again (and Again and Again): Measuring Password Strength by Simulating Password-Cracking Algorithms,” in Proc. IEEE S&amp;P, 2012.</p>
+<p>[8] B. Ur, S. M. Segreti, L. Bauer, N. Christin, L. F. Cranor, S. Komanduri, D. Kurilova, M. L. Mazurek, W. Melicher, and R. Shay, “Measuring Real-World Accuracies and Biases in Modeling Password Guessability,” in Proc. USENIX Security, 2015.</p>
+<p>[9] M. Weir, S. Aggarwal, M. Collins, and H. Stern, “Testing Metrics for Password Creation Policies by Attacking Large Sets of Revealed Passwords,” in Proc. CCS, 2010.</p>
+<p>[10] M. Dell’Amico and M. Filippone, “Monte Carlo Strength Evaluation: Fast and Reliable Password Checking,” in Proc. CCS, 2015.</p>
+<p>[11] J. Ma, W. Yang, M. Luo, and N. Li, “A Study of Probabilistic Password Models,” in Proc. IEEE S&amp;P, 2014.</p>
+<p>[12] M. Dürmuth, F. Angelstorf, C. Castelluccia, D. Perito, and A. Chaabane, “OMEN: Faster Password Guessing Using an Ordered Markov Enumerator,” in Proc. ESSoS, 2015.</p>
+<p>[13] W. Melicher, B. Ur, S. M. Segreti, S. Komanduri, L. Bauer, N. Christin, and L. F. Cranor, “Fast, Lean, and Accurate: Modeling Password Guessability Using Neural Networks,” in Proc. USENIX Security, 2016.</p>
+<p>[14] M. Weir, S. Aggarwal, B. d. Medeiros, and B. Glodek, “Password Cracking Using Probabilistic Context-Free Grammars,” in Proc. IEEE S&amp;P, 2009.</p>
+<p>[15] D. Goodin, “Anatomy of a Hack: How Crackers Ransack Passwords Like “qeadzcwrsfxv1331”,” Ars Technica, May 27, 2013, <a href="http://arstechnica.com/security/2013/05/how-crackers-make-minced-meat-out-of-your-passwords/">http://arstechnica.com/security/2013/05/how-crackers-make-minced-meat-out-of-your-passwords/</a>.</p>
+<p>[16] Trustwave SpiderLabs, “SpiderLabs/KoreLogic-Rules,” Sep. 2012, <a href="https://github.com/SpiderLabs/KoreLogic-Rules">https://github.com/SpiderLabs/KoreLogic-Rules</a>.</p>
+<p>[17] KoreLogic, “Crack me if you can,” 2018, <a href="https://contest.korelogic.com/">https://contest.korelogic.com/</a>.</p>
+<p>[18] G. Picchioni, “Hey, I Just Met Y ou, and This is Crazy, But Here’s My Hashes, So Hack Me Maybe?” SpiderLabs Blog, Sept. 25, 2012, <a href="https://www.trustwave.com/Resources/SpiderLabs-Blog/Hey,-I-just-met-you,-and-this-is-crazy,-but-here-s-my-hashes,-so-hack-me-maybe-/">https://www.trustwave.com/Resources/SpiderLabs-Blog/Hey,-I-just-met-you,-and-this-is-crazy,-but-here-s-my-hashes,-so-hack-me-maybe-/</a>.</p>
+<p>[19] m3g9tr0n, “Cracking Story - How I Cracked Over 122 Million SHA1 and MD5 Hashed Passwords,” Thireus’ Bl0g, August 28, 2012, <a href="https://blog.thireus.com/cracking-story-how-i-cracked-over-122-million-sha1-and-md5-hashed-passwords/">https://blog.thireus.com/cracking-story-how-i-cracked-over-122-million-sha1-and-md5-hashed-passwords/</a>.</p>
+<p>[20] A. Das, J. Bonneau, M. Caesar, N. Borisov, and X. Wang, “The Tangled Web of Password Reuse,” in Proc. NDSS, 2014.</p>
+<p>[21] A. Greenberg, “The police tool that pervs use to steal nude pics from Apple’s iCloud,” Wired, September 2, 2014, <a href="https://www.wired.com/2014/09/eppb-icloud/">https://www.wired.com/2014/09/eppb-icloud/</a>.</p>
+<p>[22] D. L. Wheeler, “zxcvbn: Low-Budget Password Strength Estimation,” in Proc. USENIX Security, 2016.</p>
+<p>[23] H.-C. Chou, H.-C. Lee, H.-J. Y u, F.-P . Lai, K.-H. Huang, and C.-W. Hsueh, “Password Cracking Based On Learned Patterns From Disclosed Passwords,” IJICIC, vol. 9, no. 2, pp. 821–839, 2013.</p>
+<p>[24] M. Dürmuth, A. Chaabane, D. Perito, and C. Castelluccia, “When Privacy Meets Security: Leveraging Personal Information for Password Cracking,” CoRR, vol. abs/1304.6584, pp. 1–19, Apr. 2013.</p>
+<p>[25] R. Shay, S. Komanduri, A. L. Durity, P . S. Huh, M. L. Mazurek, S. M. Segreti, B. Ur, L. Bauer, N. Christin, and L. F. Cranor, “Can Long Passwords Be Secure and Usable?” in Proc. CHI, 2014.</p>
+<p>[26] Y . Zhang, F. Monrose, and M. K. Reiter, “The Security of Modern Password Expiration: An Algorithmic Framework and Empirical Analysis,” in Proc. CCS, 2010.</p>
+<p>[27] M. Dell’Amico, P . Michiardi, and Y . Roudier, “Password Strength: An Empirical Analysis,” in Proc. INFOCOM, 2010.</p>
+<p>[28] B. Ur, P . G. Kelley, S. Komanduri, J. Lee, M. Maass, M. L. Mazurek, T. Passaro, R. Shay, T. Vidas, L. Bauer, N. Christin, and L. F. Cranor, “How Does Your Password Measure Up? The Effect of Strength Meters on Password Creation,” in Proc. USENIX Security, 2012.</p>
+<p>[29] B. Ur, F. Alfieri, M. Aung, L. Bauer, N. Christin, J. Colnago, L. F. Cranor, H. Dixon, P. E. Naeini, H. Habib, N. Johnson, and W. Melicher, “Design and Evaluation of a Data-Driven Password Meter,” in Proc. CHI, 2017.</p>
+<p>[30] T. Hunt, “Have I been pwned?” 2018, <a href="https://haveibeenpwned.com/">https://haveibeenpwned.com/</a>.</p>
+<p>[31] A. Narayanan and V . Shmatikov, “Fast Dictionary Attacks on Passwords Using Time-Space Tradeoff,” in Proc. CCS, 2005.</p>
+<p>[32] R. V eras, C. Collins, and J. Thorpe, “On the Semantic Patterns of Passwords and their Security Impact,” in Proc. NDSS, 2014.</p>
+<p>[33] Y . Chrysanthou, “Modern Password Cracking: A Hands-On Approach to Creating an Optimised and V ersatile Attack,” Master’s thesis, Royal Holloway, University of London, 2013.</p>
+<p>[34] A. Forget, S. Chiasson, P . C. van Oorschot, and R. Biddle, “Improving Text Passwords Through Persuasion,” in Proc. SOUPS, 2008.</p>
+<p>[35] S. Fahl, M. Harbach, Y . Acar, and M. Smith, “On the Ecological Validity of a Password Study,” in Proc. SOUPS, 2013.</p>
+<p>[36] X. de Carné de Carnavalet and M. Mannan, “From Very Weak to Very Strong: Analyzing Password-Strength Meters,” in Proc. NDSS, 2014.</p>
+<p>[37] D. Wang, Z. Zhang, P . Wang, J. Yan, and X. Huang, “Targeted Online Password Guessing: An Underestimated Threat,” in Proc. CCS, 2016.</p>
+<p>[38] S. Marechal, “Automatic Mangling Rules Generation,” Passwords ’12, 2012, <a href="http://www.openwall.com/presentations/Passwords12-Mangling-Rules-Generation/">http://www.openwall.com/presentations/Passwords12-Mangling-Rules-Generation/</a>.</p>
+<p>[39] P . Kacherginsky, “Smarter Password Cracking with PACK,” Passwords ’13, 2013, <a href="http://thesprawl.org/research/automatic-password-rule-analysis-generation/">http://thesprawl.org/research/automatic-password-rule-analysis-generation/</a>.</p>
+<p>[40] Openwall, “Wordlist Rules Syntax,” 2018, <a href="https://www.openwall.com/john/doc/RULES.shtml">https://www.openwall.com/john/doc/RULES.shtml</a>.</p>
+<p>[41] Hashcat, <a href="https://hashcat.net/wiki/doku.php?id=rule">https://hashcat.net/wiki/doku.php?id=rule</a> based attack.</p>
+<p>[42] Y . Baburov, “python-chartrie,” <a href="https://github.com/buriy/python-chartrie">https://github.com/buriy/python-chartrie</a>.</p>
+<p>[43] Llamasoft, <a href="https://github.com/llamasoft/HashcatRulesEngine">https://github.com/llamasoft/HashcatRulesEngine</a>.</p>
+<p>[44] M. Burnett, “Ten Million Passwords FAQ,” February 10, 2015, <a href="https://xato.net/ten-million-passwords-faq-3b2752ed3b4c">https://xato.net/ten-million-passwords-faq-3b2752ed3b4c</a>.</p>
+<p>[45] S. Perez, “117 Million LinkedIn Emails and Passwords From a 2012 Hack Just Got Posted Online,” TechCrunch, May 18, 2016, <a href="http://tcrn.ch/23Xcd6R">http://tcrn.ch/23Xcd6R</a>.</p>
+<p>[46] Z. Li, W. Han, and W. Xu, “A Large-Scale Empirical Analysis of Chinese Web Passwords,” in Proc. USENIX Security, 2014.</p>
+<p>[47] Hashcat Forum, <a href="https://hashcat.net/forum/thread-5486.html">https://hashcat.net/forum/thread-5486.html</a>.</p>
+<p>[48] Openwall, “John the Ripper’s Cracking Modes,” <a href="http://www.openwall.com/john/doc/MODES.shtml">http://www.openwall.com/john/doc/MODES.shtml</a>.</p>
+<p>[49] J. Walker, “LulzSec Over, Release Battlefield Heroes Data,” Rock Paper Shotgun, June 26, 2011, <a href="https://www.rockpapershotgun.com/2011/06/26/lulzsec-over-release-battlefield-heroes-data/">https://www.rockpapershotgun.com/2011/06/26/lulzsec-over-release-battlefield-heroes-data/</a>.</p>
+<p>[50] J. Cox, “Nearly 800,000 Brazzers Porn Site Accounts Exposed in  Forum  Hack,” Vice  Motherboard,  September  5,  2016, <a href="https://motherboard.vice.com/en_us/article/vv7pgd/nearly-800000-brazzers-porn-site-accounts-exposed-in-forum-hack">https://motherboard.vice.com/en_us/article/vv7pgd/nearly-800000-brazzers-porn-site-accounts-exposed-in-forum-hack</a>.</p>
+<p>[51] D. Goodin, “6.6 Million Plaintext Passwords Exposed as Site Gets Hacked to the Bone,” Ars Technica, September 13, 2016, <a href="https://arstechnica.com/information-technology/2016/09/plaintext-passwords-and-wealth-of-other-data-for-6-6-million-people-go-public/">https://arstechnica.com/information-technology/2016/09/plaintext-passwords-and-wealth-of-other-data-for-6-6-million-people-go-public/</a>.</p>
+<p>[52] J.  Cox,  “Another  Day,  Another  Hack:  Tens  of  Millions of  Neopets  Accounts,” Vice  Motherboard,  May  5,  2016, <a href="https://motherboard.vice.com/en_us/article/ezpvw7/neopets-hack-another-day-another-hack-tens-of-millions-of-neopets-accounts">https://motherboard.vice.com/en_us/article/ezpvw7/neopets-hack-another-day-another-hack-tens-of-millions-of-neopets-accounts</a>.</p>
+<p>[53] M. Golla and M. Dürmuth, “On the Accuracy of Password Strength Meters,” in Proc. CCS, 2018.</p>
+<p>[54] S. Komanduri, “Modeling the Adversary to Evaluate Password Strength with Limited Samples,” Ph.D. dissertation, CMU, 2016.</p>
+<p>[55] M. Wei, M. Golla, and B. Ur, “The Password Doesn’t Fall Far: How Service Influences Password Choice,” in Proc. WAY, 2018.</p>
+]]></content>
+      <categories>
+        <category>论文</category>
+      </categories>
+      <tags>
+        <tag>密码</tag>
+        <tag>密码规则</tag>
       </tags>
   </entry>
 </search>
