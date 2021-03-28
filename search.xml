@@ -15861,4 +15861,203 @@ def a_function_requiring_decoration():
         <tag>GAN</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Generative Adversarial Nets</title>
+    <url>/2021/03/28/Generative-Adversarial-Nets/</url>
+    <content><![CDATA[<p>《Generative Adversarial Nets》论文阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>提出一个通过对抗过程，来估计生成模型的新框架——同时训练两个模型：捕获数据分布的生成模型 G 和估计样本来自训练数据而不是 G 的概率的判别模型 D，并且 G 在训练中最大化 D 出错的概率</li>
+<li>对应一个 minimax 问题：在任意函数 G 和 D 的空间中，存在唯一解使得 G 表征训练数据分布且 D 处处等于 0.5</li>
+<li>当 G 和 D 由多层感知器定义，系统反向传播来训练</li>
+<li>样本的训练或生成过程中，不需要任何马尔可夫链或展开的近似推理网络</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>迄今为止，深度学习中最引人注目的成功涉及到辨别模型——将高维、丰富的输入特征映射到类别标签的模型【14，22】——主要是基于反向传播和 Dropout 算法</li>
+<li>深度生成模型的成果较少，因为在最大似然估计和相关策略中难以逼近许多棘手的概率计算，并且难以利用生成环境中分段线性单元的优势</li>
+<li>提出了一种新的生成模型估计过程，以回避这些困难<ul>
+<li>生成模型与一种辨别模型对抗，后者确定样本是来自模型分布还是数据分布</li>
+<li>生成模型可以被认为类似于一群伪造者，试图生产假币并在没有被发现的情况下使用它</li>
+<li>鉴别模型类似于警察，试图检测假币</li>
+<li>竞争促使双方更新参数，直到伪数据与真实数据无法区分</li>
+</ul>
+</li>
+<li>探讨了生成模型通过多层感知器传递随机噪声来生成样本的特殊情况，判别模型也是一个多层感知器</li>
+<li>仅使用反向传播和 Dropout 算法来训练，仅使用正向传播来从生成模型中采样</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>两种模型：<ul>
+<li>具有潜在变量的有向图形模型</li>
+<li>具有潜在变量的无向图形模型，如受限玻尔兹曼机（RBMs） 【27，16】、深玻尔兹曼机（DBMs）  【26】及其众多变体<ul>
+<li>其中相互作用被表示为非标准化势函数的乘积，对随机变量的所有状态进行全局求和/积分来标准化</li>
+<li>这个量（<code>partition function</code>)和它的梯度难以处理，即使可以通过马尔可夫链蒙特卡罗（MCMC）方法来估计</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>深度信念网络（DBNs）【16]】是包含单个无向层和几个有向层的混合模型<ul>
+<li>存在一个快速近似的分层训练准则，但分布式神经网络带来了与无向和有向模型相关的计算困难</li>
+</ul>
+</li>
+<li>有人提出不近似或限制对数似然性的替代标准，如分数匹配<code>score matching</code>【18】和噪声对比估计（NCE） 【13】——二者要求学习的概率密度被解析地指定为一个归一化常数</li>
+<li>一些模型，如去噪自动编码器【30】和压缩自动编码器，其学习规则与应用于 RBMs 的分数匹配非常相似</li>
+<li>有些技术不涉及明确定义概率分布，而是训练模型从设计的分布中抽取样本<ul>
+<li>突出工作包括生成随机网络（GSN）框架【5】，该框架扩展了广义去噪自动编码器【4】</li>
+<li>两者可以被视为定义了参数化马尔可夫链，学习执行生成马尔可夫链的一个步骤的模型参数</li>
+</ul>
+</li>
+<li>通过反向传播训练生成式模型的最新例子包括自动编码变分贝叶斯【20】、随机反向传播【24】</li>
+</ul>
+<h2 id="生成网络"><a href="#生成网络" class="headerlink" title="生成网络"></a>生成网络</h2><ul>
+<li>当模型都是多层感知器时，框架最容易被应用</li>
+<li>为了学习生成器在数据 x 上的分布 $p_g$，定义一个输入噪声变量 z 的先验分布 $p_z(z)$，然后将数据空间的映射表示为 $G(z;\theta_g)$，其中 G 是由参数为 $θ_g $的多层感知器表示的可微函数</li>
+<li>定义了第二个多层感知器 $D(x;θ_d)$ 输出单个标量。$D(x)$ 代表 x 来自数据而不是生成器的概率</li>
+<li>训练 D 来最大化为训练样本和来自 G 的样本分配正确标签的概率，同时，训练 G 来最小化 $log(1-D(G(z)))$ 对数</li>
+</ul>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328200207075.png" alt="image-20210328200207075"></p>
+<ul>
+<li><p>给定 G 和 D 足够的容量时，即在非参数极限内，训练准则允许恢复生成分布的数据；在实践中，必须使用迭代的数值方法来实现。</p>
+<ul>
+<li>在训练的内部循环中优化 D 到完成在计算上是不可行的，并且在有限的数据集上会导致过拟合</li>
+<li>因此在优化 D 的 k 个步骤和优化 G 的一个步骤之间交替——此时只要 G 变化足够慢，D 能保持在其最优解附近，具体算法如下图所示</li>
+</ul>
+</li>
+<li><p>实际上，上面的式子可能无法为 G 提供足够的梯度来学习</p>
+<ul>
+<li><p>在学习初期，当 G 很差的时候，D 能有很高的置信度拒绝样本，因为它们与训练数据明显不同，此时 $log(1-D(G(z)))$ 饱和，可以训练 G 来最大化 $logD(G(z))$ ，而不是最小化 $log(1-D(G(z)))$ </p>
+</li>
+<li><p>这个目标函数导致了G和D的动力学的相同的固定点，但在学习初期提供了更强的梯度</p>
+<blockquote>
+<p>This objective function results in the same fixed point of the dynamics of G and D but provides much stronger gradients early in learning.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328200113175.png" alt="image-20210328200113175"></p>
+<h2 id="理论结果"><a href="#理论结果" class="headerlink" title="理论结果"></a>理论结果</h2><ul>
+<li>生成器 G 隐含地将概率分布 $p_g$ 定义为当 $z∼p_z$ 时获得的样本 $G(z)$ 的分布</li>
+<li>如果给出足够的参数和训练时间，希望上面收敛到一个很好的 $p_{data}$ 估计器</li>
+</ul>
+<h3 id="”生成器分布-数据分布“的全局最优性"><a href="#”生成器分布-数据分布“的全局最优性" class="headerlink" title="”生成器分布 = 数据分布“的全局最优性"></a>”生成器分布 = 数据分布“的全局最优性</h3><ul>
+<li><p>推论1：当 G 固定，最佳的鉴别器为：</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328202902308.png" alt="image-20210328202902308"></p>
+<ul>
+<li>即，D 的训练目标可以被解释为最大化对数似然，以估计条件概率 $P(Y=y|x)$，其中 Y 表明 x 来自 $p_{data}$ 还是来自 $p_g$，前面情况对应 $y=1$，后者对应 $y=0$</li>
+</ul>
+</li>
+<li><p>定理1：当且仅当 $p_g=p_{data}$ 时，才能实现最上面式子的全局最小，即为 $-log4$，即可以证明上面的式子等于：</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328203504650.png" alt="image-20210328203504650"></p>
+<p>等于：</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328203636627.png" alt="image-20210328203636627"></p>
+<p>只有当 JS 散度为 0 时，才能达到最小值</p>
+</li>
+</ul>
+<h3 id="算法收敛性"><a href="#算法收敛性" class="headerlink" title="算法收敛性"></a>算法收敛性</h3><ul>
+<li><p>推论2：如果 G 和 D 有足够的容量，并且在算法的每一步，鉴别器都能够在给定 G 的情况下达到最优，更新 $p_g$ 以改进下式，则 $p_g$ 最终能收敛到 $p_{data}$</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328204000817.png" alt="image-20210328204000817"></p>
+</li>
+<li><p>对抗网络通过函数 $G(z;\theta_g)$ 来表示有限的 $p_g$ 分布族</p>
+</li>
+</ul>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><ul>
+<li><p>在 MNIST【23】，多伦多人脸数据库（TFD）【28】，和 CIFAR-10【21】训练对抗网络</p>
+</li>
+<li><p>生成器混合了 rectifier linear 激活【19，9】和 sigmoid 激活，鉴别器网络使用 maxout【10】激活，且 Dropout【17】被用于训练鉴别器</p>
+</li>
+<li><p>理论框架允许在生成器的中间层加入 dropout 和其他噪声，但本文仅将噪声用作发生器网络最底层的输入</p>
+</li>
+<li><p>通过对 G 生成的样本拟合一个高斯帕尔森窗<code>Gaussian Parzen window</code>，计算该分布下的对数似然性，来估计测试集数据在生成器下的概率。高斯窗的 $\sigma$ 参数由验证集的交叉验证获得</p>
+<ul>
+<li><p>此方法来自 Breuleux 等人【8】，用于各种精确似然不容易处理的生成模型【25，3，5】</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328195856014.png" alt="image-20210328195856014"></p>
+</li>
+</ul>
+</li>
+<li><p>这种估计可能性的方法有一定的高方差，在高维空间中表现不佳，但它是我们所知的最佳方法</p>
+</li>
+<li><p>这种可抽样但不能估计可能性的生成模型的提出直接推动了如何评估这种模型的进一步研究</p>
+</li>
+<li><p>虽然并不认为这些生成器生成的样本比现有方法生成的样本更好，但相信这些样本至少与文献中的生成模型具有一定竞争力，并突出了对抗框架的潜力</p>
+</li>
+</ul>
+<h2 id="优点和缺点"><a href="#优点和缺点" class="headerlink" title="优点和缺点"></a>优点和缺点</h2><ul>
+<li><p>缺点主要是没有生成器对应概率函数的显式表示，并且在训练期间 D 必须与 G 很好地同步——在不更新 D 的情况下，G 不能被训练得太多，以避免“Helvetica scenario”（该情况下，G 将过多的 z 值映射成相同的 x 值）——就像玻尔兹曼机的负链必须在学习步骤之间保持最新一样</p>
+</li>
+<li><p>优点是从不需要马尔可夫链，只使用反向传播获得梯度，学习过程中不需要推理，模型中可以包含多种函数</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328192323834.png" alt="image-20210328192323834"></p>
+</li>
+<li><p>可以从生成器网络中获得统计优势</p>
+<ul>
+<li><p>生成器网络不用数据实例直接更新，而只用流经鉴别器的梯度</p>
+</li>
+<li><p>输入数据的内容不会直接被生成器的参数复制</p>
+<blockquote>
+<p>This means that components of the input are not copied directly into the generator’s parameters.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>对抗网络的另一个优点是，它们可以表示非常尖锐，甚至退化的分布，而基于马尔可夫链的方法要求分布稍微模糊，以便链能够在模式之间混合</p>
+<blockquote>
+<p>Methods based on Markov chains require that the distribution be somewhat blurry in order for the chains to be able to mix between modes.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="结论与未来工作"><a href="#结论与未来工作" class="headerlink" title="结论与未来工作"></a>结论与未来工作</h2><ul>
+<li><p>条件生成模型 $p(x|c)$ 可以通过将 $c$ 作为 G 和 D 的输入获得</p>
+</li>
+<li><p>学习的近似推理可以通过训练辅助网络在给定 x 下预测 z 来实现，即生成器网络完成训练之后，可以针对固定的生成器网络来训练推理网络</p>
+</li>
+<li><p>本质上，可以使用对抗网络来实现确定性 MP-DBM 【11】的随机扩展</p>
+</li>
+<li><p>半监督学习：当只有有限的标记数据可用时，来自鉴别器或推理网络的特征可以提高分类器的性能</p>
+</li>
+<li><p>效率的提高：</p>
+<blockquote>
+<p>Training could be accelerated greatly by divising better methods for coordinating G and D or determining better distributions to sample z from during training.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Bastien, F., Lamblin, P ., Pascanu, R., Bergstra, J., Goodfellow, I. J., Bergeron, A., Bouchard, N., and Bengio, Y . (2012). Theano: new features and speed improvements. Deep Learning and Unsupervised Feature Learning NIPS 2012 Workshop.</p>
+<p>[2] Bengio, Y . (2009). Learning deep architectures for AI. Now Publishers. </p>
+<p>[3] Bengio, Y ., Mesnil, G., Dauphin, Y ., and Rifai, S. (2013a). Better mixing via deep representations. In ICML’13.</p>
+<p>[4] Bengio, Y ., Yao, L., Alain, G., and Vincent, P . (2013b). Generalized denoising auto-encoders as generative models. In NIPS26. Nips Foundation.</p>
+<p>[5] Bengio, Y ., Thibodeau-Laufer, E., and Y osinski, J. (2014a). Deep generative stochastic networks trainable by backprop. In ICML’14.</p>
+<p>[6] Bengio, Y ., Thibodeau-Laufer, E., Alain, G., and Y osinski, J. (2014b). Deep generative stochastic networks trainable by backprop. In Proceedings of the 30th International Conference on Machine Learning (ICML’14).</p>
+<p>[7] Bergstra, J., Breuleux, O., Bastien, F., Lamblin, P ., Pascanu, R., Desjardins, G., Turian, J., Warde-Farley, D., and Bengio, Y . (2010). Theano: a CPU and GPU math expression compiler. In Proceedings of the Python for Scientific Computing Conference (SciPy). Oral Presentation.</p>
+<p>[8] Breuleux, O., Bengio, Y ., and Vincent, P . (2011). Quickly generating representative samples from an RBM-derived process. Neural Computation, 23(8), 2053–2073.</p>
+<p>[9] Glorot, X., Bordes, A., and Bengio, Y . (2011). Deep sparse rectifier neural networks. In AISTATS’2011. </p>
+<p>[10] Goodfellow, I. J., Warde-Farley, D., Mirza, M., Courville, A., and Bengio, Y . (2013a). Maxout networks. In ICML’2013.</p>
+<p>[11] Goodfellow, I. J., Mirza, M., Courville, A., and Bengio, Y . (2013b). Multi-prediction deep Boltzmann machines. In NIPS’2013.</p>
+<p>[12] Goodfellow, I. J., Warde-Farley, D., Lamblin, P ., Dumoulin, V ., Mirza, M., Pascanu, R., Bergstra, J., Bastien, F., and Bengio, Y . (2013c). Pylearn2: a machine learning research library. arXiv preprint arXiv:1308.4214.</p>
+<p>[13] Gutmann, M. and Hyvarinen, A. (2010). Noise-contrastive estimation: A new estimation principle for unnormalized statistical models. In AISTATS’2010.</p>
+<p>[14] Hinton, G., Deng, L., Dahl, G. E., Mohamed, A., Jaitly, N., Senior, A., V anhoucke, V ., Nguyen, P ., Sainath, T., and Kingsbury, B. (2012a). Deep neural networks for acoustic modeling in speech recognition. IEEE Signal Processing Magazine, 29(6), 82–97.</p>
+<p>[15] Hinton, G. E., Dayan, P ., Frey, B. J., and Neal, R. M. (1995). The wake-sleep algorithm for unsupervised neural networks. Science, 268, 1558–1161.</p>
+<p>[16] Hinton, G. E., Osindero, S., and Teh, Y . (2006). A fast learning algorithm for deep belief nets. Neural Computation, 18, 1527–1554.</p>
+<p>[17] Hinton, G. E., Srivastava, N., Krizhevsky, A., Sutskever, I., and Salakhutdinov, R. (2012b). Improving neural networks by preventing co-adaptation of feature detectors. Technical report, arXiv:1207.0580.</p>
+<p>[18] Hyvärinen, A. (2005). Estimation of non-normalized statistical models using score matching. J. Machine Learning Res., 6. </p>
+<p>[19] Jarrett, K., Kavukcuoglu, K., Ranzato, M., and LeCun, Y . (2009). What is the best multi-stage architecture for object recognition? InProc. International Conference on Computer Vision (ICCV’09), pages 2146–2153. IEEE.</p>
+<p>[20] Kingma, D. P . and Welling, M. (2014). Auto-encoding variational bayes. In Proceedings of the International Conference on Learning Representations (ICLR).</p>
+<p>[21] Krizhevsky, A. and Hinton, G. (2009). Learning multiple layers of features from tiny images. Technical report, University of Toronto.</p>
+<p>[22] Krizhevsky, A., Sutskever, I., and Hinton, G. (2012). ImageNet classification with deep convolutional neural networks. In NIPS’2012.</p>
+<p>[23] LeCun, Y ., Bottou, L., Bengio, Y ., and Haffner, P . (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278–2324.</p>
+<p>[24] Rezende, D. J., Mohamed, S., and Wierstra, D. (2014). Stochastic backpropagation and approximate inference in deep generative models. Technical report, arXiv:1401.4082.</p>
+<p>[25] Rifai, S., Bengio, Y ., Dauphin, Y ., and Vincent, P . (2012). A generative process for sampling contractive auto-encoders. In ICML’12.</p>
+<p>[26] Salakhutdinov, R. and Hinton, G. E. (2009). Deep Boltzmann machines. In AISTATS’2009, pages 448–455.</p>
+<p>[27] Smolensky, P . (1986). Information processing in dynamical systems: Foundations of harmony theory. In D. E. Rumelhart and J. L. McClelland, editors, Parallel Distributed Processing, volume 1, chapter 6, pages 194–281. MIT Press, Cambridge.</p>
+<p>[28] Susskind, J., Anderson, A., and Hinton, G. E. (2010). The Toronto face dataset. Technical Report UTML TR 2010-001, U. Toronto.</p>
+<p>[29] Tieleman, T. (2008). Training restricted Boltzmann machines using approximations to the likelihood gradient. In W. W. Cohen, A. McCallum, and S. T. Roweis, editors, ICML 2008, pages 1064–1071. ACM. </p>
+<p>[30] Vincent, P ., Larochelle, H., Bengio, Y ., and Manzagol, P .-A. (2008). Extracting and composing robust features with denoising autoencoders. In ICML 2008.</p>
+<p>[31] Y ounes, L. (1999). On the convergence of Markovian stochastic algorithms with rapidly decreasing ergodicity rates. Stochastics and Stochastic Reports, 65(3), 177–228.</p>
+]]></content>
+      <categories>
+        <category>论文</category>
+        <category>深度学习</category>
+      </categories>
+      <tags>
+        <tag>GAN</tag>
+      </tags>
+  </entry>
 </search>
