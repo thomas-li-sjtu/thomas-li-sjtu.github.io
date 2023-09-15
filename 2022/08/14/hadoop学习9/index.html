@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Kafka：概述、架构、生产者">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka (1)消息队列概述、生产者">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="Kafka：概述、架构、生产者">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816110822333.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111504446.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111520299.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111701219.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111951446.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816112007908.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816112303252.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816113609319.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816114651760.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816123151603.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816123415961.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816123655902.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816133654678.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817095012621.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817101357839.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817102131273.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817122028038.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817122405925.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817123201764.png">
+<meta property="article:published_time" content="2022-08-14T13:25:17.000Z">
+<meta property="article:modified_time" content="2022-08-17T04:41:58.309Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816110822333.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Kafka (1)消息队列概述、生产者 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kafka (1)消息队列概述、生产者
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-14 21:25:17" itemprop="dateCreated datePublished" datetime="2022-08-14T21:25:17+08:00">2022-08-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/" itemprop="url" rel="index"><span itemprop="name">大数据</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Kafka：概述、架构、生产者</p>
+<a id="more"></a>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ul>
+<li><p>一般的过程：</p>
+<ul>
+<li><p>前端埋点，记录用户购买的行为数据（浏览、点赞、收藏、评论）</p>
+</li>
+<li><p>采集log到日志服务器，通过Flume采集数据，落盘，送入Kafka集群缓冲，Hadoop集群按照自己的处理速度从Kafka中消费数据</p>
+<p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816110822333.png" alt="image-20220816110822333"></p>
+</li>
+</ul>
+</li>
+<li><p>发布、订阅：消息的发布者不将消息直接发送给特定的订阅者，而是将发布的消息分为不同的类别，订阅者只接收感兴趣的消息（如上例，日志分为浏览、点赞、收藏，订阅者按照自己的速度选择性接收消息）</p>
+</li>
+<li><p>定义：开源的分布式事件流平台，不仅是基于发布/订阅模式的消息队列，还可以用于流分析、数据集成和关键任务应用</p>
+</li>
+</ul>
+<h3 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h3><ul>
+<li><p>消息队列：</p>
+<ul>
+<li><p>类型：</p>
+<ul>
+<li>JavaEE中主要采用ActiveMQ、 RabbitMQ、RocketMQ</li>
+<li>大数据场景下使用Kafka</li>
+</ul>
+</li>
+<li><p>应用：缓存/消峰、解耦和异步通信</p>
+<ul>
+<li><p>缓冲、消峰：控制数据流经过系统的速度，解决生产消息和消费消息的处理速度不一致</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111504446.png" alt="image-20220816111504446" style="zoom:80%;">
+</li>
+<li><p>解耦：数据源很多，数据接收很多。如果没有消息队列，则每个数据源都要实现不同接收方的接口（n*m）。消息队列使得数据源、数据接收方只实现相同的接口即可（n+m）</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111520299.png" alt="image-20220816111520299" style="zoom:80%;">
+</li>
+<li><p>异步通信：用户把一个消息放入队列，系统不立即处理它，在空闲了才处理它（以用户注册+发送短信为例）</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111701219.png" alt="image-20220816111701219" style="zoom:80%;">
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>消息队列的模式：</p>
+<ul>
+<li><p>点对点：生产者将数据发送到队列，消费者主动拉取数据，拉取后向队列反馈收到，队列删除数据——只有一个topic</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816111951446.png" alt="image-20220816111951446" style="zoom:80%;">
+</li>
+<li><p>发布/订阅：</p>
+<ul>
+<li><p>多个topic（主题，如浏览、点赞、收藏等），不同topic的队列不同</p>
+</li>
+<li><p>消费者消费数据后不删除数据——消费者相互独立，都可以消费数据</p>
+</li>
+<li><p>消息队列自己决定是否删除数据</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816112007908.png" alt="image-20220816112007908" style="zoom:80%;">
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h3><p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816112303252.png" alt="image-20220816112303252"></p>
+<ul>
+<li>一个主题的数据（上图为100T）分为多个块（分区，partition），每个partition是一个有序的队列，让多个Kafka服务器分别存储（broker0-broker2），服务器可以存储多个topic的分区</li>
+<li>消费者组（CG）：由多个消费者组成，每个消费者消费不同分区的数据，一个分区只能由一个组内消费者消费，但一个分区可以由多个组的消费者消费（上图，partition0只发给了group2的第一个消费者，而partition2分别发给了不同group的第二个消费者）</li>
+<li>副本：每个分区都有多个副本（如上图的TopicA-Partition0，broker0中有一个，broker2中有一个），多个副本分为leader和follower<ul>
+<li>leader：每个分区多个副本的“主”，生产者发送数据的对象，以及消费者消费数据的对象都是leader</li>
+<li>follower：每个分区多个副本中的“从”，实时从leader同步数据。leader故障时，某个follower成为新的leader</li>
+</ul>
+</li>
+<li>zookeeper：存储Kafka服务器节点的运行状态，存储各个分区的副本中谁是leader（kafka逐渐在抛弃zookeeper，2.8.0以后可以选择使用kraft）</li>
+</ul>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><ul>
+<li><p>kafka中，broker代码用scala编写，producer、consumer用java编写</p>
+</li>
+<li><p>集群规划：三个zk，三个kafka</p>
+<p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816113609319.png" alt="image-20220816113609319"></p>
+</li>
+<li><p>文件配置server.properties：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#broker 的全局唯一编号，不能重复，只能是数字。</span></span><br><span class="line"><span class="meta">broker.id</span>=<span class="string">0</span></span><br><span class="line"><span class="comment">#处理网络请求的线程数量</span></span><br><span class="line"><span class="meta">num.network.threads</span>=<span class="string">3</span></span><br><span class="line"><span class="comment">#用来处理磁盘 IO 的线程数量</span></span><br><span class="line"><span class="meta">num.io.threads</span>=<span class="string">8</span></span><br><span class="line"><span class="comment">#发送套接字的缓冲区大小</span></span><br><span class="line"><span class="meta">socket.send.buffer.bytes</span>=<span class="string">102400</span></span><br><span class="line"><span class="comment">#接收套接字的缓冲区大小</span></span><br><span class="line"><span class="meta">socket.receive.buffer.bytes</span>=<span class="string">102400</span></span><br><span class="line"><span class="comment">#请求套接字的缓冲区大小</span></span><br><span class="line"><span class="meta">socket.request.max.bytes</span>=<span class="string">104857600</span></span><br><span class="line"><span class="comment">#kafka 运行日志(数据)存放的路径，路径不需要提前创建，kafka 自动创建，可以配置多个磁盘路径，路径与路径之间可以用&quot;，&quot;分隔</span></span><br><span class="line"><span class="meta">log.dirs</span>=<span class="string">/opt/module/kafka/datas</span></span><br><span class="line"><span class="comment">#topic 在当前 broker 上的分区个数</span></span><br><span class="line"><span class="meta">num.partitions</span>=<span class="string">1</span></span><br><span class="line"><span class="comment">#用来恢复和清理 data 下数据的线程数量</span></span><br><span class="line"><span class="meta">num.recovery.threads.per.data.dir</span>=<span class="string">1</span></span><br><span class="line"><span class="comment"># 每个 topic 创建时的副本数，默认时 1 个副本</span></span><br><span class="line"><span class="meta">offsets.topic.replication.factor</span>=<span class="string">1</span></span><br><span class="line"><span class="comment">#segment 文件保留的最长时间，超时将被删除</span></span><br><span class="line"><span class="meta">log.retention.hours</span>=<span class="string">168</span></span><br><span class="line"><span class="comment">#每个 segment 文件的大小，默认最大 1G</span></span><br><span class="line"><span class="meta">log.segment.bytes</span>=<span class="string">1073741824</span></span><br><span class="line"><span class="comment"># 检查过期数据的时间，默认 5 分钟检查一次是否数据过期</span></span><br><span class="line"><span class="meta">log.retention.check.interval.ms</span>=<span class="string">300000</span></span><br><span class="line"><span class="comment">#配置连接 Zookeeper 集群地址（在 zk 根目录下创建/kafka，方便管理）</span></span><br><span class="line"><span class="meta">zookeeper.connect</span>=<span class="string">hadoop102:2181,hadoop103:2181,hadoop104:2181/kafka</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>hadoop103 和 hadoop104 修改配置文件使得broker.id为1、2——broker.id在整个集群中唯一</p>
+</li>
+<li><p>集群启动脚本：<code>kf.sh start</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"><span class="keyword">case</span> <span class="variable">$1</span> <span class="keyword">in</span></span><br><span class="line"><span class="string">&quot;start&quot;</span>)&#123;</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> hadoop102 hadoop103 hadoop104</span><br><span class="line">	<span class="keyword">do</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot; --------启动 <span class="variable">$i</span> Kafka-------&quot;</span></span><br><span class="line">	ssh <span class="variable">$i</span> <span class="string">&quot;/opt/module/kafka/bin/kafka-server-start.sh -daemon /opt/module/kafka/config/server.properties&quot;</span></span><br><span class="line">	<span class="keyword">done</span></span><br><span class="line">&#125;;;</span><br><span class="line"><span class="string">&quot;stop&quot;</span>)&#123;</span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> hadoop102 hadoop103 hadoop104</span><br><span class="line">	<span class="keyword">do</span></span><br><span class="line">		<span class="built_in">echo</span> <span class="string">&quot; --------停止 <span class="variable">$i</span> Kafka-------&quot;</span></span><br><span class="line">		ssh <span class="variable">$i</span> <span class="string">&quot;/opt/module/kafka/bin/kafka-server-stop.sh &quot;</span></span><br><span class="line">	<span class="keyword">done</span></span><br><span class="line">&#125;;;</span><br><span class="line"><span class="keyword">esac</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>集群停止时，需要Kafka所有节点进程全部停止后再停止Zookeeper集群</p>
+</li>
+</ul>
+<h3 id="命令行操作"><a href="#命令行操作" class="headerlink" title="命令行操作"></a>命令行操作</h3><p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816114651760.png" alt="image-20220816114651760"></p>
+<ul>
+<li><p><code>bin/kafka-topics.sh</code>：</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816123151603.png" alt="image-20220816123151603" style="zoom:80%;">
+* `kafka-topics.sh --bootstrap-server hadoop102:9092 --list`
+* `kafka-topics.sh --bootstrap-server hadoop102:9092 --create --partitions 1 --replication-factor 3 --topic first`
+* `kafka-topics.sh --bootstrap-server hadoop102:9092 --describe --topic first`
+* `kafka-topics.sh --bootstrap-server hadoop102:9092 --alter --topic first --partitions 3`——分区数只能增加，不能减少
+</li>
+<li><p><code>bin/kafka-console-producer.sh</code>：</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816123415961.png" alt="image-20220816123415961" style="zoom:80%;">
+
+<ul>
+<li>发送消息：<code>bin/kafka-console-producer.sh --bootstrap-server hadoop102:9092 --topic first</code></li>
+</ul>
+</li>
+<li><p><code>bin/kafka-console-consumer.sh</code>：</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816123655902.png" alt="image-20220816123655902" style="zoom:80%;">
+
+<ul>
+<li>消费first主题的数据：<code>kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic first</code></li>
+<li>从主题first中读取所有数据，包括历史数据：<code>kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --from-beginning --topic first</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="生产者"><a href="#生产者" class="headerlink" title="生产者"></a>生产者</h2><h3 id="producer消息发送流程"><a href="#producer消息发送流程" class="headerlink" title="producer消息发送流程"></a>producer消息发送流程</h3><p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220816133654678.png" alt="image-20220816133654678"></p>
+<ul>
+<li>两个线程<ul>
+<li>main线程中创建一个producer对象，并创建一个双端队列RecordAccumulator，线程将消息发送给RecordAccumulator</li>
+<li>Sender线程从RecordAccumulator中拉取消息发送到Kafka Broker</li>
+</ul>
+</li>
+<li>调用send方法发送数据，数据发送过程中，可能会经过拦截器，并通过序列化器序列化消息（Java的序列化太重，因此使用自带的序列化器）</li>
+<li>分区器：由分区器决定消息应当分配到哪个partition，每个partition对应RecordAccumulator的一个队列（队列大小为32M）</li>
+<li>数据的一个batch达到16k或者linger.ms到达时间，则sender线程拉取一个batch</li>
+<li>sender线程拉取数据，创建请求。针对每个Broker，都有一个InFlightRequest请求队列存放在NetWorkClient，默认每个队列缓存5个请求，请求通过Selector异步发送到Kafka集群</li>
+<li>数据发送到kafka集群后，集群同步副本，返回应答（三个级别，0、1、-1）</li>
+</ul>
+<h3 id="异步发送-API"><a href="#异步发送-API" class="headerlink" title="异步发送 API"></a>异步发送 API</h3><ul>
+<li>异步发送时，外部数据发送到RecordAccumulator，不管RecordAccumulator中前一批数据是否已经发送到Kafka broker。同步发送时，则需要等待上一批数据完全发送到Kafka并收到相应ack后，当前数据才能发到RecordAccumulator</li>
+</ul>
+<h4 id="无回调异步"><a href="#无回调异步" class="headerlink" title="无回调异步"></a>无回调异步</h4><ul>
+<li><p>创建生产者，发送数据，关闭资源</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 生产者配置</span></span><br><span class="line">Properties properties = <span class="keyword">new</span> Properties();</span><br><span class="line">properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, <span class="string">&quot;localhost:9092&quot;</span>); <span class="comment">// 连接集群</span></span><br><span class="line"><span class="comment">// 指定key,value的序列化器：key.serializer，value.serializer</span></span><br><span class="line">properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());</span><br><span class="line">properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());</span><br><span class="line"><span class="comment">// 创建 kafka 生产者对象</span></span><br><span class="line">KafkaProducer&lt;String, String&gt; kafkaProducer = <span class="keyword">new</span> KafkaProducer&lt;String, String&gt;(properties);</span><br><span class="line">  </span><br><span class="line"><span class="comment">// 发送消息</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    kafkaProducer.send(<span class="keyword">new</span> ProducerRecord&lt;&gt;(<span class="string">&quot;test&quot;</span>, <span class="string">&quot; &quot;</span> + i));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 5. 关闭资源</span></span><br><span class="line">kafkaProducer.close();</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="带回调异步"><a href="#带回调异步" class="headerlink" title="带回调异步"></a>带回调异步</h4><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817095012621.png" alt="image-20220817095012621" style="zoom:67%;">
+
+<ul>
+<li>发往队列RecordAccumulator，队列返回信息</li>
+<li>回调：<ul>
+<li>调用方把一个需要被回调的方法作为参数，传递给要调用的方法，被调用的方法执行完成后，通过该参数返回来调用此方法，作为参数传递的该方法就称作回调方法</li>
+<li>场景：A模块的某些方法，需要在B模块满足某些条件下来主动通知并调用A模块的这些方法</li>
+<li>参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/heshuchao/p/5376298.html">JAVA回调机制(CallBack)详解</a></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">KafkaProducer&lt;String, String&gt; kafkaProducer = <span class="keyword">new</span> KafkaProducer&lt;String, String&gt;(properties);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    <span class="comment">// 实现接口Callback的onCompletion 用于回调</span></span><br><span class="line">    kafkaProducer.send(<span class="keyword">new</span> ProducerRecord&lt;&gt;(<span class="string">&quot;test&quot;</span>, <span class="string">&quot; &quot;</span> + i), <span class="keyword">new</span> Callback() &#123;</span><br><span class="line">        <span class="comment">// 该方法在 Producer 收到 ack 时调用，为异步调用</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompletion</span><span class="params">(RecordMetadata metadata, Exception exception)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (exception == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 没有异常,输出信息到控制台</span></span><br><span class="line">                System.out.println(<span class="string">&quot; 主题： &quot;</span> + metadata.topic() + <span class="string">&quot;-&gt;&quot;</span> + <span class="string">&quot;分区：&quot;</span> + metadata.partition());</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                exception.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    Thread.sleep(<span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="同步发送"><a href="#同步发送" class="headerlink" title="同步发送"></a>同步发送</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    kafkaProducer.send(<span class="keyword">new</span> ProducerRecord&lt;&gt;(<span class="string">&quot;test&quot;</span>, <span class="string">&quot; &quot;</span> + i)).get();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="生产者分区（分区器）"><a href="#生产者分区（分区器）" class="headerlink" title="生产者分区（分区器）"></a>生产者分区（分区器）</h3><ul>
+<li><p>数据-&gt;拦截器-&gt;序列化-&gt;分区器-&gt;RecordAccumulator</p>
+</li>
+<li><p>将数据分块存储在多个Broker，根据Broker的条件（计算资源、存储资源等）设置控制分区的任务，实现负载均衡</p>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817101357839.png" alt="image-20220817101357839" style="zoom:67%;">
+</li>
+<li><p>生产者的分区策略：</p>
+<ul>
+<li><p>默认的分区器：DefaultPartitioner</p>
+<p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817102131273.png" alt="image-20220817102131273"></p>
+<ul>
+<li><p>前四个，指明partition的情况下，直接将指明的值作为分区值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kafkaProducer.send(<span class="keyword">new</span> ProducerRecord&lt;&gt;(<span class="string">&quot;test&quot;</span>, <span class="number">1</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;test &quot;</span> + i), <span class="keyword">new</span> Callback() &#123;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>第五个，没有指明partition值但有key，将key的hash与topic的partition数取余得到partition值</p>
+</li>
+<li><p>第六个，既没有partition值又没有key值，Kafka采用Sticky Partition（黏性分区器），随机选择一个分区，尽可能一直使用该分区，待该分区的batch已满或者已完成，Kafka再随机一个分区进行使用（和上一次的分区不同）</p>
+</li>
+</ul>
+</li>
+<li><p>自定义分区器：</p>
+<ul>
+<li><p>实现Partitioner接口，重写partition()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PartitionerSelf</span> <span class="keyword">implements</span> <span class="title">Partitioner</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> topic:      主题</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> key:        key</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> keyBytes:   key序列化的结果</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> value:      value</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> valueBytes: value序列化的结果</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cluster:    集群元数据</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">partition</span><span class="params">(String topic, Object key, <span class="keyword">byte</span>[] keyBytes, Object value, <span class="keyword">byte</span>[] valueBytes, Cluster cluster)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 获取消息</span></span><br><span class="line">        String msgValue = value.toString();</span><br><span class="line">        <span class="comment">// 创建 partition</span></span><br><span class="line">        <span class="keyword">int</span> partition;</span><br><span class="line">        <span class="comment">// 判断消息是否包含 atguigu</span></span><br><span class="line">        <span class="keyword">if</span> (msgValue.contains(<span class="string">&quot;thomas&quot;</span>)) &#123;</span><br><span class="line">            partition = <span class="number">2</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            partition = <span class="number">3</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 返回分区号</span></span><br><span class="line">        <span class="keyword">return</span> partition;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(Map&lt;String, ?&gt; map)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>载入，调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">properties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, <span class="string">&quot;producer.PartitionerSelf&quot;</span>);</span><br><span class="line">      KafkaProducer&lt;String, String&gt; kafkaProducer = <span class="keyword">new</span> KafkaProducer&lt;&gt;(properties);</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">          kafkaProducer.send(<span class="keyword">new</span> ProducerRecord&lt;&gt;(<span class="string">&quot;test&quot;</span>, <span class="string">&quot;thomas &quot;</span> + i), <span class="keyword">new</span> Callback() &#123;</span><br><span class="line">          ...</span><br><span class="line">          &#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="提高吞吐量"><a href="#提高吞吐量" class="headerlink" title="提高吞吐量"></a>提高吞吐量</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// compression.type：压缩，默认 none，可配置值 gzip、snappy、lz4 和 zstd</span></span><br><span class="line">properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG,<span class="string">&quot;snappy&quot;</span>);</span><br><span class="line"><span class="comment">// batch.size：批次大小，默认 16K</span></span><br><span class="line">properties.put(ProducerConfig.BATCH_SIZE_CONFIG, <span class="number">16384</span>);</span><br><span class="line"><span class="comment">// linger.ms：等待时间，默认 0 ms</span></span><br><span class="line">properties.put(ProducerConfig.LINGER_MS_CONFIG, <span class="number">1</span>);</span><br><span class="line"><span class="comment">// RecordAccumulator：缓冲区大小，默认 32M：buffer.memory</span></span><br><span class="line">properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, <span class="number">33554432</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="数据可靠性"><a href="#数据可靠性" class="headerlink" title="数据可靠性"></a>数据可靠性</h3><ul>
+<li><p>ack应答级别：</p>
+<ul>
+<li><p>0：生产者发送过来的数据，不需要等数据落盘，立刻应答</p>
+</li>
+<li><p>1：生产者发送过来的数据，Leader收到数据后应答——leader应答后同步前，可能挂掉，新的leader没有该信心</p>
+</li>
+<li><p>-1：生产者发送过来的数据，Leader和ISR队列的所有节点收齐数据后应答</p>
+<ul>
+<li><p>Leader维护一个动态的in-sync replica set（ISR）——和Leader保持同步的Follower+Leader集合（(leader：0，isr：0,1,2)）</p>
+</li>
+<li><p>如果Follower长时间未向Leader发送通信请求或同步数据，则该Follower将被踢出ISR，该时间阈值由replica.lag.time.max.ms参数设定，默认30s）</p>
+</li>
+<li><p>如果分区副本设置为1个，或ISR里应答的最小副本数量（ min.insync.replicas 默认为1）设置为1，此时和ack=1的效果相同（leader：0，isr：0）</p>
+<p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817122028038.png" alt="image-20220817122028038"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>数据完全可靠条件：ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量大于等于2</p>
+</li>
+<li><p>在生产环境中，acks=0很少使用；acks=1，一般用于传输普通日志，允许丢个别数据；acks=-1，一般用于对可靠性要求比较高的场景</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置 acks</span></span><br><span class="line">properties.put(ProducerConfig.ACKS_CONFIG, <span class="string">&quot;all&quot;</span>);</span><br><span class="line"><span class="comment">// 重试次数 retries，默认是 int 最大值，2147483647</span></span><br><span class="line">properties.put(ProducerConfig.RETRIES_CONFIG, <span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="数据去重"><a href="#数据去重" class="headerlink" title="数据去重"></a>数据去重</h3><ul>
+<li><p>数据传递语义：</p>
+<ul>
+<li>至少一次（At Least Once）= ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量大于等于2</li>
+<li>最多一次（At Most Once）= ACK级别设置为0</li>
+<li>精确一次：对于一些非常重要的信息，比如和钱相关的数据，数据既不能重复也不丢失</li>
+</ul>
+</li>
+<li><p>幂等：</p>
+<ul>
+<li><p>Producer不论向Broker发送多少次重复数据，Broker端都只会持久化一条，保证不重复</p>
+</li>
+<li><p>精确一次（Exactly Once） = 幂等性 + 至少一次</p>
+</li>
+<li><p>重复数据判断标准：具有&lt;PID，Partition，SeqNumber&gt;相同主键的消息提交时，Broker只会持久化一条——单分区，单会话内不重复</p>
+<ul>
+<li>PID：Kafka每次重启都会分配一个新的Producer ID</li>
+<li>Partition：分区号</li>
+<li>Sequence Number：单调自增</li>
+</ul>
+<img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817122405925.png" alt="image-20220817122405925" style="zoom:80%;">
+</li>
+<li><p>开启幂等：参数enable.idempotence默认为true，false为关闭</p>
+</li>
+</ul>
+</li>
+<li><p>生产者事务：开启事务，必须开启幂等</p>
+<p><img src="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/image-20220817123201764.png" alt="image-20220817123201764"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1 初始化事务</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initTransactions</span><span class="params">()</span></span>;</span><br><span class="line"><span class="comment">// 2 开启事务</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">beginTransaction</span><span class="params">()</span> <span class="keyword">throws</span> ProducerFencedException</span>;</span><br><span class="line"><span class="comment">// 3 在事务内提交已经消费的偏移量（主要用于消费者）</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sendOffsetsToTransaction</span><span class="params">(Map&lt;TopicPartition, OffsetAndMetadata&gt; offsets, String consumerGroupId)</span> <span class="keyword">throws</span> ProducerFencedException</span>;</span><br><span class="line"><span class="comment">// 4 提交事务</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">commitTransaction</span><span class="params">()</span> <span class="keyword">throws</span> ProducerFencedException</span>;</span><br><span class="line"><span class="comment">// 5 放弃事务（类似于回滚事务的操作）</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">abortTransaction</span><span class="params">()</span> <span class="keyword">throws</span> ProducerFencedException</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置事务 id（必须），事务 id 任意起名</span></span><br><span class="line">      properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, <span class="string">&quot;transaction_id_0&quot;</span>);</span><br><span class="line">  </span><br><span class="line">      KafkaProducer&lt;String, String&gt; kafkaProducer = <span class="keyword">new</span> KafkaProducer&lt;String, String&gt;(properties);</span><br><span class="line">  </span><br><span class="line">      <span class="comment">// 初始化事务</span></span><br><span class="line">      kafkaProducer.initTransactions();</span><br><span class="line">      <span class="comment">// 开启事务</span></span><br><span class="line">      kafkaProducer.beginTransaction();</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="comment">// 4. 调用 send 方法,发送消息</span></span><br><span class="line">          <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">              <span class="comment">// 发送消息</span></span><br><span class="line">              kafkaProducer.send(<span class="keyword">new</span> ProducerRecord&lt;&gt;(<span class="string">&quot;test&quot;</span>,<span class="string">&quot;test &quot;</span> + i));</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// int i = 1 / 0;  // 测试事务提交失败</span></span><br><span class="line">          <span class="comment">// 提交事务</span></span><br><span class="line">          kafkaProducer.commitTransaction();</span><br><span class="line">      &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">          <span class="comment">// 终止事务</span></span><br><span class="line">          kafkaProducer.abortTransaction();</span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">          kafkaProducer.close();</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="数据有序、乱序"><a href="#数据有序、乱序" class="headerlink" title="数据有序、乱序"></a>数据有序、乱序</h3><ul>
+<li>单分区内，有序（有条件）； 多分区，分区与分区间无序</li>
+<li>单分区有序要求：<ul>
+<li>max.in.flight.requests.per.connection设置为1（没有开启幂等时）</li>
+<li>max.in.flight.requests.per.connection设置小于等于5（开启幂等时）——启用幂等后，kafka服务端缓存producer发来的最近5个request的元数据，因此可以保证最近5个request的数据是有序的</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/" title="Kafka (1)消息队列概述、生产者">https://thomas-li-sjtu.github.io/2022/08/14/hadoop学习9/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/12/hadoop%E5%AD%A6%E4%B9%A08/" rel="prev" title="Spark (4)Spark Streaming">
+      <i class="fa fa-chevron-left"></i> Spark (4)Spark Streaming
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/" rel="next" title="Kafka (2)Broker、Consumer">
+      Kafka (2)Broker、Consumer <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="nav-number">1.1.</span> <span class="nav-text">消息队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">架构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2"><span class="nav-number">2.</span> <span class="nav-text">部署</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%93%8D%E4%BD%9C"><span class="nav-number">2.1.</span> <span class="nav-text">命令行操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85"><span class="nav-number">3.</span> <span class="nav-text">生产者</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#producer%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E6%B5%81%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">producer消息发送流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81-API"><span class="nav-number">3.2.</span> <span class="nav-text">异步发送 API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A0%E5%9B%9E%E8%B0%83%E5%BC%82%E6%AD%A5"><span class="nav-number">3.2.1.</span> <span class="nav-text">无回调异步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%A6%E5%9B%9E%E8%B0%83%E5%BC%82%E6%AD%A5"><span class="nav-number">3.2.2.</span> <span class="nav-text">带回调异步</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E5%8F%91%E9%80%81"><span class="nav-number">3.3.</span> <span class="nav-text">同步发送</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E5%88%86%E5%8C%BA%EF%BC%88%E5%88%86%E5%8C%BA%E5%99%A8%EF%BC%89"><span class="nav-number">3.4.</span> <span class="nav-text">生产者分区（分区器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E9%AB%98%E5%90%9E%E5%90%90%E9%87%8F"><span class="nav-number">3.5.</span> <span class="nav-text">提高吞吐量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%8F%AF%E9%9D%A0%E6%80%A7"><span class="nav-number">3.6.</span> <span class="nav-text">数据可靠性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%8E%BB%E9%87%8D"><span class="nav-number">3.7.</span> <span class="nav-text">数据去重</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%9C%89%E5%BA%8F%E3%80%81%E4%B9%B1%E5%BA%8F"><span class="nav-number">3.8.</span> <span class="nav-text">数据有序、乱序</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

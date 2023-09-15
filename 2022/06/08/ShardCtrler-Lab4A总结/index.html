@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MIT-6.824 Lab4A 总结与备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ShardCtrler Lab4A总结">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/06/08/ShardCtrler-Lab4A%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="MIT-6.824 Lab4A 总结与备忘">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-08T05:52:13.000Z">
+<meta property="article:modified_time" content="2022-06-08T14:50:54.593Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/06/08/ShardCtrler-Lab4A%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ShardCtrler Lab4A总结 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/06/08/ShardCtrler-Lab4A%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ShardCtrler Lab4A总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-08 13:52:13" itemprop="dateCreated datePublished" datetime="2022-06-08T13:52:13+08:00">2022-06-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">项目实践</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> MIT-6.824 Lab4A 总结与备忘</p>
+<a id="more"></a>
+
+<h2 id="思路整理"><a href="#思路整理" class="headerlink" title="思路整理"></a>思路整理</h2><ul>
+<li><p>Lab4的目标是创建一个 “分布式、拥有分片（shard）功能、控制server加入和退出不同的group、根据Config迁移shard到不同group的，Key-Value数据库服务“，因此Lab4的代码框架和Lab3非常相似，是Lab3的扩展</p>
+</li>
+<li><p>具体而言。Lab4要实现：</p>
+<ul>
+<li>用户通过Query RPC向ShardCtrler请求最新的Config，以获知数据分片的位置信息，然后向相应的Key-Value Servers请求某个Key-Value对</li>
+<li>Key-Value Servers会根据Config组成不同的Group，不同的Group通过轮询ShardCtrler得到最新的Config，并根据Config进行数据分片的迁移，以及Group成员的改变</li>
+</ul>
+</li>
+<li><p>Lab4A要构造ShardCtrler，它负责调度Client和后端数据库。多个ShardCtrler服务器组成一个Raft管理集群，集群维护配置列表<code>[]Config</code>。参考代码给出的Config结构为：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Config <span class="keyword">struct</span> &#123;</span><br><span class="line">	Num    <span class="keyword">int</span>              <span class="comment">// config number</span></span><br><span class="line">	Shards [NShards]<span class="keyword">int</span>     <span class="comment">// shard -&gt; gid  根据分片id，查找其所在的group</span></span><br><span class="line">	Groups <span class="keyword">map</span>[<span class="keyword">int</span>][]<span class="keyword">string</span> <span class="comment">// gid -&gt; servers[]  根据groupid，查找属于该group的servers id</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Lab4A中：</p>
+<ul>
+<li>Client的功能基本不变，只是将原先的Put、Append、Get改为Join、Leave、Move、Query</li>
+<li>RPC handler的处理流程基本类似Lab3中的handler流程，其中Query类似Get，其余类似PutAppend</li>
+<li>Server的运行流程同样相同，循环地从ApplyCh中读取写入raft集群commit了的命令，根据命令（Op）的类型分别实现Config的更改。每更改一次Config，就append到Server结构体中的Config列表</li>
+</ul>
+</li>
+<li><p>综上，Command的处理流程为：</p>
+<ul>
+<li>Client向Leader发送Command</li>
+<li>Leader检测触发条件和执行条件，如果满足则将Op交给Raft，实现集群的log同步，然后设置WaitChan，等待ApplyCh输出commit后的Op（这里同样设置了超时的处理）</li>
+<li>每个Server从自己的ApplyCh中读出Op后，进行”重复检测“、命令执行、SnapShot制作（如果满足条件）、发给WaitChan（如果是Leader，不是Leader则<code>channel, exist := sc.wait_apply_ch[command_index]</code>中，exist为False）</li>
+<li>Leader将结果从WaitChan读出，如果符合条件则reply OK</li>
+</ul>
+</li>
+<li><p>因此，基本上Lab3的代码简单改下变量名就可以用在Lab4A上</p>
+</li>
+<li><p>新的Config基于Config列表中的最后一个Config得到，要注意go的map是引用，如果把一个map类型的变量分配给另一个变量，两个变量都会引用同一个map，因此要用<code>make()</code>创建一个新的map对象并单独复制键和值</p>
+</li>
+<li><p>存在一个问题：如何在Key-Value Servers Group成员变化时，重新平衡shard负载（即，ShardCtrler收到Join、Leave RPC时，需要在新的Group中，确定性地重新分配Shard）</p>
+<ul>
+<li>举例：5个Groups，6个Shards，则最终分配应当是11112，并且必须是确定的，即每次运行后，Shard所属的Group是一样的</li>
+<li>因此根据现有的Group（Join和leave之后的Group），排序其拥有的Shard数目，多退少补，其中先退再补。退的时候，被”退“的Shard可以暂存于Group 0中</li>
+</ul>
+</li>
+<li><p>Command的含义：</p>
+<ul>
+<li>Join : 新加入的Group信息</li>
+<li>Leave : 某些Group要离开集群</li>
+<li>Move : 将Shard分配给GID的Group</li>
+<li>Query : 查询最新的Config信息</li>
+</ul>
+</li>
+</ul>
+<h2 id="关键代码"><a href="#关键代码" class="headerlink" title="关键代码"></a>关键代码</h2><ul>
+<li><p>重新平衡负载：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">reBalanceShards</span><span class="params">(groupid_shardnum <span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">int</span>, last_shards [NShards]<span class="keyword">int</span>)</span> [<span class="title">NShards</span>]<span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="comment">// 根据group_id：shard_num映射，和shard_id：group_id映射，重新平衡负载</span></span><br><span class="line">	group_num := <span class="built_in">len</span>(groupid_shardnum)</span><br><span class="line">	avg_shard_per_group := NShards / group_num</span><br><span class="line">	subNum := NShards % group_num <span class="comment">// 无法均匀分配的shard数目</span></span><br><span class="line">	realSortNum := realNumArray(groupid_shardnum)</span><br><span class="line"></span><br><span class="line">	<span class="comment">//多退</span></span><br><span class="line">	<span class="keyword">for</span> i := group_num - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i-- &#123;</span><br><span class="line">		resultNum := avg_shard_per_group</span><br><span class="line"></span><br><span class="line">		<span class="keyword">var</span> is_avg <span class="keyword">bool</span> <span class="comment">// 将无法均匀分配的剩余shard，放到realSortNum中后面那几个group中，每个group分一个</span></span><br><span class="line">		<span class="keyword">if</span> i &lt; group_num-subNum &#123;</span><br><span class="line">			is_avg = <span class="literal">true</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			is_avg = <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> !is_avg &#123;</span><br><span class="line">			resultNum = avg_shard_per_group + <span class="number">1</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> resultNum &lt; groupid_shardnum[realSortNum[i]] &#123;</span><br><span class="line">			fromGid := realSortNum[i]                          <span class="comment">// 从这个group转移出changeNum个shard</span></span><br><span class="line">			changeNum := groupid_shardnum[fromGid] - resultNum <span class="comment">// 要转移的shard数目</span></span><br><span class="line">			<span class="keyword">for</span> shard, gid := <span class="keyword">range</span> last_shards &#123;</span><br><span class="line">				<span class="keyword">if</span> changeNum &lt;= <span class="number">0</span> &#123;</span><br><span class="line">					<span class="keyword">break</span></span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">if</span> gid == fromGid &#123;</span><br><span class="line">					last_shards[shard] = <span class="number">0</span> <span class="comment">// fromGid的这个shard高于avg_shard_per_group，要“退”，退到group 0暂存</span></span><br><span class="line">					changeNum -= <span class="number">1</span></span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			groupid_shardnum[fromGid] = resultNum</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//少补</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; group_num; i++ &#123;</span><br><span class="line">		resultNum := avg_shard_per_group</span><br><span class="line"></span><br><span class="line">		<span class="keyword">var</span> flag <span class="keyword">bool</span></span><br><span class="line">		<span class="keyword">if</span> i &lt; avg_shard_per_group-subNum &#123;</span><br><span class="line">			flag = <span class="literal">true</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			flag = <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> !flag &#123;</span><br><span class="line">			resultNum = avg_shard_per_group + <span class="number">1</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> resultNum &gt; groupid_shardnum[realSortNum[i]] &#123;</span><br><span class="line">			toGid := realSortNum[i]</span><br><span class="line">			changeNum := resultNum - groupid_shardnum[toGid]</span><br><span class="line">			<span class="keyword">for</span> shard, gid := <span class="keyword">range</span> last_shards &#123;</span><br><span class="line">				<span class="keyword">if</span> changeNum &lt;= <span class="number">0</span> &#123;</span><br><span class="line">					<span class="keyword">break</span></span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">if</span> gid == <span class="number">0</span> &#123;</span><br><span class="line">					last_shards[shard] = toGid <span class="comment">// fromGid的这个shard少于avg_shard_per_group，要“补”，从group 0中补</span></span><br><span class="line">					changeNum -= <span class="number">1</span></span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			groupid_shardnum[toGid] = resultNum</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> last_shards</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据group_id下shard的数目升序排序group_id，如果shard数目相同，则group_id小的在前面</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">realNumArray</span><span class="params">(groupid_shardnum <span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">	group_num := <span class="built_in">len</span>(groupid_shardnum)</span><br><span class="line"></span><br><span class="line">	numArray := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>, group_num) <span class="comment">// length 0, capacity 10</span></span><br><span class="line">	<span class="keyword">for</span> group_id, _ := <span class="keyword">range</span> groupid_shardnum &#123;</span><br><span class="line">		numArray = <span class="built_in">append</span>(numArray, group_id)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; group_num<span class="number">-1</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">for</span> j := group_num - <span class="number">1</span>; j &gt; i; j-- &#123;</span><br><span class="line">			<span class="keyword">if</span> groupid_shardnum[numArray[j]] &lt; groupid_shardnum[numArray[j<span class="number">-1</span>]] || (groupid_shardnum[numArray[j]] == groupid_shardnum[numArray[j<span class="number">-1</span>]] &amp;&amp; numArray[j] &lt; numArray[j<span class="number">-1</span>]) &#123;</span><br><span class="line">				numArray[j], numArray[j<span class="number">-1</span>] = numArray[j<span class="number">-1</span>], numArray[j]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> numArray</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>根据不同的Command，得到新的Config：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">Execute_Query</span><span class="params">(op Op)</span> <span class="title">Config</span></span> &#123;</span><br><span class="line">	sc.mu.Lock()</span><br><span class="line">	<span class="keyword">defer</span> sc.mu.Unlock()</span><br><span class="line">	sc.last_request_id[op.Client_id] = op.Request_id</span><br><span class="line">	<span class="keyword">if</span> op.Index_Query == <span class="number">-1</span> || op.Index_Query &gt;= <span class="built_in">len</span>(sc.configs) &#123;</span><br><span class="line">		<span class="keyword">return</span> sc.configs[<span class="built_in">len</span>(sc.configs)<span class="number">-1</span>]</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> sc.configs[op.Index_Query]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">Execute_Join</span><span class="params">(op Op)</span></span> &#123;</span><br><span class="line">	sc.mu.Lock()</span><br><span class="line">	<span class="keyword">defer</span> sc.mu.Unlock()</span><br><span class="line">	sc.last_request_id[op.Client_id] = op.Request_id</span><br><span class="line">	sc.configs = <span class="built_in">append</span>(sc.configs, *sc.Join_Config(op.Servers_Join))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">Execute_Leave</span><span class="params">(op Op)</span></span> &#123;</span><br><span class="line">	sc.mu.Lock()</span><br><span class="line">	<span class="keyword">defer</span> sc.mu.Unlock()</span><br><span class="line">	sc.last_request_id[op.Client_id] = op.Request_id</span><br><span class="line">	sc.configs = <span class="built_in">append</span>(sc.configs, *sc.Leave_Config(op.Gids_Leave))</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">Execute_Move</span><span class="params">(op Op)</span></span> &#123;</span><br><span class="line">	sc.mu.Lock()</span><br><span class="line">	<span class="keyword">defer</span> sc.mu.Unlock()</span><br><span class="line">	sc.last_request_id[op.Client_id] = op.Request_id</span><br><span class="line">	sc.configs = <span class="built_in">append</span>(sc.configs, *sc.Move_Config(op.Shard_Move, op.Gid_Move))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">Join_Config</span><span class="params">(servers_join <span class="keyword">map</span>[<span class="keyword">int</span>][]<span class="keyword">string</span>)</span> *<span class="title">Config</span></span> &#123;</span><br><span class="line">	lastConfig := sc.configs[<span class="built_in">len</span>(sc.configs)<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line">	temp_groups := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">int</span>][]<span class="keyword">string</span>)</span><br><span class="line">	<span class="keyword">for</span> gid, server_list := <span class="keyword">range</span> lastConfig.Groups &#123; <span class="comment">// 复制最后一个config的groups</span></span><br><span class="line">		temp_groups[gid] = server_list</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> gids, join_list := <span class="keyword">range</span> servers_join &#123; <span class="comment">// 将新的serers加入集群</span></span><br><span class="line">		temp_groups[gids] = join_list</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	group_shardnum := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">int</span>) <span class="comment">// 记录最后一个config中，每个group下分别有多少个shard；key：group_id value：shard_id</span></span><br><span class="line">	<span class="keyword">for</span> gid := <span class="keyword">range</span> temp_groups &#123;</span><br><span class="line">		group_shardnum[gid] = <span class="number">0</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> _, gid := <span class="keyword">range</span> lastConfig.Shards &#123;</span><br><span class="line">		<span class="keyword">if</span> gid != <span class="number">0</span> &#123;</span><br><span class="line">			group_shardnum[gid]++</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(group_shardnum) == <span class="number">0</span> &#123; <span class="comment">// 如果上一个config为初始config</span></span><br><span class="line">		<span class="keyword">return</span> &amp;Config&#123;</span><br><span class="line">			Num:    <span class="built_in">len</span>(sc.configs),</span><br><span class="line">			Shards: [<span class="number">10</span>]<span class="keyword">int</span>&#123;&#125;,</span><br><span class="line">			Groups: temp_groups,</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;Config&#123;</span><br><span class="line">		Num:    <span class="built_in">len</span>(sc.configs),</span><br><span class="line">		Shards: sc.reBalanceShards(group_shardnum, lastConfig.Shards),</span><br><span class="line">		Groups: temp_groups,</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">Leave_Config</span><span class="params">(gid_leave []<span class="keyword">int</span>)</span> *<span class="title">Config</span></span> &#123;</span><br><span class="line">	lastConfig := sc.configs[<span class="built_in">len</span>(sc.configs)<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line">	group_del := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">bool</span>) <span class="comment">// 记录删除的group_id</span></span><br><span class="line">	<span class="keyword">for</span> _, gid := <span class="keyword">range</span> gid_leave &#123;</span><br><span class="line">		group_del[gid] = <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	temp_groups := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">int</span>][]<span class="keyword">string</span>)</span><br><span class="line">	<span class="keyword">for</span> gid, serverList := <span class="keyword">range</span> lastConfig.Groups &#123;</span><br><span class="line">		temp_groups[gid] = serverList</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> _, cur_gid := <span class="keyword">range</span> gid_leave &#123; <span class="comment">// 通过group_id删除group</span></span><br><span class="line">		<span class="built_in">delete</span>(temp_groups, cur_gid)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 得到delete group之后的 group_id:shard_num 映射，和 shard_id:group_id 映射</span></span><br><span class="line">	newShard := lastConfig.Shards</span><br><span class="line">	group_shardnum := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">int</span>)</span><br><span class="line">	<span class="keyword">for</span> gid := <span class="keyword">range</span> temp_groups &#123; <span class="comment">// 初始化 group_id:shard_num 映射</span></span><br><span class="line">		<span class="keyword">if</span> !group_del[gid] &#123;</span><br><span class="line">			group_shardnum[gid] = <span class="number">0</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> shard, gid := <span class="keyword">range</span> lastConfig.Shards &#123;</span><br><span class="line">		<span class="keyword">if</span> gid != <span class="number">0</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> group_del[gid] &#123;</span><br><span class="line">				newShard[shard] = <span class="number">0</span> <span class="comment">// shard所在的group要被删除，则记录归零</span></span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				group_shardnum[gid]++</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(group_shardnum) == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> &amp;Config&#123;</span><br><span class="line">			Num:    <span class="built_in">len</span>(sc.configs),</span><br><span class="line">			Shards: [<span class="number">10</span>]<span class="keyword">int</span>&#123;&#125;,</span><br><span class="line">			Groups: temp_groups,</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;Config&#123;</span><br><span class="line">		Num:    <span class="built_in">len</span>(sc.configs),</span><br><span class="line">		Shards: sc.reBalanceShards(group_shardnum, newShard),</span><br><span class="line">		Groups: temp_groups,</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *ShardCtrler)</span> <span class="title">Move_Config</span><span class="params">(shard, gid <span class="keyword">int</span>)</span> *<span class="title">Config</span></span> &#123;</span><br><span class="line">	last_config := sc.configs[<span class="built_in">len</span>(sc.configs)<span class="number">-1</span>]</span><br><span class="line">	cur_config := Config&#123;</span><br><span class="line">		Num:    last_config.Num + <span class="number">1</span>, <span class="comment">// len(sc.configs)</span></span><br><span class="line">		Shards: [NShards]<span class="keyword">int</span>&#123;&#125;,</span><br><span class="line">		Groups: <span class="keyword">map</span>[<span class="keyword">int</span>][]<span class="keyword">string</span>&#123;&#125;,</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 复制一遍最后一个config，然后再微调</span></span><br><span class="line">	<span class="keyword">for</span> shards, gids := <span class="keyword">range</span> last_config.Shards &#123;</span><br><span class="line">		cur_config.Shards[shards] = gids</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> gidss, servers := <span class="keyword">range</span> last_config.Groups &#123;</span><br><span class="line">		cur_config.Groups[gidss] = servers</span><br><span class="line">	&#125;</span><br><span class="line">	cur_config.Shards[shard] = gid</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> &amp;cur_config</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/06/08/ShardCtrler-Lab4A%E6%80%BB%E7%BB%93/" title="ShardCtrler Lab4A总结">https://thomas-li-sjtu.github.io/2022/06/08/ShardCtrler-Lab4A总结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/07/MIT6.824-6/" rel="prev" title="MIT-6.824 (6)">
+      <i class="fa fa-chevron-left"></i> MIT-6.824 (6)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/08/ShardKV-Lab4B%E6%80%BB%E7%BB%93/" rel="next" title="ShardKV Lab4B总结">
+      ShardKV Lab4B总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E4%BB%A3%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">关键代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

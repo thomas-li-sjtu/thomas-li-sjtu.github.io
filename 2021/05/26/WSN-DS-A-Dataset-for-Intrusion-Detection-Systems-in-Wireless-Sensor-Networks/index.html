@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks》阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks》阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210526130417586.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210526130609299.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527110230481.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527112528483.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527134522988.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527134906175.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527135200674.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527135425305.png">
+<meta property="article:published_time" content="2021-05-26T03:25:47.000Z">
+<meta property="article:modified_time" content="2021-05-27T06:13:43.292Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="WSN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210526130417586.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-26 11:25:47" itemprop="dateCreated datePublished" datetime="2021-05-26T11:25:47+08:00">2021-05-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks》阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>无线传感器网络（WSN）由于其广泛的应用，包括关键的军事和民用应用，已日益成为计算机科学中最热门的研究领域之一</li>
+<li>为确保 WSN 服务的安全性和可靠性，应建立入侵检测系统，IDS 必须与无线传感器网络的特征兼容，能够检测尽可能多的安全威胁</li>
+<li>本文研究了 WSN 中最流行的分层路由协议之一 LEACH 协议的使用</li>
+<li>本文开发一个专门针对 WSN 的数据集，以更好地检测和分类四种类型的拒绝服务攻击：黑洞、灰洞、泛洪和调度攻击</li>
+<li>本文定义了从 NS2 收集数据、处理以产生23个特征的一个方案，数据集称 WSN-DS</li>
+<li>ANN 在数据集上进行训练，检测和分类不同的拒绝服务攻击。该方法提高了入侵检测系统的分类准确率<ul>
+<li>WEKA 工具箱</li>
+<li>holdout、10 折交叉验证两种方法一起使用</li>
+<li>最佳方案为一个隐藏层 + 10 折交叉验证，对黑洞、泛洪、调度和灰洞攻击的分类准确率分别为92.8%、99.4%、92.2%、75.6%和99.8%。</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>WSN 由于其广泛的实时应用，如关键军事监控、战场、建筑安全监控、森林火灾监控和医疗保健等，已经成为一个越来越重要的研究领域【1】</li>
+<li>WSN 由大量自治传感器节点组成，收集重要数据，协作地将收集到的数据无线传输到称为汇聚节点或基站（BS）的更强大节点【2，3】</li>
+<li>问题<ul>
+<li>WSN 资源有限（电池能量、内存、处理能力），传统的安全措施，如密码学，并不合适，但 WSN 的开放性和分布性以及传感器节点资源的有限性，它极易受到攻击</li>
+<li>WSN 中数据包广播必须频繁进行，传感器节点可以随机部署在环境中，因此攻击者很容易进行注入攻击【5】</li>
+<li>攻击者可以危害传感器节点，窃听消息，注入虚假消息，改变数据的完整性，并浪费网络资源</li>
+<li>拒绝服务攻击被认为是威胁 WSN 安全的最常见和最危险的攻击之一，主要目的是中断或暂停 WSN 提供的服务【6，7】</li>
+</ul>
+</li>
+<li>需要 IDS 检测已知和未知的攻击，向传感器节点发出警报<ul>
+<li>传感器节点通常很小很便宜，没有足够的硬件资源</li>
+<li>WSN 没有专门的数据集包含可用于检测攻击者的正常配置文件和攻击【3】</li>
+<li>在为 WSN 设计 IDS 时，主要有两个条件：检测已知和未知攻击时必须具有高度的准确性、必须是轻量级</li>
+</ul>
+</li>
+<li>本文构建了一个专门的 WSN 数据集，用于描述四种类型的 Dos 攻击。使用低能量感知簇层次结构（LEACH）  【9】路由协议—— LEACH 是 WSN 最流行的分层路由协议之一，消耗的能量有限，具有简单的特点。构建的数据集称为 WSN 数据集</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h3 id="LEACH-协议"><a href="#LEACH-协议" class="headerlink" title="LEACH 协议"></a>LEACH 协议</h3><ul>
+<li><p>LEACH 是一种 WSN 分层路由协议，延长网络的寿命【9–11】，是一种集群、自适应和自组织协议</p>
+</li>
+<li><p>LEACH 假设基站是固定的，并远离传感器节点，所有传感器节点都是同构的，具有有限的能量和内存，传感器可以相互通信，也可以直接与基站通信</p>
+</li>
+<li><p>主要思想是将节点组织成簇，在网络中的所有节点之间分配能量</p>
+</li>
+<li><p>每个集群中有一个名为“簇头”（<strong>Cluster Head，CH</strong>）的节点，将集群中传感器接收的数据聚合，转发给基站</p>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210526130417586.png" alt="image-20210526130417586" style="zoom:67%;">
+</li>
+<li><p>LEACH 协议的每一轮主要包括两个阶段：建立阶段和稳态阶段</p>
+<ul>
+<li><p>建立阶段形成集群</p>
+<ul>
+<li><p>每个节点生成一个0-1的随机数，计算阈值$T(n)$，选定随机数小于阈值，则该节点变为$CH$（公式中$N$为前$1/p$轮中非$CH$节点数，$r$是当前轮次，$p$通常为$0.05$）</p>
+<blockquote>
+<p>N: is the set of nodes that have not been a CH, in the last 1/p rounds, and r is the current round.</p>
+</blockquote>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210526130609299.png" alt="image-20210526130609299" style="zoom:80%;">
+</li>
+<li><p>经过$1/p-1$轮，阈值为1，所有节点都不会成为$CH$；经过$1/p$轮，所有节点又能成为$CH$</p>
+</li>
+<li><p>为所有集群分配信道后，信道将用 CSMA-MAC 协议向其余节点广播，每个节点通过接收信号强度指示（RSSI）决定自己属于哪个簇，通过 CSMA-MAC 发送加入请求到对应信道</p>
+</li>
+<li><p>集群形成后，每个集群根据成员数目创建 TDMA 调度并广播给成员</p>
+</li>
+</ul>
+</li>
+<li><p>稳态阶段数据传给接收节点【12】</p>
+<ul>
+<li>每个传感器节点收集数据，根据时分多址调度在分配的时隙内将其传输到其信道</li>
+<li>中心站接收所有的数据，在发送给基站之前进行汇总</li>
+<li>预定时间后，网络再次返回建立和稳态阶段，开始另一轮【9】</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="基于-LEACH-的协议"><a href="#基于-LEACH-的协议" class="headerlink" title="基于 LEACH 的协议"></a>基于 LEACH 的协议</h3><ul>
+<li>【14，15】给出了 LEACH 的15 个改进版本</li>
+<li>【16】评估了两种新的基于分簇的 WSN 协议，考虑了具有不同电池能量的三种节点</li>
+<li>【17】介绍基于 LEACH 的 LEACH-ICE，调整被选作 CH 节点的阈值函数，当一个节点更靠近基站时，可以与基站直接通信。如果当前信道的驻留能量低于预定阈值时，LEACH-ICE 会在簇内选择一个新的信道</li>
+<li>【18】提出一种适用于 WSN 的节能二级信道选择算法，通过控制中心点之间的距离，可以满足中心点的均匀分布，改进后的方法能够降低网络能耗，延长网络寿命</li>
+<li>【19】提出一种分布式能量中性聚类（ENC）协议，将网络分成几个簇，目的是提供永久的网络运行。所提出的协议可以成功地防止传感器由于过度使用能量而关闭</li>
+</ul>
+<h3 id="WSN-中的-Dos-与-IDS"><a href="#WSN-中的-Dos-与-IDS" class="headerlink" title="WSN 中的 Dos 与 IDS"></a>WSN 中的 Dos 与 IDS</h3><ul>
+<li><p>拒绝服务是一种常见的攻击，可能会对WSN的功能和服务产生严重影响【20】，例如黑洞攻击、灰洞攻击、洪泛攻击和虫洞</p>
+<ul>
+<li>拒绝服务攻击的严重性源于这样一个事实——大多数 WSN 应用程序需要在恶劣的环境中部署传感器节点，这些环境距离遥远难以控制【20，21】</li>
+<li>已经解决了一两种形式的攻击，但不是大多数【2，22-24】，提供了部分解决方案但不能同时应用，因为消耗能量太多，这是不实际的</li>
+</ul>
+</li>
+<li><p>一种方法是密码机制</p>
+<ul>
+<li>通过对称加密、公钥加密、散列函数来确认数据包来源和内容，保证完整性和进行认证【25】</li>
+<li>不能用于检测内部攻击——此时密钥暴露</li>
+<li>这些技术是第一道防线【5】</li>
+<li>攻击者通常试图使用新的和未知的攻击，因此有必要建立有效的 IDS 作为第二道防线</li>
+</ul>
+</li>
+<li><p>NIST【27】将入侵检测分为两种主要方法：异常检测和误用检测</p>
+<ul>
+<li>异常检测中，系统依赖于网络正常行为的先验知识，将其与当前活动进行比较</li>
+<li>误用检测中，系统依赖于攻击特征的先验知识，将签名与网络中当前的活动进行比较</li>
+</ul>
+</li>
+<li><p>在 WSN 中实施 IDS 有许多挑战，可能会对WSN的性能产生负面影响【28】</p>
+<ul>
+<li>传感器节点的资源受限，在每个传感器节点中使用 IDS 是低效的，IDS 应该安装在对网络的某些威胁不敏感的地方</li>
+<li>IDS 用于传输大量流量的 IDS，因此由于传感器节点在处理网络中的大量数据时通常会受到限制，因此有可能错过入侵检测</li>
+</ul>
+</li>
+<li><p>IDS 有两个主要组成部分，特征提取和建模算法</p>
+<ul>
+<li>特征提取定义与 IDS 功能相关联的测量属性</li>
+<li>建模算法是主要组成部分，用于检测和相应</li>
+</ul>
+</li>
+<li><p>大多数智能决策支持系统有六个共同的组成部分</p>
+<ul>
+<li>监控组件：本地活动监控或监控邻居传感器节点，主要监控内部活动、流量模式和资源利用率</li>
+<li>分析组件：包含网络中所有节点正常和异常行为的所有记录【30】</li>
+<li>检测组件：在分析网络行为后起作用</li>
+<li>其他三个组成部分包括一些操作<ul>
+<li>日志：每个数据包存储在一个日志文件中，以便安全管理员以后进行分析</li>
+<li>报警：检测到入侵时的响应生成，宣布行为不良节点</li>
+<li>预防：添加到 IDS 的一个高级步骤，使其检测到攻击后采取措施来防止下一步攻击——例如从网络中排除有害节点【30】</li>
+</ul>
+</li>
+</ul>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527110230481.png" alt="image-20210527110230481" style="zoom:67%;">
+</li>
+<li><p>本文的主要目的是为 WSN 设计一个专门的 Dos 数据集，以实现对拒绝服务攻击的更好的检测和分类</p>
+<ul>
+<li>知识发现和数据挖掘工具竞赛（KDD）数据集【33】是为局域网构建的，KDD 并不专门研究无线技术，尽管许多研究人员已经用它来处理欺诈和入侵检测【34】</li>
+<li>KDDCup-99 用于【35】中的多个 IDS </li>
+<li>【36-38】同样使用了 KDD</li>
+<li>文献中没有关于 WSN 的专门数据集来检测和分类尽可能多的 Dos，迫切需要定义一个有标签、专门的数据集以表征 WSN，帮助研究正常和异常行为，本文提出了这种数据集的构造和测试方法</li>
+</ul>
+</li>
+</ul>
+<h2 id="LEACH-的数学分析"><a href="#LEACH-的数学分析" class="headerlink" title="LEACH 的数学分析"></a>LEACH 的数学分析</h2><ul>
+<li><p>确保所构建的 WSN-DS 数据集正确性，对 LEACH 各阶段进行数学分析，与没有 Dos 的模拟结果进行比较</p>
+</li>
+<li><p>LEACH 模型中使用的术语如下：</p>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527112528483.png" alt="image-20210527112528483" style="zoom:67%;">
+</li>
+<li><p>具体分析略</p>
+</li>
+</ul>
+<h2 id="WSN-DS-描述和创建"><a href="#WSN-DS-描述和创建" class="headerlink" title="WSN-DS 描述和创建"></a>WSN-DS 描述和创建</h2><ul>
+<li>为了在传感器节点之间分配负载，每个传感器将参与监控过程，并且应该能够监控其邻居的集合</li>
+<li>如何找到传感器节点要监视的合适数量的节点，以便监控所有网络传感器——实验表明监视 3 个相邻节点不足以获得关于所有网络传感器节点的信息，而监视 5 个邻居节点足以获得关于网络中所有节点的信息，并且不需要通过进一步增加计算复杂度</li>
+<li>经过对 LEACH 协议的研究，提取了 23 个属性识别每个节点的状态<ul>
+<li>Node ID：节点 ID</li>
+<li>Time：节点的当前模拟时间</li>
+<li>Is CH：flag 标识</li>
+<li>Who CH：当前轮次的 CH 节点</li>
+<li>RSSI：节点与 CH 之间接收信号强度指示</li>
+<li>Distance to CH：当前轮次节点和其 CH 距离</li>
+<li>Max distance to CH：簇中 CH 和节点最大距离</li>
+<li>Average distance to CH：簇中节点到 CH 的平均距离</li>
+<li>Current energy：节点当前能量</li>
+<li>Energy consumption：上一轮消耗的能量</li>
+<li>ADV CH send：发送到节点的广播消息数量</li>
+<li>ADV CH receives：从 CHs 收到的广播 CH 消息数</li>
+<li>Join REQ send： 节点发送到通道的加入请求消息的数量</li>
+<li>Join REQ receive：通道从节点接收的加入请求消息的数目</li>
+<li>ADV SCH send：发送到节点的时分多址调度广播消息的数量</li>
+<li>ADV SCH receives：从 CHs 接收的时分多址调度消息数</li>
+<li>Rank：该节点在时分多址调度中的顺序</li>
+<li>Data sent：传感器发送到其通道的数据包数量</li>
+<li>Data received：从 CH 接收的数据包数量</li>
+<li>Data sent to BS：发送给基站的数据包数量</li>
+<li>Distance CH to BS：CH 和 BS 之间的距离</li>
+<li>Send Code：集群发送代码</li>
+<li>Attack Type：攻击类型</li>
+</ul>
+</li>
+</ul>
+<h2 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h2><ul>
+<li>为了确保攻击者节点的正确分布，网络地形被划分为10个区域。攻击者的比例在这些区域内随机分布</li>
+</ul>
+<h3 id="黑洞攻击"><a href="#黑洞攻击" class="headerlink" title="黑洞攻击"></a>黑洞攻击</h3><ul>
+<li>攻击者通过广播消息，称自己为一个 CH 节点来影响 LEACH 协议</li>
+<li>加入该信道的任意一个节点将向伪 CH 节点发送数据包，以转发到基站，但攻击者将丢弃这些数据包</li>
+<li>为了在模拟环境中实施这种攻击，随机注入了几个攻击者的强度（10%、30% 和 50%）来执行黑洞攻击——攻击者作为 CH 将丢弃所有通过他们中继到基站的数据包</li>
+</ul>
+<h3 id="灰洞攻击"><a href="#灰洞攻击" class="headerlink" title="灰洞攻击"></a>灰洞攻击</h3><ul>
+<li>攻击者将自己广播为 CH 节点</li>
+<li>当伪造的信道从其他节点接收数据包时，随机或选择性地丢弃一些数据包【40–42】</li>
+<li>随机注入 10%，30%，50% 的传感器节点</li>
+</ul>
+<h3 id="泛洪攻击"><a href="#泛洪攻击" class="headerlink" title="泛洪攻击"></a>泛洪攻击</h3><ul>
+<li>发送大量高传输功率的广播 CH 消息来研究洪泛攻击的影响</li>
+<li>当传感器接收到大量 ADV-CH 信息时，将消耗传感器的能量并浪费更多的时间来确定加入哪个频道</li>
+<li>攻击者试图欺骗受害者选择它作为 CH 节点，特别是那些位于离它很远的节点，以消耗他们的能量【40，43】</li>
+<li>在一些实验中，攻击者发送了 10 条 ADV-CH 信息；其他情况发送 10 到 50 条 ADV-CH 信息</li>
+</ul>
+<h3 id="调度攻击"><a href="#调度攻击" class="headerlink" title="调度攻击"></a>调度攻击</h3><ul>
+<li>调度攻击发生在数据传输时隙的时分多址调度上</li>
+<li>充当 CH 的攻击者为所有节点分配相同的时隙来发送数据，导致数据包冲突，从而导致数据丢失</li>
+</ul>
+<h2 id="实验和结果"><a href="#实验和结果" class="headerlink" title="实验和结果"></a>实验和结果</h2><ul>
+<li><p>LEACH 协议被用来收集数据集，因为它是 WSN 中最常见和最广泛使用的路由协议之一</p>
+</li>
+<li><p>WSN-DS 包含 374661 条记录</p>
+</li>
+<li><p>NS-2参数：</p>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527134522988.png" alt="image-20210527134522988" style="zoom:50%;">
+</li>
+<li><p>使用 WEKA 评估数据集</p>
+<ul>
+<li>WEKA 是一个开源数据挖掘软件套件</li>
+<li>包括多个数据预处理、聚类、分类、回归、可视化的算法</li>
+<li>七个性能指标：<ul>
+<li>混淆矩阵（四个，TPR，TNR，FPR，FNR）</li>
+<li>总体准确率（A）</li>
+<li>精密度（P）</li>
+<li>均方根误差（RMSE）——RMSE 越低，表示评估越准确。零表示没有错误</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>训练 ANN 进行判别（输入 23 个属性的数据，输出攻击类型）</p>
+<ul>
+<li><p>holdout，数据集分割如下</p>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527134906175.png" alt="image-20210527134906175" style="zoom:67%;">
+</li>
+<li><p>10 折交叉验证：训练数据集分成 10 个相等的部分，9 个用于训练 1 个用于评估，重复10 次</p>
+</li>
+</ul>
+</li>
+<li><p>MLP 网络的参数</p>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527135200674.png" alt="image-20210527135200674" style="zoom:67%;">
+* 一个隐藏层 11 个神经元
+* 两个隐藏层（11+5）
+* 三个隐藏层（11+5+2）
+</li>
+<li><p>结果：</p>
+<img src="/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/image-20210527135425305.png" alt="image-20210527135425305" style="zoom:50%;">
+</li>
+<li><p>更多结果以表格形式给出，但都是那种比较简单的三线表，如：</p>
+<ul>
+<li>holdout + 一个隐藏层 + 不同类别对应的混淆矩阵</li>
+<li>holdout + 一个隐藏层 + 各个指标数据</li>
+<li>holdout + 两个隐藏层 + 各个指标数据</li>
+<li>holdout + 三个隐藏层 + 各个指标数据</li>
+<li>交叉验证 + 一个隐藏层 + 各个指标数据</li>
+<li>….</li>
+</ul>
+</li>
+<li><p>最佳的分类攻击的方法是：交叉验证+一个隐藏层</p>
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>设计一种智能入侵检测和防御机制，以合理的代价有效地限制 Dos 攻击</li>
+<li>为 WSN 构建了一个专门的数据集，用于对四种类型的 Dos 攻击分类</li>
+<li>本文对创建的数据集进行了数学验证，以确保其正确性</li>
+<li>利用 WEKA 工具箱建立了 MLP 模型，使用两种方法对攻击进行分类：holdout 和 10 折交叉验证，使用一个、两个和三个隐藏层。一个隐藏层时，攻击的分类准确率为 92.8%、99.4%、92.2%、75.6% 和99.8% </li>
+<li>这项工作可以扩展到包括数据链路层的其他类型的 DoS 攻击，如虫洞或 Sybil</li>
+<li>可以考虑对 LEACH 以外的协议和 WSN 不同层的攻击</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\05\27\A-Review-IDS-in-Remote-Sensor-Network\" rel="bookmark">A Review：IDS in Remote Sensor Network</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Review：IDS in Remote Sensor Network》阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\05\28\An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network\" rel="bookmark">An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks</a></div>
+        <div class="popular-posts-excerpt"><p><p>《An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks》 阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/" title="WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks">https://thomas-li-sjtu.github.io/2021/05/26/WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/WSN/" rel="tag"><i class="fa fa-tag"></i> WSN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/22/IoT_Cybersecurity_Research_A_Review_of_Current_Research_Topics/" rel="prev" title="Internet of Things (IoT) Cybersecurity Research：A Review of Current Research Topics">
+      <i class="fa fa-chevron-left"></i> Internet of Things (IoT) Cybersecurity Research：A Review of Current Research Topics
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/27/A-Review-IDS-in-Remote-Sensor-Network/" rel="next" title="A Review：IDS in Remote Sensor Network">
+      A Review：IDS in Remote Sensor Network <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LEACH-%E5%8D%8F%E8%AE%AE"><span class="nav-number">3.1.</span> <span class="nav-text">LEACH 协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E-LEACH-%E7%9A%84%E5%8D%8F%E8%AE%AE"><span class="nav-number">3.2.</span> <span class="nav-text">基于 LEACH 的协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WSN-%E4%B8%AD%E7%9A%84-Dos-%E4%B8%8E-IDS"><span class="nav-number">3.3.</span> <span class="nav-text">WSN 中的 Dos 与 IDS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LEACH-%E7%9A%84%E6%95%B0%E5%AD%A6%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">LEACH 的数学分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WSN-DS-%E6%8F%8F%E8%BF%B0%E5%92%8C%E5%88%9B%E5%BB%BA"><span class="nav-number">5.</span> <span class="nav-text">WSN-DS 描述和创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.</span> <span class="nav-text">攻击模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%BB%91%E6%B4%9E%E6%94%BB%E5%87%BB"><span class="nav-number">6.1.</span> <span class="nav-text">黑洞攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%81%B0%E6%B4%9E%E6%94%BB%E5%87%BB"><span class="nav-number">6.2.</span> <span class="nav-text">灰洞攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%9B%E6%B4%AA%E6%94%BB%E5%87%BB"><span class="nav-number">6.3.</span> <span class="nav-text">泛洪攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E6%94%BB%E5%87%BB"><span class="nav-number">6.4.</span> <span class="nav-text">调度攻击</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%92%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">7.</span> <span class="nav-text">实验和结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

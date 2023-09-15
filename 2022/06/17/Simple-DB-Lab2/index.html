@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MIT-6.830 Lab2 总结与备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Simple-DB Lab2">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/06/17/Simple-DB-Lab2/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="MIT-6.830 Lab2 总结与备忘">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/17/Simple-DB-Lab2/image-20220615192435493.png">
+<meta property="article:published_time" content="2022-06-17T11:11:18.000Z">
+<meta property="article:modified_time" content="2022-06-29T05:31:34.817Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/06/17/Simple-DB-Lab2/image-20220615192435493.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/06/17/Simple-DB-Lab2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Simple-DB Lab2 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/06/17/Simple-DB-Lab2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Simple-DB Lab2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-17 19:11:18" itemprop="dateCreated datePublished" datetime="2022-06-17T19:11:18+08:00">2022-06-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">项目实践</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>21k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>19 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> MIT-6.830 Lab2 总结与备忘</p>
+<a id="more"></a>
+
+<ul>
+<li>Lab2为SimpleDB设计操作符，以实现表的修改（insert和delete tuple）、selection、join和aggregate，以得到一个对多个表进行简单查询的数据库系统</li>
+<li>Lab2要设计一个bufferpool中Page的淘汰策略，本Lab不需要实现事务（transaction）或锁</li>
+<li>SimpleDB OpIterator类实现关系代数的操作</li>
+</ul>
+<h2 id="Exercise-1"><a href="#Exercise-1" class="headerlink" title="Exercise 1"></a>Exercise 1</h2><h3 id="思路整理"><a href="#思路整理" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li>Implement the skeleton methods in：<code>src/java/simpledb/execution/Predicate.java</code>、<code>src/java/simpledb/execution/JoinPredicate.java</code>、<code>src/java/simpledb/execution/Filter.java</code>、<code>src/java/simpledb/execution/Join.java</code>，通过PredicateTest、JoinPredicateTest、FilterTest和JoinTest单元测试，和系统测试FilterTest和JoinTest</li>
+<li>代码已经实现了Project（投影，即指定列输出）和OrderBy（按指定字段排序输出）</li>
+<li><code>Filter</code>：返回满足 “谓词 “的tuple ，而”谓词”是其构造函数的一部分（A predicate is an expression that evaluates to True or False）——属性Predicate是用来判断的谓词，属性OpIterator是用来具体轮询的操作符。类比select * from x where a&gt; 3， Predicate代表的是a&gt;3式子，OpIterator用来将tuple传入谓词，获得过滤后的tuple<ul>
+<li><code>Predicate.java</code> 比较表内的字段和提供的数据，三个构造器参数分别是待比较的字段序号、比较符和待比较的数， <code>filter()</code> 方法输入一个Tuple，比较Tuple的Field是否符合预期——即Tuple相应字段序号的字段，在该比较符下，是否和待比较数相似</li>
+<li><code>Filter.java</code> 在构造函数中实例化Predicate和OpIterator。 <code>fetchNext()</code> 方法逐个读取OpIterator的Tuple，然后比较它们与Predicate的Field，为真则返回该Tuple</li>
+</ul>
+</li>
+<li><code>Join</code>：根据构造函数参数 “JoinPredicate”来连接其两个子tuple，即满足条件的<code>1 2 3</code>和<code>4 5 6 </code>会合并为<code>1 2 3 4 5 6</code>；同样类比下，select * from s1, s2 where s1.field1&gt; s2.field2，要在对两个表s1和s2构造出的笛卡尔积上，找到满足s1.field1 &gt;s2.field2的tuple，那么对应的s1就是child1，s2就是child2<ul>
+<li><code>JoinPredicate.java</code> 和 <code>Predicate.java</code> 类似，实现两个Tuple 的比较，根据构造器参数和构造器</li>
+<li><code>Join.java</code> 是对 <code>JoinPredicate.java</code> 的使用，构造函数实例化 <code>JoinPredicate</code> 和两个OpIterator，并要实现诸多get和open、close等迭代器函数</li>
+<li><code>fetchNext()</code>找两个迭代器中可以join的字段来join，用两个while循环来遍历，直到最外层迭代器遍历完成</li>
+</ul>
+</li>
+</ul>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>多读下函数前面的注释，类的属性也基本可以通过构造器的参数确定下来</p>
+</li>
+<li><p>需要注意的是，哪个tuple调用compare</p>
+</li>
+<li><p>注意Operator implements OpIterator，而Operator是抽象类，Filter extends Operator（上一个lab的SeqScan中，Iterator是DBfile的iterator）</p>
+</li>
+<li><p>OpIterator 中的<code>next()</code>returns the next tuple from the operator</p>
+</li>
+<li><p>child是指运算的子项？</p>
+</li>
+<li><p>Filter的几个函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Tuple <span class="title">fetchNext</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchElementException,</span></span><br><span class="line"><span class="function">        TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">this</span>.child.hasNext()) &#123;</span><br><span class="line">        Tuple curTuple = <span class="keyword">this</span>.child.next();</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.p.filter(curTuple)) &#123; <span class="comment">// apply the predicate to next tuple</span></span><br><span class="line">            <span class="keyword">return</span> curTuple;  <span class="comment">// 如果符合，则返回这个tuple</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> OpIterator[] getChildren() &#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> OpIterator[]&#123;<span class="keyword">this</span>.child&#125;;  <span class="comment">// 参考Operator.java中的注释</span></span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setChildren</span><span class="params">(OpIterator[] children)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">if</span> (children == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>.child = children[<span class="number">0</span>];  <span class="comment">// 参考Operator.java中的注释</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Join的fetchNext实现中，要考虑到如果本轮对child1的迭代里，有多个符合要求的tuple该如何处理，以及边界情况：最后一个child1的tuple的迭代。写的时候要注意iterator的特点，特别是在第二个while中，返回之前一定要判断是否需要重置（或者说，是否需要执行return外面的代码）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Tuple curTuple;</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">protected</span> Tuple <span class="title">fetchNext</span><span class="params">()</span> <span class="keyword">throws</span> TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">this</span>.child1.hasNext() || <span class="keyword">this</span>.curTuple != <span class="keyword">null</span>) &#123;  <span class="comment">// 第二个判断条件，如果curTuple是child1的最后一个tuple</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.child1.hasNext() &amp;&amp; <span class="keyword">this</span>.curTuple == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.curTuple = <span class="keyword">this</span>.child1.next();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">this</span>.child2.hasNext()) &#123;</span><br><span class="line">            Tuple tuple2 = <span class="keyword">this</span>.child2.next();</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.p.filter(<span class="keyword">this</span>.curTuple, tuple2)) &#123;</span><br><span class="line">                TupleDesc newDesc = TupleDesc.merge(</span><br><span class="line">                        <span class="keyword">this</span>.curTuple.getTupleDesc(),</span><br><span class="line">                        tuple2.getTupleDesc()</span><br><span class="line">                );</span><br><span class="line">                Tuple result = <span class="keyword">new</span> Tuple(newDesc);  <span class="comment">// 建立新的tuple，newDesc使得该tuple的数值为空，但记录了字段属性</span></span><br><span class="line">  </span><br><span class="line">                <span class="comment">// 将两个tuple的内容填充到新的tuple中</span></span><br><span class="line">                <span class="keyword">int</span> fieldIndex = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">for</span> (; fieldIndex &lt; <span class="keyword">this</span>.curTuple.getTupleDesc().numFields(); fieldIndex++) &#123;</span><br><span class="line">                    result.setField(fieldIndex, <span class="keyword">this</span>.curTuple.getField(fieldIndex));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">for</span> (;</span><br><span class="line">                     fieldIndex &lt; <span class="keyword">this</span>.curTuple.getTupleDesc().numFields() + tuple2.getTupleDesc().numFields();</span><br><span class="line">                     fieldIndex++) &#123;</span><br><span class="line">                    result.setField(</span><br><span class="line">                            fieldIndex,</span><br><span class="line">                            tuple2.getField(fieldIndex - <span class="keyword">this</span>.curTuple.getTupleDesc().numFields())</span><br><span class="line">                    );</span><br><span class="line">                &#125;</span><br><span class="line">  </span><br><span class="line">                <span class="keyword">if</span> (!<span class="keyword">this</span>.child2.hasNext()) &#123;</span><br><span class="line">                    <span class="keyword">this</span>.child2.rewind();</span><br><span class="line">                    <span class="keyword">this</span>.curTuple = <span class="keyword">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> result;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">  </span><br><span class="line">        <span class="comment">// 遍历结束，child2重置，curTuple归null</span></span><br><span class="line">        <span class="keyword">this</span>.child2.rewind();</span><br><span class="line">        <span class="keyword">this</span>.curTuple = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="Exercise-2"><a href="#Exercise-2" class="headerlink" title="Exercise 2"></a>Exercise 2</h2><h3 id="思路整理-1"><a href="#思路整理-1" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the skeleton methods in：<code>src/java/simpledb/execution/IntegerAggregator.java</code>、<code>src/java/simpledb/execution/StringAggregator.java</code>、<code>src/java/simpledb/execution/Aggregate.java</code>，通过IntegerAggregatorTest、StringAggregatorTest和AggregateTest单元测试，和系统测试AggregateTest（实现聚合操作符groupby）</p>
+</li>
+<li><p>SimpleDB操作符用<code>GROUP BY</code>实现了基本的SQL聚合，这里要实现五个SQL聚合（<code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, <code>MAX</code>），它们都支持分组</p>
+</li>
+<li><p>SimpleDB使用<code>Aggregator</code>接口计算聚合，以将一个新tuple合并到已有的聚合计算中</p>
+</li>
+<li><p><code>Aggregator</code>构造器的参数之一是聚合的具体操作，随后为子迭代器（即child）中的每个tuple调用<code>Aggregator.mergeTupleIntoGroup()</code>。在所有tuple被合并后，可以检索到一个聚合结果的OpIterator，其中的每个tuple都是一对形式为<code>(groupValue, aggregateValue)</code>的元组。如果group by字段的值是<code>Aggregator.NO_GROUPING</code>，其结果是一个形式为<code>(aggregateValue)</code>的元组</p>
+</li>
+<li><p><code>IntegerAggregator(0, Type.INT_TYPE, 1, Aggregator.Op.SUM)</code> 是生成一个整数聚合的对象</p>
+<ul>
+<li><p>0表示分组（Group By）字段位置，即根据第零列聚合。如果可以为 NO_GROUPING，表示不进行聚合</p>
+</li>
+<li><p>Type.INT_TYPE表示这一列的数据类型，目前只有整数和字符串</p>
+</li>
+<li><p>1表示待聚合的字段</p>
+</li>
+<li><p>Aggregator.Op.SUM表示执行加法操作</p>
+</li>
+</ul>
+</li>
+<li><p>IntegerAggregatorTest测试类中，scan1是一张基础表，<code>sum/min/max/avg</code>是四张经过聚合操作后的表，用于验证scan1经过聚合后的结果是否符合预期</p>
+</li>
+<li><p><code>mergeTupleIntoGroup()</code> 根据gbField字段先判断是否需要进行group by，需要则根据 gbField从tuple中提取待聚合的字段。接着判断是否是初次填入，根据对应Op执行。如果不需要group by，直接累加即可，不需要映射</p>
+</li>
+<li><p>StringAggregator和IntegerAggregator逻辑类似，String类型的Field只需要实现COUNT运算符</p>
+</li>
+<li><p>Aggregate是将前两个整合一下，判断一下Field类型，返回IntegerAggregator或StringAggretor即可</p>
+</li>
+</ul>
+<h3 id="具体实现-1"><a href="#具体实现-1" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>可以看到，<code>public IntegerAggregator(int gbfield, Type gbfieldtype, int afield, Op what)</code>中的参数分别表示：分组依据的字段index、分组依据的字段的类型、分组后，对什么字段进行聚合、分组后进行聚合的操作类型。由于要根据不同的组进行聚合，因此存储分组结果最好使用map，并且map的key为Field，值为int（对于IntegerAggregator，要聚合的值都是int）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">mergeTupleIntoGroup</span><span class="params">(Tuple tup)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    Field gbField;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">this</span>.gbfieldIndex == NO_GROUPING) &#123;</span><br><span class="line">        gbField = <span class="keyword">null</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        gbField = tup.getField(<span class="keyword">this</span>.gbfieldIndex);</span><br><span class="line">    &#125;</span><br><span class="line">    IntField aField = (IntField) tup.getField(<span class="keyword">this</span>.afieldIndex);</span><br><span class="line">    <span class="keyword">this</span>.aggHandler.handler(gbField, aField); <span class="comment">// 通过map分组，通过hander聚合。key:field中已经包含了分组依据字段的值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>难点在于怎么实现五个聚合操作。将聚合操作封装为GBHandler抽象类，此时上层的IntegerAggregator只需要将其计算后的结果，使用TupleIterator进行封装并返回</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> AggHandler aggHandler;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AggHandler</span> </span>&#123;</span><br><span class="line">    HashMap&lt;Field, Integer&gt; agg;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AggHandler</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.agg = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> HashMap&lt;Field, Integer&gt; <span class="title">getAgg</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.agg;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">handler</span><span class="params">(Field gbField, IntField aField)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">SumHandler</span> <span class="keyword">extends</span> <span class="title">AggHandler</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handler</span><span class="params">(Field gbField, IntField aField)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.agg.containsKey(gbField)) &#123;</span><br><span class="line">            <span class="keyword">this</span>.agg.put(gbField, <span class="keyword">this</span>.agg.get(gbField) + aField.getValue());</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.agg.put(gbField, aField.getValue());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountHandler</span> <span class="keyword">extends</span> <span class="title">AggHandler</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handler</span><span class="params">(Field gbField, IntField aField)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.agg.containsKey(gbField)) &#123;</span><br><span class="line">            <span class="keyword">this</span>.agg.put(gbField, <span class="keyword">this</span>.agg.get(gbField) + <span class="number">1</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.agg.put(gbField, <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>public OpIterator iterator()</code>返回<code>TupleIterator</code>即可，此时需要根据聚合结果，建立TupleDesc和TupleList，具体形式参考上面思路整理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> OpIterator <span class="title">iterator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    HashMap&lt;Field, Integer&gt; aggMap = <span class="keyword">this</span>.aggHandler.getAgg();</span><br><span class="line">    ArrayList&lt;Tuple&gt; tupleList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">  </span><br><span class="line">    TupleDesc desc;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.gbfieldIndex == NO_GROUPING) &#123;</span><br><span class="line">        desc = <span class="keyword">new</span> TupleDesc(<span class="keyword">new</span> Type[]&#123;Type.INT_TYPE&#125;, <span class="keyword">new</span> String[]&#123;<span class="string">&quot;AggValue&quot;</span>&#125;);</span><br><span class="line">        Tuple tuple = <span class="keyword">new</span> Tuple(desc);</span><br><span class="line">        tuple.setField(<span class="number">0</span>, <span class="keyword">new</span> IntField(aggMap.get(<span class="keyword">null</span>)));</span><br><span class="line">        tupleList.add(tuple);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        desc = <span class="keyword">new</span> TupleDesc(<span class="keyword">new</span> Type[]&#123;<span class="keyword">this</span>.gbfieldType, Type.INT_TYPE&#125;, <span class="keyword">new</span> String[]&#123;<span class="string">&quot;groupByValue&quot;</span>, <span class="string">&quot;AggValue&quot;</span>&#125;);</span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;Field, Integer&gt; entry: aggMap.entrySet()) &#123;</span><br><span class="line">            Tuple tuple = <span class="keyword">new</span> Tuple(desc);</span><br><span class="line">            tuple.setField(<span class="number">0</span>, entry.getKey());</span><br><span class="line">            tuple.setField(<span class="number">1</span>, <span class="keyword">new</span> IntField(entry.getValue()));</span><br><span class="line">            tupleList.add(tuple);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> TupleIterator(desc, tupleList);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在写<code>Aggregate.java</code>时，要明白child代表喂进来的数据，而对数据的迭代需要先对子项完成聚合操作，然后另起一个属性<code>aggregator.iterator()</code>——做的时候有些蒙，没搞明白这些iterator的关系，看了别人的代码才大致清楚些</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchElementException, DbException,</span></span><br><span class="line"><span class="function">        TransactionAbortedException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">super</span>.open();</span><br><span class="line">    <span class="keyword">this</span>.child.open();</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">while</span> (child.hasNext()) &#123;</span><br><span class="line">        aggregator.mergeTupleIntoGroup(child.next());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>.aggIterator = aggregator.iterator();</span><br><span class="line">    <span class="keyword">this</span>.aggIterator.open();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="Exercise-3"><a href="#Exercise-3" class="headerlink" title="Exercise 3"></a>Exercise 3</h2><h3 id="思路整理-2"><a href="#思路整理-2" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the remaining skeleton methods in：<code>src/java/simpledb/storage/HeapPage.java</code>、<code>src/java/simpledb/storage/HeapFile.java</code>、<code>BufferPool.java</code>的<code>insertTuple()</code>、<code>deleteTuple()</code>，通过单元测试HeapPageWriteTest、HeapFileWriteTest、BufferPoolWriteTest，实现表格的修改</p>
+</li>
+<li><p>主要操作：添加和删除tuple</p>
+<ul>
+<li>删除：要实现<code>HeapFile.deleteTuple()</code>。tuple包含<code>RecordID</code>，从而能找到页面，将该页面中tuple队列的相应位置设置为null，并修改该Page的header</li>
+<li>添加：要实现<code>HeapFile.insertTuple()</code>。向HeapFile添加一个新元组，要找到一个有空slot的Page，如果没有则创建一个新的Page并追加到磁盘的物理文件中。要确保tuple中的<code>RecordID</code>更新正确</li>
+<li>以上过程，会使用到<code>getNumEmptySlots()</code>和<code>isSlotUsed()</code></li>
+<li><code>markSlotUsed()</code>方法可以修改header中对应tuple的状态</li>
+<li><code>HeapFile.insertTuple()</code>和<code>HeapFile.deleteTuple()</code>要使用<code>BufferPool.getPage()</code>访问页面，而<code>BufferPool</code>中的添加和删除tuple方法，要调用HeapFile中被修改的table的方法，完整的一次调用过程如下所示。第四步是HeapPage在内存中修改自己的内容</li>
+</ul>
+<img src="/2022/06/17/Simple-DB-Lab2/image-20220615192435493.png" alt="image-20220615192435493" style="zoom: 67%;">
+</li>
+<li><p>HeapFile不是在内存的File，是对硬盘HeapFile中操作的抽象，HeapPage是被加载到内存中的页</p>
+</li>
+<li><p>调用过程的文字表述：</p>
+<ul>
+<li><p>删除：</p>
+<ul>
+<li>BufferPool定位tuple所在的table，以及相应的page（<code>t.getRecordId().getPageId().getTableId()</code>），调用<code>HeapFile.deleteTuple()</code>进行删除</li>
+<li><code>HeapFile</code>检查这个Page是否在BufferPool中，没有则需要从磁盘读取（这一点已经在之前的lab中实现了）；定位到相应的page</li>
+<li>tuple传给HeapPage，判断是否属于这个Page（Pageid是否相同？Page的tupleDesc和tuple的Desc是否相同？tuple的tupleNo对应的插槽是不是空的？），如果属于，则将Page的这个位置置为null，并通过<code>markSlotUsed()</code>让相应header的位置归零。注意，header是对bit做处理，因此要使用位运算</li>
+<li>HeapFile此时暂时不将删除了Tuple的Page写入磁盘（因为<code>HeapFile.deleteTuple()</code>中没有IO异常的抛出）</li>
+<li>由于对Page做了操作，因此对这个Page标记为”脏“（<code>page.markDirty</code>），并将这个Page加入到BufferPool中（暂时不需要执行淘汰）（由于DbFile的deleteTuple返回的是<code>List&lt;Page&gt;</code>，因此这些Page都要标记为”dirty“，并加入缓冲池）</li>
+</ul>
+</li>
+<li><p>添加：</p>
+<ul>
+<li><p>BufferPool会给定相应的tableId，因此直接从Catalog找对应的DbFile，调用<code>HeapFile.insertTuple()</code>进行添加</p>
+</li>
+<li><p><code>HeapFile</code>检查自己所有的page是否有空的slot，如果有就加过去。如果没有，就新建一个Page，加到这个File中（同样通过<code>HeapFile.writePage()</code>写入，此时会自然地seek到最后一个位置，将Page内容写入后，自然就将Page加入到这个File中），并insertTuple</p>
+</li>
+<li><p>tuple传给HeapPage，判断是否属于这个Page（Page的tupleDesc和tuple的Desc是否相同？page满了吗？），如果属于，则遍历这个Page的slot，找一个空的加入tuple，同时设置这个tuple的record，并用<code>markSlotUsed()</code>标记这个slot被使用</p>
+</li>
+<li><p><code>HeapFile</code>同样标记这个Page为脏，并将这个Page加入BufferPool</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="具体实现-2"><a href="#具体实现-2" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>final：如果为引用数据类型，比如对象、数组，则该对象、数组本身可以修改，但指向该对象或数组的地址的引用不能修改</p>
+</li>
+<li><p>BufferPool：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insertTuple</span><span class="params">(TransactionId tid, <span class="keyword">int</span> tableId, Tuple t)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> DbException, IOException, TransactionAbortedException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="comment">// not necessary for lab1</span></span><br><span class="line">    DbFile dbFile = Database.getCatalog().getDatabaseFile(tableId);</span><br><span class="line">    List&lt;Page&gt; curPage = dbFile.insertTuple(tid, t);</span><br><span class="line">    <span class="keyword">for</span> (Page page: curPage) &#123;</span><br><span class="line">        page.markDirty(<span class="keyword">true</span>, tid);</span><br><span class="line">        <span class="keyword">this</span>.map.put(page.getId(), page);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">deleteTuple</span><span class="params">(TransactionId tid, Tuple t)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> DbException, IOException, TransactionAbortedException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="comment">// not necessary for lab1</span></span><br><span class="line">    <span class="keyword">int</span> tableid = t.getRecordId().getPageId().getTableId();</span><br><span class="line">    DbFile dbFile = Database.getCatalog().getDatabaseFile(tableid);</span><br><span class="line">    List&lt;Page&gt; curPage = dbFile.deleteTuple(tid, t);</span><br><span class="line">    <span class="keyword">for</span> (Page page: curPage) &#123;</span><br><span class="line">        page.markDirty(<span class="keyword">true</span>, tid);</span><br><span class="line">        <span class="keyword">this</span>.map.put(page.getId(), page);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>HeapFile：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writePage</span><span class="params">(Page page)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">       <span class="comment">// some code goes here</span></span><br><span class="line">       <span class="comment">// not necessary for lab1</span></span><br><span class="line">       RandomAccessFile File = <span class="keyword">new</span> RandomAccessFile(<span class="keyword">this</span>.file, <span class="string">&quot;rw&quot;</span>);  <span class="comment">// 通过RandomAccessFile写</span></span><br><span class="line">       File.seek((<span class="keyword">long</span>) BufferPool.getPageSize() *page.getId().getPageNumber());</span><br><span class="line">       File.write(page.getPageData());</span><br><span class="line">       File.close();</span><br><span class="line">   &#125;</span><br><span class="line">  </span><br><span class="line">   <span class="comment">// see DbFile.java for javadocs</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> List&lt;Page&gt; <span class="title">insertTuple</span><span class="params">(TransactionId tid, Tuple t)</span></span></span><br><span class="line"><span class="function">           <span class="keyword">throws</span> DbException, IOException, TransactionAbortedException </span>&#123;</span><br><span class="line">       <span class="comment">// some code goes here</span></span><br><span class="line">       <span class="comment">// not necessary for lab1</span></span><br><span class="line">       List&lt;Page&gt; res = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">       <span class="comment">// 遍历这个DbFile的pages，看有没有空的slot</span></span><br><span class="line">       <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.numPages(); i++) &#123;</span><br><span class="line">           HeapPage curPage = (HeapPage) Database.getBufferPool().getPage(</span><br><span class="line">                   tid,</span><br><span class="line">                   <span class="keyword">new</span> HeapPageId(<span class="keyword">this</span>.getId(), i),</span><br><span class="line">                   Permissions.READ_WRITE</span><br><span class="line">           );</span><br><span class="line">           <span class="keyword">if</span> (curPage.getNumEmptySlots() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">               curPage.insertTuple(t);</span><br><span class="line">               res.add(curPage);</span><br><span class="line">               <span class="keyword">this</span>.writePage(curPage);</span><br><span class="line">               <span class="keyword">return</span> res;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">       HeapPage curPage = <span class="keyword">new</span> HeapPage(</span><br><span class="line">               <span class="keyword">new</span> HeapPageId(<span class="keyword">this</span>.getId(), <span class="keyword">this</span>.numPages()),</span><br><span class="line">               HeapPage.createEmptyPageData()</span><br><span class="line">       );</span><br><span class="line">       curPage.insertTuple(t);</span><br><span class="line">       res.add(curPage);</span><br><span class="line">       <span class="keyword">this</span>.writePage(curPage);</span><br><span class="line">       <span class="keyword">return</span> res;</span><br><span class="line">   &#125;</span><br><span class="line">  </span><br><span class="line">   <span class="comment">// see DbFile.java for javadocs</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> ArrayList&lt;Page&gt; <span class="title">deleteTuple</span><span class="params">(TransactionId tid, Tuple t)</span> <span class="keyword">throws</span> DbException,</span></span><br><span class="line"><span class="function">           TransactionAbortedException </span>&#123;</span><br><span class="line">       <span class="comment">// some code goes here</span></span><br><span class="line">       <span class="comment">// not necessary for lab1</span></span><br><span class="line">       PageId pageId = t.getRecordId().getPageId();</span><br><span class="line">       HeapPage curPage = (HeapPage) Database.getBufferPool().getPage(tid, pageId, Permissions.READ_WRITE);</span><br><span class="line">       curPage.deleteTuple(t);</span><br><span class="line">  </span><br><span class="line">       ArrayList&lt;Page&gt; res = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">       res.add(curPage);</span><br><span class="line">       <span class="keyword">return</span> res;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>HeapPage：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Delete the specified tuple from the page; the corresponding header bit should be updated to reflect</span></span><br><span class="line"><span class="comment"> * that it is no longer stored on any page.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> t The tuple to delete</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> DbException if this tuple is not on this page, or tuple slot is</span></span><br><span class="line"><span class="comment"> *                     already empty.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">deleteTuple</span><span class="params">(Tuple t)</span> <span class="keyword">throws</span> DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="comment">// not necessary for lab1</span></span><br><span class="line">    <span class="keyword">if</span> (t.getRecordId().getTupleNumber() &gt;= <span class="keyword">this</span>.numSlots) &#123;  <span class="comment">// 判断tuple的tupleNo是否超过Page的限制</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;tuple is not on this page&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">this</span>.td.equals(t.getTupleDesc())) &#123;  <span class="comment">// tupledesc不匹配，因此不在这个page上</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;tuple is not on this page&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (tuples[t.getRecordId().getTupleNumber()] == <span class="keyword">null</span>) &#123;  <span class="comment">// 判断该page的相应位置上有没有tuple</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;tuple is not on this page&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!isSlotUsed(t.getRecordId().getTupleNumber())) &#123;  <span class="comment">// 判断该slot是否为空</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;slot is empty&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!t.getRecordId().getPageId().equals(<span class="keyword">this</span>.pid)) &#123;  <span class="comment">// 判断相应位置上的tuple是否相同</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;tuple is not on this page&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>.tuples[t.getRecordId().getTupleNumber()] = <span class="keyword">null</span>;  <span class="comment">// 删除该page存储的tuple</span></span><br><span class="line">    <span class="keyword">this</span>.markSlotUsed(t.getRecordId().getTupleNumber(), <span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Adds the specified tuple to the page;  the tuple should be updated to reflect</span></span><br><span class="line"><span class="comment"> * that it is now stored on this page.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> t The tuple to add.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> DbException if the page is full (no empty slots) or tupledesc</span></span><br><span class="line"><span class="comment"> *                     is mismatch.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insertTuple</span><span class="params">(Tuple t)</span> <span class="keyword">throws</span> DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="comment">// not necessary for lab1</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">this</span>.td.equals(t.getTupleDesc())) &#123;  <span class="comment">// tupleDesc不一致</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;tuple should not be inserted in this page&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.getNumEmptySlots() == <span class="number">0</span>) &#123;  <span class="comment">// Page满了</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;page is full&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// tuple还没有插入，因此不需要判断Pageid是否相同</span></span><br><span class="line">    <span class="comment">// 找一个空的slot，插入tuple</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.numSlots; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.isSlotUsed(i)) &#123;</span><br><span class="line">            <span class="keyword">this</span>.tuples[i] = t;</span><br><span class="line">            t.setRecordId(<span class="keyword">new</span> RecordId(<span class="keyword">this</span>.pid, i));</span><br><span class="line">            markSlotUsed(i, <span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>此外还发现<code>HeapFileIterator</code>中的一个bug。<code>HeapFileWriteTest</code>第二个测试中，一个DbFile的第一二、四个Page为空，第三、五个page中有tuple。此时判断<code>hasNext()</code>时，应当循环遍历所有的Page，而不是只更换一次Page</p>
+<ul>
+<li><p>错误代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> <span class="keyword">throws</span> DbException, TransactionAbortedException </span>&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;asdfasdf&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.iterator.hasNext()) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.curPageNo += <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.curPageNo &gt;= pageNum) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.iterator = <span class="keyword">this</span>.getNextPage(<span class="keyword">new</span> HeapPageId(<span class="keyword">this</span>.heapFile.getId(), <span class="keyword">this</span>.curPageNo));</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.iterator.hasNext();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修正代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> <span class="keyword">throws</span> DbException, TransactionAbortedException </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="keyword">this</span>.curPageNo; i &lt; <span class="keyword">this</span>.pageNum; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.iterator.hasNext()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.curPageNo += <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.curPageNo &gt;= pageNum) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.iterator = <span class="keyword">this</span>.getNextPage(<span class="keyword">new</span> HeapPageId(<span class="keyword">this</span>.heapFile.getId(), <span class="keyword">this</span>.curPageNo));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Exercise-4"><a href="#Exercise-4" class="headerlink" title="Exercise 4"></a>Exercise 4</h2><h3 id="思路整理-3"><a href="#思路整理-3" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the skeleton methods in：<code>src/java/simpledb/execution/Insert.java</code>、<code>src/java/simpledb/execution/Delete.java</code>，通过单元测试InsertTest，系统测试InsertTest和DeleteTest</p>
+</li>
+<li><p>最顶层的操作符是一个特殊的“插入”或“删除”运算符，修改磁盘上的Page。操作符返回受影响tuple的数量（返回一个带有一个整数字段的元组）</p>
+<ul>
+<li><p>插入：操作符将其从子操作符中读取的tuple，添加到构造函数中指定的<code>tableid</code>（使用<code>BufferPool.insertTuple()</code>）</p>
+</li>
+<li><p>删除：从构造函数中指定的<code>tableid</code>，删除从子操作符读取的tuple（使用<code>BufferPool.deleteTuple()</code>）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="具体实现-3"><a href="#具体实现-3" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>基本上调用上一个exercise即可，需要注意判断一个Op实例是否已经执行过（增加一个私有属性<code>hasDeleted</code>，调用<code>fetchNext()</code>时，只有该属性为false时才开始删除。删除完成，设置其为true，insert同样如此）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Tuple <span class="title">fetchNext</span><span class="params">()</span> <span class="keyword">throws</span> TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">this</span>.hasInserted) &#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">this</span>.childOp.hasNext()) &#123;</span><br><span class="line">            Tuple tupleDelete = <span class="keyword">this</span>.childOp.next();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Database.getBufferPool().insertTuple(<span class="keyword">this</span>.transactionId, <span class="keyword">this</span>.tableId, tupleDelete);</span><br><span class="line">                <span class="keyword">this</span>.count += <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        Tuple tuple = <span class="keyword">new</span> Tuple(<span class="keyword">new</span> TupleDesc(<span class="keyword">new</span> Type[]&#123;Type.INT_TYPE&#125;));</span><br><span class="line">        tuple.setField(<span class="number">0</span>, <span class="keyword">new</span> IntField(<span class="keyword">this</span>.count));</span><br><span class="line">        <span class="keyword">this</span>.hasInserted = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">return</span> tuple;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="Exercise-5"><a href="#Exercise-5" class="headerlink" title="Exercise 5"></a>Exercise 5</h2><h3 id="思路整理-4"><a href="#思路整理-4" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Fill in the <code>flushPage()</code> method and additional helper methods to implement page eviction in：<code>src/java/simpledb/storage/BufferPool.java</code>，通过系统测试EvictionTest</p>
+</li>
+<li><p>实现一个页面淘汰策略，修改先前的读取、创建Page的代码（<code>flushAllPages()</code>仅用于测试）</p>
+<ul>
+<li><p>flushPage和flushAllPages不从缓冲池中淘汰页面，flushAllPages在BufferPool中的所有页面上调用flushPage，flushPage将脏页写入磁盘，并重置为clean，留在BufferPool</p>
+</li>
+<li><p>唯一从缓冲池中删除页面的方法是evictPage，它应该对它所淘汰的任何脏页面调用flushPage。</p>
+</li>
+<li><p><code>discardPage()</code>：从缓冲池中删除一个页面，而不flush到磁盘上（本实验不会测试该方法）</p>
+</li>
+</ul>
+</li>
+<li><p>LRU比较合适，或者用队列实现一个FIFO，出队时淘汰HashMap里对应的Page并刷盘，把页面的dirty设置为false，此时传入TranstractionId为null</p>
+</li>
+</ul>
+<h3 id="具体实现-4"><a href="#具体实现-4" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>淘汰策略选择LRU，同时修改<code>BufferPool</code>中的map为<code>ConcurrentHashMap&lt;PageId, Node&lt;Page&gt;&gt;</code>，并新增私有属性<code>head</code>和<code>tail</code>，以标识双向链表的头尾——这里双向链表的节点，可以通过Map来快速找到某个PageID的节点，以快速地修改节点在链表的位置。具体代码：</p>
+<ul>
+<li><p>更改<code>BufferPool</code>的构造函数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ConcurrentHashMap&lt;PageId, Node&lt;Page&gt;&gt; lruCache;  <span class="comment">// 防止锁的占用</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Node&lt;Page&gt; head;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Node&lt;Page&gt; tail;  <span class="comment">// lruCache的头和尾</span></span><br><span class="line">    </span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Creates a BufferPool that caches up to numPages pages.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> numPages maximum number of pages in this buffer pool.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">BufferPool</span><span class="params">(<span class="keyword">int</span> numPages)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">this</span>.numPages = numPages;</span><br><span class="line">    <span class="keyword">this</span>.lruCache = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">this</span>.head = <span class="keyword">new</span> Node&lt;&gt;();</span><br><span class="line">    <span class="keyword">this</span>.tail = <span class="keyword">new</span> Node&lt;&gt;();</span><br><span class="line">    <span class="keyword">this</span>.head.setNext(<span class="keyword">this</span>.tail);</span><br><span class="line">    <span class="keyword">this</span>.tail.setPrev(<span class="keyword">this</span>.head);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Node类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">       <span class="keyword">private</span> T data;</span><br><span class="line">       <span class="keyword">private</span> Node&lt;T&gt; next;</span><br><span class="line">       <span class="keyword">private</span> Node&lt;T&gt; prev;</span><br><span class="line">    </span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="keyword">this</span>.next = <span class="keyword">null</span>;</span><br><span class="line">           <span class="keyword">this</span>.prev = <span class="keyword">null</span>;</span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(T dataVal)</span> </span>&#123;</span><br><span class="line">           <span class="keyword">this</span>.data = dataVal;</span><br><span class="line">           <span class="keyword">this</span>.next = <span class="keyword">null</span>;</span><br><span class="line">           <span class="keyword">this</span>.prev = <span class="keyword">null</span>;</span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setNext</span><span class="params">(Node&lt;T&gt; next)</span> </span>&#123;</span><br><span class="line">           <span class="keyword">this</span>.next = next;</span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPrev</span><span class="params">(Node&lt;T&gt; prev)</span> </span>&#123;</span><br><span class="line">           <span class="keyword">this</span>.prev = prev;</span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line">       <span class="function"><span class="keyword">public</span> T <span class="title">getData</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="keyword">return</span> data;</span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line">       <span class="function"><span class="keyword">public</span> Node&lt;T&gt; <span class="title">getNext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="keyword">return</span> next;</span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line">       <span class="function"><span class="keyword">public</span> Node&lt;T&gt; <span class="title">getPrev</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="keyword">return</span> prev;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将Page加入到lruCache，以及根据PageID删除</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">put</span><span class="params">(PageId pid, Page curPage)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 将curPage放到lruCache的最前面</span></span><br><span class="line">      Node&lt;Page&gt; curNode = <span class="keyword">new</span> Node&lt;&gt;(curPage);</span><br><span class="line">      <span class="keyword">this</span>.lruCache.put(pid, curNode);</span><br><span class="line">    </span><br><span class="line">      curNode.setNext(<span class="keyword">this</span>.head.getNext());</span><br><span class="line">      <span class="keyword">this</span>.head.getNext().setPrev(curNode);  <span class="comment">// 不能忽略这一步</span></span><br><span class="line">      <span class="keyword">this</span>.head.setNext(curNode);</span><br><span class="line">  &#125;</span><br><span class="line">    </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">removeLast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 淘汰最后一个Node</span></span><br><span class="line">      Node&lt;Page&gt; lastPage = <span class="keyword">this</span>.getTail();</span><br><span class="line">      <span class="keyword">this</span>.lruCache.remove(lastPage.getData().getId());</span><br><span class="line">    </span><br><span class="line">      Node&lt;Page&gt; prevNode = lastPage.getPrev();</span><br><span class="line">      Node&lt;Page&gt; nextNode = lastPage.getNext();</span><br><span class="line">      prevNode.setNext(nextNode);</span><br><span class="line">      nextNode.setPrev(prevNode);</span><br><span class="line">  &#125;</span><br><span class="line">    </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(PageId pageId)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 从中lruCahe中删除一个Page</span></span><br><span class="line">      <span class="comment">// 从字典中删除</span></span><br><span class="line">      Node&lt;Page&gt; curNode = <span class="keyword">this</span>.lruCache.get(pageId);</span><br><span class="line">      <span class="keyword">this</span>.lruCache.remove(pageId);</span><br><span class="line">      <span class="comment">// 从链表中删除</span></span><br><span class="line">      Node&lt;Page&gt; prevNode = curNode.getPrev();</span><br><span class="line">      Node&lt;Page&gt; nextNode = curNode.getNext();</span><br><span class="line">      prevNode.setNext(nextNode);</span><br><span class="line">      nextNode.setPrev(prevNode);</span><br><span class="line">  &#125;</span><br><span class="line">    </span><br><span class="line">  <span class="function"><span class="keyword">public</span> Node&lt;Page&gt; <span class="title">getTail</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.tail.getPrev();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修改<code>BufferPool</code>的<code>getPage</code>方法，以实现页面淘汰</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Page <span class="title">getPage</span><span class="params">(TransactionId tid, PageId pid, Permissions perm)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    Node&lt;Page&gt; curNode = <span class="keyword">this</span>.lruCache.get(pid);</span><br><span class="line">    <span class="keyword">if</span> (curNode == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.lruCache.size() == <span class="keyword">this</span>.numPages) &#123;</span><br><span class="line">            <span class="comment">// 淘汰最后一个Node</span></span><br><span class="line">            <span class="keyword">this</span>.removeLast();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.put(pid, Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid));</span><br><span class="line">        <span class="comment">// 从磁盘读出page（page有自己的table id，而table和dbfile一一对应，dbfile是与磁盘交互的接口）</span></span><br><span class="line">        curNode = <span class="keyword">this</span>.lruCache.get(pid);  <span class="comment">// 将载入buffer pool的page给到curPage</span></span><br><span class="line">        <span class="keyword">return</span> curNode.getData();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.remove(curNode.getData().getId());</span><br><span class="line">        <span class="keyword">this</span>.put(curNode.getData().getId(), curNode.getData());</span><br><span class="line">        <span class="keyword">return</span> curNode.getData();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li><p>Lab2利用Lab1实现的存储部件，实现了几个操作符。感觉不好理解的是第一、二个exercise中的OpIterator，特别是聚合操作符。后面的增删部分，理解了调用过程就比较顺利</p>
+</li>
+<li><p>几个存储部件的关系还要再想想</p>
+</li>
+<li><p>LRU的实现中，HashMap和双向链表结合，实现了快速查找节点，和页面（节点）淘汰</p>
+</li>
+<li><p>下面是一个检查连接查询的例子，实现语句为</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span> some_data_file1,</span><br><span class="line">     some_data_file2</span><br><span class="line"><span class="keyword">WHERE</span> some_data_file1.field1 = some_data_file2.field1</span><br><span class="line">  <span class="keyword">AND</span> some_data_file1.id &gt; <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> simpledb;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">jointest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] argv)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// construct a 3-column table schema</span></span><br><span class="line">        Type types[] = <span class="keyword">new</span> Type[]&#123;Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE&#125;;</span><br><span class="line">        String names[] = <span class="keyword">new</span> String[]&#123;<span class="string">&quot;field0&quot;</span>, <span class="string">&quot;field1&quot;</span>, <span class="string">&quot;field2&quot;</span>&#125;;</span><br><span class="line"></span><br><span class="line">        TupleDesc td = <span class="keyword">new</span> TupleDesc(types, names);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// create the tables, associate them with the data files</span></span><br><span class="line">        <span class="comment">// and tell the catalog about the schema  the tables.</span></span><br><span class="line">        HeapFile table1 = <span class="keyword">new</span> HeapFile(<span class="keyword">new</span> File(<span class="string">&quot;some_data_file1.dat&quot;</span>), td);</span><br><span class="line">        Database.getCatalog().addTable(table1, <span class="string">&quot;t1&quot;</span>);</span><br><span class="line"></span><br><span class="line">        HeapFile table2 = <span class="keyword">new</span> HeapFile(<span class="keyword">new</span> File(<span class="string">&quot;some_data_file2.dat&quot;</span>), td);</span><br><span class="line">        Database.getCatalog().addTable(table2, <span class="string">&quot;t2&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// construct the query: we use two SeqScans, which spoonfeed</span></span><br><span class="line">        <span class="comment">// tuples via iterators into join</span></span><br><span class="line">        TransactionId tid = <span class="keyword">new</span> TransactionId();</span><br><span class="line"></span><br><span class="line">        SeqScan ss1 = <span class="keyword">new</span> SeqScan(tid, table1.getId(), <span class="string">&quot;t1&quot;</span>);</span><br><span class="line">        SeqScan ss2 = <span class="keyword">new</span> SeqScan(tid, table2.getId(), <span class="string">&quot;t2&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// create a filter for the where condition</span></span><br><span class="line">        Filter sf1 = <span class="keyword">new</span> Filter(</span><br><span class="line">                <span class="keyword">new</span> Predicate(<span class="number">0</span>,</span><br><span class="line">                        Predicate.Op.GREATER_THAN, <span class="keyword">new</span> IntField(<span class="number">1</span>)), ss1);</span><br><span class="line"></span><br><span class="line">        JoinPredicate p = <span class="keyword">new</span> JoinPredicate(<span class="number">1</span>, Predicate.Op.EQUALS, <span class="number">1</span>);</span><br><span class="line">        Join j = <span class="keyword">new</span> Join(p, sf1, ss2);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// and run it</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            j.open();</span><br><span class="line">            <span class="keyword">while</span> (j.hasNext()) &#123;</span><br><span class="line">                Tuple tup = j.next();</span><br><span class="line">                System.out.println(tup);</span><br><span class="line">            &#125;</span><br><span class="line">            j.close();</span><br><span class="line">            Database.getBufferPool().transactionComplete(tid);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Lab2的ReadMe最后，介绍了如何自己创建数据表和目录，并使用SimpleDB的query parser编写和运行针对这些数据的SQL查询</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\25\BTree-B-Tree\" rel="bookmark">B树，B+树</a></div>
+        <div class="popular-posts-excerpt"><p><p> 数据库索引BTree和B+Tree</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\20\MongoDB_1\" rel="bookmark">MongoDB(1)</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\13\Simple-DB-Lab1\" rel="bookmark">Simple-DB Lab1</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab1 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\19\Simple-DB-Lab3\" rel="bookmark">Simple-DB Lab3</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab3 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\20\Simple-DB-Lab4\" rel="bookmark">Simple-DB Lab4</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab4 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/06/17/Simple-DB-Lab2/" title="Simple-DB Lab2">https://thomas-li-sjtu.github.io/2022/06/17/Simple-DB-Lab2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"><i class="fa fa-tag"></i> 数据库</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/13/Simple-DB-Lab1/" rel="prev" title="Simple-DB Lab1">
+      <i class="fa fa-chevron-left"></i> Simple-DB Lab1
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/19/Simple-DB-Lab3/" rel="next" title="Simple-DB Lab3">
+      Simple-DB Lab3 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-1"><span class="nav-number">1.</span> <span class="nav-text">Exercise 1</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-2"><span class="nav-number">2.</span> <span class="nav-text">Exercise 2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-1"><span class="nav-number">2.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-1"><span class="nav-number">2.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-3"><span class="nav-number">3.</span> <span class="nav-text">Exercise 3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-2"><span class="nav-number">3.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-2"><span class="nav-number">3.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-4"><span class="nav-number">4.</span> <span class="nav-text">Exercise 4</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-3"><span class="nav-number">4.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-3"><span class="nav-number">4.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-5"><span class="nav-number">5.</span> <span class="nav-text">Exercise 5</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-4"><span class="nav-number">5.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-4"><span class="nav-number">5.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

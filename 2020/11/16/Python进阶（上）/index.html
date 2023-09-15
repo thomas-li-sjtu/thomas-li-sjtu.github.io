@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Intermediate Python》阅读笔记 上半部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python进阶（上）">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2020/11/16/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8A%EF%BC%89/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Intermediate Python》阅读笔记 上半部分">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-16T14:55:13.000Z">
+<meta property="article:modified_time" content="2020-11-17T14:02:21.088Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="进阶语法">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/11/16/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8A%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Python进阶（上） | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2020/11/16/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8A%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python进阶（上）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-16 22:55:13" itemprop="dateCreated datePublished" datetime="2020-11-16T22:55:13+08:00">2020-11-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" itemprop="url" rel="index"><span itemprop="name">编程语言</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Intermediate Python》阅读笔记 上半部分</p>
+<a id="more"></a>
+
+<h2 id="args-和-kwargs"><a href="#args-和-kwargs" class="headerlink" title="args 和 ***kwargs**"></a><em>args 和 **</em>*kwargs**</h2><ul>
+<li>不是必须写成*args 和**kwargs。 只有变量前⾯的 * 才是必须的</li>
+</ul>
+<h3 id="args的用法"><a href="#args的用法" class="headerlink" title="*args的用法"></a>*args的用法</h3><ul>
+<li><p>将不定数量的参数传递给⼀个函数</p>
+</li>
+<li><p>发送⼀个⾮键值对的可变数量的参数列表</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_var_args</span>(<span class="params">f_arg, *argv</span>):</span> </span><br><span class="line">    print(<span class="string">&quot;first normal arg:&quot;</span>, f_arg) </span><br><span class="line">    <span class="keyword">for</span> arg <span class="keyword">in</span> argv: </span><br><span class="line">        print(<span class="string">&quot;another arg through *argv:&quot;</span>, arg) </span><br><span class="line"></span><br><span class="line">test_var_args(<span class="string">&#x27;yasoob&#x27;</span>, <span class="string">&#x27;python&#x27;</span>, <span class="string">&#x27;eggs&#x27;</span>, <span class="string">&#x27;test&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出：</span></span><br><span class="line">first normal arg: yasoob </span><br><span class="line">another arg through *argv: python </span><br><span class="line">another arg through *argv: eggs </span><br><span class="line">another arg through *argv: test</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="kwargs的用法"><a href="#kwargs的用法" class="headerlink" title="**kwargs的用法"></a>**kwargs的用法</h3><ul>
+<li><p>将不定长度的键值对，作为参数传递给⼀个函数——适合在一个函数中处理带有名字的参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">greet_me</span>(<span class="params">**kwargs</span>):</span></span><br><span class="line">    <span class="keyword">for</span> key, value <span class="keyword">in</span> kwargs.items():</span><br><span class="line">        print(<span class="string">&quot;&#123;0&#125; == &#123;1&#125;&quot;</span>.<span class="built_in">format</span>(key, value))</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>greet_me(name=<span class="string">&quot;yasoob&quot;</span>)</span><br><span class="line">name == yasoob</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>所有参数（包括标准参数）的使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">some_func(fargs, *args, **kwargs)</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<h2 id="调试（Debugging）"><a href="#调试（Debugging）" class="headerlink" title="调试（Debugging）"></a>调试（Debugging）</h2><ul>
+<li><p>Python debugger(pdb)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ python -m pdb my_script.py</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>debugger在脚本第⼀⾏指令处停⽌执⾏</li>
+<li>可以通过<code>pdb</code>模式接着查看变量信息</li>
+</ul>
+</li>
+<li><p>脚本内部设置断点，在某些特定点查看变量信息和各种执⾏时信息</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pdb</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_bread</span>():</span></span><br><span class="line">    pdb.set_trace()</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;I don&#x27;t have time&quot;</span></span><br><span class="line">print(make_bread())</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>运⾏时进⼊debugger模式</li>
+<li>命令列表<ul>
+<li>c: 继续执⾏</li>
+<li>w: 显⽰当前正在执⾏的代码⾏的上下⽂信息</li>
+<li>a: 打印当前函数的参数列表</li>
+<li>s: 执⾏当前代码⾏，并停在第⼀个能停的地⽅（相当于单步进⼊）</li>
+<li>n: 继续执⾏到当前函数的下⼀⾏，或者当前⾏直接返回（单步跳过）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="生成器（Generators）"><a href="#生成器（Generators）" class="headerlink" title="生成器（Generators）"></a>生成器（Generators）</h2><ul>
+<li><p>迭代器（iterators）</p>
+<ul>
+<li>可以遍历⼀个容器（特别是列表）对象</li>
+<li>任意定义了<code>__next__</code>方法的对象</li>
+</ul>
+</li>
+<li><p>可迭代对象（Iterable）：Python 中任意的对象，只要定义可以返回⼀个迭代器的<code>__iter__</code>⽅法，或支持下标索引的<code>__getitem__</code>方法</p>
+</li>
+<li><p>迭代（Iteration）：从某地方取出一个元素的过程</p>
+</li>
+<li><p>生成器：只能对其迭代一次的迭代器</p>
+<ul>
+<li><p>运行时生成值</p>
+</li>
+<li><p>通过遍历使用</p>
+<ul>
+<li><p><code>for</code>循环</p>
+</li>
+<li><p>将生成器传递给任意可迭代的函数和结构</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">generator_function</span>():</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    <span class="keyword">yield</span> i</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> generator_function():</span><br><span class="line">    print(item)  <span class="comment"># 最终打印出数字0-9</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>应用场景：不想同⼀时间将所有计算出来的⼤量结果分配到内存</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 计算斐波那契数列</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fibon</span>(<span class="params">n</span>):</span></span><br><span class="line">	a = b = <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">        <span class="keyword">yield</span> a</span><br><span class="line">        a, b = b, a + b</span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> fibon(<span class="number">1000000</span>):</span><br><span class="line">    print(x)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可迭代对象不一定是迭代器——⽀持迭代，但不能直接对其进⾏迭代操作</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">my_string = <span class="string">&quot;Yasoob&quot;</span></span><br><span class="line"><span class="built_in">next</span>(my_string) <span class="comment"># 内置函数，用于获取⼀个序列的下⼀个元素</span></span><br><span class="line">&gt;&gt;&gt;Output: Traceback (most recent call last): File <span class="string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt; TypeError: <span class="built_in">str</span> <span class="built_in">object</span> <span class="keyword">is</span> <span class="keyword">not</span> an iterator</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>iter()</code>：根据⼀个可迭代对象返回⼀个迭代器对象</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Map，Filter-和-Reduce"><a href="#Map，Filter-和-Reduce" class="headerlink" title="Map，Filter 和 Reduce"></a><strong>Map</strong>，<strong>Filter</strong> 和 <strong>Reduce</strong></h2><ul>
+<li><p><code>Map</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">map</span>(function_to_apply, list_of_inputs)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将⼀个函数映射到⼀个输⼊列表的所有元素上</p>
+</li>
+<li><p>适用于“需要把列表中所有元素⼀个个地传递给⼀个函数”甚至一组函数的情况</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">multiply</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> (x*x) </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span>(<span class="params">x</span>):</span> </span><br><span class="line">    <span class="keyword">return</span> (x+x)</span><br><span class="line">funcs = [multiply, add]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    value = <span class="built_in">map</span>(<span class="keyword">lambda</span> x: x(i), funcs)</span><br><span class="line">    print(<span class="built_in">list</span>(value))  <span class="comment"># 返回迭代器</span></span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<ul>
+<li><code>Filter</code></li>
+</ul>
+<ul>
+<li><p>过滤列表中的元素，返回⼀个由所有符合要求的元素所构成的列表——即函数映射到该元素时返回值为True</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">number_list = <span class="built_in">range</span>(<span class="number">-5</span>, <span class="number">5</span>)</span><br><span class="line">less_than_zero = <span class="built_in">filter</span>(<span class="keyword">lambda</span> x: x &lt; <span class="number">0</span>, number_list)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<ul>
+<li><p><code>Reduce</code></p>
+<ul>
+<li><p>要对⼀个列表进⾏⼀些计算并返回结果</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 计算阶乘</span></span><br><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> reduce</span><br><span class="line">product = reduce( (<span class="keyword">lambda</span> x, y: x * y), [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>] )</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="set-数据结构"><a href="#set-数据结构" class="headerlink" title="set 数据结构"></a>set 数据结构</h2><ul>
+<li><p>不包含重复的值</p>
+</li>
+<li><p>两个结合的交集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">input_set1.intersection(input_set2)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>两个集合的差集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">input_set1.difference(input_set2)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="三元运算符"><a href="#三元运算符" class="headerlink" title="三元运算符"></a>三元运算符</h2><ul>
+<li><p>伪代码：condition_is_true if condition else condition_is_false </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">is_fat = <span class="literal">True</span></span><br><span class="line">state = <span class="string">&quot;fat&quot;</span> <span class="keyword">if</span> is_fat <span class="keyword">else</span> <span class="string">&quot;not fat&quot;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>简单的⼀⾏快速判断</p>
+</li>
+</ul>
+<h2 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h2><h3 id="前述"><a href="#前述" class="headerlink" title="前述"></a>前述</h3><ul>
+<li><p>函数赋值给一个变量</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hi</span>(<span class="params">name=<span class="string">&quot;yasoob&quot;</span></span>):</span></span><br><span class="line">	<span class="keyword">return</span> <span class="string">&quot;hi &quot;</span> + name</span><br><span class="line">greet = hi</span><br><span class="line">print(greet())</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>函数嵌套函数</p>
+</li>
+<li><p>函数中返回函数——一个函数作为变量被返回</p>
+</li>
+<li><p>函数作为参数传递给另一个函数</p>
+</li>
+</ul>
+<h3 id="装饰器-1"><a href="#装饰器-1" class="headerlink" title="装饰器"></a>装饰器</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 原理</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a_new_decorator</span>(<span class="params">a_func</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wrapTheFunction</span>():</span></span><br><span class="line">    print(<span class="string">&quot;I am doing some boring work before executing a_func()&quot;</span>)</span><br><span class="line">        a_func()</span><br><span class="line">        print(<span class="string">&quot;I am doing some boring work after executing a_func()&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> wrapTheFunction</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a_function_requiring_decoration</span>():</span></span><br><span class="line">    print(<span class="string">&quot;I am the function which needs some decoration to remove my foul smell&quot;</span>)</span><br><span class="line">a_function_requiring_decoration()</span><br><span class="line">a_function_requiring_decoration = a_new_decorator(a_function_requiring_decoration) </span><br><span class="line"><span class="comment">#now a_function_requiring_decoration is wrapped by wra</span></span><br><span class="line">a_function_requiring_decoration()</span><br><span class="line"><span class="comment">##now a_function_requiring_decoration is wrapped by wrapTheFunction()</span></span><br><span class="line"><span class="comment"># I am the function which needs some decoration to remove my foul smell </span></span><br><span class="line"><span class="comment"># I am doing some boring work after executing a_func()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#使用@：</span></span><br><span class="line"><span class="meta">@a_new_decorator</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a_function_requiring_decoration</span>():</span></span><br><span class="line">    print(<span class="string">&quot;I am the function which needs some decoration to &quot;</span> <span class="string">&quot;remove my foul smell&quot;</span>)</span><br><span class="line">a_function_requiring_decoration()</span><br><span class="line"><span class="comment">#outputs: I am doing some boring work before executing a_func() </span></span><br><span class="line"><span class="comment"># I am the function which needs some decoration to remove my foul smell </span></span><br><span class="line"><span class="comment"># I am doing some boring work after executing a_func()</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>但@重写了函数的名字和注释⽂档，即<code>a_function_requiring_decoration.__name__</code>为<code>wrapTheFunction</code>——<code>@wraps</code>接受⼀个函数进⾏装饰，并具有复制函数名称、注释⽂档、参数列表等功能</p>
+</li>
+<li><pre><code class="python">from functools import wraps
+def a_new_decorator(a_func):
+    @wraps(a_func)
+    ...
+@a_new_decorator
+def a_function_requiring_decoration():
+    pass
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* 蓝本规范</span><br><span class="line"></span><br><span class="line">  ```python</span><br><span class="line">  <span class="keyword">from</span> functools <span class="keyword">import</span> wraps</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">decorator_name</span>(<span class="params">f</span>):</span></span><br><span class="line"><span class="meta">      @wraps(f)</span></span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">decorated</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">          <span class="keyword">if</span> <span class="keyword">not</span> can_run:</span><br><span class="line">              <span class="keyword">return</span> <span class="string">&quot;Function will not run&quot;</span></span><br><span class="line">      <span class="keyword">return</span> decorated</span><br><span class="line">  </span><br><span class="line"><span class="meta">  @decorator_name</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">func</span>():</span></span><br><span class="line">      <span class="keyword">return</span>(<span class="string">&quot;Function is running&quot;</span>)</span><br><span class="line">  can_run = <span class="literal">True</span></span><br><span class="line">  func()</span><br></pre></td></tr></table></figure></code></pre>
+</li>
+<li><p>应用</p>
+<ul>
+<li><p>授权：⽤于Flask和Django web框架</p>
+</li>
+<li><p>日志</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> wraps</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logit</span>(<span class="params">logfile=<span class="string">&#x27;out.log&#x27;</span></span>):</span></span><br><span class="line"><span class="meta">    @wraps(func)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">with_logging</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">        log_string = func.__name__ + <span class="string">&quot; was called&quot;</span></span><br><span class="line">        print(func.__name__ + <span class="string">&quot; was called&quot;</span>)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(logfile, <span class="string">&#x27;a&#x27;</span>) <span class="keyword">as</span> opened_file:</span><br><span class="line">            opened_file.write(log_string + <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">        <span class="keyword">return</span> func(*args, **kwargs)</span><br><span class="line">    <span class="keyword">return</span> with_logging</span><br><span class="line"><span class="meta">@logit(logfile=&#x27;func2.log&#x27;)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">addition_func</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;Do some math.&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> x + x</span><br><span class="line">result = addition_func(<span class="number">4</span>) <span class="comment"># Output: addition_func was called  func2.log 的⽂件出现，并记录上⾯的字符串</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>带参数的装饰器</p>
+<ul>
+<li>具体参见上面的日志应用场景</li>
+</ul>
+</li>
+</ul>
+<h2 id="Global-和-Return"><a href="#Global-和-Return" class="headerlink" title="Global 和 Return"></a>Global 和 Return</h2><ul>
+<li>global变量：在函数以外的区域都能访问</li>
+<li>返回多个变量</li>
+</ul>
+<h2 id="slots"><a href="#slots" class="headerlink" title="slots"></a><strong>slots</strong></h2><ul>
+<li><p>默认情况下Python⽤⼀个字典来保存⼀个对象的实例属性</p>
+</li>
+<li><p>对于有着已知属性的⼩类来说，这个字典浪费了许多内存——最好直接分配⼀个固定量的内存来保存所有的属性，即使用<code>__slot__</code>给一个固定集合的属性分配空间</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 不使⽤ __slots__</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>(<span class="params"><span class="built_in">object</span></span>):</span> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, name, identifier</span>):</span> </span><br><span class="line">        self.name = name </span><br><span class="line">        self.identifier = identifier </span><br><span class="line">        self.set_up()</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="comment"># 使⽤ __slots__，为内存减轻负担</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    __slots__ = [<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;identifier&#x27;</span>]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, name, identifier</span>):</span> </span><br><span class="line">        self.name = name </span><br><span class="line">        self.identifier = identifier </span><br><span class="line">        self.set_up()</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\17\Python进阶（下）\" rel="bookmark">Python进阶（下）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Intermediate Python》阅读笔记 下半部分</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\19\Django实践_1\" rel="bookmark">Django实践(1)</a></div>
+        <div class="popular-posts-excerpt"><p><p>Django 框架</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\03\FlaskWeb开发-2\" rel="bookmark">FlaskWeb开发（2）Flask实例</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 用户认证、角色分配与资料编辑</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\30\FlaskWeb开发-1\" rel="bookmark">FlaskWeb开发（1）Flask介绍</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第一部分 Flask简介</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\06\FlaskWeb开发-3\" rel="bookmark">FlaskWeb开发（3）Flask实例</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 博客引擎、关注和评论</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2020/11/16/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8A%EF%BC%89/" title="Python进阶（上）">https://thomas-li-sjtu.github.io/2020/11/16/Python进阶（上）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/%E8%BF%9B%E9%98%B6%E8%AF%AD%E6%B3%95/" rel="tag"><i class="fa fa-tag"></i> 进阶语法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/13/Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning/" rel="prev" title="Interpretable Probabilistic Password Strength Meters via Deep Learning">
+      <i class="fa fa-chevron-left"></i> Interpretable Probabilistic Password Strength Meters via Deep Learning
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/17/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8B%EF%BC%89/" rel="next" title="Python进阶（下）">
+      Python进阶（下） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#args-%E5%92%8C-kwargs"><span class="nav-number">1.</span> <span class="nav-text">args 和 ***kwargs**</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#args%E7%9A%84%E7%94%A8%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">*args的用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kwargs%E7%9A%84%E7%94%A8%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">**kwargs的用法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%EF%BC%88Debugging%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">调试（Debugging）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%88Generators%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">生成器（Generators）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Map%EF%BC%8CFilter-%E5%92%8C-Reduce"><span class="nav-number">4.</span> <span class="nav-text">Map，Filter 和 Reduce</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text">set 数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E5%85%83%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">6.</span> <span class="nav-text">三元运算符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="nav-number">7.</span> <span class="nav-text">装饰器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%BF%B0"><span class="nav-number">7.1.</span> <span class="nav-text">前述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A3%85%E9%A5%B0%E5%99%A8-1"><span class="nav-number">7.2.</span> <span class="nav-text">装饰器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Global-%E5%92%8C-Return"><span class="nav-number">8.</span> <span class="nav-text">Global 和 Return</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#slots"><span class="nav-number">9.</span> <span class="nav-text">slots</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

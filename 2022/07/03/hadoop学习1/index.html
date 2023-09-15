@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="HDFS 概述、CURD、NameNode与DataNode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HDFS">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="HDFS 概述、CURD、NameNode与DataNode">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220703180024128.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220703194111577.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220703202034491.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704152108470.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704152719644.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704161630126.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704162136582.png">
+<meta property="article:published_time" content="2022-07-03T07:18:29.000Z">
+<meta property="article:modified_time" content="2022-08-07T13:19:46.997Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220703180024128.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>HDFS | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HDFS
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-03 15:18:29" itemprop="dateCreated datePublished" datetime="2022-07-03T15:18:29+08:00">2022-07-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/" itemprop="url" rel="index"><span itemprop="name">大数据</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>17k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>16 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> HDFS 概述、CURD、NameNode与DataNode</p>
+<a id="more"></a>
+
+<ul>
+<li>Hadoop四高：<ul>
+<li>高可靠性：维护多个数据副本</li>
+<li>高扩展性：集群间分配任务数据</li>
+<li>高效性：集群并行工作，加快任务处理速度</li>
+<li>高容错性：自动将失败的任务重新分配</li>
+</ul>
+</li>
+<li>1.x、2.x、3.x的Hadoop组成</li>
+</ul>
+<img src="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220703180024128.png" alt="image-20220703180024128" style="zoom:67%;">
+
+<ul>
+<li><p>端口号：</p>
+<img src="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220703194111577.png" alt="image-20220703194111577" style="zoom:67%;">
+
+</li>
+</ul>
+<h2 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS"></a>HDFS</h2><ul>
+<li><p>HDFS（Hadoop Distributed File System）是Hadoop使用离线的数据存储文件系统，容错，可扩展，适合一次写入，多次读出的场景——文件经过创建、写入和关闭后，不需要更改</p>
+</li>
+<li><p>优缺点：</p>
+<ul>
+<li>高容错、适合处理大数据、构建在廉价机器上</li>
+<li>不适合低延时数据访问、不适合存储大量的小文件（占用NameNode内存来存储文件目录和块信息）、不支持并发写入和文件随机修改（不允许多个线程同时写，只支持数据追加）</li>
+</ul>
+<img src="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220703202034491.png" alt="image-20220703202034491" style="zoom:67%;">
+</li>
+<li><p>NameNode（nn）：管理文件系统元数据（文件名、文件目录结构、每个文件的块列表和块所在的DataNode）；DataNode：存储实际数据；客户端和NameNode交互获取文件元数据，和DataNode交互执行实际的文件I/O</p>
+</li>
+<li><p>Hadoop支持类似shell的命令，直接与HDFS交互</p>
+</li>
+<li><p>NameNode和DataNode内置web服务器，以检查集群的当前状态</p>
+</li>
+<li><p>一些特性：</p>
+<ul>
+<li>HDFS可以设置文件权限（类似于Linux），启动NameNode的用户被视为HDFS超级用户</li>
+<li>safemode：一种用于维护的管理员状态。启动过程NameNode从fsimage加载文件系统状态并编辑日志文件，等待datanode报告它们的块，在此期间NameNode保持safemode（HDFS集群的只读模式），不允许对文件系统或块进行任何修改</li>
+<li>fsck：一个程序，用于诊断文件系统的状况，查找丢失的文件或块</li>
+<li>Balancer：数据分布不均匀时，实现集群均衡</li>
+<li>Secondary NameNode（2nn）：<ul>
+<li>NameNode将对文件系统的修改存储为一个log，附加到文件edit中。NameNode启动时，从fsimage读取HDFS的状态，应用edit文件的log，最后将新的HDFS状态写入fsimage，以一个空的editlog开始正常运行</li>
+<li>Secondary NameNode定期合并fsimage和edit log，将edit文件的大小控制在一定的范围</li>
+<li>参数：<ul>
+<li><code>dfs.namenode.checkpoint.period</code>：连续两个检查点之间的延迟时间，默认为1小时</li>
+<li><code>dfs.namenode.checkpoint.txns</code>：未建立checkpoint的事务的数量，如果达到这个数目，则强制建立检查点，默认为一百万</li>
+</ul>
+</li>
+<li>Stores the latest checkpoint in a directory which is structured the same way as the primary NameNode’s directory. The check pointed image is always ready to be read by the primary NameNode if necessary</li>
+<li>不是NameNode的热备，NameNode挂掉时不能马上替换NameNode提供服务</li>
+</ul>
+</li>
+<li>Checkpoint node：<ul>
+<li>NameNode使用两个文件持久化它的namespace：fsimage（namespace的最新checkpoint）、edits（自checkpoint以来对namespace的更改日志）</li>
+<li>Checkpoint node定期创建namespace的checkpoint——从active NameNode下载fsimage和edits，合并后将新fsimage发给active NameNode——Checkpoint node通常和NameNode所在机器不同</li>
+</ul>
+</li>
+<li>Backup node：Checkpoint node的扩展，与活动的NameNode命名空间状态同步。只能有一个Backup节点注册到NameNode</li>
+</ul>
+</li>
+<li><p>HDFS中文件分块存储，可通过参数<code>dfs.blocksize</code>修改，文件块的默认大小：128M（2.x和3.x），64M（1.x）</p>
+<ul>
+<li>寻址时间约为10ms</li>
+<li>磁盘传输速率普遍为100MB/s</li>
+<li>寻址时间为传输时间的1%，则为最佳状态——1s * 100MB/s = 100 MB</li>
+<li>块太小：增加寻址时间</li>
+<li>块太大：传输数据时间明显大于寻址（定位块的开始位置）时间，程序处理数据时会非常慢</li>
+<li>HDFS块的大小设置主要取决于磁盘传输速率</li>
+</ul>
+</li>
+</ul>
+<h3 id="Shell操作"><a href="#Shell操作" class="headerlink" title="Shell操作"></a>Shell操作</h3><ul>
+<li><p><code>hadoop fs + 具体命令</code>等同于<code>hdfs dfs + 具体命令</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">hadoop fs</span><br><span class="line">Usage: hadoop fs [generic options]</span><br><span class="line">        [-appendToFile &lt;localsrc&gt; ... &lt;dst&gt;]</span><br><span class="line">        [-cat [-ignoreCrc] &lt;src&gt; ...]</span><br><span class="line">        [-checksum &lt;src&gt; ...]</span><br><span class="line">        [-chgrp [-R] GROUP PATH...]</span><br><span class="line">        [-chmod [-R] &lt;MODE[,MODE]... | OCTALMODE&gt; PATH...]</span><br><span class="line">        [-chown [-R] [OWNER][:[GROUP]] PATH...]</span><br><span class="line">        [-copyFromLocal [-f] [-p] [-l] &lt;localsrc&gt; ... &lt;dst&gt;]        </span><br><span class="line">        [-copyToLocal [-p] [-ignoreCrc] [-crc] &lt;src&gt; ... &lt;localdst&gt;]</span><br><span class="line">        [-count [-q] [-h] &lt;path&gt; ...]</span><br><span class="line">        [-cp [-f] [-p | -p[topax]] &lt;src&gt; ... &lt;dst&gt;]</span><br><span class="line">        [-createSnapshot &lt;snapshotDir&gt; [&lt;snapshotName&gt;]]</span><br><span class="line">        [-deleteSnapshot &lt;snapshotDir&gt; &lt;snapshotName&gt;]</span><br><span class="line">        [-df [-h] [&lt;path&gt; ...]]</span><br><span class="line">        [-du [-s] [-h] &lt;path&gt; ...]</span><br><span class="line">        [-expunge]</span><br><span class="line">        [-find &lt;path&gt; ... &lt;expression&gt; ...]</span><br><span class="line">        [-get [-p] [-ignoreCrc] [-crc] &lt;src&gt; ... &lt;localdst&gt;]        </span><br><span class="line">        [-getfacl [-R] &lt;path&gt;]</span><br><span class="line">        [-getfattr [-R] &#123;-n name | -d&#125; [-e en] &lt;path&gt;]</span><br><span class="line">        [-getmerge [-nl] &lt;src&gt; &lt;localdst&gt;]</span><br><span class="line">        [-<span class="built_in">help</span> [cmd ...]]</span><br><span class="line">        [-ls [-d] [-h] [-R] [&lt;path&gt; ...]]</span><br><span class="line">        [-mkdir [-p] &lt;path&gt; ...]</span><br><span class="line">        [-moveFromLocal &lt;localsrc&gt; ... &lt;dst&gt;]</span><br><span class="line">        [-moveToLocal &lt;src&gt; &lt;localdst&gt;]</span><br><span class="line">        [-mv &lt;src&gt; ... &lt;dst&gt;]</span><br><span class="line">        [-put [-f] [-p] [-l] &lt;localsrc&gt; ... &lt;dst&gt;]</span><br><span class="line">        [-renameSnapshot &lt;snapshotDir&gt; &lt;oldName&gt; &lt;newName&gt;]</span><br><span class="line">        [-rm [-f] [-r|-R] [-skipTrash] &lt;src&gt; ...]</span><br><span class="line">        [-rmdir [--ignore-fail-on-non-empty] &lt;dir&gt; ...]</span><br><span class="line">        [-setfacl [-R] [&#123;-b|-k&#125; &#123;-m|-x &lt;acl_spec&gt;&#125; &lt;path&gt;]|[--<span class="built_in">set</span> &lt;acl_spec&gt; &lt;path&gt;]]</span><br><span class="line">        [-setfattr &#123;-n name [-v value] | -x name&#125; &lt;path&gt;]</span><br><span class="line">        [-setrep [-R] [-w] &lt;rep&gt; &lt;path&gt; ...]</span><br><span class="line">        [-<span class="built_in">stat</span> [format] &lt;path&gt; ...]</span><br><span class="line">        [-tail [-f] &lt;file&gt;]</span><br><span class="line">        [-<span class="built_in">test</span> -[defsz] &lt;path&gt;]</span><br><span class="line">        [-text [-ignoreCrc] &lt;src&gt; ...]</span><br><span class="line">        [-touchz &lt;path&gt; ...]</span><br><span class="line">        [-truncate [-w] &lt;length&gt; &lt;path&gt; ...]</span><br><span class="line">        [-usage [cmd ...]]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看某个命令的参数：<code>hadoop fs -help 命令</code></p>
+</li>
+<li><p>常用命令：</p>
+<ul>
+<li><p>上传</p>
+<ul>
+<li>从本地剪切到HDFS：<code> hadoop fs -moveFromLocal ./A.txt  /test/A.txt</code></li>
+<li>从本地拷贝到HDFS：<code> hadoop fs -copyFromLocal A.txt  /test</code>；<code> hadoop fs -put A.txt  /test</code></li>
+<li>追加文件A到HDFS中文件B末尾：<code>hadoop fs -appendToFile A.txt  /test/B.txt</code></li>
+</ul>
+</li>
+<li><p>下载</p>
+<ul>
+<li>HDFS拷贝到本地：<code>hadoop fs -copyToLocal  /test/A.txt ./</code>，<code>hadoop fs -get  /test/A.txt ./B.txt</code></li>
+</ul>
+</li>
+<li><p>直接操作</p>
+<ul>
+<li><p>显示目录： <code>hadoop fs -ls /test</code></p>
+</li>
+<li><p>显示文件内容：<code>hadoop fs -cat /test/A.txt</code></p>
+</li>
+<li><p>修改文件权限：（-chgrp、-chmod、-chown，和linux中用法一致）</p>
+</li>
+<li><p>创建路径test：<code>hadoop fs -mkdir /test</code></p>
+</li>
+<li><p>从HDFS的一个路径拷贝到 HDFS 的另一个路径：<code>-cp</code></p>
+</li>
+<li><p>HDFS 目录中移动文件：<code>-mv</code></p>
+</li>
+<li><p>显示一个文件的末尾 1kb 的数据：<code>-tail</code></p>
+</li>
+<li><p>删除文件或文件夹：<code>-rm</code>，递归删除则<code>-rm -r</code></p>
+</li>
+<li><p>统计文件夹的大小信息：<code>-du</code>（1746为文件大小）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$hadoop</span> fs -du -s /hadoop </span><br><span class="line">1746  /hadoop</span><br><span class="line"><span class="variable">$hadoop</span> fs -du /hadoop</span><br><span class="line">873  /hadoop/hello.txt</span><br><span class="line">873  /hadoop/hello2.txt</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置 HDFS 中文件的副本数量：<code>hadoop fs -setrep 10 /jinguo/shuguo.txt</code>——副本数只记录在NameNode的元数据中，是否真的有这么多副本，还需要考虑DataNode的数量</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="API操作（CRUD）"><a href="#API操作（CRUD）" class="headerlink" title="API操作（CRUD）"></a>API操作（CRUD）</h3><ul>
+<li><p>客户端：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.hadoop.conf.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FileSystem;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.net.URI;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SysUtil</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> FileSystem <span class="title">getFileSystem</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 设置HDFS的URL和端口号</span></span><br><span class="line">            String HDFSURL = <span class="string">&quot;hdfs://localhost:9000&quot;</span>;</span><br><span class="line">            <span class="comment">// HDFS的配置信息</span></span><br><span class="line">            Configuration configuration = <span class="keyword">new</span> Configuration();</span><br><span class="line">            <span class="comment">// 设置副本数为 1</span></span><br><span class="line">            configuration.set(<span class="string">&quot;dfs.replication&quot;</span>, <span class="string">&quot;1&quot;</span>);</span><br><span class="line">            <span class="comment">// //获取文件系统</span></span><br><span class="line">            FileSystem fileSystem = FileSystem.get(URI.create(HDFSURL), configuration);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> fileSystem;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>上传：<code>FileSystem.get(URI.create(HDFSURL), configuration).copyFromLocalFile(false, true, localPath, remotePath);</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FSDataInputStream;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FSDataOutputStream;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FileSystem;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.Path;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.FileInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HdfsUpload</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> FileSystem fileSystem = SysUtil.getFileSystem();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 判断文件是否已存在</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">exist</span><span class="params">(String file)</span> </span>&#123;</span><br><span class="line">        Path remotePath = <span class="keyword">new</span> Path(file);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> fileSystem.exists(remotePath);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 复制文件，从本地复制到HDFS中</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">uploadToHdfs</span><span class="params">(String localPathStr, String hdfsPathStr)</span> </span>&#123;</span><br><span class="line">        Path localPath = <span class="keyword">new</span> Path(localPathStr);</span><br><span class="line">        Path remotePath = <span class="keyword">new</span> Path(hdfsPathStr);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 第一个参数表示是否删除源文件，第二个参数表示是否覆盖</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            fileSystem.copyFromLocalFile(<span class="keyword">false</span>, <span class="keyword">true</span>, localPath, remotePath);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 追加文件，从本地追加到 HDFS 的文件中</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">appendToFile</span><span class="params">(String localPathStr, String hdfsPathStr)</span> </span>&#123;</span><br><span class="line">        Path hdfsPath = <span class="keyword">new</span> Path(hdfsPathStr);</span><br><span class="line">        <span class="keyword">try</span> (FileInputStream inputStream = <span class="keyword">new</span> FileInputStream(localPathStr)) &#123;</span><br><span class="line">            FSDataOutputStream outputStream = fileSystem.append(hdfsPath);</span><br><span class="line">            <span class="keyword">byte</span>[] data = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="keyword">int</span> read = -<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">while</span> ((read = inputStream.read(data)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                outputStream.write(data, <span class="number">0</span>, read);</span><br><span class="line">            &#125;</span><br><span class="line">            outputStream.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String localPathStr = <span class="string">&quot;src/hello.txt&quot;</span>;</span><br><span class="line">        String remotePathStr = <span class="string">&quot;/hadoop/upload.txt&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">boolean</span> override = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">boolean</span> isExist = exist(remotePathStr);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!isExist) &#123;</span><br><span class="line">            <span class="comment">// 文件不存在，上传文件</span></span><br><span class="line">            uploadToHdfs(localPathStr, remotePathStr);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (override) &#123;</span><br><span class="line">            <span class="comment">// 覆盖文件</span></span><br><span class="line">            uploadToHdfs(localPathStr, remotePathStr);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 追加</span></span><br><span class="line">            appendToFile(localPathStr, remotePathStr);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">assert</span> fileSystem != <span class="keyword">null</span>;</span><br><span class="line">        fileSystem.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>参数的优先级（比如，参数”dfs.replication”）：<ol>
+<li>客户端代码中设置的值</li>
+<li>项目resources目录下配置文件（resources/hdfs-site.xml）——可以将hdfs-site.xml拷贝到resources目录下，并修改相应参数</li>
+<li>服务器的自定义配置（hdfs-site.xml）</li>
+<li>服务器的默认配置（hdfs-default.xml）</li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p>创建：<code>fileSystem.create(path)</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取文件系统</span></span><br><span class="line">      FileSystem fileSystem = SysUtil.getFileSystem();</span><br><span class="line">  </span><br><span class="line">      <span class="comment">// 如果因为权限而无法写入，可以先修改权限 hadoop dfs -chmod 777 /hadoop</span></span><br><span class="line">      Path path = <span class="keyword">new</span> Path(<span class="string">&quot;/hadoop/create.txt&quot;</span>);</span><br><span class="line">      <span class="comment">// 获取输出流</span></span><br><span class="line">      <span class="keyword">assert</span> fileSystem != <span class="keyword">null</span>;</span><br><span class="line">      FSDataOutputStream outputStream = fileSystem.create(path);</span><br><span class="line">      <span class="comment">// 写入一些内容</span></span><br><span class="line">      outputStream.writeUTF(<span class="string">&quot;Hello HDFS！&quot;</span>);</span><br><span class="line">      outputStream.close();</span><br><span class="line">  </span><br><span class="line">      fileSystem.close();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>下载：<code>fileSystem.copyToLocalFile(false, remotePath, localPath, true);</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FileSystem;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.Path;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.File;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.text.SimpleDateFormat;</span><br><span class="line"><span class="keyword">import</span> java.util.Date;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HdfsDownload</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> FileSystem fileSystem = SysUtil.getFileSystem();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">download</span><span class="params">(String remotePathStr, String prefix, String suffix)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String localFileStr = prefix + <span class="string">&quot;.&quot;</span> + suffix;</span><br><span class="line">        File localFile = <span class="keyword">new</span> File(localFileStr);</span><br><span class="line">        <span class="keyword">while</span> (localFile.exists()) &#123; <span class="comment">// 如果本地文件已存在，重命名（如果下面的参数改为true，则不需要这一步）</span></span><br><span class="line">            SimpleDateFormat dateFormat = <span class="keyword">new</span> SimpleDateFormat(<span class="string">&quot;yyyyMMddHHmmssS&quot;</span>);</span><br><span class="line">            String tempLocalFileStr = prefix + <span class="string">&quot;-&quot;</span> + dateFormat.format(<span class="keyword">new</span> Date()) + <span class="string">&quot;.&quot;</span> + suffix; <span class="comment">// 新的文件名</span></span><br><span class="line">            localFile = <span class="keyword">new</span> File(tempLocalFileStr);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Path remotePath = <span class="keyword">new</span> Path(remotePathStr);</span><br><span class="line">        Path localPath = <span class="keyword">new</span> Path(localFile.getName());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 复制到本地，第一个参数：是否删除原文件，第四个参数：是否使用 RawLocalFileSystem，校验文件</span></span><br><span class="line">        fileSystem.copyToLocalFile(<span class="keyword">false</span>, remotePath, localPath, <span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String remotePathStr = <span class="string">&quot;/hadoop/upload.txt&quot;</span>;</span><br><span class="line"></span><br><span class="line">        download(remotePathStr, <span class="string">&quot;copyFile&quot;</span>, <span class="string">&quot;txt&quot;</span>);</span><br><span class="line"></span><br><span class="line">        fileSystem.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>更名和移动：<code>fs.rename(new Path(&quot;/A/B/C.txt&quot;), new Path(&quot;/A/E/F.txt&quot;));</code></p>
+</li>
+<li><p>删除：<code>fileSystem.delete(remotePath, recursive)</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(String remotePathStr, <span class="keyword">boolean</span> recursive)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    Path remotePath = <span class="keyword">new</span> Path(remotePathStr);</span><br><span class="line">    FileSystem fileSystem = SysUtil.getFileSystem();</span><br><span class="line">    <span class="keyword">boolean</span> result = fileSystem.delete(remotePath, recursive);</span><br><span class="line">    <span class="keyword">if</span> (result) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;删除成功！&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;删除失败！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    fileSystem.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看文件内容</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FSDataInputStream;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FileSystem;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.Path;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.BufferedReader;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStreamReader;</span><br><span class="line"></span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">cat</span><span class="params">(String remotePathStr)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> FileSystem fileSystem = SysUtil.getFileSystem();</span><br><span class="line">        </span><br><span class="line">        Path remotePath = <span class="keyword">new</span> Path(remotePathStr);</span><br><span class="line">        FSDataInputStream inputStream = fileSystem.open(remotePath);</span><br><span class="line">        BufferedReader reader = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(inputStream));</span><br><span class="line"></span><br><span class="line">        String line = <span class="keyword">null</span>;</span><br><span class="line">        StringBuffer buffer = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">        <span class="keyword">while</span> ((line = reader.readLine()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            buffer.append(line + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(buffer.toString());</span><br><span class="line">        fileSystem.close();</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//...</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看文件信息（文件名、权限、长度、块信息）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.FileSystem;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.LocatedFileStatus;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.Path;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.RemoteIterator;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.BlockLocation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">listFiles</span><span class="params">(String remotePathStr, <span class="keyword">boolean</span> recursive)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        Path remotePath = <span class="keyword">new</span> Path(remotePathStr);</span><br><span class="line">        FileSystem fileSystem = SysUtil.getFileSystem();</span><br><span class="line"></span><br><span class="line">        RemoteIterator&lt;LocatedFileStatus&gt; iterator = fileSystem.listFiles(remotePath, recursive);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">            LocatedFileStatus fileStatus = iterator.next();</span><br><span class="line"></span><br><span class="line">            System.out.println(<span class="string">&quot;===&quot;</span> + fileStatus.getPath() + <span class="string">&quot;====&quot;</span>);</span><br><span class="line">            System.out.println(fileStatus.getPermission());</span><br><span class="line">            System.out.println(fileStatus.getOwner());</span><br><span class="line">            System.out.println(fileStatus.getGroup());</span><br><span class="line">            System.out.println(fileStatus.getLen());</span><br><span class="line">            System.out.println(fileStatus.getModificationTime());</span><br><span class="line">            System.out.println(fileStatus.getReplication());</span><br><span class="line">            System.out.println(fileStatus.getBlockSize());</span><br><span class="line">            System.out.println(fileStatus.getPath().getName());</span><br><span class="line">            <span class="comment">// 获取块信息</span></span><br><span class="line">            BlockLocation[] blockLocations = fileStatus.getBlockLocations();</span><br><span class="line">            System.out.println(Arrays.toString(blockLocations));</span><br><span class="line">        &#125;</span><br><span class="line">        fileSystem.close();</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//...</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="HDFS读写流程"><a href="#HDFS读写流程" class="headerlink" title="HDFS读写流程"></a>HDFS读写流程</h3><ul>
+<li><p>写入：</p>
+<ul>
+<li>客户端通过Distributed FileSystem（<code>org.apache.hadoop.fs.FileSystem</code>）向NameNode请求上传文件，NameNode检查父目录、目标文件是否存在，以及客户端权限</li>
+<li>NameNode返回可以上传</li>
+<li>客户端询问第一个Block上传的DataNode</li>
+<li>NameNode返回多个DataNode（dn1，dn2，dn3）</li>
+<li>客户端请求dn1，dn1收到请求继续调用dn2，dn2调用dn3，建立通信管道</li>
+<li>dn1、dn2、dn3逐级应答客户端</li>
+<li>客户端向dn1上传第一个Block（从磁盘读取后放入本地的一个缓冲队列）， 以Packet为单位（packet以chunk为单位，一个chunk 512字节+4字节校验），dn1 收到一个Packet后，一边向磁盘写一边传给dn2，dn2传给dn3；dn1每收到一个packet就应答一次，客户端将应答放入应答队列</li>
+</ul>
+</li>
+<li><p>NameNode选择最近距离的DataNode节点接收数据：</p>
+<img src="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704152108470.png" alt="image-20220704152108470" style="zoom:67%;">
+
+<ul>
+<li><p>节点距离：两个节点到达最近的共同祖先的距离<strong>总和</strong></p>
+</li>
+<li><p>上面的结构中，一个机架包含三台服务器，一个机架对应一个交换机，一个集群就是一个机房</p>
+</li>
+<li><p>副本节点选择：（机架感知）</p>
+<ul>
+<li><p>正常情况下，如果有三个副本，HDFS会设置副本为：本地节点、其他机架的一个节点、其他机架的一个节点（和第二个副本的机架相同）</p>
+</li>
+<li><p>本地：向哪个服务器提交，这个服务器就是本地节点</p>
+<img src="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704152719644.png" alt="image-20220704152719644" style="zoom: 80%;">
+</li>
+</ul>
+</li>
+<li><p>源码：（idea中ctrl n查找类<code>BlockPlacementPolicyDefault</code>的<code>chooseTargetInOrder</code>）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Node <span class="title">chooseTargetInOrder</span><span class="params">(<span class="keyword">int</span> numOfReplicas,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   Node writer,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">final</span> Set&lt;Node&gt; excludedNodes,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">final</span> <span class="keyword">long</span> blocksize,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">final</span> <span class="keyword">int</span> maxNodesPerRack,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">final</span> List&lt;DatanodeStorageInfo&gt; results,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">final</span> <span class="keyword">boolean</span> avoidStaleNodes,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">final</span> <span class="keyword">boolean</span> newBlock,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   EnumMap&lt;StorageType, Integer&gt; storageTypes)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> NotEnoughReplicasException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> numOfResults = results.size();</span><br><span class="line">    <span class="keyword">if</span> (numOfResults == <span class="number">0</span>) &#123; <span class="comment">// 第一个副本，localstorage</span></span><br><span class="line">        DatanodeStorageInfo storageInfo = chooseLocalStorage(writer,</span><br><span class="line">                excludedNodes, blocksize, maxNodesPerRack, results, avoidStaleNodes,</span><br><span class="line">                storageTypes, <span class="keyword">true</span>);</span><br><span class="line">    </span><br><span class="line">        writer = (storageInfo != <span class="keyword">null</span>) ? storageInfo.getDatanodeDescriptor()</span><br><span class="line">                : <span class="keyword">null</span>;</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">if</span> (--numOfReplicas == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> writer;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> DatanodeDescriptor dn0 = results.get(<span class="number">0</span>).getDatanodeDescriptor();</span><br><span class="line">    <span class="keyword">if</span> (numOfResults &lt;= <span class="number">1</span>) &#123; <span class="comment">// 第二个副本，和dn0相比是远程的</span></span><br><span class="line">        chooseRemoteRack(<span class="number">1</span>, dn0, excludedNodes, blocksize, maxNodesPerRack,</span><br><span class="line">                results, avoidStaleNodes, storageTypes);</span><br><span class="line">        <span class="keyword">if</span> (--numOfReplicas == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> writer;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (numOfResults &lt;= <span class="number">2</span>) &#123; <span class="comment">// 第三个副本</span></span><br><span class="line">        <span class="keyword">final</span> DatanodeDescriptor dn1 = results.get(<span class="number">1</span>).getDatanodeDescriptor();</span><br><span class="line">        <span class="keyword">if</span> (clusterMap.isOnSameRack(dn0, dn1)) &#123; <span class="comment">// dn0和dn1如果在同一个机架</span></span><br><span class="line">            chooseRemoteRack(<span class="number">1</span>, dn0, excludedNodes, blocksize, maxNodesPerRack,</span><br><span class="line">                    results, avoidStaleNodes, storageTypes);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (newBlock) &#123; <span class="comment">// 和dn1在同一个机架</span></span><br><span class="line">            chooseLocalRack(dn1, excludedNodes, blocksize, maxNodesPerRack,</span><br><span class="line">                    results, avoidStaleNodes, storageTypes);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            chooseLocalRack(writer, excludedNodes, blocksize, maxNodesPerRack,</span><br><span class="line">                    results, avoidStaleNodes, storageTypes);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (--numOfReplicas == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> writer;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    chooseRandom(numOfReplicas, NodeBase.ROOT, excludedNodes, blocksize,</span><br><span class="line">            maxNodesPerRack, results, avoidStaleNodes, storageTypes);</span><br><span class="line">    <span class="keyword">return</span> writer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>读数据：</p>
+<ul>
+<li>客户端向NameNode请求下载文件</li>
+<li>NameNode查找元数据，找到文件块所在的DataNode地址，返回目标文件的元数据</li>
+<li>客户端创建FSDataInputSteam对象，挑选一台DataNode（就近原则，负载均衡问题）服务器，请求读取数据</li>
+<li>DataNode传输数据给客户端（从磁盘读取数据输入流，以Packet为单位做校验）——客户端串行读，先读出第一个block，再读第二个block，即使两个block不在同一个DataNode</li>
+<li>客户端以Packet为单位接收，先在本地缓存，然后写入目标文件</li>
+</ul>
+</li>
+</ul>
+<h3 id="NN和2NN"><a href="#NN和2NN" class="headerlink" title="NN和2NN"></a>NN和2NN</h3><ul>
+<li><p>NameNode的元数据在内存中，磁盘中有备份元数据FsImage。为了避免内存中元数据与FsImage同时更新带来的性能下降，使用Edits文件（只进行追加操作，效率高）——元数据有更新或者添加元数据时，修改内存中的元数据并追加日志到Edits。一旦NameNode断电，可以合并FsImage和Edits，得到最新的元数据</p>
+</li>
+<li><p>长时间添加日志到Edits中，会导致该文件过于庞大，元数据恢复时间长，因此定期合并FsImage和Edits——由Secondary Namenode负责</p>
+</li>
+<li><p>SecondaryNameNode每隔一小时执行一次；一分钟检查一次日志的操作次数，操作次数达到100w时，SecondaryNameNode执行一次（hdfs-default.xml）</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.checkpoint.period<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>3600s<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.checkpoint.txns<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line"> 	<span class="tag">&lt;<span class="name">value</span>&gt;</span>1000000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span>操作动作次数<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.checkpoint.check.period<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">value</span>&gt;</span>60s<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">description</span>&gt;</span> 1 分钟检查一次操作次数<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>工作机制：</p>
+<img src="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704161630126.png" alt="image-20220704161630126" style="zoom:67%;">
+
+<ul>
+<li>NameNode启动<ul>
+<li>第一次启动NameNode并格式化后，创建Fsimage和Edits文件，如果不是第一次，则加载Edits和Fsimage到内存合并</li>
+<li>客户端对元数据进行增删改</li>
+<li>NameNode记录操作日志，更新滚动日志</li>
+<li>NameNode在内存中对元数据进行修改</li>
+</ul>
+</li>
+<li>Secondary NameNode工作<ul>
+<li>Secondary NameNode询问NameNode 是否需要CheckPoint</li>
+<li>Secondary NameNode请求执行CheckPoint</li>
+<li>NameNode滚动正在写的 Edits 日志（此时，如果有新的客户端操作，则NameNode将其记录到edits_inprogress_002，这个不被2NN拷贝和持久化）</li>
+<li>滚动前的编辑日志和镜像文件拷贝到Secondary NameNode</li>
+<li>Secondary NameNode加载编辑日志和镜像文件到内存，并合并</li>
+<li>生成新的镜像文件fsimage.chkpoint</li>
+<li>拷贝fsimage.chkpoint到NameNode</li>
+<li>NameNode将fsimage.chkpoint重新命名成fsimage</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Fsimage和Edits解析</p>
+<img src="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/image-20220704162136582.png" alt="image-20220704162136582" style="zoom:67%;">
+
+<ul>
+<li><p>目录：</p>
+<ul>
+<li>fsimage：持久化的检查点</li>
+<li>edits：更新操作记录</li>
+<li>seen_txid：保存的是一个数字（最后一个edits_inprogress_的数字，比如上图就是1）</li>
+<li>VERSION：保存命名空间ID，以及集群ID（NameNode和DataNode的集群ID需要一致）</li>
+</ul>
+</li>
+<li><p>Fsimage查看：oiv，<code>hdfs oiv -p 文件类型 -i 镜像文件 -o 转换后文件输出路径</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$hdfs</span> oiv -p XML -i </span><br><span class="line">fsimage_0000000000000000000 -o ./fsimage.xml</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Edits查看：oev，<code>hdfs oev -p 文件类型 -i 编辑日志 -o 转换后文件输出路径</code></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">EDITS</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">EDITS_VERSION</span>&gt;</span>-63<span class="tag">&lt;/<span class="name">EDITS_VERSION</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">RECORD</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">OPCODE</span>&gt;</span>OP_START_LOG_SEGMENT<span class="tag">&lt;/<span class="name">OPCODE</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">DATA</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">TXID</span>&gt;</span>1<span class="tag">&lt;/<span class="name">TXID</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">DATA</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">RECORD</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">RECORD</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">OPCODE</span>&gt;</span>OP_MKDIR<span class="tag">&lt;/<span class="name">OPCODE</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">DATA</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">TXID</span>&gt;</span>2<span class="tag">&lt;/<span class="name">TXID</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">LENGTH</span>&gt;</span>0<span class="tag">&lt;/<span class="name">LENGTH</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">INODEID</span>&gt;</span>16386<span class="tag">&lt;/<span class="name">INODEID</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">PATH</span>&gt;</span>/test<span class="tag">&lt;/<span class="name">PATH</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">TIMESTAMP</span>&gt;</span>1656912470698<span class="tag">&lt;/<span class="name">TIMESTAMP</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">PERMISSION_STATUS</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">USERNAME</span>&gt;</span>ASUS<span class="tag">&lt;/<span class="name">USERNAME</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">GROUPNAME</span>&gt;</span>supergroup<span class="tag">&lt;/<span class="name">GROUPNAME</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">MODE</span>&gt;</span>493<span class="tag">&lt;/<span class="name">MODE</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">PERMISSION_STATUS</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">DATA</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">RECORD</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">RECORD</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">OPCODE</span>&gt;</span>OP_MKDIR<span class="tag">&lt;/<span class="name">OPCODE</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">DATA</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">TXID</span>&gt;</span>3<span class="tag">&lt;/<span class="name">TXID</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">LENGTH</span>&gt;</span>0<span class="tag">&lt;/<span class="name">LENGTH</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">INODEID</span>&gt;</span>16387<span class="tag">&lt;/<span class="name">INODEID</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">PATH</span>&gt;</span>/hadoop<span class="tag">&lt;/<span class="name">PATH</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">TIMESTAMP</span>&gt;</span>1656912492184<span class="tag">&lt;/<span class="name">TIMESTAMP</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">PERMISSION_STATUS</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">USERNAME</span>&gt;</span>ASUS<span class="tag">&lt;/<span class="name">USERNAME</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">GROUPNAME</span>&gt;</span>supergroup<span class="tag">&lt;/<span class="name">GROUPNAME</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">MODE</span>&gt;</span>493<span class="tag">&lt;/<span class="name">MODE</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">PERMISSION_STATUS</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">DATA</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">RECORD</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">EDITS</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="DN"><a href="#DN" class="headerlink" title="DN"></a>DN</h3><ul>
+<li>工作机制<ul>
+<li>数据块在DataNode上以文件形式存储在磁盘，包括两个文件：数据本身、元数据（数据块的长度，校验和，时间戳）</li>
+<li>DataNode启动后向NameNode注册，注册后周期（6 小时）地向NameNode上报所有的块信息——这里有两个参数，汇报当前解读信息的间隔<code>dfs.blockreport.intervalMsec</code>、扫描块信息列表的时间间隔<code>dfs.datanode.directoryscan.interval</code>，都在<code>hdfs-default.xml</code></li>
+<li>DN与NN保持心跳，3秒一次，心跳返回结果中可以有NameNode对该DN的命令（复制数据到另一台机器、删除某个数据块等），超过10分钟没有收到心跳，则认为该DN不可用</li>
+</ul>
+</li>
+<li>数据完整性保证：<ul>
+<li>DataNode读取一个Block时计算CheckSum，如果与Block创建时的值不一样，说明Block损坏，需要Client读取备份DN的Block</li>
+<li>校验算法：crc（32）、md5（128位）、sha（160位）</li>
+</ul>
+</li>
+<li>心跳超时参数：HDFS默认的超时时长为10分钟+30秒，计算公式为：<code>TimeOut = 2 * dfs.namenode.heartbeat.recheck-interval + 10 * dfs.heartbeat.interval</code>，默认<code>dfs.namenode.heartbeat.recheck-interval</code>为5min，默认<code>dfs.heartbeat.interval</code>为3s<ul>
+<li>参数在hdfs-site.xml</li>
+<li>参数<code>heartbeat.recheck.interval</code>的单位为ms</li>
+<li>参数<code>dfs.heartbeat.interval</code>的单位为s</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/" title="HDFS">https://thomas-li-sjtu.github.io/2022/07/03/hadoop学习1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/25/BTree-B-Tree/" rel="prev" title="B树，B+树">
+      <i class="fa fa-chevron-left"></i> B树，B+树
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/" rel="next" title="YARN">
+      YARN <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS"><span class="nav-number">1.</span> <span class="nav-text">HDFS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Shell%E6%93%8D%E4%BD%9C"><span class="nav-number">1.1.</span> <span class="nav-text">Shell操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#API%E6%93%8D%E4%BD%9C%EF%BC%88CRUD%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">API操作（CRUD）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HDFS%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">HDFS读写流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NN%E5%92%8C2NN"><span class="nav-number">1.4.</span> <span class="nav-text">NN和2NN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DN"><span class="nav-number">1.5.</span> <span class="nav-text">DN</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《A Study of Probabilistic Password Models》论文阅读记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Study of Probabilistic Password Models">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《A Study of Probabilistic Password Models》论文阅读记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226133632274.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226192320553.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210225221622123.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226145404013.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195246353.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195301634.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226194041132.png">
+<meta property="article:published_time" content="2021-02-25T06:25:30.000Z">
+<meta property="article:modified_time" content="2021-02-26T12:41:52.809Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226133632274.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>A Study of Probabilistic Password Models | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A Study of Probabilistic Password Models
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-25 14:25:30" itemprop="dateCreated datePublished" datetime="2021-02-25T14:25:30+08:00">2021-02-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《A Study of Probabilistic Password Models》论文阅读记录</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>概率密码模型为每个字符串分配一个概率值</li>
+<li>由密码模型生成的猜测数图是密码研究中广泛使用的方法。本文证明了概率阈值图比猜测数图具有重要的优势——计算速度要快得多，提供的信息也超出了猜测数字图的范围</li>
+<li>对大量概率密码模型进行了系统评估，包括使用不同归一化和平滑方法的马尔可夫模型</li>
+<li>马尔可夫模型在正确使用时性能明显优于 Weir【25】 提出的 PCFG 模型</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>密码既易于理解和使用，又易于实施——基于密码的身份验证可能会继续作为安全的重要组成部分【14】</li>
+<li>密码模型分为两类，全字符串模型和基于模板的模型<ul>
+<li>全字符串模型不将密码分成段，如【8】中的马尔可夫模型</li>
+<li>基于模板的模型通常将将密码分成几个部分，同一类别的连续字符分成一个片段，独立地为每个片段生成概率，如【21】，【25】</li>
+</ul>
+</li>
+<li>认为密码模型研究分两类<ul>
+<li>第一类研究旨在了解是什么让用户选择更安全的密码——密码模型比较这些密码集的相对强度<ul>
+<li>【17】、【18】、【22】、【23】、【26】研究了不同场景下用户密码选择的质量</li>
+<li>用特别方法估计一组密码的信息熵【7】，主要基于密码长度</li>
+<li>【25】开发 PCFG</li>
+<li>往往绘制猜测数字图——需要计算密码的猜测数，这在计算上是昂贵的，而且往往只能探索一部分搜索空间</li>
+</ul>
+</li>
+<li>第二类研究旨在寻找最佳密码模型——模型用于评估所选密码的安全级别</li>
+</ul>
+</li>
+<li>本文认为<ul>
+<li>对于第一类研究，比较两组密码的相对强度没有必要计算所有密码的猜测数，只需计算所有密码的概率，绘制概率阈值与密码破解百分比的曲线<ul>
+<li>计算速度快</li>
+<li>曲线显示了集合中的密码质量</li>
+</ul>
+</li>
+<li>以往的工作只考虑了非常简单的马尔可夫模型<ul>
+<li>许多平滑技术可以帮助解决高阶马尔可夫模型中的稀疏和过拟合问题，包括拉普拉斯平滑、古德图灵平滑【13】和回退【16】</li>
+<li><strong>密码具有非常确定的长度分布，但 n-gram 最后分配给所有固定长度字符串的概率加起来为1，隐含地假设了长度分布是均匀的</strong></li>
+<li>不同的密码建模方法尚未得到系统的评估或相互比较</li>
+</ul>
+</li>
+<li>本文对比了 3 个英文数据库，3 个中文数据库</li>
+<li>PCFG 使用了三种字典：【25】的字典、OpenWall 字典、训练集生成的字典</li>
+<li>马尔可夫使用三种规范化：长度均匀分布、基于训练集长度分布、基于结束符号</li>
+<li>高阶马尔可夫链表现出不同程度的过拟合——在破解高概率密码方面表现良好</li>
+<li>backoff 方法本质上是可变阶马尔可夫链，与基于结束符号的规范化结合，效果最好</li>
+</ul>
+</li>
+<li>本文贡献<ul>
+<li>介绍了概率阈值图进行密码研究</li>
+<li>从 n-gram 模型的丰富文献中引入知识和技术到密码建模中</li>
+<li>对许多密码模型进行了系统的评估并取得了一些发现</li>
+</ul>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>一个活跃的研究领域是研究不同场景下用户密码选择的质量<ul>
+<li>面对不同的密码策略【18】、【17】</li>
+<li>面对不同的密码强度计【23】、【10】</li>
+<li>由于到期而被迫改变密码【26】</li>
+<li>在密码中加入额外随机性【12】</li>
+</ul>
+</li>
+<li>早期的工作<ul>
+<li>使用了标准密码破解工具的组合 JTR【3】</li>
+<li>估计一组密码信息熵——主要基于密码长度【7】，即 $log_2((alpha.size)^{len})$ ——【22】使用了更复杂的方式，即在计算熵的时候考虑数字、大写字母、特殊符号出现的次数和位置</li>
+</ul>
+</li>
+<li>Weir 等人开发了 PCFG【25】并认为熵估计的方法是错误的【24】，并且建议使用猜测的密码数。此模型和其他变体成为了密码研究的标准方法【17】、【18】、【15】、【23】、【20】</li>
+<li>JTR【3】是最流行的密码破解工具之一，有几种模式：<ul>
+<li>单词列表模式使用字典和各种管理规则</li>
+<li>增量模式使用三字符（trigraph）频率：字符、位置和密码长度三元组的频率</li>
+<li>马尔可夫模式使用一阶马尔可夫链</li>
+</ul>
+</li>
+<li>Castelluccia 等【8】提出使用全串马尔可夫模型来评估密码强度</li>
+<li>【9】通过计算数据集中每个密码的估计概率，并使用近似算法计算每个阈值的猜测次数，比较马尔可夫模型在多个数据集上的破解效率，但没有考虑归一化和平滑的问题</li>
+<li>【19】研究了密码分布与 Zipf 分布的匹配程度，他们将 RockYou 数据集拟合为 ZIPF 分布 $\frac{1}{r^b},b=0.7878$，但只适用于猜测数目在 $2^6$ 到 $2^20$ 之间的密码</li>
+</ul>
+<h2 id="密码模型与指标"><a href="#密码模型与指标" class="headerlink" title="密码模型与指标"></a>密码模型与指标</h2><ul>
+<li>设置字符集 $\Sigma$ 为 95 个可打印的 ASCII 字符，子集称为字符类别，密码长度为 4-40</li>
+<li>使用以下三种指标：<ul>
+<li>对于类型一的研究，模型对比不同的数据集</li>
+<li>对于类型二的研究，固定一个数据集，对比不同的模型</li>
+</ul>
+</li>
+</ul>
+<h3 id="Guess-number-graphs"><a href="#Guess-number-graphs" class="headerlink" title="Guess-number graphs"></a>Guess-number graphs</h3><ul>
+<li>以对数标度绘制猜测次数与数据集中破解密码的百分比</li>
+</ul>
+<h3 id="Probability-threshold-graphs"><a href="#Probability-threshold-graphs" class="headerlink" title="Probability-threshold graphs"></a>Probability-threshold graphs</h3><ul>
+<li><p>以对数标度绘制了概率阈值与高于阈值的密码百分比</p>
+</li>
+<li><p>只需计算模型分配给测试数据集中每个密码的概率；对于每个概率阈值，计算有多少密码被赋予了高于阈值的概率</p>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226133632274.png" alt="image-20210226133632274"></p>
+</li>
+<li><p>二者的对应关系：</p>
+<ul>
+<li>第一类研究：<ul>
+<li>两条猜测数曲线的关系与相应概率阈值曲线的开始部分所展示的完全相同，因为对于给定的阈值，将尝试完全相同的密码集</li>
+<li>唯一缺少的信息是不知道每个概率阈值对应的确切猜测数，但无关紧要</li>
+</ul>
+</li>
+<li>第二类研究：<ul>
+<li>当比较两个密码模型时，从概率阈值图中得出的结论是否可以结转到猜测数图取决于这两个模型是否具有相似的密码排名，如果已知两个密码模型产生非常相似的排名分布，那么从概率-阈值图得出的任何结论也将适用于猜测数图，因为相同的概率阈值将对应于相同的猜测数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>在第二类研究中使用概率阈值图有限制</p>
+</li>
+</ul>
+<h3 id="Average-Negative-Log-Likelihood-ANLL-and-ANLL-theta"><a href="#Average-Negative-Log-Likelihood-ANLL-and-ANLL-theta" class="headerlink" title="Average-Negative-Log-Likelihood ($ANLL$) and $ANLL_\theta$"></a>Average-Negative-Log-Likelihood ($ANLL$) and $ANLL_\theta$</h3><ul>
+<li>概率阈值曲线中的信息可以用一个测量曲线左侧面积的数字概括，这个数字与平均负对数似然（$ANLL$）完全相同<ul>
+<li>以行微分该区域，得到一行的长度为 $y&lt;-log_2p&lt;y+dy$，求和</li>
+</ul>
+</li>
+<li>$ANLL_\theta$：定义为 $\theta$ 以下曲线左侧的面积，因为 $ANLL$ 包括 100% 破解密码的信息，但生成足够的猜测来破解最难的密码可能是不可行的</li>
+<li>$ANLL(D|P) = \frac{1}{|D|}\sum_{s \in D}-log_2p(s)$，其中 $D$ 为测试密码集，$s$ 为测试集中可重复出现的密码，$p$ 为数据集给出的概率分布</li>
+</ul>
+<h2 id="密码模型设计"><a href="#密码模型设计" class="headerlink" title="密码模型设计"></a>密码模型设计</h2><ul>
+<li>主要考虑在不依赖外部字典的情况下构建密码模型的方法，依赖外部字典的方法的性能在很大程度上取决于字典的质量，特别是字典与测试数据集的匹配程度</li>
+</ul>
+<h3 id="Whole-String-Markov-Models"><a href="#Whole-String-Markov-Models" class="headerlink" title="Whole-String Markov Models"></a>Whole-String Markov Models</h3><ul>
+<li>JTR【3】的马尔可夫模式和【8】用了 Whole-String Markov Model<ul>
+<li>JTR：一阶 $P(c_1c_2…c_l)=P(c_1)P(c_2|c_1)…P(c_l|c_{l-1})$，$P(c_i|c_{i-1})=\frac{count(c_{i-1}c_i)}{count(c_{i-1} \cdot)}$</li>
+</ul>
+</li>
+<li>在每个密码前面加上开始符号</li>
+</ul>
+<h4 id="正则化"><a href="#正则化" class="headerlink" title="正则化"></a>正则化</h4><ul>
+<li><p>【3】、【8】模型不是概率模型，<strong>所有的概率之和为 最大密码长度-最小密码长度+1（分配给固定长度的所有字符串概率之和为1）</strong>证明（当阶数为 1 时）：</p>
+<ul>
+<li><p>$\sum_{c_1 \in \Sigma}P(“c_1”)= \frac{\sum_{c_1\in\Sigma}count(c_0c_1)}{count(c_0\cdot)}=1$ 因此所有 length-1 字符串的概率和为 1</p>
+</li>
+<li><p>假设所有 length-l 字符串的概率和也为 1，则对于 length-(l+1) 的字符串概率和：<br>$$<br>\sum_{c_1c_2…c_{l+1}\in\Sigma^{l+1}}P(“c_1c_2…c_{l+1}”) \ = \sum_{c_1c_2…c_l\in\Sigma^l}P(“c_1c_2…c_l”) \times \sum_{c_{l+1}\in\Sigma}P(c_{l+1}|c_l) \ =  \sum_{c_1c_2…c_l\in\Sigma^l}P(“c_1c_2…c_l”) =1<br>$$</p>
+</li>
+<li><p>阶数为 n 的时候同理</p>
+</li>
+<li><p>需要归一化</p>
+</li>
+</ul>
+</li>
+<li><p><code>Direct normalization</code>：每个概率除以（最大密码长度-最小密码长度+1）；此时假设每个长度的密码的总概率是相同的，但和下面的表不符</p>
+</li>
+<li><p><code>Distribution-based normalization</code>：基于不同长度密码的分布标准化，即对于每个长度为 m 密码对应概率乘 $\frac{passwords\ of\ length\ m \ in \ training}{total\  passwords\ in\ training}$；可能导致过拟合，训练和测试数据集可能具有不同的长度分布</p>
+</li>
+<li><p><code>End-symbol normalization</code>：在训练和测试中在每个密码附加一个结束符号，则 $P(c_1|c_0)P(c_2|c_1)…P(c_l|c_{l-1})P(c_e|c_l)$，对最大长度密码，定义 $P(c_e|c_U)=1$；此方法考虑了哪些子字符串更有可能出现在密码的末尾，前面的方法中 “passwor” 将分配到比 “password” 更高的概率；且保证了，当阶数大于等于最小密码长度 L 时，分配给所有字符串的概率之和为 1</p>
+</li>
+<li><p>马尔可夫链阶数、平滑方法</p>
+<ul>
+<li><strong>高阶马尔可夫链能够使用比低阶马尔可夫链更深的历史信息，但容易过拟合，且存在稀疏性问题——从非常小的计数结果计算转移概率，或者许多字符串被指定概率为 0</strong></li>
+<li>拉普拉斯平滑：将 $\delta$ 加到每个子字符串的计数结果上</li>
+<li>Good-Turing 平滑【13】</li>
+</ul>
+</li>
+<li><p><strong>Backoff【16】：同时解决顺序、平滑和稀疏性问题的另一种方法是使用可变阶马尔可夫链</strong></p>
+<ul>
+<li>选择一个阈值并存储计数超过阈值的所有子字符串</li>
+<li>令 $\pi_{i,j}$ 表示 $s_0s_1…s_l$ 中从 $s_i$ 到 $s_j$ 的子串<ul>
+<li>计算 $s_0s_1…s_{l-1}$ 到 $s_0s_1…s_l$ 的转移概率时，寻找最小的 $i$ 使得 $\pi_{i,l-1}$ 有超过阈值的计数</li>
+<li>当有计数时，直接得到 $\frac{count(\pi_{i,l})}{count(\pi_{i,l-1})}$</li>
+<li>当 $\pi_{i,j}$ 没有计数，则只能靠较短的历史分配概率<ul>
+<li>计算通过第一种情况将转移概率分配给所有字符后留下的概率 $b$</li>
+<li>使用更短的前缀 $\pi_{i+1,l-1}$ 计算所有其他字符的概率，归一化使其相加为 $b$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>backoff 模型比其他马尔可夫模型要慢得多</li>
+</ul>
+</li>
+</ul>
+<h3 id="Template-based-Models"><a href="#Template-based-Models" class="headerlink" title="Template-based Models"></a>Template-based Models</h3><ul>
+<li><p>根据字符的类别将密码划分为不同的模板，并计算模板对应的字段概率：$P(“passwd123”)=P(“\alpha^6\beta^3”)P(“passwd”|\alpha^6)P(“123”|\beta^3)$</p>
+</li>
+<li><p>模板概率</p>
+<ul>
+<li>分配给每个模板的概率仅仅是使用该模板的密码数量除以密码总数——使用未出现在训练数据集中的模板的密码概率为 0</li>
+<li>改良：<ul>
+<li><strong>将密码根据（小写字母、数字、大写字母、符号）分割为字段</strong></li>
+<li><strong>学习马尔可夫模型，利用马尔可夫模型将概率分配给模板</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>字段概率：“123”的概率是“123”作为训练数据集中的 3 位片段出现的次数除以训练数据集中的 3 位片段的数量，或通过马尔可夫模型生成概率</p>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226192320553.png" alt="image-20210226192320553"></p>
+</li>
+</ul>
+<h3 id="Password-Generation"><a href="#Password-Generation" class="headerlink" title="Password Generation"></a>Password Generation</h3><ul>
+<li>基于全串马尔可夫：<ul>
+<li>搜索空间建模为一棵搜索树</li>
+<li>优先级队列方法不是存储器效率高的，并且不能用于生成大量密码</li>
+<li>优化：阈值搜索（不适用于基于模板的模型）<ul>
+<li>对搜索树进行多次深度优先遍历：第 i 次迭代，通过深度优先遍历搜索树，对概率小于 $\rho_i$ 的所有节点剪枝，生成概率在 $(\rho_i,\tau_i)$ 之间的密码</li>
+<li>为了生成 n 个猜测密码，从 $(\rho_1=\frac{1}{n},\tau_1=1)$ 开始迭代，若第 i 次迭代后共生成 m 个密码，则 $(\rho_{i+1}=\frac{\rho_i}{max(2, 1.5n/m)},\tau_{i+1}=\rho_i)$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>本文中，除了PCFGW模型之外，不为基于模板的模型生成密码（阈值搜索不适用于基于模板的模型）</li>
+</ul>
+<h2 id="实验方法"><a href="#实验方法" class="headerlink" title="实验方法"></a>实验方法</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li>RockYou【1】包含2009年12月从社交应用网站 Rockyou 泄露的 3200 多万个密码</li>
+<li>PhpBB【1】包括布兰登·恩莱特在2009年1月从 PhpBB 泄露的 MD5 散列中破解的大约 25 万个密码</li>
+<li>Yahoo 数据集包括名为 D33Ds 的黑客组织在 2012 年 7 月公布的大约 45 万个密码</li>
+<li>CSDN 数据集包括中国软件开发商网络（CSDN）的约 600 万用户账户【2】</li>
+<li>DuDuNiu 数据集包括中国一家付费在线游戏网站的约 1600 万个账户</li>
+<li>178 数据集包括中国另一个游戏网站的大约 1000 万个密码；所有 3 个中文数据集都是在2011年12月泄露的</li>
+<li>6 个数据集总共有大约 6000 万个密码</li>
+</ul>
+<h3 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h3><ul>
+<li>删除了超过 95 个可打印 ASCII 符的任何密码</li>
+<li>删除了长度小于 4 或大于 40 的密码</li>
+</ul>
+<h3 id="数据分析"><a href="#数据分析" class="headerlink" title="数据分析"></a>数据分析</h3><ul>
+<li>下表 (b) 显示密码在数据集中出现 1、2、3、4、5 次以上的百分比</li>
+<li>(c) 显示了密码数据集的长度分布，显示最常见的密码长度为 6 到 10，占整个数据集的 87%；CSDN 长度更长——一种解释是，该网站很早就开始实施最小长度为8的密码政策，只有在开始时拥有账户的用户密码才更短</li>
+<li>(d) 显示了字符分布；字母不是汉语固有的，也因为数字序列在汉语中更容易记忆，以及容易找到与一些容易记住的短语发音相似的数字序列</li>
+<li>(e) 显示了不同模式的频率；模式分布在不同的数据集上显示出许多差异</li>
+</ul>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210225221622123.png" alt="image-20210225221622123"></p>
+<h3 id="训练与测试场景"><a href="#训练与测试场景" class="headerlink" title="训练与测试场景"></a>训练与测试场景</h3><ul>
+<li><p>反对将所有密码混合为一个大密码集合，因为训练和测试中会导致相似的长度、特征和模式分布</p>
+</li>
+<li><p>将 Yahoo 和 PhpBB 合并在一起，因为它们规模很小</p>
+</li>
+<li><p>通过比较场景 5 和场景 1，以及场景 6 和场景 2，可以观察到训练对不匹配数据集的影响</p>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226145404013.png" alt="image-20210226145404013"></p>
+</li>
+</ul>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><ul>
+<li>实验结果的表示：猜测数字图、概率阈值图以及 ANLL 表</li>
+<li>全字符串模型用 ws 开头<ul>
+<li>$ws-mc-b10$：具有退避和频率阈值 10 的马尔可夫链</li>
+<li>$ws-mc_i$：i 阶马尔可夫模型，拉普拉斯平滑，$\delta=0.01$</li>
+<li>-end、-dir 和 -dis 表示三种规范化方法</li>
+<li>-gts 为 Good-Turing 平滑</li>
+</ul>
+</li>
+<li>基于模板的模型以 tb 开头<ul>
+<li>$tb-co-mc_i$：基于计数的方法将概率分配给模板，用 i 阶马尔可夫模型实例化字段</li>
+<li>$tb-co-co$：Weir 的 PCFG 从训练集生成字典</li>
+</ul>
+</li>
+</ul>
+<h3 id="实验图"><a href="#实验图" class="headerlink" title="实验图"></a>实验图</h3><ul>
+<li>(a) 显示 5 阶马尔可夫模型不同正则化方式下，密码排名与概率的图；不同曲线的间隙在 x 增加时逐渐减小，一种猜测是由于每个模型的概率加起来为1，这些曲线必须在某个点相交</li>
+<li>(b) 显示猜测-数字图；$wc-mc_5-end$、三种 PCFGW 的实例、三种不同模式的 JTR；后二者明显差于前者</li>
+<li>(c) 将 3 个模型的猜测数曲线和概率阈值曲线绘制在同一图上，如果将猜测数曲线向右移动，可以看到任意模型的猜测数曲线与概率阈值曲线大致匹配</li>
+<li>(d) 显示了所有基于模板的模型和一个完整字符串模型的概率阈值曲线；使用 DIC-0294 的 PCFGW 性能最差，使用 Openwall 字典的 PCFGW 性能稍好；在 PCFGW 中，从数据集学习比使用现有词典要好。用马尔可夫模型代替计数来实例化片段时，在更高的概率阈值上看到了另一个显著的改进</li>
+</ul>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195246353.png" alt="image-20210226195246353"></p>
+<ul>
+<li>(e) 比较了不同平滑方式在 4 阶、5阶马尔可夫模型上的结果</li>
+<li>(f) 比较了马尔可夫链模型中不同阶数的影响</li>
+<li>(g) 显示直接归一化性能最差，而基于分布的归一化性能略好于结束符号归一化</li>
+<li>(h) 仅使用至少8个字符的密码进行评估，结果与 (d) 的曲线相似，因此结果对“密码长度大于8”的网站也有参考性</li>
+</ul>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226195301634.png" alt="image-20210226195301634"></p>
+<ul>
+<li>图 3 与图 4 略</li>
+</ul>
+<h3 id="ANLL-表"><a href="#ANLL-表" class="headerlink" title="ANLL 表"></a>ANLL 表</h3><ul>
+<li>使用结束符号归一化的 backoff 总体上给出了最好的结果——使用一个足够高但又不是太高阶数的马尔可夫，并利用一些方法处理过拟合</li>
+<li>对于大多数其他模型，基于分布的归一化执行得最好，其次是结束符号归一化，文献中隐含使用的直接归一化的性能最差；backoff 模型使用变长的马尔可夫链，可以适当地结束密码，而不需要只依赖于密码的长度进行标准化</li>
+<li>在平滑效果上，Good-Turing 平滑的表现出人意料地差，特别是高阶马尔可夫链</li>
+<li>对于大多数模型，给出最佳结果的马尔可夫链阶数因场景而异<ul>
+<li>训练数据集略小，则阶数 3 和阶数 4 通常优于阶数 5</li>
+<li>中文数据集使用的数字比字母多得多，从而低阶马尔可夫链带来更好的性能</li>
+</ul>
+</li>
+<li>比较场景 5 和 1 以及场景 6 和 2，可以看到在类似数据集上进行训练的重要性</li>
+<li>比较场景 2、3 和 4，可以看到 178 显然是 3 个场景中最弱的密码数据集</li>
+</ul>
+<p><img src="/2021/02/25/A-Study-of-Probabilistic-Password-Models/image-20210226194041132.png" alt="image-20210226194041132"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>引入概率阈值图来评估密码数据集</li>
+<li>将丰富的统计语言建模文献中的知识和技术引入密码建模</li>
+<li>对许多密码模型进行了系统的研究，并获得了一些发现——已经被认为是最先进的并被广泛用于密码研究的 PCFG（Weir 提出的） 模型的性能不如全串马尔可夫模型</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Passwords, 2009. <a target="_blank" rel="noopener" href="http://wiki.skullsecurity.org/Passwords">http://wiki.skullsecurity.org/Passwords</a>.</p>
+<p>[2] Csdn cleartext passwords, 2011. <a target="_blank" rel="noopener" href="http://dazzlepod.com/csdn/">http://dazzlepod.com/csdn/</a>.</p>
+<p>[3] John the ripper password cracker, 2013. <a target="_blank" rel="noopener" href="http://www.openwall.com/john/">http://www.openwall.com/john/</a>.</p>
+<p>[4] Openwall wordlists collection, 2013.<a target="_blank" rel="noopener" href="http://www.openwall.com/wordlists/">http://www.openwall.com/wordlists/</a>.</p>
+<p>[5] J. Bonneau. Guessing human-chosen secrets. Thesis, University of Cambridge, 2012.</p>
+<p>[6] J. Bonneau. The science of guessing: analyzing an anonymized corpus of 70 million passwords. In Proceedings of IEEE Symposium on Security and Privacy, pages 538–552. IEEE, 2012.</p>
+<p>[7] W. E. Burr, D. F. Dodson, and W. T. Polk. Electronic authentication guideline. US Department of Commerce, Technology Administration, National Institute of Standards and Technology, 2004.</p>
+<p>[8] C. Castelluccia, M. Dürmuth, and D. Perito. Adaptive password-strength meters from Markov models. In Proceedings of NDSS, 2012.</p>
+<p>[9] M. Dell’Amico, P. Michiardi, and Y . Roudier. Password strength: an empirical analysis. In Proceedings of INFOCOM, pages 1–9, 2010.</p>
+<p>[10] S. Egelman, A. Sotirakopoulos, I. Muslukhov, K. Beznosov, and C. Herley. Does my password go up to eleven?: The impact of password meters on password selection. In Proceedings of CHI, pages 2379–2388, 2013.</p>
+<p>[11] D. Florencio and C. Herley. A large-scale study of web password habits. In Proceedings of WWW, pages 657–666, 2007.</p>
+<p>[12] A. Forget, S. Chiasson, P . C. van Oorschot, and R. Biddle. Improving text passwords through persuasion. In Proceedings of SOUPS, pages 1–12, 2008.</p>
+<p>[13] W. A. Gale and G. Sampson. Good-turing frequency estimation without tears. Journal of Quantitative Linguistics, 2(1):217–237, 1995.</p>
+<p>[14] C. Herley and P. C. van Oorschot. A research agenda acknowledging the persistence of passwords. IEEE Security &amp; Privacy, 10(1):28–36, 2012.</p>
+<p>[15] S. Houshmand and S. Aggarwal.  Building better passwords using probabilistic techniques. In Proceedings of ACSAC, pages 109–118, 2012.</p>
+<p>[16] S. M. Katz.  Estimation of probabilities from sparse data for the language model component of a speech recogniser. IEEE Transactions on Acoustics, Speech, and Signal Processing, 35(3):400401, 1987.</p>
+<p>[17] P. G. Kelley, S. Komanduri, M. L. Mazurek, R. Shay, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, and J. Lopez. Guess again (and again and again): Measuring password strength by simulating password-cracking algorithms. In IEEE Symposium on Security and Privacy, pages 523–537, 2012.</p>
+<p>[18] S. Komanduri, R. Shay, P. G. Kelley, M. L. Mazurek, L. Bauer, N. Christin, L. F. Cranor, and S. Egelman. Of passwords and people: measuring the effect of password-composition policies. In CHI, pages 2595–2604, 2011.</p>
+<p>[19] D. Malone and K. Maher. Investigating the distribution of password choices. In Proceedings of WWW, pages 301–310, 2012.</p>
+<p>[20] M. L. Mazurek, S. Komanduri, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, P. G. Kelley, R. Shay, and B. Ur.  Measuring password guessability for an entire university. In Proceedings of ACM CCS, pages 173–186, Berlin, Germany, 2013. ACM.</p>
+<p>[21] A. Narayanan and V . Shmatikov. Fast dictionary attacks on passwords using time-space tradeoff. In Proceedings of ACM CCS, pages 364–372, 2005.</p>
+<p>[22] R. Shay, S. Komanduri, P. G. Kelley, P. G. Leon, M. L. Mazurek, L. Bauer, N. Christin, and L. F. Cranor. Encountering stronger password requirements: user attitudes and behaviors. In Proceedings of the Sixth Symposium on Usable Privacy and Security, SOUPS ’10, pages 2:1–2:20, New Y ork, NY , USA, 2010. ACM.</p>
+<p>[23] B. Ur, P. G. Kelley, S. Komanduri, J. Lee, M. Maass, M. Mazurek, T. Passaro, R. Shay, T. Vidas, L. Bauer, et al. How does your password measure up? the effect of strength meters on password creation. In Proceedings of USENIX Security Symposium, 2012.</p>
+<p>[24] M. Weir, S. Aggarwal, M. Collins, and H. Stern.  Testing metrics for password creation policies by attacking large sets of revealed passwords. In Proceedings of the 17th ACM conference on Computer and communications security, pages 162–175, 2010.</p>
+<p>[25] M. Weir, S. Aggarwal, B. de Medeiros, and B. Glodek. Password cracking using probabilistic context-free grammars. In IEEE Symposium<br>on Security and Privacy, pages 391–405, 2009.</p>
+<p>[26] Y . Zhang, F. Monrose, and M. K. Reiter. The security of modern password expiration: An algorithmic framework and empirical analysis. In Proceedings of ACM CCS, pages 176–186, 2010.</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\22\Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks\" rel="bookmark">Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/" title="A Study of Probabilistic Password Models">https://thomas-li-sjtu.github.io/2021/02/25/A-Study-of-Probabilistic-Password-Models/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/" rel="prev" title="Password Guessing Based on LSTM Recurrent Neural Networks">
+      <i class="fa fa-chevron-left"></i> Password Guessing Based on LSTM Recurrent Neural Networks
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/04/Reasoning-Analytically-About-Password-Cracking-Software/" rel="next" title="Reasoning Analytically About Password-Cracking Software">
+      Reasoning Analytically About Password-Cracking Software <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%8C%87%E6%A0%87"><span class="nav-number">4.</span> <span class="nav-text">密码模型与指标</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Guess-number-graphs"><span class="nav-number">4.1.</span> <span class="nav-text">Guess-number graphs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Probability-threshold-graphs"><span class="nav-number">4.2.</span> <span class="nav-text">Probability-threshold graphs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Average-Negative-Log-Likelihood-ANLL-and-ANLL-theta"><span class="nav-number">4.3.</span> <span class="nav-text">Average-Negative-Log-Likelihood ($ANLL$) and $ANLL_\theta$</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1"><span class="nav-number">5.</span> <span class="nav-text">密码模型设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Whole-String-Markov-Models"><span class="nav-number">5.1.</span> <span class="nav-text">Whole-String Markov Models</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A3%E5%88%99%E5%8C%96"><span class="nav-number">5.1.1.</span> <span class="nav-text">正则化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Template-based-Models"><span class="nav-number">5.2.</span> <span class="nav-text">Template-based Models</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Generation"><span class="nav-number">5.3.</span> <span class="nav-text">Password Generation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%96%B9%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">实验方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">6.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97"><span class="nav-number">6.2.</span> <span class="nav-text">数据清洗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90"><span class="nav-number">6.3.</span> <span class="nav-text">数据分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%B5%8B%E8%AF%95%E5%9C%BA%E6%99%AF"><span class="nav-number">6.4.</span> <span class="nav-text">训练与测试场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">7.</span> <span class="nav-text">实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%9B%BE"><span class="nav-number">7.1.</span> <span class="nav-text">实验图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ANLL-%E8%A1%A8"><span class="nav-number">7.2.</span> <span class="nav-text">ANLL 表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="transformer 模型原理介绍">
+<meta property="og:type" content="article">
+<meta property="og:title" content="transformer 原理">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="transformer 模型原理介绍">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803144755183.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803145024737.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803150005267.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803150415547.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803152213429.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803153325327.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803153447266.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803154506849.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803154611880.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803155016161.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803155059649.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803155845118.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803161340053.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803155955067.png">
+<meta property="article:published_time" content="2021-08-03T06:37:35.000Z">
+<meta property="article:modified_time" content="2022-05-17T11:31:47.402Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="自然语言处理">
+<meta property="article:tag" content="AE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/08/03/transformer/image-20210803144755183.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/08/03/transformer/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>transformer 原理 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/08/03/transformer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          transformer 原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-08-03 14:37:35" itemprop="dateCreated datePublished" datetime="2021-08-03T14:37:35+08:00">2021-08-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>transformer 模型原理介绍</p>
+<a id="more"></a>
+
+<h2 id="基本框架"><a href="#基本框架" class="headerlink" title="基本框架"></a>基本框架</h2><p>transformer 总体为一个编码组件、解码组件以及二者之间连接。</p>
+<img src="/2021/08/03/transformer/image-20210803144755183.png" alt="image-20210803144755183" style="zoom:67%;">
+
+<p>编码部分和解码部分都为编码器、解码器的堆叠，最后一层编码器的输出是各个解码器的输入之一。第一个编码器的输入为单词的嵌入向量，后面编码器输入为前一层的输出。</p>
+<img src="/2021/08/03/transformer/image-20210803145024737.png" alt="image-20210803145024737" style="zoom: 50%;">
+
+<p>编码器均由两个子层组成：<code>self-attention</code>与<code>feed forward neural network</code>。<code>self-attention</code>用于帮助编码器在编码特定单词时查看输入中的其他单词。解码器也有这两个子层，中间有一个注意力层，帮助解码器查看输入句子的相关部分。</p>
+<img src="/2021/08/03/transformer/image-20210803150005267.png" alt="image-20210803150005267" style="zoom:67%;">
+
+<h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>输入句子的各个单词先编码为词向量。</p>
+<p>各个词向量均进入编码器的两个子层，<code>self-attention</code>层中各个词向量的路径具有一定关联，而<code>feed forward neural network</code>层中各个词向量参与的计算过程独立。</p>
+<img src="/2021/08/03/transformer/image-20210803150415547.png" alt="image-20210803150415547" style="zoom: 67%;">
+
+<p><code>self-attention</code>使得模型在处理一个词向量时，能够将其与相关的词关联起来，以更好地对该词向量编码。RNN 通过维护隐藏状态以将先前处理的词向量同当前词向量合并，transformer 则使用<code>self-attention</code>将对相关词的“理解”融入当前处理的词。</p>
+<h3 id="self-attention-步骤"><a href="#self-attention-步骤" class="headerlink" title="self-attention 步骤"></a>self-attention 步骤</h3><p>第一步，为每个词向量创建三个向量：<code>Query</code>、<code>Key</code>、<code>Value</code>。这三个向量是通过将每个词向量乘以三个待训练的矩阵创建的（对后面的编码器，则是将上一个编码器的输出乘以三个新的待训练矩阵）。</p>
+<img src="/2021/08/03/transformer/image-20210803152213429.png" alt="image-20210803152213429" style="zoom:67%;">
+
+<p>第二步，计算当前词向量与输入句子所有词向量的分数，分数会决定将多少注意力放在这些词上。分数通过将当前词向量对应的<code>Query</code>向量与各个单词的<code>Key</code>向量点积得到，第一个分数是<code>q1</code>与<code>k1</code>点积，第二个分数为<code>q1</code>与<code>k2</code>点积，以此类推。</p>
+<p>第三步，将分数除以<code>Query</code>向量长度的平方根。此步骤提高了梯度的稳定性。</p>
+<p>第四步，通过<code>softmax</code>将分数归一化。</p>
+<blockquote>
+<p>This softmax score determines how much each word will be expressed at this position. Clearly the word at this position will have the highest softmax score, but sometimes it’s useful to attend to another word that is relevant to the current word.</p>
+</blockquote>
+<p>第五步，归一化的得分与各个单词的<code>Value</code>向量相乘，此做法的直觉是保持想要关注的单词的值不变，而且消除不相关的单词，即对各个单词的<code>Value</code>向量加权。</p>
+<p>第六步，对所有加权后的<code>Value</code>向量求和，即为当前词向量在<code>self-attention</code>下的输出。</p>
+<img src="/2021/08/03/transformer/image-20210803153325327.png" alt="image-20210803153325327" style="zoom:67%;">
+
+<p>上述过程的矩阵形式为：</p>
+<img src="/2021/08/03/transformer/image-20210803153447266.png" alt="image-20210803153447266" style="zoom:67%;">
+
+<h3 id="多头注意力"><a href="#多头注意力" class="headerlink" title="多头注意力"></a>多头注意力</h3><p>进一步优化<code>self-attention</code>：使用<code>multi-headed attention</code>。提高了模型关注不同位置的能力，为注意力层提供了多个表示子空间（<code>representation subspaces</code>）——可以有多组<code>Query</code>、<code>Key</code>、<code>Value</code>权重矩阵，每一组都是随机初始化，因此训练完成后每一组都可以将输入投射到不同的子空间，具体可以类比 CNN 中的多个卷积核。</p>
+<img src="/2021/08/03/transformer/image-20210803154506849.png" alt="image-20210803154506849" style="zoom:67%;">
+
+<p>最终将获得多个当前词向量在<code>self-attention</code>下的输出向量，即输入句子经过<code>self-attention</code>后，将有多个输出矩阵。</p>
+<img src="/2021/08/03/transformer/image-20210803154611880.png" alt="image-20210803154611880" style="zoom:67%;">
+
+<p>由于<code>feed forward neural network</code>子层需要一个矩阵（每个单词由一个向量表示）作为输入，因此需要将以上输出矩阵与一个额外的待训练权重矩阵相乘。</p>
+<p>以上过程表示如下：</p>
+<img src="/2021/08/03/transformer/image-20210803155016161.png" alt="image-20210803155016161" style="zoom:67%;">
+
+<p>一个多头注意力的例子：</p>
+<img src="/2021/08/03/transformer/image-20210803155059649.png" alt="image-20210803155059649" style="zoom:67%;">
+
+<h3 id="位置编码"><a href="#位置编码" class="headerlink" title="位置编码"></a>位置编码</h3><p>以上过程，缺少了对输入序列中单词顺序的表达。为此，transformer 将每个词向量与一个位置向量相加。这些位置向量遵循一个特定的模式，将有助于模型获得每个单词的绝对位置和相对位置（序列中不同单词的距离）。</p>
+<img src="/2021/08/03/transformer/image-20210803155845118.png" alt="image-20210803155845118" style="zoom:80%;">
+
+<p>位置编码的公式论文已经给出，它不是唯一一种进行位置编码的方法，但其优势在于能扩展到更长的序列（即训练后的模型需要接收一个比训练集任何句子都长的测试句）</p>
+<h3 id="残差运算"><a href="#残差运算" class="headerlink" title="残差运算"></a>残差运算</h3><p>此外，编码器中每个子层都进行残差连接，并归一化。</p>
+<img src="/2021/08/03/transformer/image-20210803161340053.png" alt="image-20210803161340053" style="zoom:67%;">
+
+<p>综上，一个堆叠了两层编码器、解码器的 transformer 结构如下：</p>
+<img src="/2021/08/03/transformer/image-20210803155955067.png" alt="image-20210803155955067" style="zoom:67%;">
+
+<h2 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h2><p>编码组件首先接收一个句子，在最后的编码器上输出一组注意力向量<code>Key</code>与<code>Value</code>，每个解码器在<code>encoder-decoder attention</code>子层中使用，使解码器关注到输入句子的所有位置。<code>encoder-decoder attention</code>子层需要的<code>Query</code>向量来自上一层的输出。</p>
+<p>编码完成后开始解码，每一步都输出一个元素，直到输出一个特殊符号表明解码结束。每一次输出的结果都将在下一次输出前，反馈到第一个解码器。</p>
+<p>解码器的输入同样需要进行词嵌入和位置编码。</p>
+<p>解码器的<code>self-attention</code>子层只允许关注序列中出现较早的位置，这通过在<code>softmax</code>前进行掩码实现。</p>
+<p>以上就是使用一个训练好的 transformer 实现任务时的前向传递过程。</p>
+<h2 id="训练过程"><a href="#训练过程" class="headerlink" title="训练过程"></a>训练过程</h2><p>在训练期间，初始模型的前向传递过程同上，解码组件的输入为序列下一个单词的前面内容。</p>
+<p>例如，翻译“我/爱/机器/学习”为 “i/ love /machine/ learning”时，首先将&lt;start&gt;作为解码组件的初始输入，将解码组件的最大概率输出词 A1 和”i“做损失计算。将&lt;start&gt;，”i” 作为解码组件的输入，将解码组件的最大概率输出词 A2 和”love“做损失计算，以此类推，直至最后一次计算最大概率输出词 A5 和&lt;end&gt;的损失，所以从整体上来说，transformer 训练过程类似于一个有监督的多分类问题。</p>
+<p>以上过程为串行进行，实际可以将多次的输入补全组成矩阵，乘以一个 mask 矩阵，得到最终的输入矩阵。将这个矩阵输入解码组件，每行输入得到一个输出概率分布，因此得到一个 seq_len * vocab_size 的输出概率矩阵，用于并行计算损失。</p>
+<p>综上，transformer 的编码器组件可以并行计算，一次性将输入序列全部编码出来，但解码器组件不是一次性把所有单词预测出来的，虽然训练时可通过 mask 并行进行，测试时必须串行进行，一个单词一个单词输出。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>self-attention</code>是一种自身和自身相关联的 attention 机制，因此能够得到一个更好的 representation 来表达自身，在多数情况下，自然会对下游任务有一定的促进作用。如果是 RNN 或者 LSTM，需要依次序计算，对于远距离、相互依赖的特征，要经过若干时间步步骤的信息累积才能将两者联系起来。但是<code>self-attention</code>在计算过程中会直接将句子中任意两个单词的联系通过一个计算步骤直接联系起来，所以远距离依赖特征之间的距离被极大缩短，有利于有效地利用这些特征。</p>
+<p>相比于 RNN，transformer 的并行计算能力更强，其并行化体现在<code>self-attention</code>模块，在编码组件可以并行处理整个序列，得到整个输入序列经过编码的结果，在self-attention模块，对于某个序列$x_1,x_2,…,x_n$，<code>self-attention</code>可以直接计算$x_i,x_j$的点乘结果，而 RNN 系列的模型必须按照顺序从$x_1$计算到$x_n$。</p>
+<p>相比于 seq2seq，transformer 使用多头交互式attention，避免了将源句子的所有信息压缩到一个固定长度的向量中来预测解码组件第一个单词的隐藏状态，让编码器能关注到想要关注的信息，同时让源序列和目标序列先自己关联起来，使其表示的信息更加丰富。</p>
+<p>此外，transformer 的特征抽取能力更强（实验结果，非严格的理论证明）——<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/54743941">自然语言处理三大特征抽取器（CNN/RNN/TF）比较</a>。但是 transformer 效果显著及其强大的特征抽取能力是否完全归功于其<code>self-attention</code>模块，还是存在一定争议的：<a target="_blank" rel="noopener" href="http://aclweb.org/anthology/P18-1167">How Much Attention Do You Need?A Granular Analysis of Neural Machine Translation Architectures</a>。</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\23\BART\" rel="bookmark">BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension》（BART）论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\16\BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding\" rel="bookmark">BERT Pre-training of Deep Bidirectional Transformers for Language Understanding</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\24\Bert-over-Bert\" rel="bookmark">BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data</a></div>
+        <div class="popular-posts-excerpt"><p><p>《BoB: BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data》（BoB）2021ACL</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\09\GSum\" rel="bookmark">A General Framework forGuided Neural Abstractive Summarization</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A General Framework forGuided Neural Abstractive Summarization》（GSum）2021 NAACL</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\24\Glancing-Transformer-for-Non-Autoregressive-Neural-Machine-Translation\" rel="bookmark">Glancing Transformer for Non-Autoregressive Neural Machine Translation</a></div>
+        <div class="popular-posts-excerpt"><p><p>2021年《Glancing Transformer for Non-Autoregressive Neural Machine Translation》阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/08/03/transformer/" title="transformer 原理">https://thomas-li-sjtu.github.io/2021/08/03/transformer/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Transformer/" rel="tag"><i class="fa fa-tag"></i> Transformer</a>
+              <a href="/tags/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" rel="tag"><i class="fa fa-tag"></i> 自然语言处理</a>
+              <a href="/tags/AE/" rel="tag"><i class="fa fa-tag"></i> AE</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/14/A-Survey-on-Privacy-Proctection-of-BlockChain/" rel="prev" title="A Survey on Privacy Protection of Blockchain：The Technology and Application">
+      <i class="fa fa-chevron-left"></i> A Survey on Privacy Protection of Blockchain：The Technology and Application
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/07/Modeling_the_adversary_to_evaluate_password_strength_with_limited_samples/" rel="next" title="Modeling the adversary to evaluate password strength with limited samples">
+      Modeling the adversary to evaluate password strength with limited samples <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A1%86%E6%9E%B6"><span class="nav-number">1.</span> <span class="nav-text">基本框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">编码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#self-attention-%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.1.</span> <span class="nav-text">self-attention 步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B"><span class="nav-number">2.2.</span> <span class="nav-text">多头注意力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81"><span class="nav-number">2.3.</span> <span class="nav-text">位置编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AE%8B%E5%B7%AE%E8%BF%90%E7%AE%97"><span class="nav-number">2.4.</span> <span class="nav-text">残差运算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">解码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E8%BF%87%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">训练过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

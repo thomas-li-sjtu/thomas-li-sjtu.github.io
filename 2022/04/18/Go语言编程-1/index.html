@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Go语言编程》阅读笔记（1） 基本的语法和语言特点">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go语言编程 (1)">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Go语言编程》阅读笔记（1） 基本的语法和语言特点">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220418210923875.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419113631944.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419114128955.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419114502144.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419114629960.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419122228025.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419125939080.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419130448384.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419130628691.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419131942255.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134315797.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134458366.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134805878.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419135020682.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134805878.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419135020682.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419135111578.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419145949906.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419150046420.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419151534757.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419152154859.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419152702387.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419154440978.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419153343288.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419154756827.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160251992.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160411403.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160634607.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160836856.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419162333739.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419163716255.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419180023066.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419180104852.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419180225848.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419182223072.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419182330415.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419182509033.png">
+<meta property="article:published_time" content="2022-04-18T12:11:28.000Z">
+<meta property="article:modified_time" content="2022-04-20T08:21:15.198Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Go">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220418210923875.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Go语言编程 (1) | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Go语言编程 (1)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-18 20:11:28" itemprop="dateCreated datePublished" datetime="2022-04-18T20:11:28+08:00">2022-04-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" itemprop="url" rel="index"><span itemprop="name">编程语言</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Go语言编程》阅读笔记（1） 基本的语法和语言特点</p>
+<a id="more"></a>
+
+<h2 id="初识Go"><a href="#初识Go" class="headerlink" title="初识Go"></a>初识Go</h2><ul>
+<li><p>静态语言</p>
+</li>
+<li><p>语言特性：</p>
+<ul>
+<li><p>自动垃圾回收</p>
+</li>
+<li><p>内置类型丰富</p>
+</li>
+<li><p>多返回值的函数</p>
+</li>
+<li><p>错误处理：关键字defer、panic、recover</p>
+</li>
+<li><p>匿名函数、闭包——函数可作为参数传递</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">f := <span class="function"><span class="keyword">func</span><span class="params">(x, y <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> x+y</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>并发编程：每个用关键字go执行的函数可以运行成为一个单位协程，一个协程阻塞，调度器把其他协程安排到另外的线程执行；用通信顺序进程CSP作为goroutine间的通信方式，用channel实现CSP（类似管道pipe）</p>
+</li>
+<li><p>类和接口</p>
+</li>
+<li><p>反射：获取对象类型的详细信息，需要import reflect</p>
+</li>
+</ul>
+</li>
+<li><p>通过Cgo重用现有的C模块，利用Cgo的特定语法混合C代码</p>
+</li>
+<li><p>GOPATH和PATH环境变量类似，能接受多个路径</p>
+</li>
+<li><p>源码开头为package声明，表明该源码所在的包，包是基本的分发单位；生成Go的exe，必须建立名为main的包，其中包含main函数，main()无参数，无返回值，命令行参数保存在os.Args，flag包用于规范命令行参数并获取、解析命令行参数</p>
+</li>
+<li><p>函数：返回值没有明确赋值时将被设置为默认值</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> 函数名<span class="params">(参数列表)</span><span class="params">(返回值列表)</span></span>&#123;</span><br><span class="line">      <span class="comment">//参数1 参数1数据类型, 参数2 参数2数据类型, ...</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注释格式同C++</p>
+</li>
+<li><p>左边花括号不允许另起一行</p>
+</li>
+<li><p>问题追踪：</p>
+<ul>
+<li><p>fmt包提供打印函数，其中Printf与PrintIn()类似于C的Printf()</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220418210923875.png" alt="image-20220418210923875" style="zoom:67%;">
+</li>
+<li><p>log包：日志功能</p>
+</li>
+<li><p>go内置了print函数，但属于输出到标准错误流中并打印</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="顺序编程"><a href="#顺序编程" class="headerlink" title="顺序编程"></a>顺序编程</h2><h3 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h3><ul>
+<li><p>变量声明：关键字var，变量类型在变量名后；若干声明的变量可以放置在一起</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419113631944.png" alt="image-20220419113631944" style="zoom:67%;">
+
+
+
+</li>
+</ul>
+  <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> (</span><br><span class="line">	v1 <span class="keyword">int</span></span><br><span class="line">    v2 <span class="keyword">string</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>变量初始化：可以删去var，<code>var v1 int = 10</code>和<code>var v2 = 10</code>和<code>v3 := 10</code>是相同的，符号:=表示变量声明和初始化同时进行，此时左边的变量不能是被声明过的</p>
+</li>
+<li><p><strong>go的变量声明后必须使用</strong></p>
+</li>
+<li><p>可以有<code>i,j=j,i</code></p>
+</li>
+<li><p>函数可以有多个返回：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419114128955.png" alt="image-20220419114128955" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><ul>
+<li><p>字面常量：无类型，只要在相应类型的值域里就可以作为该类型的常量，如-12可以赋值int、uint、int32、float64、complex64等类型的变量</p>
+</li>
+<li><p>可以通过const关键字定义，可以不限定常量类型</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419114502144.png" alt="image-20220419114502144" style="zoom:67%;">
+</li>
+<li><p>三个预定义常量：true、false、iota；iota在每一个关键字出现时被重置为0，下一个const出现前每出现一次iota，其对应数字自动加一</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419114629960.png" alt="image-20220419114629960" style="zoom:67%;">
+</li>
+<li><p>枚举一系列的常量</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> (</span><br><span class="line">    Friday = <span class="literal">iota</span></span><br><span class="line">    number_of_days</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>大写字母的开头的常量在包外可见</p>
+</li>
+</ul>
+<h3 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h3><ul>
+<li><p>bool：<code>var v1 := (1==2)</code>，不接受其他类型赋值，不支持自动和强制类型转换</p>
+</li>
+<li><p>整型：int和int32是不同类型，需要强制转换<code>value2 = int32(value1)</code>（存在精度损失、值溢出的问题）</p>
+<p><img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419122228025.png" alt="image-20220419122228025"></p>
+</li>
+<li><p>支持+-*/和%运算，支持比较运算（同C），不同类型的整型数不能直接比较，会编译报错，但可以直接和字面常量比较</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> i <span class="keyword">int32</span> = <span class="number">1</span></span><br><span class="line"><span class="keyword">var</span> j <span class="keyword">int64</span> = <span class="number">2</span></span><br><span class="line"><span class="keyword">if</span> i == <span class="number">1</span> || j == <span class="number">2</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>位运算和C类似，取反为<code>^x</code></p>
+</li>
+<li><p>float64相当于double，<code>value1 := 12.0</code>，浮点数的比较建议使用：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&quot;math&quot;</span></span><br><span class="line"><span class="comment">// p 为自定义的比较精度，如0.0001</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsEqual</span><span class="params">(f1, f2, p <span class="keyword">float64</span>)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> math.Fdim(f1, f2) &lt; p</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>复数：<code>var value1 complex64 = 3.2 + 12i</code>——两个float32构成，通过<code>real()</code>和<code>imag()</code>获得实部和虚部</p>
+</li>
+<li><p>字符串：<code>var a string = &quot;abc&quot;</code>，通过数组下标获取内容，不能在初始化后修改，通过<code>len()</code>获取长度，字符串连接用运算符+</p>
+</li>
+<li><p>支持两个字符类型：byte和rune（代表单个Unicode字符），go的多数api假设字符串为utf-8编码</p>
+</li>
+<li><p>数组声明方法：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419125939080.png" alt="image-20220419125939080" style="zoom:67%;">
+* 遍历：`for i:=0; i< len(array); i++ {}`或`for i, v := range array {}`——range：索引+元素值，类似enumerate
+
+<ul>
+<li><p>go中数组为值类型（value type），所有值类型变量赋值和参数传递时产生一次复制——数组作为函数参数时，会复制一次，函数体无法修改外面数组内容</p>
+</li>
+<li><p>修改方法：<strong>数组切片</strong>，数组切片分为三个变量，一个指向原生数组的指针，数组切片中元素个数，数组切片已分配的存储空间；数组切片仍使用数组管理元素（类似C++中vector和数组的关系）</p>
+<ul>
+<li><p>根据一个数组创建数组切片：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419130448384.png" alt="image-20220419130448384" style="zoom:67%;">
+</li>
+<li><p>根据<code>make()</code>创建数组切片：（make只能为slice, map, channel分配内存）</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419130628691.png" alt="image-20220419130628691" style="zoom:67%;">
+</li>
+<li><p>操作数组的所有方法都适用于数组切片</p>
+</li>
+<li><p><code>cap()</code>返回数组切片分配空间大小，<code>len()</code>返回数组切片当前元素数目</p>
+</li>
+<li><p><code>append()</code>：<code>slice = append(slice, 1, 2, 3)</code>，尾部加上3个元素，生成一个新的数组切片；也可<code>slice = append(slice, slice2...)</code>（<strong>slice2后面有3个点，不能省略</strong>）</p>
+</li>
+<li><p>基于数组切片创建数组切片，只要选择范围不超过<code>cap(oldslice)</code>即可，多余位置补0</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">oldslice := []<span class="keyword">int</span> &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;</span><br><span class="line">newslice := oldslice[:<span class="number">5</span>]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>copy(slice1, slice2)</code>：按较短的数组切片元素个数进行复制</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>map：类似dict，键值对的未排序组合</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419131942255.png" alt="image-20220419131942255" style="zoom:67%;">
+
+<ul>
+<li>其中的string为键的类型，后面PersonInfo为值类型</li>
+<li>通过<code>make</code>创建一个新的map，可以创建时指定其初始存储能力：<code>cur_map := make(map[string] int, 100)</code>，或者创建并初始化一个map：<code>tmp_map = map[string] int&#123;&quot;abc&quot;: 1&#125;</code></li>
+<li>通过<code>delete(cur_map, key1)</code>删除键为key1的键值对，若不存在也不报错</li>
+</ul>
+</li>
+</ul>
+<h3 id="流程控制"><a href="#流程控制" class="headerlink" title="流程控制"></a>流程控制</h3><ul>
+<li><p>条件语句：类似C，不允许将最终的return语句包含在if else结构中，花括号必须存在</p>
+</li>
+<li><p>选择语句：不需要break明确跳出一个case，只有在case中添加fallthrough关键字，才会执行下一个case；若不设定switch后的条件表达式，则整个switch类似于多个if else；</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134315797.png" alt="image-20220419134315797" style="zoom:67%;">
+
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134458366.png" alt="image-20220419134458366" style="zoom:67%;">
+</li>
+<li><p>循环语句只有for，用下面的写法替代while；不支持以逗号间隔的多个赋值语句；break、continue类似C，但break可以选择中断哪个循环</p>
+<p><img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134805878.png" alt="image-20220419134805878" style="zoom:67%;"><img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419135020682.png" alt="image-20220419135020682"></p>
+<p><img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419134805878.png" alt="image-20220419134805878" style="zoom:67%;"><img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419135020682.png" alt="image-20220419135020682"></p>
+</li>
+<li><p>goto：跳转到本函数内的某个标签</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419135111578.png" alt="image-20220419135111578" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><ul>
+<li><p>若参数列表中若干个相邻参数的类型相同，则参数列表中额可以省略前面变量的类型声明</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Add</span><span class="params">(a, b <span class="keyword">int</span>)</span><span class="params">(ret <span class="keyword">int</span>, err error)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Add</span><span class="params">(a, b <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="comment">//如果只有一个返回值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用：如果导入过该函数所在的包，则：<code>c := math.Add(1, 2)</code></p>
+</li>
+<li><p>Go中函数名字大小写体现了该函数的可见性，有时导入了包，但编译器仍会报错无法找到<code>add_xxx</code>函数——大写字母开头的函数才能被其他包使用，此规则同样适用于类和变量的可见性</p>
+</li>
+<li><p>不定参数：函数传入的参数数目不确定（下例中，参数类型都是int），形如<code>...type</code>格式的类型只能作为参数类型且为最后一个参数，本质上是一个数组切片。如果希望传递任意类型，则为<code>...interface&#123;&#125;</code></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">tmp1</span><span class="params">(args ...<span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">for</span> _, arg := <span class="keyword">range</span> args &#123;</span><br><span class="line">        fmt.Println(arg)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">tmp2</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以给返回值命名，其值在函数开始时自动初始化为空：<code>func tmp()(n int, err Error)&#123;&#125;</code></p>
+</li>
+<li><p>匿名函数：不定义函数名，可以直接赋值给一个变量或直接执行；go的匿名函数是一个闭包</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">f := <span class="function"><span class="keyword">func</span> <span class="params">(a, b <span class="keyword">int</span>, z <span class="keyword">float64</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a*b &lt; <span class="keyword">int</span>(z)</span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(f(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3.5</span>))</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(ch <span class="keyword">chan</span> <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    ch &lt;- ACK</span><br><span class="line">&#125;(reply_chan)  <span class="comment">// 花括号直接跟参数列表，表示函数调用</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h3><ul>
+<li><p>error接口：</p>
+<ul>
+<li><p>接口定义为：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419145949906.png" alt="image-20220419145949906" style="zoom:67%;">
+</li>
+<li><p>对于函数，如果要返回error，error通常作为多种返回值的最后一个</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419150046420.png" alt="image-20220419150046420" style="zoom:67%;">
+</li>
+<li><p>举例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> PathError <span class="keyword">struct</span> &#123;</span><br><span class="line">    Op <span class="keyword">string</span></span><br><span class="line">    Path <span class="keyword">string</span></span><br><span class="line">    Err error</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *PathError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> e.Op + <span class="string">&quot; &quot;</span> + e.Path + <span class="string">&quot;: &quot;</span> + e.Err.Error()</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Stat</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(fi FileInfo, err error)</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> stat syscall.Stat_t</span><br><span class="line">    err = syscall.Stat(name, &amp;stat)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, &amp;PathError(<span class="string">&quot;stat&quot;</span>, name, err)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> fileInfoFromStat(&amp;stat, name), <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>defer：例子如下，一个函数可以存在多个defer语句，defer的调用服从先进后出</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419151534757.png" alt="image-20220419151534757" style="zoom:67%;">
+</li>
+<li><p>panic()和recover()：报告和处理运行时的错误：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419152154859.png" alt="image-20220419152154859" style="zoom:67%;">
+
+<ul>
+<li><p>panic()调用时，正常执行流程停止，函数中defer关键字延迟执行的语句开始执行，函数返回到调用它的位置，并逐层向上执行panic流程，直到所属的goroutine中所有在执行的函数终止。报告错误信息，包括调用panic()时传入的参数——此过程称为错误处理流程</p>
+</li>
+<li><p>recover()用于终止错误处理流程，一般应该在一个使用了defer的函数中执行</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419152702387.png" alt="image-20220419152702387" style="zoom:67%;">
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ul>
+<li><p>结构如下，sorter.go：package main，<code>import &quot;algorithm/bubblesort&quot;</code>，<code>import &quot;algorithm/qsort&quot;</code>；bubblesort.go：package bubblesort；bubblesort_test.go：单元测试文件，package bubblesort；qsort.go和qsort_test.go类似</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419154440978.png" alt="image-20220419154440978" style="zoom:67%;">
+</li>
+<li><p>flag包解析命令行参数（一些变量可以定义在函数外，作为全局变量，这里*string为指针，类似C++，此时如果要在另一个函数内部修改数组，直接传递指针或数组切片即可）</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419153343288.png" alt="image-20220419153343288" style="zoom:67%;">
+</li>
+<li><p>文件读取操作，需要导入os包打开文件，<code>file, err = os.Open(infile)</code>，文件关闭需要用<code>defer file.close()</code>，然后通过bufio包读取文件内容</p>
+</li>
+<li><p>文件输出操作，先生成输出文件<code>file, _, _ = os.Create(outfile)</code>，之后<code>file.WriteString(string1)</code></p>
+</li>
+<li><p>strconv包实现基本数据类型与字符串表示的转换，<code>strconv.Itoa(x int) string</code>：接收一个int类型参数，返回x的字符串（反之为<code>Atoi</code>）</p>
+</li>
+<li><p>单元测试文件一般需要导入testing包，一个样例如下</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419154756827.png" alt="image-20220419154756827" style="zoom:67%;">
+
+</li>
+</ul>
+<h2 id="面向对象"><a href="#面向对象" class="headerlink" title="面向对象"></a>面向对象</h2><h3 id="类型系统"><a href="#类型系统" class="headerlink" title="类型系统"></a>类型系统</h3><ul>
+<li><p>可以给任意类型（包括内置类型）添加新的函数，以int为例，定义一个新的类型Integer（就是int）并增加一个新的函数Less()，此时若<code>var a Integer = 1</code>有<code>a.Less(2)</code></p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160251992.png" alt="image-20220419160251992" style="zoom:67%;">
+
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160411403.png" alt="image-20220419160411403" style="zoom:67%;">
+</li>
+<li><p>Go中没有类似python的self或类似C++的this；上例中，如果要修改对象，可以改用指针：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160634607.png" alt="image-20220419160634607" style="zoom:67%;">
+</li>
+<li><p>http包中关于HTTP头部信息的Header类型和上例也类似：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419160836856.png" alt="image-20220419160836856" style="zoom:67%;">
+</li>
+<li><p>值语义和引用语义：</p>
+<ul>
+<li>对于<code>b=a</code>，如果b的修改不影响a的值，则此类型为值类型。go中大多数类型为值类型，包括：基本类型、数组array（这和C++完全不同）、结构体struct、指针等，若要表达引用，必须：<code>var b = &amp;a</code></li>
+<li>有4个类型具有引用含义：数组切片（指向数组的一个区间）、map、channel、interface</li>
+</ul>
+</li>
+<li><p>结构体：和其他语言的class具有同等地位，但放弃了很多面向对象特性，只保留了组合特性。例如，定义一个矩形类型，并定义一个成员方法计算矩形的面积（Rect为类的名称，该类是一个struct）</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Rect <span class="keyword">struct</span> &#123;</span><br><span class="line">	x, y <span class="keyword">float64</span></span><br><span class="line">    width, height <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *Rect)</span> <span class="title">Area</span><span class="params">()</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> r.width * r.height</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">tmp := &amp;Rect&#123;x: <span class="number">1</span>, y: <span class="number">2</span>, width: <span class="number">2</span>, height: <span class="number">2</span>&#125;</span><br><span class="line">fmt.Println(tmp.Area())</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><ul>
+<li><p>初始化方式如下，没有显式初始化都会被初始化为该类型的零值</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419162333739.png" alt="image-20220419162333739" style="zoom:67%;">
+</li>
+<li><p>go没有构造函数，对象的创建通常由一个全局的创建函数完成（以NewXXX命名）：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419163716255.png" alt="image-20220419163716255" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="匿名组合"><a href="#匿名组合" class="headerlink" title="匿名组合"></a>匿名组合</h3><ul>
+<li><p>以匿名组合的方式实现继承，如下例，定义Base类，有两个成员函数Foo()和Bar()，定义一个Foo类，继承并改写了Bar()方法</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Base <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(base *Base)</span> <span class="title">Foo</span><span class="params">()</span></span> &#123;...&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(base *Base)</span> <span class="title">Bar</span><span class="params">()</span></span> &#123;...&#125;</span><br><span class="line"><span class="keyword">type</span> Foo <span class="keyword">struct</span> &#123;</span><br><span class="line">    Base</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(foo *Foo)</span> <span class="title">Bar</span><span class="params">()</span></span> &#123;</span><br><span class="line">    foo.Base.Bar()</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>派生类Foo没有改写即类的成员方法时，相应的方法就被继承，例如foo.Foo()和foo.Base.Foo()效果相同</p>
+</li>
+<li><p>可以以指针的方式得到“派生类”，此时Foo创建实例时，需要提供一个Base实例的指针——类似于C++的虚基类</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Foo <span class="keyword">struct</span> &#123;</span><br><span class="line">	*Base</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="可见性"><a href="#可见性" class="headerlink" title="可见性"></a>可见性</h3><ul>
+<li>没有private、public、protected这些关键字，若某个符号对其他package可见，则该符号以大写字母开头，成员函数的可访问性类似</li>
+<li>Go语言符号的可访问性是包一级，即包内部的其他类都可以访问它</li>
+</ul>
+<h3 id="接口（很重要）"><a href="#接口（很重要）" class="headerlink" title="接口（很重要）"></a>接口（很重要）</h3><ul>
+<li><p>go之前，其他语言的接口在实现类时，需要明确声明自己实现了某个接口，即强制性接口继承，称为侵入式接口</p>
+</li>
+<li><p>go中，一个类只要实现了接口要求的所有函数，则称这个类实现了该接口，例如定义一个File类，实现了Read、Write、Seek、Close函数，并定义IFile、IReader、IWriter、ICloser接口。</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419180023066.png" alt="image-20220419180023066" style="zoom:67%;">
+
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419180104852.png" alt="image-20220419180104852" style="zoom:67%;">
+
+<ul>
+<li><p>File没有从这些接口继承，但File实现了这些接口，因此可以进行赋值</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419180225848.png" alt="image-20220419180225848" style="zoom:67%;">
+</li>
+<li><p>此时不再需要绘制类的继承图，并且实现类的时候只需要关心类提供了什么方法，不需要考虑接口要拆分多细才合理，还不用为了实现一个接口而导入一个包</p>
+</li>
+</ul>
+</li>
+<li><p>接口赋值：包括将对象实例赋值给接口，或者将一个接口赋值为另一个接口</p>
+<ul>
+<li><p>前者，要求对象实例实现了接口要求的所有方法，例如，定义一个Integer类型，定义接口LessAdder：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Integer <span class="keyword">int</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a Integer)</span> <span class="title">Less</span><span class="params">(b Integer)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a &lt; b</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *Integer)</span> <span class="title">Add</span><span class="params">(b Integer)</span></span> &#123;</span><br><span class="line">    *a += b</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> LessAdder <span class="keyword">interface</span> &#123;</span><br><span class="line">    Less(b Integer) <span class="keyword">bool</span></span><br><span class="line">    Add(b Integer)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> a Integer = <span class="number">1</span></span><br><span class="line"><span class="keyword">var</span> b LessAdder = &amp;a</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>此时*Integer既存在Less函数，又存在Add()函数，满足LessAdder接口——Go会根据<code>func (a Integer) Less(b Integer) bool</code>自动生成新的方法<code>func (a *Integer) Less(b Integer) bool &#123;return (*a).Less(b)&#125;</code></li>
+</ul>
+</li>
+<li><p>后者，只要两个接口具有相同的方法列表，它们就是等同的，如果接口A的方法列表是接口B的方法列表的子集，则接口B可以赋值给接口A，反之不行</p>
+</li>
+</ul>
+</li>
+<li><p>接口查询：查询Writer接口能否转化为IStream接口；进一步可以查询接口只想的对象是否为某个类型（file1接口指向的对象实例是否为*File类型——前文里，接口的赋值使用了&amp;）</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> file1 Writer = ...</span><br><span class="line"><span class="keyword">if</span> file5, ok := file1.(IStream); ok &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> file6, ok := file1.(*File); ok &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>类型查询：查看接口指向对象实例的类型，例如：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419182223072.png" alt="image-20220419182223072" style="zoom:67%;">
+
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419182330415.png" alt="image-20220419182330415" style="zoom:67%;">
+</li>
+<li><p>接口组合：</p>
+<img src="/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/image-20220419182509033.png" alt="image-20220419182509033" style="zoom:67%;">
+</li>
+<li><p>Any类型：任何对象实例都满足空接口interface{}，因此当函数可以接收任意的对象实例时，通常会声明为interface{}（<code>func Println(args ...interface&#123;&#125;)</code>）</p>
+</li>
+</ul>
+<h3 id="实例-1"><a href="#实例-1" class="headerlink" title="实例"></a>实例</h3><ul>
+<li>go标准库中没有GUI相关的功能，也没有成熟的第三方界面库——go初始定位为高并发的服务器端程序</li>
+<li>略</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\19\Go语言编程-2\" rel="bookmark">Go语言编程(2)</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Go语言编程》阅读笔记（2） </p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/04/18/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-1/" title="Go语言编程 (1)">https://thomas-li-sjtu.github.io/2022/04/18/Go语言编程-1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go/" rel="tag"><i class="fa fa-tag"></i> Go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/18/mBART/" rel="prev" title="Multilingual Denoising Pre-training for Neural Machine Translation">
+      <i class="fa fa-chevron-left"></i> Multilingual Denoising Pre-training for Neural Machine Translation
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/19/Go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-2/" rel="next" title="Go语言编程(2)">
+      Go语言编程(2) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E8%AF%86Go"><span class="nav-number">1.</span> <span class="nav-text">初识Go</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%BA%E5%BA%8F%E7%BC%96%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">顺序编程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">2.1.</span> <span class="nav-text">变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E9%87%8F"><span class="nav-number">2.2.</span> <span class="nav-text">常量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.3.</span> <span class="nav-text">数据类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="nav-number">2.4.</span> <span class="nav-text">流程控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">2.5.</span> <span class="nav-text">函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="nav-number">2.6.</span> <span class="nav-text">错误处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">2.7.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.</span> <span class="nav-text">面向对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.1.</span> <span class="nav-text">类型系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">3.2.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8C%BF%E5%90%8D%E7%BB%84%E5%90%88"><span class="nav-number">3.3.</span> <span class="nav-text">匿名组合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E8%A7%81%E6%80%A7"><span class="nav-number">3.4.</span> <span class="nav-text">可见性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3%EF%BC%88%E5%BE%88%E9%87%8D%E8%A6%81%EF%BC%89"><span class="nav-number">3.5.</span> <span class="nav-text">接口（很重要）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B-1"><span class="nav-number">3.6.</span> <span class="nav-text">实例</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

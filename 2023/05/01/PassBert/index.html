@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Improving Real-world Password Guessing Attacks via Bi-directional Transformers》（Usenix Security 2023）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Improving Real-world Password Guessing Attacks via Bi-directional Transformers">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Improving Real-world Password Guessing Attacks via Bi-directional Transformers》（Usenix Security 2023）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501142338266.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501144431432.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501152212869.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501155422815.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501160231119.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501160939034.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501161427713.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501163552468.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501161517410.png">
+<meta property="article:published_time" content="2023-05-01T04:39:18.000Z">
+<meta property="article:modified_time" content="2023-05-01T08:51:32.793Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta property="article:tag" content="Transformer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/image-20230501142338266.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Improving Real-world Password Guessing Attacks via Bi-directional Transformers | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Improving Real-world Password Guessing Attacks via Bi-directional Transformers
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-05-01 12:39:18" itemprop="dateCreated datePublished" datetime="2023-05-01T12:39:18+08:00">2023-05-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Improving Real-world Password Guessing Attacks via Bi-directional Transformers》（Usenix Security 2023）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>提出了一个基于双向Transformer的猜测框架，称为PassBERT，将pre-training/finetuning范式应用于密码猜测攻击</li>
+<li>准备一个预先训练好的密码模型，其中包含一般密码分布的知识。设计三种特定于攻击的微调方法来定制预训练密码模型：<ul>
+<li>条件密码猜测——在给定部分密码的情况下恢复完整密码</li>
+<li>针对性的密码猜测——使用特定用户的个人信息破解密码</li>
+<li>自适应的基于规则的密码猜测——为基本密码选择自适应的篡改规则，以生成规则转换的密码候选</li>
+</ul>
+</li>
+<li>微调模型在三种攻击中的性能分别比现有模型提高了14.53%、21.82%和4.86%</li>
+<li>提出一个混合式密码强度计来减轻这三种攻击的风险</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>对密码猜测攻击进行了几十年的研究[20，26，32，57]，数据驱动模型（Markov）和基于规则的工具（Hashcat）用于离线破解密码</li>
+<li>大多数研究集中在没有目标密码先验信息的一般猜测攻击，但黑客经常收集额外的场景特定知识以进一步提高攻击能力（如侧信道攻击[29，63]）——本文中称为真实世界猜测攻击<ul>
+<li>针对性的密码猜测（TPG）[10，35，45，55]</li>
+<li>条件密码猜测（CPG）[37, 38]——在给定部分密码的情况下恢复完整密码（当攻击者以某种方式收集到部分密码，如通过监控摄像头的恶意监控或肩并肩的网上冲浪，CPG是可实现的）</li>
+<li>自适应基于规则的密码猜测（ARPG）[37, 38]——单词（基本密码）自动选择自适应规则以生成规则转换的候选密码</li>
+</ul>
+</li>
+<li>所有的密码猜测攻击，无论是一般的还是基于现实世界的，都可以被概念化为对密码（即文本）的概率分布进行近似的努力——基于双向Transformer的猜测框架的天然适应性</li>
+<li>先前的工作只是简单地将Transformer从NLP应用到一般的猜测攻击[22]和ARPG [37]，没有一个能够超越SOTA。这表明需要进一步的设计</li>
+<li>本文提出了一个基于字符的双向Transformer的猜测框架，称为PassBERT<ul>
+<li>使用未标记的密码预训练一个通用的密码模型</li>
+<li>针对CPG、TPG和ARPG三种攻击模型，设计特定的微调方法——修改模型架构以适应特定攻击的输入和输出（标签）格式，使用相应的目标函数重新训练模型<ul>
+<li>实验结果：CPG攻击、TPG攻击和ARPG攻击中，微调模型的性能分别比现有模型提高了14.53%、21.82%和4.86%</li>
+</ul>
+</li>
+<li>通过消融实验分析预训练的效果：攻击模型由预训练的自然语言模型或随机变量初始化<ul>
+<li>两种预训练模型（根据密码或自然语言进行训练）在先验知识的帮助下，在CPG和ARPG中提供显著的收益，在目标攻击（TPG）中表现出边际收益</li>
+<li>预训练的密码模型比预训练的自然语言模型具有更好的猜测性能，表明预训练在特定密码语料库上的有效性</li>
+</ul>
+</li>
+<li>推出亚秒级延迟的混合密码强度计（<a target="_blank" rel="noopener" href="https://github.com/snow0011/PassBertStrengthMeter">HPSM</a>）<ul>
+<li>密码计中显示密码每个部分的强度，以便用户可以修改易受攻击的部分</li>
+<li>提醒用户有针对性的猜测攻击的风险</li>
+<li>突出显示输入密码的基本单词</li>
+<li>可以结合密码泄露检查[23，47]来检测输入是否被公开泄露，一旦泄露，则输入可能会遭受ARPG攻击</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h3 id="Password-Guessing-Attacks"><a href="#Password-Guessing-Attacks" class="headerlink" title="Password Guessing Attacks"></a>Password Guessing Attacks</h3><ul>
+<li>一般密码猜测攻击<ul>
+<li>大部分在线猜测工作都在做针对性的猜测[10，24，55]</li>
+<li>数据驱动模型[30，32，57]和基于规则的猜测工具[17，26]通常用于offline猜测</li>
+<li>数据驱动的猜测模型通常基于观察到的密码来训练概率模型，包括马尔可夫[28，32]，概率上下文无关文法（PCFG）[24，52，56，57，60]，基于神经网络的模型（FLA）[30]和生成对抗网络（GAN）[39]。这些模型旨在通过猜测次数来估计强度[11]</li>
+<li>基于规则的猜测工具是Hashcat  [17，26，62]等将篡改规则（例如，“删除最后三个字符”）应用于单词，以产生规则转换的候选密码。基于规则的工具对它们的初始配置高度敏感[3，21，26]，通常基于专家知识</li>
+</ul>
+</li>
+<li>具有额外信息的真实世界攻击<ul>
+<li>CPG：[38，39]<ul>
+<li>在给定部分密码的情况下破解完整密码</li>
+<li>当攻击者通过监控摄像头中的恶意记录或肩膀冲浪，或可能想要破解包含网站名称或其他子字符串的密码时，可以发起CPG，用户也可以利用CPG评估每个字符对最终安全性的影响</li>
+<li>一个简单的实现是应用数据驱动模型产生大量的候选密码，过滤掉噪声密码</li>
+<li>Pasquini等人[38，39]基于Wasserstein自动编码器[48]提出了一种新的CPG方法</li>
+</ul>
+</li>
+<li>TPG：[35，55]<ul>
+<li>攻击者已经收集了个人信息，如历史密码</li>
+<li>鉴于电子邮件的密码泄露[7，9]，失败登录尝试的限制，以及用户密码的重复使用率[45]，TPG攻击正成为一个日益增长的安全问题</li>
+<li>Das等人[10]提出了第一个关于目标攻击的学术工作。随后的工作[24，35，55]调查了几种改进的目标猜测方法，如个人PCFG[24]，TarGuess[55]和Pass2path[35]</li>
+<li>2019年提出的Pass2path是最新最有效的定向猜测模型</li>
+</ul>
+</li>
+<li>ARPG：[37]<ul>
+<li>攻击者自动为字典中的每个单词选择自适应规则，每个单词仅与所选择的规则相关联</li>
+<li>相比之下，基于规则的猜测工具中的混淆规则不一定是有效的，并且该规则具有条件性质，应当考虑该条件性质以寻求最佳配置</li>
+<li>本文期望自适应规则与给定单词很好地交互。因此，ARPG的目标是尽早找到目标密码</li>
+<li>ARPG可以减少专家配置规则顺序的偏见——攻击者可以收集广泛使用的规则来建立一个模型，捕捉单词和规则之间的适应关系</li>
+<li>2021年，Pasquini等人[37]提出了第一个基于自适应规则的猜测框架，建立了一个CNN（卷积神经网络）模型，为每个单词选择自适应规则</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Baselines：分别使用最先进的CWAE、Pass2path、ADaMs模型作为CPG、TPG和ARPG攻击的基线（三个模型在github都有开源代码）</li>
+</ul>
+<h3 id="Bi-directional-Transformers"><a href="#Bi-directional-Transformers" class="headerlink" title="Bi-directional Transformers"></a>Bi-directional Transformers</h3><ul>
+<li>介绍略</li>
+<li>本文选择了所有参数都可以学习的微调方法</li>
+</ul>
+<h2 id="Preliminaries"><a href="#Preliminaries" class="headerlink" title="Preliminaries"></a>Preliminaries</h2><h3 id="Workflow-of-Three-Attacks"><a href="#Workflow-of-Three-Attacks" class="headerlink" title="Workflow of Three Attacks"></a>Workflow of Three Attacks</h3><ul>
+<li>监督学习是一种广泛使用的机器学习任务，通过使用监督信号来学习从输入到输出的映射关系</li>
+<li>本文将监督信号表示为一组数据x及其对应的一组标签y，然后训练监督模型，在训练期间，模型逐渐更新其参数使得输出尽可能接近给定实例x的标签</li>
+<li>本文使用交叉熵损失函数。下表中总结了三个场景的监控信号<ul>
+<li>CPG：信号是部分密码，但有完整的密码。CPG旨在训练该模型，使其能够在给定部分密码的情况下预测正确的密码。CPG的输出直接作为候选密码</li>
+<li>TPG：监控信号是通过动态规划算法（在[35]中实现）计算的具有最短编辑路径的密码。编辑路径是一系列原子编辑操作（在攻击设计中预定义），如(delete，8)、(delete，9)、(delete，10)，将密码转换为其变体。给定一个泄露的密码，TPG模型可以以不同的置信度输出多个编辑路径。将编辑路径应用于泄漏的密码，以获得其变体作为候选密码</li>
+<li>ARPG：监督信号是具有命中规则（即规则集的子集）的密码。模型输出自适应规则，这些规则依次应用于密码以获得候选密码。自适应规则通常与单词更兼容，使得在早期命中（生成少量密码就命中）成为可能。使用HashCat的规则，作为ARPG使用的mangling规则</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2023/05/01/PassBert/image-20230501142338266.png" alt="image-20230501142338266"></p>
+<h3 id="Threat-Model"><a href="#Threat-Model" class="headerlink" title="Threat Model"></a>Threat Model</h3><ul>
+<li>本文主要对真实世界猜测攻击[35，37，38]进行建模。攻击者收集特定于攻击的信息（例如，部分密码、历史密码或广泛使用的篡改规则），并且通常求助于监督学习来学习一组输入和相关联的一组输出之间的函数</li>
+</ul>
+<h3 id="Password-Breach-Datasets"><a href="#Password-Breach-Datasets" class="headerlink" title="Password Breach Datasets"></a>Password Breach Datasets</h3><ul>
+<li>选择了先前工作中使用的几个数据集[16，21，37，38，43，54，60]</li>
+<li>用于目标猜测的数据集有电子邮件，而用于非目标猜测攻击的数据集是纯文本密码</li>
+<li>密码预训练、CPG和ARPG使用由明文密码组成的数据集：Rockyou-2009，000Webhost（2016），Neopets（2016），Cit0day（2020），Rockyou-2021</li>
+<li>对于TPG攻击，选择以下两个包含电子邮件的数据集：<ul>
+<li>BreachCompilation  (4iQ)（2017），包括LinkedIn、雅虎、MySpace、Twitter、Neopets等几个知名网站的集合</li>
+<li>Collection#1：一个credential数据库（2019）</li>
+<li>基于相同的电子邮件地址合并账户[35]——同一个用户通常用相同的电子邮件注册；大多数用户（97.1%以上）的密码不超过10个</li>
+<li>为了评估有针对性的猜测攻击，重点关注泄露来自同一用户的非重复密码</li>
+</ul>
+</li>
+<li>数据集清理：采用常用的清理策略[16，35，37，60]来过滤掉原始数据集中的哈希密码、非哈希密码和超过32个字符的异常长密码</li>
+</ul>
+<h4 id="伦理审查"><a href="#伦理审查" class="headerlink" title="伦理审查"></a>伦理审查</h4><ul>
+<li>不会确定泄露密码的确切用户，且重点放在用户密码的整个特征集合上</li>
+<li>基于文献[46]中的以下特征，本文工作是符合伦理的：(1)公共数据（即，只使用公开可用的数据集，不与他人共享）；(2)必要的数据（即，没有这些数据集就无法进行这项研究）；(3)没有额外的危害（即，研究不会通过安全管理的数据识别任何个人信息）</li>
+</ul>
+<h3 id="Password-Bi-directionality"><a href="#Password-Bi-directionality" class="headerlink" title="Password Bi-directionality"></a>Password Bi-directionality</h3><ul>
+<li>密码也具有双向性，如下图所示。通过展示字符对其环境的自我关注来形象化这种双向性。从亮到暗的颜色对应从弱到强的连接</li>
+<li>在双向上下文中，字符与其他字符的连接是不同的<ul>
+<li>顺序性：字符通常和其相邻的字符相关性更强</li>
+<li>聚合：相关字符的内部序列（如“p@ssw0rd123”中的“p@ssw0rd”和“123”）</li>
+</ul>
+</li>
+<li>本文的假设是，捕获双向表示可以获得更好的密码候选，提高密码猜测效率</li>
+</ul>
+<img src="/2023/05/01/PassBert/image-20230501144431432.png" alt="image-20230501144431432" style="zoom:67%;">
+
+<h2 id="PassBERT-Guessing-Framework"><a href="#PassBERT-Guessing-Framework" class="headerlink" title="PassBERT Guessing Framework"></a>PassBERT Guessing Framework</h2><h3 id="Password-Pre-training"><a href="#Password-Pre-training" class="headerlink" title="Password Pre-training"></a>Password Pre-training</h3><ul>
+<li>预先训练的模型架构：<ul>
+<li>密码标记为一个字符序列，并附加符号表示开始和结束</li>
+<li>最大密码长度为32个字符，并考虑总共99个有效字符，包括95个ASCII字符(表示为∑)和4个附加的开始、结束、占位符和未知字符符号</li>
+<li>嵌入层通过总结其字符和位置嵌入将tokenized input转换成其输入嵌入</li>
+</ul>
+</li>
+<li>预训练流程：<ul>
+<li>多个transformer模块处理用于特征提取的输入嵌入，MLM为目标</li>
+<li>删除了NSP目标，因为密码域中没有与下一句等价的内容</li>
+<li>将训练集中的每个密码预处理成部分密码（表示为pivot）和相关的完整密码（表示为pwd）的形式</li>
+<li>遵循BERT中的相同屏蔽比例</li>
+<li>一个密码可以被预处理成多个pivot</li>
+</ul>
+</li>
+</ul>
+<img src="/2023/05/01/PassBert/image-20230501152212869.png" alt="image-20230501152212869" style="zoom:67%;">
+
+<ul>
+<li>预训练数据集：<ul>
+<li>使用rock  you-2021作为预训练数据集</li>
+<li>Rockyou-2021中随机抽取了6000万个密码</li>
+</ul>
+</li>
+<li>计算性能：RTX 2080 Ti的Ubuntu 20.04机器上训练，需要2天时间。存储预训练模型需要8.9MB</li>
+</ul>
+<h3 id="Password-Fine-tuning"><a href="#Password-Fine-tuning" class="headerlink" title="Password Fine-tuning"></a>Password Fine-tuning</h3><ul>
+<li>微调中需要修改架构修改并重新训练<ul>
+<li>保留预训练层，包括顶部输入层、嵌入层和几个transformer block</li>
+<li>用特定的监督信号重新训练下游模型</li>
+</ul>
+</li>
+<li>预训练模型主要捕获输入密码的上下文嵌入——密码中每个字符的上下文信息的高维表示</li>
+<li>当基于预训练来训练特定模型时，用来自预训练模型的情境化嵌入的参数来初始化特定模型的预训练层。当在没有预训练的情况下训练特定的模型时，预训练的层用随机变量初始化</li>
+</ul>
+<h2 id="PassBERT-for-Real-world-Attack-Models"><a href="#PassBERT-for-Real-world-Attack-Models" class="headerlink" title="PassBERT for Real-world Attack Models"></a>PassBERT for Real-world Attack Models</h2><ul>
+<li><p>消融实验设置：</p>
+<ul>
+<li>PassBERT：以密码做预训练的模型</li>
+<li>Vanilla BERT：公开的预训练模型</li>
+<li>*PassBERT：随机初始化的模型</li>
+</ul>
+</li>
+<li><p>Vanilla BERT为char level分词，替换unused token以增加大写字母</p>
+</li>
+</ul>
+<h3 id="CPG"><a href="#CPG" class="headerlink" title="CPG"></a>CPG</h3><h4 id="微调"><a href="#微调" class="headerlink" title="微调"></a>微调</h4><ul>
+<li>输入为一个pivot，例如p***w0rd***</li>
+<li>CPG建模为掩蔽语言模型任务，预测丢失字符的条件概率</li>
+<li>pivot创建：<ul>
+<li>类似[38，39]</li>
+<li>以一定的百分比（即50%）将每个字符随机替换为表示缺失字符的屏蔽符号。只保留那些包含至少四个可观察字符和至少五个屏蔽符号的生成的主元</li>
+</ul>
+</li>
+<li>将密码中的屏蔽比例从15%增加到更大的值（50%）</li>
+<li>使用Rockyou-2009重新训练CPG模型</li>
+</ul>
+<h4 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h4><ul>
+<li><p>实验设置：</p>
+<ul>
+<li>generate 1e7 candidate passwords per evaluation pivot, and classify the evaluation pivots into four classes by the number of passwords satisfying the pivot.</li>
+<li>We use Neopets and Cit0day as evaluation sets due to their large space. CWAE only generates 30 evaluation pivots for each pivot class, possibly inducing bias. We extract a total of 120 evaluation pivots for each class from evaluation sets for robust and convincing results.</li>
+</ul>
+</li>
+<li><p>评估标准：每个pivot类中120个评估pivot的平均破解率</p>
+</li>
+<li><p>结果：</p>
+<p><img src="/2023/05/01/PassBert/image-20230501155422815.png" alt="image-20230501155422815"></p>
+</li>
+<li><p>模型以递减的概率穷尽掩码位置中的字符来生成候选密码，CWAE可能存在较多的噪音</p>
+</li>
+<li><p>PassBERT的生成速度更快，因为一次就能生成所有的密码，而CWAE一次只能生成一个候选密码</p>
+</li>
+</ul>
+<h3 id="TPG"><a href="#TPG" class="headerlink" title="TPG"></a>TPG</h3><ul>
+<li>训练TPG模型在密码泄露的情况下输出编辑路径</li>
+</ul>
+<h4 id="微调-1"><a href="#微调-1" class="headerlink" title="微调"></a>微调</h4><ul>
+<li><p>使用序列标记机制[44]。为密码中的每个字符预测一个编辑操作。一个编辑操作序列构成编辑路径。在顺序标记机制中，每个字符位置只能输出一次编辑操作</p>
+</li>
+<li><p>定义操作：keep、delete、replace1（替换为一个字符）、replace2（替换为两个字符）</p>
+</li>
+<li><p>一个操作为一个二元组（op，str）。keep、del的str为空，replace1的str为一个字符，replace1的str为两个字符</p>
+<p><img src="/2023/05/01/PassBert/image-20230501160231119.png" alt="image-20230501160231119"></p>
+</li>
+<li><p>为了模拟append操作，在密码末尾添加了三个占位符，因为大多数密码不会增加三位以上</p>
+</li>
+<li><p>限制：无法捕获一些转换</p>
+</li>
+<li><p>更改分类器，以获得密码中每个字符的编辑操作概率（分类器输出9122维向量）</p>
+</li>
+<li><p>输入：以p@ssw0rd123为例</p>
+<ul>
+<li>输入转换为：[CLS] p @ s s w 0 r d 1 2 3 _ _ _ [SEP]</li>
+<li>模型输出 the top edit path in the form of “[CLS] 1 1 1 1 1 1 1 1 10 1 1 9121 9122 _ [SEP]”, where each numeric value indicates an edit operation (op,str) from 9,122 operations.</li>
+<li>最后根据token和编辑操作的映射，将该edit path转为实际的密码</li>
+</ul>
+</li>
+<li><p>以动态规划的方式，获得top 1000的edit path</p>
+</li>
+</ul>
+<h4 id="评估-1"><a href="#评估-1" class="headerlink" title="评估"></a>评估</h4><img src="/2023/05/01/PassBert/image-20230501160939034.png" alt="image-20230501160939034" style="zoom:67%;">
+
+<ul>
+<li><p>insight：</p>
+<img src="/2023/05/01/PassBert/image-20230501161427713.png" alt="image-20230501161427713" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="ARPG"><a href="#ARPG" class="headerlink" title="ARPG"></a>ARPG</h3><ul>
+<li>字典中的每个单词仅与所选择的自适应混淆规则相关联以生成猜测</li>
+</ul>
+<h4 id="微调-2"><a href="#微调-2" class="headerlink" title="微调"></a>微调</h4><ul>
+<li><p>攻击设计：</p>
+<ul>
+<li><p>建立一个分类模型来输出一个0-1的连续值来衡量规则对单词的适应性</p>
+</li>
+<li><p>形式上，给定一个选择的规则集R、一个单词列表集W和一个目标密码集T。对于一个集合$(w_i,R_i)$，$w_i$为一个密码，$R_i$为一个规则列表，其中的$r_j$表明规则$r_j$下$w_i$是否能命中目标密码，列表的长度为规则集的大小</p>
+</li>
+<li><p>该任务可以被描述为多个二元分类任务</p>
+<img src="/2023/05/01/PassBert/image-20230501163552468.png" alt="image-20230501163552468" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>模型微调：</p>
+<ul>
+<li>两个rule set：Generated和PasswordPro</li>
+<li>T为BreachCompilation，W为000webhost</li>
+<li>$R_i$为label</li>
+<li>输入$w_i$做字符分词，之后使用$[CLS]$的embedding代表整个密码在分类器上做分类。由于0、1分布不均，采用focal loss来平衡</li>
+<li>如果一个分类结果大于阈值，则认为可能存在对应规则转换的目标密码</li>
+</ul>
+</li>
+</ul>
+<h4 id="评估-2"><a href="#评估-2" class="headerlink" title="评估"></a>评估</h4><p><img src="/2023/05/01/PassBert/image-20230501161517410.png" alt="image-20230501161517410"></p>
+<h2 id="Hybrid-Password-Strength-Meters"><a href="#Hybrid-Password-Strength-Meters" class="headerlink" title="Hybrid Password Strength Meters"></a>Hybrid Password Strength Meters</h2><ul>
+<li>应用CPG模型来估计单个字符的强度——每次在密码中屏蔽一个字符，并在给定其余密码上下文的情况下估计它们各自的强度</li>
+<li>使用TPG模型来估计在给定泄漏密码的情况下破解输入密码的猜测次数，并在猜测次数较小时（小于1000次）提醒用户</li>
+<li>应用反向的ARPG模型来推断基本单词，例如，给定输入密码“p@ssw0rd123”，推断基本单词“p@ssw0rd”。然后通过密码泄露检查[47]检测基本单词是否已经被泄露，如果被泄露，则输入的密码就很容易受到ARPG攻击<ul>
+<li>反向训练：<ul>
+<li>通过“p@ssw0rd”获得用于产生“p@ssw0rd123”的自适应规则</li>
+<li>将逆规则应用于目标密码以获得基本单词</li>
+</ul>
+</li>
+<li>当一些规则（例如，“删除最后一个字符”）由于“附加”的未知字符而不能直接反转时，在推断的单词中使用占位符</li>
+</ul>
+</li>
+<li>部署：<ul>
+<li>通过tensorflow.js将模型转换为浏览器可用的json格式的模型</li>
+<li>只在服务器端部署基于python接口的反向ARPG，因为反向ARPG应该与密码泄露检查结合使用</li>
+</ul>
+</li>
+</ul>
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><p>略</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>提出了一个基于双向Transformer的密码猜测框架</li>
+<li>提供了一个现成的预训练密码模型，并设计了特定任务的微调方法来定制预训练密码模型，以适应CPG、TPG和ARPG三种特定模型。微调模型的性能分别比SOTA模型提高了14.53%、21.82%和4.86%</li>
+<li>提出了一个具有亚秒延迟的混合密码强度计</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\07\07\Password-Guessing-via-Neural-Language-Modeling\" rel="bookmark">Password Guessing via Neural Language Modeling</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Password Guessing via Neural Language Modeling》（ML4CS 2019）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\01\PassTrans\" rel="bookmark">PASSTRANS：AN IMPROVED PASSWORD REUSE MODEL BASED ON TRANSFORMER</a></div>
+        <div class="popular-posts-excerpt"><p><p>《PASSTRANS: AN IMPROVED PASSWORD REUSE MODEL BASED ON TRANSFORMER》（ICASSP，2022）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2023/05/01/PassBert/" title="Improving Real-world Password Guessing Attacks via Bi-directional Transformers">https://thomas-li-sjtu.github.io/2023/05/01/PassBert/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+              <a href="/tags/Transformer/" rel="tag"><i class="fa fa-tag"></i> Transformer</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/30/RocketMQ%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="prev" title="RocketMQ源码分析">
+      <i class="fa fa-chevron-left"></i> RocketMQ源码分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/05/01/PassTrans/" rel="next" title="PASSTRANS：AN IMPROVED PASSWORD REUSE MODEL BASED ON TRANSFORMER">
+      PASSTRANS：AN IMPROVED PASSWORD REUSE MODEL BASED ON TRANSFORMER <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Guessing-Attacks"><span class="nav-number">3.1.</span> <span class="nav-text">Password Guessing Attacks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bi-directional-Transformers"><span class="nav-number">3.2.</span> <span class="nav-text">Bi-directional Transformers</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Preliminaries"><span class="nav-number">4.</span> <span class="nav-text">Preliminaries</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Workflow-of-Three-Attacks"><span class="nav-number">4.1.</span> <span class="nav-text">Workflow of Three Attacks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Threat-Model"><span class="nav-number">4.2.</span> <span class="nav-text">Threat Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Breach-Datasets"><span class="nav-number">4.3.</span> <span class="nav-text">Password Breach Datasets</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%A6%E7%90%86%E5%AE%A1%E6%9F%A5"><span class="nav-number">4.3.1.</span> <span class="nav-text">伦理审查</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Bi-directionality"><span class="nav-number">4.4.</span> <span class="nav-text">Password Bi-directionality</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PassBERT-Guessing-Framework"><span class="nav-number">5.</span> <span class="nav-text">PassBERT Guessing Framework</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Pre-training"><span class="nav-number">5.1.</span> <span class="nav-text">Password Pre-training</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Password-Fine-tuning"><span class="nav-number">5.2.</span> <span class="nav-text">Password Fine-tuning</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PassBERT-for-Real-world-Attack-Models"><span class="nav-number">6.</span> <span class="nav-text">PassBERT for Real-world Attack Models</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CPG"><span class="nav-number">6.1.</span> <span class="nav-text">CPG</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AE%E8%B0%83"><span class="nav-number">6.1.1.</span> <span class="nav-text">微调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0"><span class="nav-number">6.1.2.</span> <span class="nav-text">评估</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TPG"><span class="nav-number">6.2.</span> <span class="nav-text">TPG</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AE%E8%B0%83-1"><span class="nav-number">6.2.1.</span> <span class="nav-text">微调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0-1"><span class="nav-number">6.2.2.</span> <span class="nav-text">评估</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARPG"><span class="nav-number">6.3.</span> <span class="nav-text">ARPG</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AE%E8%B0%83-2"><span class="nav-number">6.3.1.</span> <span class="nav-text">微调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0-2"><span class="nav-number">6.3.2.</span> <span class="nav-text">评估</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hybrid-Password-Strength-Meters"><span class="nav-number">7.</span> <span class="nav-text">Hybrid Password Strength Meters</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">8.</span> <span class="nav-text">讨论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">9.</span> <span class="nav-text">结论</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

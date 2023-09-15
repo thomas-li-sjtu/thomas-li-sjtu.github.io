@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《SimCSE: Simple Contrastive Learning of Sentence Embeddings》（SimCSE，2021年EMNLP）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Simple Contrastive Learning of Sentence Embeddings">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《SimCSE: Simple Contrastive Learning of Sentence Embeddings》（SimCSE，2021年EMNLP）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215103320590.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215103305030.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215104217566.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215105500391.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215105815885.png">
+<meta property="article:published_time" content="2021-12-10T11:50:27.000Z">
+<meta property="article:modified_time" content="2021-12-15T09:26:50.927Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Transformer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215103320590.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Simple Contrastive Learning of Sentence Embeddings | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Simple Contrastive Learning of Sentence Embeddings
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-12-10 19:50:27" itemprop="dateCreated datePublished" datetime="2021-12-10T19:50:27+08:00">2021-12-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《SimCSE: Simple Contrastive Learning of Sentence Embeddings》（SimCSE，2021年EMNLP）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>本文介绍SimCSE，一个简单的<strong>对比学习框架</strong>，极大促进了最优的句子嵌入</li>
+<li>首先使用一种无监督的方法，该方法输入语句并在对比目标中进行预测，学习过程中仅将标准dropout用作噪声</li>
+<li>从通过自然语言推理（NLI）数据集学习句子嵌入的工作中汲取灵感，并通过使用“蕴含”对作为肯定词，而“矛盾”对作为硬否定词，将NLI数据集的标注对纳入对比学习——有监督</li>
+<li>评估了标准语义文本相似性（STS）任务上的SimCSE，与之前的最佳结果相比，分别提高了7.9和4.6点</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>提出SimCSE，一个简单的对比嵌入框架，它可以从无标记或有标记的数据中产生更好的句子嵌入</p>
+</li>
+<li><p>无监督SimCSE只是简单地根据dropout预测输入句子本身，如图1a</p>
+<ul>
+<li>同一个句子传递给预训练的BERT两次——dropout两次——获得两个不同的嵌入作为“正对”（<code>positive pairs</code>）</li>
+<li>把同一个batch中的其他句子作为“否定”（<code>negatives</code>），模型预测negatives中的positive</li>
+</ul>
+</li>
+<li><p>有监督SimCSE建立在使用自然语言推理（NLI）数据集进行句子嵌入的基础上，在对比学习中加入了注释句子对，如图1b</p>
+<ul>
+<li>以前的工作将NLI视为一个3分类任务（蕴涵、中性和矛盾），而本文利用了蕴涵对可以自然地用作正实例的事实，本文还发现，添加相应的矛盾对作为硬否定（<code>hard negatives</code>）可以进一步提高性能</li>
+</ul>
+<p><img src="/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215103320590.png" alt="image-20211215103320590"></p>
+</li>
+</ul>
+<h2 id="背景：对比学习"><a href="#背景：对比学习" class="headerlink" title="背景：对比学习"></a>背景：对比学习</h2><ul>
+<li><p>对比学习旨在通过将语义上相近的邻居拉在一起并推开非邻居，来学习有效的表达</p>
+</li>
+<li><p>假设有样本对集合：$D=(x_i,x_i^+)_{i=1}^m$，其中$x_i$与$x_i^+$在语义上近似。令$h_i$和$h_i^+$表示$x_i$与$x_i^+$的表达，则一个batch（batchsize为N）的训练目标为：</p>
+<p><img src="/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215103305030.png" alt="image-20211215103305030"></p>
+<ul>
+<li>其中$\tau$为温度超参数，$sim(h_1,h_2)$为余弦相似度</li>
+<li>本文工作中，通过BERT或RoBERTa对输入句子encode，然后使用上面的对比学习公式作为损失函数，微调所有参数</li>
+</ul>
+</li>
+<li><p>对比学习中的一个关键问题在于如何构建正例对，即构建$x_i,x_i^+$，这里可以直接利用两次输入同一个句子（利用dropout机制）来构建；其他的构建方法包括，使用dual-encoder将当前句子和下一个句子（例如问答）构建为一个正例对</p>
+</li>
+</ul>
+<h2 id="无监督SimCSE"><a href="#无监督SimCSE" class="headerlink" title="无监督SimCSE"></a>无监督SimCSE</h2><ul>
+<li><p>取一组句子$(x_i)_{i=1}^m$，令$x_i^+=x_i$。关键在于使用dropout来获得二者不同的encode表达，由于dropout的概率问题，每次dropout（记为$z,z’$）将mask不同的信息：</p>
+<img src="/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215104217566.png" alt="image-20211215104217566" style="zoom:25%;">
+</li>
+<li><p>本文对比了其他的数据扩充方法，如剪裁、单词删除和替换，但发现没有一个离散的方法的性能，会优于使用dropout noise</p>
+</li>
+<li><p>本文还将该训练目标和“An efficient framework for learning sentence representations”的训练目标做了对比，本文的效果更好</p>
+</li>
+</ul>
+<h2 id="有监督的SimCSE"><a href="#有监督的SimCSE" class="headerlink" title="有监督的SimCSE"></a>有监督的SimCSE</h2><ul>
+<li><p>这里使用有监督的NLI（自然语言推理）数据集进行训练。数据集中，一条数据表示为：sentence1，sentence2，label（蕴含、中立、矛盾）</p>
+</li>
+<li><p>直接从监督数据集中获取$(x_i,x_i^+)$</p>
+<ul>
+<li>对比了多个有监督的数据集，NLI数据集效果更好</li>
+<li>选择label为蕴含的两个句子作为正例对</li>
+</ul>
+</li>
+<li><p>进一步利用NLI数据集：</p>
+<ul>
+<li><p>NLI数据集中，给定一个句子，通常会有三个相关句子和对应的label（蕴含、中立、矛盾）</p>
+</li>
+<li><p>取label为蕴含的sentence2为正例$x_i^+$，取label为矛盾的sentence2为负例$x_i^-$，此时一个batch内的训练目标</p>
+<p><img src="/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215105500391.png" alt="image-20211215105500391"></p>
+</li>
+<li><p>本文还考虑在SimCSE中使用dual-encoder框架，但性能更差</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><ul>
+<li><p>Sentence embedding在STS任务中的表现</p>
+<p><img src="/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/image-20211215105815885.png" alt="image-20211215105815885"></p>
+</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>提出SimCSE，大大提高语义文本相似性任务的句子嵌入性能</li>
+<li>本文的对比目标（训练目标），尤其是无监督目标，可能在自然语言处理中有更广泛的应用。它为文本输入的数据扩充提供了一个新的视角，并可以扩展到其他连续表示和集成在语言模型预训练中</li>
+</ul>
+<h2 id="关键代码（loss计算）"><a href="#关键代码（loss计算）" class="headerlink" title="关键代码（loss计算）"></a>关键代码（loss计算）</h2><ul>
+<li><p>无监督</p>
+<p>collator</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CSECollator</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self,</span></span></span><br><span class="line"><span class="function"><span class="params">                 tokenizer,</span></span></span><br><span class="line"><span class="function"><span class="params">                 features=(<span class="params"><span class="string">&quot;input_ids&quot;</span>, <span class="string">&quot;attention_mask&quot;</span>, <span class="string">&quot;token_type_ids&quot;</span></span>),</span></span></span><br><span class="line"><span class="function"><span class="params">                 max_len=<span class="number">100</span></span>):</span></span><br><span class="line">        self.tokenizer = tokenizer</span><br><span class="line">        self.features = features</span><br><span class="line">        self.max_len = max_len</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">collate</span>(<span class="params">self, batch</span>):</span></span><br><span class="line">        new_batch = []</span><br><span class="line">        <span class="keyword">for</span> example <span class="keyword">in</span> batch:</span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>):</span><br><span class="line">                <span class="comment"># 每个句子重复两次</span></span><br><span class="line">                new_batch.append(&#123;fea: example[fea] <span class="keyword">for</span> fea <span class="keyword">in</span> self.features&#125;)</span><br><span class="line">        new_batch = self.tokenizer.pad(</span><br><span class="line">            new_batch,</span><br><span class="line">            padding=<span class="literal">True</span>,</span><br><span class="line">            max_length=self.max_len,</span><br><span class="line">            return_tensors=<span class="string">&quot;pt&quot;</span></span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">return</span> new_batch</span><br></pre></td></tr></table></figure>
+
+<p>loss计算</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">compute_loss</span>(<span class="params">y_pred, tao=<span class="number">0.05</span>, device=<span class="string">&quot;cuda&quot;</span></span>):</span></span><br><span class="line">    idxs = torch.arange(<span class="number">0</span>, y_pred.shape[<span class="number">0</span>], device=device)</span><br><span class="line">    y_true = idxs + <span class="number">1</span> - idxs % <span class="number">2</span> * <span class="number">2</span></span><br><span class="line">    similarities = F.cosine_similarity(y_pred.unsqueeze(<span class="number">1</span>), y_pred.unsqueeze(<span class="number">0</span>), dim=<span class="number">2</span>)</span><br><span class="line">    similarities = similarities - torch.eye(y_pred.shape[<span class="number">0</span>], device=device) * <span class="number">1e12</span></span><br><span class="line">    similarities = similarities / tao</span><br><span class="line">    loss = F.cross_entropy(similarities, y_true)</span><br><span class="line">    <span class="keyword">return</span> torch.mean(loss)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>有监督（不需要double输入）</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SimcseModel</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;Simcse有监督模型定义&quot;&quot;&quot;</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, pretrained_model: <span class="built_in">str</span>, pooling: <span class="built_in">str</span></span>):</span></span><br><span class="line">        <span class="built_in">super</span>(SimcseModel, self).__init__()</span><br><span class="line">        <span class="comment"># config = BertConfig.from_pretrained(pretrained_model)   # 有监督不需要修改dropout</span></span><br><span class="line">        self.bert = BertModel.from_pretrained(pretrained_model)</span><br><span class="line">        self.pooling = pooling</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, input_ids, attention_mask, token_type_ids</span>):</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># out = self.bert(input_ids, attention_mask, token_type_ids)</span></span><br><span class="line">        out = self.bert(input_ids, attention_mask, token_type_ids, output_hidden_states=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.pooling == <span class="string">&#x27;cls&#x27;</span>:</span><br><span class="line">            <span class="keyword">return</span> out.last_hidden_state[:, <span class="number">0</span>]  <span class="comment"># [batch, 768]</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.pooling == <span class="string">&#x27;pooler&#x27;</span>:</span><br><span class="line">            <span class="keyword">return</span> out.pooler_output            <span class="comment"># [batch, 768]</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.pooling == <span class="string">&#x27;last-avg&#x27;</span>:</span><br><span class="line">            last = out.last_hidden_state.transpose(<span class="number">1</span>, <span class="number">2</span>)    <span class="comment"># [batch, 768, seqlen]</span></span><br><span class="line">            <span class="keyword">return</span> torch.avg_pool1d(last, kernel_size=last.shape[<span class="number">-1</span>]).squeeze(<span class="number">-1</span>)       <span class="comment"># [batch, 768]</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.pooling == <span class="string">&#x27;first-last-avg&#x27;</span>:</span><br><span class="line">            first = out.hidden_states[<span class="number">1</span>].transpose(<span class="number">1</span>, <span class="number">2</span>)    <span class="comment"># [batch, 768, seqlen]</span></span><br><span class="line">            last = out.hidden_states[<span class="number">-1</span>].transpose(<span class="number">1</span>, <span class="number">2</span>)    <span class="comment"># [batch, 768, seqlen]                   </span></span><br><span class="line">            first_avg = torch.avg_pool1d(first, kernel_size=last.shape[<span class="number">-1</span>]).squeeze(<span class="number">-1</span>) <span class="comment"># [batch, 768]</span></span><br><span class="line">            last_avg = torch.avg_pool1d(last, kernel_size=last.shape[<span class="number">-1</span>]).squeeze(<span class="number">-1</span>)   <span class="comment"># [batch, 768]</span></span><br><span class="line">            avg = torch.cat((first_avg.unsqueeze(<span class="number">1</span>), last_avg.unsqueeze(<span class="number">1</span>)), dim=<span class="number">1</span>)     <span class="comment"># [batch, 2, 768]</span></span><br><span class="line">            <span class="keyword">return</span> torch.avg_pool1d(avg.transpose(<span class="number">1</span>, <span class="number">2</span>), kernel_size=<span class="number">2</span>).squeeze(<span class="number">-1</span>)     <span class="comment"># [batch, 768]</span></span><br><span class="line">        </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">simcse_sup_loss</span>(<span class="params">y_pred: <span class="string">&#x27;tensor&#x27;</span></span>) -&gt; &#x27;tensor&#x27;:</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;有监督的损失函数</span></span><br><span class="line"><span class="string">    y_pred (tensor): bert的输出, [batch_size * 3, 768]</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 得到y_pred对应的label, 每第三句没有label, 跳过, label= [1, 0, 4, 3, ...]</span></span><br><span class="line">    y_true = torch.arange(y_pred.shape[<span class="number">0</span>], device=DEVICE)</span><br><span class="line">    use_row = torch.where((y_true + <span class="number">1</span>) % <span class="number">3</span> != <span class="number">0</span>)[<span class="number">0</span>]</span><br><span class="line">    y_true = (use_row - use_row % <span class="number">3</span> * <span class="number">2</span>) + <span class="number">1</span></span><br><span class="line">    <span class="comment"># batch内两两计算相似度, 得到相似度矩阵(对角矩阵)</span></span><br><span class="line">    sim = F.cosine_similarity(y_pred.unsqueeze(<span class="number">1</span>), y_pred.unsqueeze(<span class="number">0</span>), dim=<span class="number">-1</span>)</span><br><span class="line">    <span class="comment"># 将相似度矩阵对角线置为很小的值, 消除自身的影响</span></span><br><span class="line">    sim = sim - torch.eye(y_pred.shape[<span class="number">0</span>], device=DEVICE) * <span class="number">1e12</span></span><br><span class="line">    <span class="comment"># 选取有效的行</span></span><br><span class="line">    sim = torch.index_select(sim, <span class="number">0</span>, use_row)</span><br><span class="line">    <span class="comment"># 相似度矩阵除以温度系数</span></span><br><span class="line">    sim = sim / <span class="number">0.05</span></span><br><span class="line">    <span class="comment"># 计算相似度矩阵与y_true的交叉熵损失</span></span><br><span class="line">    loss = F.cross_entropy(sim, y_true)</span><br><span class="line">    <span class="keyword">return</span> loss</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>是否可以替代rdrop中的kl-loss？</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\13\A-Survey-Organizing-Contextualized-Encoders\" rel="bookmark">A Survey Organizing Contextualized Encoders</a></div>
+        <div class="popular-posts-excerpt"><p><p>​    综述《Which *BERT? A Survey Organizing Contextualized Encoders》（EMNLP 2020）</p>
+<p>​</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\15\ALBERT\" rel="bookmark">ALBERT A Lite BERT For Self-supervised Learning Of Language Representations</a></div>
+        <div class="popular-posts-excerpt"><p><p>《ALBERT: A LITE BERT FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS》（ALBERT ICLR 2020）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\23\BART\" rel="bookmark">BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension》（BART）论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\16\BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding\" rel="bookmark">BERT Pre-training of Deep Bidirectional Transformers for Language Understanding</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\24\Bert-over-Bert\" rel="bookmark">BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data</a></div>
+        <div class="popular-posts-excerpt"><p><p>《BoB: BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data》（BoB）2021ACL</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/" title="Simple Contrastive Learning of Sentence Embeddings">https://thomas-li-sjtu.github.io/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Transformer/" rel="tag"><i class="fa fa-tag"></i> Transformer</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/10/Regularized-Dropout-for-Neural-Networks/" rel="prev" title="R-Drop：Regularized Dropout for Neural Networks">
+      <i class="fa fa-chevron-left"></i> R-Drop：Regularized Dropout for Neural Networks
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/15/Targeted-Online-Password-Guessing/" rel="next" title="Targeted Online Password Guessing">
+      Targeted Online Password Guessing <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF%EF%BC%9A%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0"><span class="nav-number">3.</span> <span class="nav-text">背景：对比学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A0%E7%9B%91%E7%9D%A3SimCSE"><span class="nav-number">4.</span> <span class="nav-text">无监督SimCSE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84SimCSE"><span class="nav-number">5.</span> <span class="nav-text">有监督的SimCSE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">6.</span> <span class="nav-text">实验结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E4%BB%A3%E7%A0%81%EF%BC%88loss%E8%AE%A1%E7%AE%97%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">关键代码（loss计算）</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

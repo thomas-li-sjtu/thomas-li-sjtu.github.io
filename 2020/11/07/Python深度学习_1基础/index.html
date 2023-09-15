@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Python深度学习》笔记整理：第一部分 深度学习基础 代码基于 Keras 框架">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python深度学习（1）基础">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2020/11/07/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_1%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Python深度学习》笔记整理：第一部分 深度学习基础 代码基于 Keras 框架">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-07T05:48:00.000Z">
+<meta property="article:modified_time" content="2021-01-21T05:11:59.805Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="TensorFlow">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/11/07/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_1%E5%9F%BA%E7%A1%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Python深度学习（1）基础 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2020/11/07/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_1%E5%9F%BA%E7%A1%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python深度学习（1）基础
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-07 13:48:00" itemprop="dateCreated datePublished" datetime="2020-11-07T13:48:00+08:00">2020-11-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Python深度学习》笔记整理：第一部分 深度学习基础</p>
+<p>代码基于 Keras 框架</p>
+<a id="more"></a>
+
+<h2 id="深度学习基础"><a href="#深度学习基础" class="headerlink" title="深度学习基础"></a>深度学习基础</h2><h3 id="什么是深度学习"><a href="#什么是深度学习" class="headerlink" title="什么是深度学习"></a>什么是深度学习</h3><p>略</p>
+<h3 id="神经网络的数学基础"><a href="#神经网络的数学基础" class="headerlink" title="神经网络的数学基础"></a>神经网络的数学基础</h3><h4 id="MNIST-分类"><a href="#MNIST-分类" class="headerlink" title="MNIST 分类"></a>MNIST 分类</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 数据加载</span></span><br><span class="line"><span class="keyword">from</span> keras.datasets <span class="keyword">import</span> mnist</span><br><span class="line">(train_images, train_labels), (test_images, test_labels) = mnist.load_data()</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>将训练数据（train_images 和 train_labels）输入神经网络；其次，网络学习将图像和标签关联在一起；最后，网络对 test_images 生成预测</p>
+</li>
+<li><p><code>Sequential()</code>堆叠</p>
+</li>
+<li><p>编译，添加损失函数、优化器、监控指标</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">network.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>, loss=<span class="string">&#x27;categorical_crossentropy&#x27;</span>, metrics=[<span class="string">&#x27;accuracy&#x27;</span>])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数据变换为数组并归一化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">train_images = train_images.reshape((<span class="number">60000</span>, <span class="number">28</span> * <span class="number">28</span>))</span><br><span class="line">train_images = train_images.astype(<span class="string">&#x27;float32&#x27;</span>) / <span class="number">255</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="数据表示"><a href="#数据表示" class="headerlink" title="数据表示"></a>数据表示</h4><ul>
+<li><p>标量：0维张量</p>
+</li>
+<li><p>向量：数组，一维张量</p>
+</li>
+<li><p>张量</p>
+<ul>
+<li>多维 Numpy 数组，张量的维度（dimension）通常叫作轴（axis）</li>
+<li><code>ndim</code>属性查看张量轴数</li>
+<li><code>dtype</code>属性查看数据类型</li>
+<li><code>shape</code>属性返回一个整数元组，表示张量沿每个轴的维度大小</li>
+</ul>
+</li>
+<li><p>张量切片：选择张量的特定元素；可以沿着每个张量轴在任意两个索引之间进行选择；可用负数索引，表示与当前轴终点的相对位置</p>
+</li>
+<li><p>样本维度：所有数据张量的第一个轴（0 轴，因为索引从 0 开始）都是样本轴</p>
+</li>
+<li><p>批量维度：批量张量的第一个轴（0 轴）</p>
+</li>
+<li><p>现实的数据张量</p>
+<ul>
+<li>向量：2D 张量，形状为 <code>(samples, features)</code><ul>
+<li>每个数据点是一个向量，一个数据批量为向量组成的数组</li>
+<li>第一个轴为样本轴，第二个为特征轴</li>
+</ul>
+</li>
+<li>时间序列数据或序列数据：3D 张量，形状为<code>(samples, timesteps, features)</code><ul>
+<li>样本轴，时间轴，特征轴</li>
+<li>每分钟股票价格数据集、推文数据集</li>
+</ul>
+</li>
+<li>图像：4D张量，形状为<code>(samples, height, width, channels)</code>或<code>(samples, channels, height, width)</code><ul>
+<li>样本轴，颜色通道轴，高度、宽度（TensorFlow 中约定通道在后，Theano 约定通道在前）</li>
+</ul>
+</li>
+<li>视频：5D张量，形状为<code> (samples, frames, height, width, channels)</code>或<code>(samples, frames, channels, height, width)</code><ul>
+<li>视作一系列帧，每帧保存在张量<code>(height, width, color_depth)</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="张量运算"><a href="#张量运算" class="headerlink" title="张量运算"></a>张量运算</h4><ul>
+<li><p>逐元素运算：运算独立地应用于张量中的每个元素</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># relu逐元素运算的简单实现（要求输入为2D张量！！）</span></span><br><span class="line">output = relu(dot(W, <span class="built_in">input</span>) + b)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">naive_relu</span>(<span class="params">x</span>):</span> </span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(x.shape) == <span class="number">2</span>    </span><br><span class="line"> </span><br><span class="line">    x = x.copy()      </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(x.shape[<span class="number">0</span>]): </span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(x.shape[<span class="number">1</span>]): </span><br><span class="line">            x[i, j] = <span class="built_in">max</span>(x[i, j], <span class="number">0</span>) </span><br><span class="line">    <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">naive_add</span>(<span class="params">x, y</span>):</span> </span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(x.shape) == <span class="number">2</span>   </span><br><span class="line">    <span class="keyword">assert</span> x.shape == y.shape </span><br><span class="line"> </span><br><span class="line">    x = x.copy()  <span class="comment"># 避免覆盖输入张量</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(x.shape[<span class="number">0</span>]): </span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(x.shape[<span class="number">1</span>]): </span><br><span class="line">            x[i, j] += y[i, j] </span><br><span class="line">    <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>广播：维度小的张量和维度大的张量相加，前者会被<code>broadcast</code>以匹配较大张量的形状</p>
+<ul>
+<li>添加广播轴，使<code>ndim</code>一致（向前面的轴添加）</li>
+<li>小的张量沿广播轴重复，使<code>shape</code>一致</li>
+<li>实际过程不会创建新的2D张量，仅通过算法实现</li>
+</ul>
+</li>
+<li><p>张量点积：将输入张量——元素个数相同——的元素合并，获得标量</p>
+<ul>
+<li><p>$*$实现逐元素乘积</p>
+</li>
+<li><p>Keras 与 Numpy 使用<code>dot()</code></p>
+</li>
+<li><p>矩阵与向量点积，返回一个向量</p>
+</li>
+<li><p>两个矩阵点积，获得形状<code>(x.shape[0], y.shape[1]) </code>的矩阵</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">naive_matrix_dot</span>(<span class="params">x, y</span>):</span> </span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(x.shape) == <span class="number">2</span>   </span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(y.shape) == <span class="number">2</span> </span><br><span class="line">    <span class="keyword">assert</span> x.shape[<span class="number">1</span>] == y.shape[<span class="number">0</span>]   </span><br><span class="line"> </span><br><span class="line">    z = np.zeros((x.shape[<span class="number">0</span>], y.shape[<span class="number">1</span>]))    </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(x.shape[<span class="number">0</span>]):    </span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(y.shape[<span class="number">1</span>]):     </span><br><span class="line">            row_x = x[i, :] </span><br><span class="line">            column_y = y[:, j] </span><br><span class="line">            z[i, j] = naive_vector_dot(row_x, column_y) </span><br><span class="line">    <span class="keyword">return</span> z</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>张量变形：<code>reshape()</code>；变形前后的元素总数相同；特殊情况为转置<code>np.transpose()</code></p>
+</li>
+<li><p>张量运算中，张量元素可以被解释为某种几何空间内点的坐标</p>
+</li>
+</ul>
+<h4 id="基于梯度的优化"><a href="#基于梯度的优化" class="headerlink" title="基于梯度的优化"></a>基于梯度的优化</h4><ul>
+<li><p>一开始权重取较小的随机值——随机初始化</p>
+</li>
+<li><p>抽取数据批量，前向传播得到预测值，计算损失，计算相对网络参数的梯度，更新权重以降低损失</p>
+</li>
+<li><p>SGD：随机梯度下降，随机指每批数据都是随机抽取</p>
+</li>
+<li><p>变体：优化器（optimizer）</p>
+</li>
+<li><p>动量：解决收敛速度和局部最小点——优化过程想象成一个小球从损失函数曲线上滚下来，如果动量足够大，则不会卡在局部最低点</p>
+<ul>
+<li><p>不仅要考虑当前的斜率值（当前的加速度），还要考虑当前的速度（来自于之前的加速度） </p>
+</li>
+<li><p>更新参数不仅要考虑当前的梯度值，还要考虑上一次的参数更新</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">past_velocity = <span class="number">0.</span> </span><br><span class="line">momentum = <span class="number">0.1</span>  <span class="comment"># 动量因子</span></span><br><span class="line"><span class="keyword">while</span> loss &gt; <span class="number">0.01</span>:  <span class="comment"># 循环优化</span></span><br><span class="line">    w, loss, gradient = get_current_parameters() </span><br><span class="line">    velocity = past_velocity * momentum - learning_rate * gradient </span><br><span class="line">    w = w + momentum * velocity - learning_rate * gradient </span><br><span class="line">    past_velocity = velocity </span><br><span class="line">    update_parameter(w</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>利用链式法则计算每个参数对损失值的贡献大小——反向传播</p>
+</li>
+<li><p>给定一个运算链，并且已知每个运算的导数，框架可以利用链式法则计算运算链的梯度函数，将网络参数值映射为梯度值</p>
+</li>
+</ul>
+<h3 id="神经网络入门"><a href="#神经网络入门" class="headerlink" title="神经网络入门"></a>神经网络入门</h3><ul>
+<li><p>组件分析</p>
+<ul>
+<li>全连接层——2D张量；循环层——3D张量；二维卷积层——4D张量</li>
+<li>Keras 可自动匹配<code>input_shape</code>（第一层需要指定）</li>
+<li>对于具有多个损失函数的网络，需要将所有损失函数加权，变为一个标量值</li>
+<li>目标函数：<ul>
+<li>二分类——二元交叉熵</li>
+<li>多分类——分类交叉熵</li>
+<li>回归——均方误差</li>
+<li>序列学习——联结主义时序分类（CTC，connectionist temporal classification）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>在 CPU 上运行时，TensorFlow 本身封装一个低层次的张量运算库 Eigen；在 GPU 上运行时，TensorFlow 封装一个高度优化的深度学习运算库 NVIDIA CUDA 深度神经网络库（cuDNN）</p>
+</li>
+<li><p>定义模型方式：</p>
+<ul>
+<li>Sequential 类——仅用于层的线性堆叠</li>
+<li>函数式 API——用于层组成的有向无环图（第七章之前都是前者）</li>
+</ul>
+</li>
+<li><p>二分类问题</p>
+<ul>
+<li><p>加载 IMDB 数据集</p>
+</li>
+<li><p>填充列表，转换为整型张量，Embedding/独热编码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 独热编码</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np </span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">vectorize_sequences</span>(<span class="params">sequences, dimension=<span class="number">10000</span></span>):</span> </span><br><span class="line">    results = np.zeros((<span class="built_in">len</span>(sequences), dimension))  </span><br><span class="line">    <span class="keyword">for</span> i, sequence <span class="keyword">in</span> <span class="built_in">enumerate</span>(sequences): </span><br><span class="line">        results[i, sequence] = <span class="number">1.</span>  <span class="comment"># 将results[i]指定索引设为 1</span></span><br><span class="line">    <span class="keyword">return</span> results </span><br><span class="line"> </span><br><span class="line">x_train = vectorize_sequences(train_data)  <span class="comment"># 训练数据向量化，单词序列变成一维二进制向量</span></span><br><span class="line">x_test = vectorize_sequences(test_data) </span><br><span class="line"><span class="comment"># 标签向量化</span></span><br><span class="line">y_train = np.asarray(train_labels).astype(<span class="string">&#x27;float32&#x27;</span>) </span><br><span class="line">y_test = np.asarray(test_labels).astype(<span class="string">&#x27;float32&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>网络搭建</p>
+</li>
+<li><p>编译，配置优化器、损失函数和指标（优化器为 rmsprop）</p>
+</li>
+<li><p>模型训练：<code>model.fit()</code>返回一个 History 对象，其成员 history 是一个包含训练过程中的所有数据的字典<code>dict_keys([&#39;val_acc&#39;, &#39;acc&#39;, &#39;val_loss&#39;, &#39;loss&#39;])</code>——训练和验证过程中监控的指标</p>
+</li>
+<li><p>模型预测：<code>model.predict()</code></p>
+</li>
+</ul>
+</li>
+<li><p>多分类问题（新闻分类为例，reuters ）</p>
+<ul>
+<li><p>数据集的每个样本是一个整数列表，表示单词索引</p>
+</li>
+<li><p>数据向量化</p>
+</li>
+<li><p>标签向量化：</p>
+<ul>
+<li><p>标签列表转为整数张量——使用损失函数为<code>sparse_categorical_crossentropy</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">y_train = np.array(train_labels) </span><br><span class="line">y_test = np.array(test_labels)</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>* 独热编码标签——使用损失函数为`categorical_crossentropy`
+
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">to_one_hot</span>(<span class="params">labels, dimension=<span class="number">46</span></span>):</span> </span><br><span class="line">    results = np.zeros((<span class="built_in">len</span>(labels), dimension)) </span><br><span class="line">    <span class="keyword">for</span> i, label <span class="keyword">in</span> <span class="built_in">enumerate</span>(labels): </span><br><span class="line">        results[i, label] = <span class="number">1.</span> </span><br><span class="line">    <span class="keyword">return</span> results </span><br><span class="line"> </span><br><span class="line">one_hot_train_labels = to_one_hot(train_labels)   </span><br><span class="line">one_hot_test_labels = to_one_hot(test_labels)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 利用Keras内置方法实现</span></span><br><span class="line"><span class="keyword">from</span> keras.utils.np_utils <span class="keyword">import</span> to_categorical </span><br><span class="line"> </span><br><span class="line">one_hot_train_labels = to_categorical(train_labels) </span><br><span class="line">one_hot_test_labels = to_categorical(test_labels)</span><br></pre></td></tr></table></figure></code></pre>
+<ul>
+<li><p>网络搭建（softmax激活最后一层）</p>
+</li>
+<li><p>编译模型，设置损失函数为<code>categorical_crossentropy</code>以衡量两个分布之间的距离</p>
+</li>
+<li><p>留出验证集，训练模型</p>
+</li>
+</ul>
+<ul>
+<li><p>回归问题（房价预测）</p>
+<ul>
+<li><p>加载数据集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.datasets <span class="keyword">import</span> boston_housing </span><br><span class="line"> </span><br><span class="line">(train_data, train_targets), (test_data, test_targets) = boston_housing.load_data()</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数据标准化——取值范围差异很大的数据输入到神经网络中，这样的操作存在问题，网络可能会自动适应这种取值范围不同的数据——对每个特征（列）做标准化</p>
+</li>
+<li><p>网络搭建</p>
+<ul>
+<li>最后一层只有一个单元，无激活——标量回归 / 预测单一连续值的回归，以预测任意范围内的值</li>
+</ul>
+</li>
+<li><p>编译网络，损失函数为均方误差<code>MSE</code>（预测值与目标值之差的平方），监控平均绝对误差<code>MAE</code></p>
+</li>
+<li><p>数据集小——采用 K 折验证</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np </span><br><span class="line"> </span><br><span class="line">k = <span class="number">4</span> </span><br><span class="line">num_val_samples = <span class="built_in">len</span>(train_data) // k </span><br><span class="line">num_epochs = <span class="number">100</span> </span><br><span class="line">all_scores = [] </span><br><span class="line"> </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(k): </span><br><span class="line">    print(<span class="string">&#x27;processing fold #&#x27;</span>, i) </span><br><span class="line">    val_data = train_data[i * num_val_samples: (i + <span class="number">1</span>) * num_val_samples]  <span class="comment"># 准备验证数据</span></span><br><span class="line">    val_targets = train_targets[i * num_val_samples: (i + <span class="number">1</span>) * num_val_samples] </span><br><span class="line"> </span><br><span class="line">    partial_train_data = np.concatenate(   </span><br><span class="line">        [train_data[:i * num_val_samples], </span><br><span class="line">         train_data[(i + <span class="number">1</span>) * num_val_samples:]],  </span><br><span class="line">        axis=<span class="number">0</span>) </span><br><span class="line">    partial_train_targets = np.concatenate( </span><br><span class="line">        [train_targets[:i * num_val_samples], </span><br><span class="line">         train_targets[(i + <span class="number">1</span>) * num_val_samples:]],  </span><br><span class="line">        axis=<span class="number">0</span>) </span><br><span class="line"> </span><br><span class="line">    model = build_model()  <span class="comment"># 构建模型（已编译）</span></span><br><span class="line">    model.fit(partial_train_data, partial_train_targets,  </span><br><span class="line">              epochs=num_epochs, batch_size=<span class="number">1</span>, verbose=<span class="number">0</span>)  <span class="comment"># 训练模型（静默模式，verbose=0）</span></span><br><span class="line">    val_mse,  val_mae = model.evaluate(val_data, val_targets, verbose=<span class="number">0</span>)  <span class="comment"># 验证数据评估模型</span></span><br><span class="line">    all_scores.append(val_mae) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对于验证结果，如果绘制的纵轴范围较大，且数据方差相对较大，可以删除前 10 个数据点——因为它们的取值范围与曲线上的其他点不同，并将将每个数据点替换为前面数据点的指数移动平均值，以得到光滑的曲线</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="机器学习基础"><a href="#机器学习基础" class="headerlink" title="机器学习基础"></a>机器学习基础</h3><h4 id="机器学习分支"><a href="#机器学习分支" class="headerlink" title="机器学习分支"></a>机器学习分支</h4><ul>
+<li>监督学习：给定一组样本（通常由人工标注），学习将输入数据映射到已知目标（标注）<ul>
+<li>分类与回归</li>
+<li>序列生成：给定一张图像，预测描述图像的文字</li>
+<li>语法树检测：给定一个句子，预测其分解生成的语法树</li>
+<li>目标检测：给定一张图像，在图中特定目标的周围画一个边界框</li>
+<li>图像分割：给定一张图像，在特定物体上画一个像素级的掩模</li>
+</ul>
+</li>
+<li>无监督学习：目的在于数据可视化、数据压缩、数据去噪或理解数据中的相关性；降维与聚类是常用的无监督方法</li>
+<li>自监督学习：没有人工标注标签的监督学习。标签仍然存在，但从输入数据中使用启发式算法生成，如自编码器、时序监督学习（过去的帧来预测下一帧，上一个词预测下一个词）</li>
+<li>强化学习：智能体（agent）接收有关其环境的信息，并学会选择使某种奖励最大化的行动。例如，网络“观察”视频游戏的屏幕并输出游戏操作，目的是尽可能得高分</li>
+</ul>
+<h4 id="评估模型"><a href="#评估模型" class="headerlink" title="评估模型"></a>评估模型</h4><ul>
+<li>训练集、验证集和测试集<ul>
+<li>简单的留出验证</li>
+<li>K 折验证</li>
+<li>带有打乱数据的重复 K 折验证——多次使用 K 折验证，在每次将数据划分为 K 个分区之前都先将数据打乱</li>
+</ul>
+</li>
+<li>评估注意事项<ul>
+<li>数据代表性：在将数据划分为训练集和测试集之前，通常应该随机打乱数据</li>
+<li>时间箭头：根据过去预测未来，必须始终确保测试集中所有数据的时间都晚于训练集数据</li>
+<li>数据冗余：如果数据中的某些数据点出现了两次，打乱数据并划分成训练集和验证集会导致训练集和验证集之间的数据冗余；确保训练集和验证集之间没有交集</li>
+</ul>
+</li>
+</ul>
+<h4 id="数据预处理、特征工程与特征学习"><a href="#数据预处理、特征工程与特征学习" class="headerlink" title="数据预处理、特征工程与特征学习"></a>数据预处理、特征工程与特征学习</h4><ul>
+<li><p>数据预处理</p>
+<ul>
+<li><p>神经网络的所有输入和目标都必须是浮点数张量</p>
+</li>
+<li><p>值标准化——输入数据应当：</p>
+<ul>
+<li><p>取值较小：大部分值都应该在 0~1 范围内</p>
+</li>
+<li><p>同质性：所有特征的取值都应该在大致相同的范围内</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># x 是一个形状为(samples, features)的二维矩阵</span></span><br><span class="line">x -= x.mean(axis=<span class="number">0</span>)</span><br><span class="line">x /= x.std(axis=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>通常将缺失的属性值设置为 0 ；如果测试数据中有缺失值，而训练集没有，应该人为生成一些有缺失项的训练样本</p>
+</li>
+</ul>
+</li>
+<li><p>特征工程：将数据输入模型之前，利用自己关于数据和神经网络的知识对数据进行硬编码的变换，而不是将原始数据直接输入网络</p>
+</li>
+</ul>
+<h4 id="过拟合"><a href="#过拟合" class="headerlink" title="过拟合"></a>过拟合</h4><ul>
+<li><p>减小网络规模</p>
+<ul>
+<li>评估一系列不同的网络架构（在验证集上评估，而不是在测试集上），以便为数据找到最佳的模型大小</li>
+<li>开始时选择相对较少的层和参数，然后逐渐增加层的大小或增加新层</li>
+</ul>
+</li>
+<li><p>添加权重正则化</p>
+<ul>
+<li><p>给定训练数据和一种网络架构，很多组权重值都可以解释这些数据，但简单模型比复杂模型更不容易过拟合——参数值分布的熵更小的模型</p>
+</li>
+<li><p>强制让模型权重只能取较小的值，限制模型复杂度，使权重值的分布更加规则——损失函数中添加与较大权重值相关的成本</p>
+</li>
+<li><p>惩罚项只在训练时添加，网络的训练损失比测试损失大很多</p>
+</li>
+<li><p>L1 正则化： 添加的成本与权重系数的绝对值（L1范数）成正比</p>
+</li>
+<li><p>L2 正则化（权重衰减）： 添加的成本与权重系数的平方（ L2 范数）成正比</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> regularizers </span><br><span class="line"> </span><br><span class="line">model = models.Sequential() </span><br><span class="line"><span class="comment"># 添加 L2 权重正则化</span></span><br><span class="line">model.add(layers.Dense(<span class="number">16</span>, kernel_regularizer=regularizers.l2(<span class="number">0.001</span>), </span><br><span class="line">                       activation=<span class="string">&#x27;relu&#x27;</span>, input_shape=(<span class="number">10000</span>,)))  <span class="comment"># 该层权重矩阵的每个系数都会使网络总损失增加 0.001 * weight_coefficient_value</span></span><br><span class="line">model.add(layers.Dense(<span class="number">16</span>, kernel_regularizer=regularizers.l2(<span class="number">0.001</span>), </span><br><span class="line">                       activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.Dense(<span class="number">1</span>, activation=<span class="string">&#x27;sigmoid&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 不同的权重正则化项</span></span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> regularizers </span><br><span class="line"> </span><br><span class="line">regularizers.l1(<span class="number">0.001</span>)   </span><br><span class="line"> </span><br><span class="line">regularizers.l1_l2(l1=<span class="number">0.001</span>, l2=<span class="number">0.001</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>dropout</p>
+<ul>
+<li><p>对某一层使用 dropout，就是在训练过程中随机将该层的一些输出特征舍<br>弃</p>
+</li>
+<li><p>dropout 比率通常为 0.2~0.5。测试时没有单元被舍弃，该层的输出值需要按 dropout 比率缩小</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">model = models.Sequential() </span><br><span class="line">model.add(layers.Dense(<span class="number">16</span>, activation=<span class="string">&#x27;relu&#x27;</span>, input_shape=(<span class="number">10000</span>,))) </span><br><span class="line">model.add(layers.Dropout(<span class="number">0.5</span>)) </span><br><span class="line">model.add(layers.Dense(<span class="number">16</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.Dropout(<span class="number">0.5</span>))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h4><ul>
+<li><p>数据集获取</p>
+</li>
+<li><p>确定指标</p>
+</li>
+<li><p>确定评估方法</p>
+</li>
+<li><p>数据准备与格式化，特征工程</p>
+</li>
+<li><p>开发比随机基准（dumb baseline）好的模型——数字分类中，基准为0.1；二分类中基准为0.5</p>
+</li>
+<li><p>扩大模型规模，使其过拟合</p>
+</li>
+<li><p>模型正则化与超参数调节</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\03\Hands-on-ML-2\" rel="bookmark">Hands-on Machine Learning（2）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（2）用 tf 自定义模型训练网络</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\04\Hands-on-ML-3\" rel="bookmark">Hands-on Machine Learning（3）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（3）数据接口与 CNN</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\06\Hands-on-ML-4\" rel="bookmark">Hands-on Machine Learning（4）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（4）RNN 和 1D CNN 处理序列</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\06\Hands-on-ML-5\" rel="bookmark">Hands-on Machine Learning（5）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（5）字符级RNN、单词级RNN、基于RNN的编码-解码器</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\07\Hands-on-ML-6\" rel="bookmark">Hands-on Machine Learning（6）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（6）RNN 的注意力机制（Transformer 架构）</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2020/11/07/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_1%E5%9F%BA%E7%A1%80/" title="Python深度学习（1）基础">https://thomas-li-sjtu.github.io/2020/11/07/Python深度学习_1基础/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/TensorFlow/" rel="tag"><i class="fa fa-tag"></i> TensorFlow</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/07/%E7%AE%80%E5%8D%95%E7%B2%97%E6%9A%B4TensorFlow2/" rel="prev" title="简单粗暴TensorFlow2">
+      <i class="fa fa-chevron-left"></i> 简单粗暴TensorFlow2
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/07/Ubuntu%E5%AE%89%E8%A3%85Django/" rel="next" title="Ubuntu18.04安装Django">
+      Ubuntu18.04安装Django <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">深度学习基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.1.</span> <span class="nav-text">什么是深度学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80"><span class="nav-number">1.2.</span> <span class="nav-text">神经网络的数学基础</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MNIST-%E5%88%86%E7%B1%BB"><span class="nav-number">1.2.1.</span> <span class="nav-text">MNIST 分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%A1%A8%E7%A4%BA"><span class="nav-number">1.2.2.</span> <span class="nav-text">数据表示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%A0%E9%87%8F%E8%BF%90%E7%AE%97"><span class="nav-number">1.2.3.</span> <span class="nav-text">张量运算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E6%A2%AF%E5%BA%A6%E7%9A%84%E4%BC%98%E5%8C%96"><span class="nav-number">1.2.4.</span> <span class="nav-text">基于梯度的优化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%85%A5%E9%97%A8"><span class="nav-number">1.3.</span> <span class="nav-text">神经网络入门</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80"><span class="nav-number">1.4.</span> <span class="nav-text">机器学习基础</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%88%86%E6%94%AF"><span class="nav-number">1.4.1.</span> <span class="nav-text">机器学习分支</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.4.2.</span> <span class="nav-text">评估模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86%E3%80%81%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B%E4%B8%8E%E7%89%B9%E5%BE%81%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.4.3.</span> <span class="nav-text">数据预处理、特征工程与特征学习</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%87%E6%8B%9F%E5%90%88"><span class="nav-number">1.4.4.</span> <span class="nav-text">过拟合</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">1.4.5.</span> <span class="nav-text">工作流程</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

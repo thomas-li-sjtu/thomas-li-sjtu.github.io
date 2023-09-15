@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Behavioral Acoustic Emanations: Attack and Verification of PIN Entry Using Keypress Sounds》(Sensors) 2020">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Behavioral Acoustic Emanations：Attack and Verification of PIN Entry Using Keypress Sounds">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Behavioral Acoustic Emanations: Attack and Verification of PIN Entry Using Keypress Sounds》(Sensors) 2020">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315132254238.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315132608060.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150648910.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150858768.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150844142.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150943429.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315160155307.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315160126511.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315160449625.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315165154942.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315165208248.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315165226286.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315173411386.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315173603314.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315181043414.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315181122193.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315181713961.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315183604830.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315183532238.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184114552.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184457120.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184324047.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184710152.png">
+<meta property="article:published_time" content="2022-03-14T06:16:45.000Z">
+<meta property="article:modified_time" content="2022-03-15T10:47:32.599Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Motion Tracking">
+<meta property="article:tag" content="PIN Lock">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315132254238.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Behavioral Acoustic Emanations：Attack and Verification of PIN Entry Using Keypress Sounds | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Behavioral Acoustic Emanations：Attack and Verification of PIN Entry Using Keypress Sounds
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-14 14:16:45" itemprop="dateCreated datePublished" datetime="2022-03-14T14:16:45+08:00">2022-03-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Behavioral Acoustic Emanations: Attack and Verification of PIN Entry Using Keypress Sounds》(Sensors) 2020</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>许多输入设备（Entry Devices， PEDs）使用短数据串（PIN、密钥或密码）作为验证用户合法性的手段</li>
+<li>本文提出了一种对4-6位随机PIN密钥的侧信道攻击，以及一种PIN密钥用户验证方法</li>
+<li>两次击键之间的间隔从声音中提取，并用于训练机器学习模型的特征</li>
+<li>攻击模型有60%的几率恢复PIN密钥。验证模型在识别用户上具有88%的准确度</li>
+<li>本文攻击方法可以通过声音作为侧信道，低成本地破解密钥。相对应的，本文的验证方法可以提高PIN输入设备的安全性</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>个人识别码（PIN）密钥或数字密码广泛用于资源受限的环境中，PIN密钥基本上是较短的数据串，普遍用于用户认证和验证</p>
+</li>
+<li><p>本文旨在分析现代PED的安全漏洞，例如ATM键盘或POS终端键盘；PIN输入时间很短，这使得信息推断非常具有挑战性</p>
+</li>
+<li><p>首先，本文研究推测PIN密钥的可能性——记录PED键盘的击键声音，提取用于预测PIN的特征。其次，本文研究这些击键声音用于提高PED安全水平的可能性，如果每个用户在输入PIN密钥时表现出独特的行为，该行为可以视为另类的指纹，用于验证密钥持有者身份</p>
+</li>
+<li><p>本文贡献</p>
+<ul>
+<li>利用PED键盘产生的声音，对随机的六位密码进行密码恢复攻击</li>
+<li>将击键声音作为用户身份的验证方法</li>
+</ul>
+</li>
+</ul>
+<h2 id="声学侧信道PIN恢复"><a href="#声学侧信道PIN恢复" class="headerlink" title="声学侧信道PIN恢复"></a>声学侧信道PIN恢复</h2><h3 id="威胁模型"><a href="#威胁模型" class="headerlink" title="威胁模型"></a>威胁模型</h3><ul>
+<li>考虑一个工业食堂中的自助结账机，当顾客结账时，顾客需要输入一些信息（如电话号码或其他按键），此时麦克风会记录击键声，收集关于用户特征的数据</li>
+<li>若系统使用用户的习惯性打字模式训练，它就提示用户输入他的借记卡和PIN码，以预测相应的按键</li>
+</ul>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ul>
+<li><p>由四个系统组成：数据收集，特征提取，时频分析，声学/数据分析</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315132254238.png" alt="image-20220315132254238" style="zoom:67%;">
+
+</li>
+</ul>
+<h4 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h4><ul>
+<li><p>在ATM PIN输入设备上进行实验，使用视频麦克风记录器记录发出的声音</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315132608060.png" alt="image-20220315132608060" style="zoom: 50%;">
+</li>
+<li><p>用户要记住一个六位的PIN，反复练习直到熟悉击键模式。之后，将PED放在记录工具下，要求用户输入记忆的PIN</p>
+</li>
+<li><p>在输入下一个PIN序列之前，当前的PIN序列要连续输入四次</p>
+</li>
+<li><p>候选的PIN列表由四个PIN组成，包括范围从短，长，对角线的所有可能的转换</p>
+</li>
+<li><p>构建一个包含15个用户的音频信号存储库，每个用户输入四个不同的pin总共四次</p>
+</li>
+</ul>
+<h4 id="特征提取"><a href="#特征提取" class="headerlink" title="特征提取"></a>特征提取</h4><ul>
+<li><p>声音信号中的不同区域可以与特定事件相关联，特别是按压和释放</p>
+</li>
+<li><p>对相应事件的距离和相似性度量进行评估，公式如下</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150648910.png" alt="image-20220315150648910" style="zoom:67%;">
+</li>
+<li><p>下图显示了MatLab中构建的特征提取控制台。通过使用快速傅里叶变换来生成特征向量，并得出有用的特征</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150858768.png" alt="image-20220315150858768" style="zoom:67%;">
+
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150844142.png" alt="image-20220315150844142" style="zoom:67%;">
+
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315150943429.png" alt="image-20220315150943429" style="zoom:80%;">
+
+</li>
+</ul>
+<h4 id="时频分析"><a href="#时频分析" class="headerlink" title="时频分析"></a>时频分析</h4><ul>
+<li><p>相关性</p>
+<ul>
+<li><p>使用MATLAB的xcorr函数，来计算功率归一化的两个声学信号的互相关</p>
+</li>
+<li><p>两个信号是f和g，离散互相关测量f和g的移位拷贝之间的相似性——如果f和g的长度不同，函数会在较短的向量末尾附加零</p>
+</li>
+<li><p>函数xcorr根据参数lag的不同，产生不同的输出</p>
+</li>
+<li><p>选择所有参数lag下最大的互相关值</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315160155307.png" alt="image-20220315160155307" style="zoom:67%;">
+
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315160126511.png" alt="image-20220315160126511" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>基于频率的距离</p>
+<ul>
+<li><p>测量两个信号频谱的欧几里得距离，来计算两个信号之间的频域距离</p>
+</li>
+<li><p>通过计算0.4-22kHz之间的FFT系数得到频谱</p>
+</li>
+<li><p>两个信号f和g之间的频率距离如下所示</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315160449625.png" alt="image-20220315160449625" style="zoom:67%;">
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="机器学习模型"><a href="#机器学习模型" class="headerlink" title="机器学习模型"></a>机器学习模型</h4><ul>
+<li><p>基于时频分析提取的特征，用不同的机器学习模型训练</p>
+</li>
+<li><p>模型</p>
+<ul>
+<li>高斯贝叶斯</li>
+<li>逻辑斯蒂回归</li>
+<li>SVM</li>
+<li>本文的数据集可以被标记为正例和负例：如果PIN是由用户1输入的，将其标记为正，否则将其标记为负。</li>
+<li>从原始声音数据中提取了10种特征，包括：击键间潜伏期、保持时间、击中峰值、释放峰值、按压时间、释放时间、按压音量、释放音量、按压谱、释放谱</li>
+<li>证明可以使用声音来恢复PIN——只训练一个逻辑回归模型</li>
+<li>在用户验证上，三种模型都用到了</li>
+</ul>
+</li>
+<li><p>评估指标：FAR、FRR、TAR</p>
+<ul>
+<li><p>FAR：系统错误地接受未授权用户的访问尝试的可能性</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315165154942.png" alt="image-20220315165154942" style="zoom:80%;">
+</li>
+<li><p>FRR：系统错误地拒绝授权用户的访问尝试的可能性</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315165208248.png" alt="image-20220315165208248" style="zoom:80%;">
+</li>
+<li><p>TAR：安全系统将正确接受授权用户的访问尝试的可能性</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315165226286.png" alt="image-20220315165226286" style="zoom:80%;">
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="实验和结果"><a href="#实验和结果" class="headerlink" title="实验和结果"></a>实验和结果</h4><ul>
+<li><p>实验步骤</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315173411386.png" alt="image-20220315173411386" style="zoom:80%;">
+</li>
+<li><p>时间频率分析</p>
+<ul>
+<li>实验结果表明，对击键声音做简单的互相关分析就可以得知正确的按键</li>
+<li>如果模型在多个用户上训练，然后针对特定用户进行测试，攻击效果很差，这是因为不同的用户有不同的打字风格</li>
+<li>如果模型不在PIN训练，攻击效果也很差，这是因为手指触碰按键的习惯和之前按下的键有关</li>
+</ul>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315173603314.png" alt="image-20220315173603314" style="zoom:67%;">
+</li>
+<li><p>数据分析</p>
+<ul>
+<li><p>逻辑回归模型，采用成对的互相关矩阵作为特征输入，输出预测的击键</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315181043414.png" alt="image-20220315181043414" style="zoom:80%;">
+</li>
+<li><p>结果如下</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315181122193.png" alt="image-20220315181122193" style="zoom: 67%;">
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="通过输入PIN的声音验证用户身份"><a href="#通过输入PIN的声音验证用户身份" class="headerlink" title="通过输入PIN的声音验证用户身份"></a>通过输入PIN的声音验证用户身份</h2><h3 id="基于声学分析的身份认证"><a href="#基于声学分析的身份认证" class="headerlink" title="基于声学分析的身份认证"></a>基于声学分析的身份认证</h3><ul>
+<li><p>下图显示了在同一PED设备上输入相同的PIN时，两个不同用户的击键变化。连接点表示平均延迟，垂直线表示相应转换需要的延迟范围</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315181713961.png" alt="image-20220315181713961" style="zoom:67%;">
+
+</li>
+</ul>
+<h4 id="威胁模型-1"><a href="#威胁模型-1" class="headerlink" title="威胁模型"></a>威胁模型</h4><ul>
+<li><p>数据分析和结果</p>
+<ul>
+<li><p>Gaussian Naïve Bayes classifier with Latency features：</p>
+<ul>
+<li><blockquote>
+<p>every PIN sequence is encoded into a feature vector by extracting the latencies associated with all the five transitions in the six-digit numbered PINs. This vector is then fed into a Gaussian Naïve Bayes classifier that trains itself to output the predicted users.</p>
+</blockquote>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315183604830.png" alt="image-20220315183604830" style="zoom:67%;">
+</li>
+<li><p>结果如下</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315183532238.png" alt="image-20220315183532238" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>Gaussian Naïve Bayes classifier with Latency and Hold features：</p>
+<ul>
+<li><p>考虑特征向量由延迟和基于保持的特征组成的情况</p>
+</li>
+<li><p>保留从上一节收集的特征集，并将其与保持时间的特征连接</p>
+<p><img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184114552.png" alt="image-20220315184114552"></p>
+</li>
+<li><p>结果有所提升</p>
+</li>
+</ul>
+</li>
+<li><p>Logistic Regression with latency and hold features：</p>
+<ul>
+<li><p>使用基于延迟和保持的特征作为输入</p>
+</li>
+<li><p>本模型达到最高精度</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184457120.png" alt="image-20220315184457120" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>Support Vector Machine with Latency and Hold：</p>
+<ul>
+<li><p>评估SVM的分类效果</p>
+</li>
+<li><p>性能和高斯朴素贝叶斯相似，但不如逻辑回归准确</p>
+</li>
+<li><p>结果如下</p>
+<p><img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184324047.png" alt="image-20220315184324047"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>实验结果汇总：</p>
+<img src="/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/image-20220315184710152.png" alt="image-20220315184710152" style="zoom:90%;">
+
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>略</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\12\06\Beware-Your-Hands-Reveal-Your-Secrets\" rel="bookmark">Beware Your Hands Reveal Your Secrets</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Beware, Your Hands Reveal Your Secrets !》2014年ACM</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\12\08\Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand\" rel="bookmark">Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand》（2022 USENIX）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\12\07\Stealing-Passwords-by-Observing-Hands-Movement\" rel="bookmark">Stealing Passwords by Observing Hands Movement</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Stealing Passwords by Observing Hands Movement》（TIFS CCF A类）2019</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\03\14\Thermal-Imaging-Attacks-on-Keypad-Security-Systems\" rel="bookmark">Thermal Imaging Attacks on Keypad Security Systems</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Thermal Imaging Attacks on Keypad Security Systems》（ICETE） 2016</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/" title="Behavioral Acoustic Emanations：Attack and Verification of PIN Entry Using Keypress Sounds">https://thomas-li-sjtu.github.io/2022/03/14/Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Motion-Tracking/" rel="tag"><i class="fa fa-tag"></i> Motion Tracking</a>
+              <a href="/tags/PIN-Lock/" rel="tag"><i class="fa fa-tag"></i> PIN Lock</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/14/Thermal-Imaging-Attacks-on-Keypad-Security-Systems/" rel="prev" title="Thermal Imaging Attacks on Keypad Security Systems">
+      <i class="fa fa-chevron-left"></i> Thermal Imaging Attacks on Keypad Security Systems
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/27/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-1/" rel="next" title="密码协议(1) 引论与密钥交换协议">
+      密码协议(1) 引论与密钥交换协议 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A3%B0%E5%AD%A6%E4%BE%A7%E4%BF%A1%E9%81%93PIN%E6%81%A2%E5%A4%8D"><span class="nav-number">3.</span> <span class="nav-text">声学侧信道PIN恢复</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A8%81%E8%83%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.1.</span> <span class="nav-text">威胁模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">3.2.</span> <span class="nav-text">方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%94%B6%E9%9B%86"><span class="nav-number">3.2.1.</span> <span class="nav-text">数据收集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%89%B9%E5%BE%81%E6%8F%90%E5%8F%96"><span class="nav-number">3.2.2.</span> <span class="nav-text">特征提取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%B6%E9%A2%91%E5%88%86%E6%9E%90"><span class="nav-number">3.2.3.</span> <span class="nav-text">时频分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.2.4.</span> <span class="nav-text">机器学习模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%92%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">3.2.5.</span> <span class="nav-text">实验和结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E8%BE%93%E5%85%A5PIN%E7%9A%84%E5%A3%B0%E9%9F%B3%E9%AA%8C%E8%AF%81%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD"><span class="nav-number">4.</span> <span class="nav-text">通过输入PIN的声音验证用户身份</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E5%A3%B0%E5%AD%A6%E5%88%86%E6%9E%90%E7%9A%84%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81"><span class="nav-number">4.1.</span> <span class="nav-text">基于声学分析的身份认证</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A8%81%E8%83%81%E6%A8%A1%E5%9E%8B-1"><span class="nav-number">4.1.1.</span> <span class="nav-text">威胁模型</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

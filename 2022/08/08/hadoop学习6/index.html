@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Spark内核：组件（Driver、Executor）通信、Job的调度（Stage调度、Task调度）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark (2)Spark内核">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="Spark内核：组件（Driver、Executor）通信、Job的调度（Stage调度、Task调度）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220808190003976.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220808184629202.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809123449398.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809125238985.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809123545215.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809133132811.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809133916210.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809134913443.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809140204033.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809142905732.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809143144045.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809145426237.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809151025413.png">
+<meta property="article:published_time" content="2022-08-08T03:34:04.000Z">
+<meta property="article:modified_time" content="2022-08-17T13:54:28.873Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220808190003976.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spark (2)Spark内核 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark (2)Spark内核
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-08 11:34:04" itemprop="dateCreated datePublished" datetime="2022-08-08T11:34:04+08:00">2022-08-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/" itemprop="url" rel="index"><span itemprop="name">大数据</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Spark内核：组件（Driver、Executor）通信、Job的调度（Stage调度、Task调度）</p>
+<a id="more"></a>
+
+<h2 id="Yarn环境"><a href="#Yarn环境" class="headerlink" title="Yarn环境"></a>Yarn环境</h2><ul>
+<li><p>Yarn Client</p>
+<ul>
+<li><p>过程：</p>
+<ul>
+<li>执行脚本提交任务（spark-submit），实际是启动一个 SparkSubmit 的 JVM 进程</li>
+<li>SparkSubmit 类中的 main 方法反射调用用户代码的 main 方法</li>
+<li>启动 Driver 线程，执行用户的作业，创建 ScheduleBackend</li>
+<li>YarnClientSchedulerBackend 向 RM 发送指令：bin/java ExecutorLauncher</li>
+<li>Yarn 框架收到指令后在指定的 NM 中启动 ExecutorLauncher（还是调用 ApplicationMaster 的 main 方法）</li>
+<li>AM 向 RM 注册，申请资源</li>
+<li>获取资源后 AM 向 NM 发送指令：bin/java CoarseGrainedExecutorBackend</li>
+<li>CoarseGrainedExecutorBackend 进程接收消息，跟 Driver 通信，注册已经启动的 Executor；启动计算对象 Executor 等待接收任务 </li>
+<li>Driver 分配任务并监控任务的执行</li>
+</ul>
+</li>
+<li><p>SparkSubmit、ApplicationMaster 和 CoarseGrainedExecutorBackend 是独立的进程，Executor 和 Driver 是对象</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220808190003976.png" alt="image-20220808190003976" style="zoom:80%;">
+</li>
+</ul>
+</li>
+<li><p>Yarn Cluster模式</p>
+<ul>
+<li><p>过程：</p>
+<ul>
+<li>执行脚本提交任务，实际是启动一个 SparkSubmit 的 JVM 进程；</li>
+<li>SparkSubmit 类中的 main 方法反射调用 YarnClusterApplication 的 main 方法</li>
+<li> YarnClusterApplication 创建 Yarn 客户端，向 Yarn 服务器发送执行指令：bin/java  ApplicationMaster</li>
+<li>Yarn 框架收到指令后在指定的 NM 中启动 ApplicationMaster</li>
+<li>AM 启动 Driver 线程，执行用户的作业</li>
+<li>AM 向 RM 注册，申请资源</li>
+<li>获取资源后 AM 向 NM 发送指令：bin/java YarnCoarseGrainedExecutorBackend； </li>
+<li>CoarseGrainedExecutorBackend 进程接收消息，跟 Driver 通信，注册已经启动的 Executor；启动计算对象 Executor 等待接收任务 </li>
+<li>Driver 线程继续执行，完成作业的调度和任务的执行</li>
+<li>Driver 分配任务并监控任务的执行</li>
+</ul>
+</li>
+<li><p>SparkSubmit、ApplicationMaster 和 YarnCoarseGrainedExecutorBackend 是独立的进程；Driver 是独立的线程；Executor 和 YarnClusterApplication 是对象</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220808184629202.png" alt="image-20220808184629202" style="zoom:80%;">
+</li>
+</ul>
+</li>
+<li><p>两个模式的区别在于driver的运行位置！</p>
+</li>
+</ul>
+<h2 id="组件通信"><a href="#组件通信" class="headerlink" title="组件通信"></a>组件通信</h2><ul>
+<li><p>Netty通信框架，AIO</p>
+<ul>
+<li><strong>AIO</strong>：异步非阻塞式IO，客户端在请求数据的过程中，不用保持一个连接，可以做其他事情。一个通知机制，客户端请求数据。服务端若有则返回数据，若无则客户端断开连接做其他事情，服务端有数据后主动通知客户端并返回数据</li>
+<li><strong>BIO</strong>：阻塞式IO，客户端在请求数据的过程中，保持一个连接，不能做其他事情。对于客户端和服务端而言，都需要一个线程来维护这个连接，如果服务端没有数据给客户端，则客户端需要一直等待</li>
+<li><strong>NIO</strong>：非阻塞式IO，客户端在请求数据的过程中，不用保持一个连接，不能做其他事情。客户端建立连接请求数据，服务端没有数据时客户端断开连接，一段时间后重新建立连接询问</li>
+<li>同步、异步：客户端在请求数据的过程中，能否做其他事情；阻塞、非阻塞：客户端与服务端是否始终有一个持续连接，占用通道</li>
+</ul>
+</li>
+<li><p>Linux采用Epoll方式模拟AIO</p>
+</li>
+<li><p>通信环境：</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809123449398.png" alt="image-20220809123449398" style="zoom:67%;">
+
+
+
+</li>
+</ul>
+<ul>
+<li><p>框架中各个组件（Client/Master/Worker）可以认为是独立的实体，各实体通过消息通信，Endpoint（Client/Master/Worker）有1个InBox和N个OutBox（N取决于该Endpoint与多少其他Endpoint通信），接收到的消息写入InBox，发送的消息写入OutBox并发到其他Endpoint的InBox</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809125238985.png" alt="image-20220809125238985" style="zoom:67%;">
+</li>
+<li><p>终端driver的类：<code>class DriverEndpoint extends IsolatedRpcEndpoint</code>；executor的类：<code>class CoarseGrainedExecutorBackend extends IsolatedRpcEndpoint</code></p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809123545215.png" alt="image-20220809123545215" style="zoom:80%;">
+</li>
+<li><p>NettyRpcEnv：RPC 上下文环境，每个RPC终端运行时依赖的上下文环境</p>
+<ul>
+<li><p>RpcEndpoint：RPC终端</p>
+<ul>
+<li>每个节点（Client/Master/Worker）都称为一个RPC终端，实现RpcEndpoint接口</li>
+<li>根据不同端点的需求，设计不同的消息和不同的业务处理</li>
+<li>需要发送（询问）则调用Dispatcher</li>
+</ul>
+</li>
+<li><p>Dispatcher：消息调度（分发）器，将RPC终端发送、接收的远程消息分发至对应的指令收件箱（发件箱）</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// class NettyRpcEnv</span></span><br><span class="line"><span class="keyword">private</span>[netty] <span class="function"><span class="keyword">def</span> <span class="title">send</span></span>(message: <span class="type">RequestMessage</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="comment">// 获取接收者地址信息</span></span><br><span class="line">    <span class="keyword">val</span> remoteAddr = message.receiver.address</span><br><span class="line">    <span class="keyword">if</span> (remoteAddr == address) &#123;</span><br><span class="line">        <span class="comment">// Message to a local RPC endpoint.</span></span><br><span class="line">        <span class="comment">// 把消息发送到本地的 RPC 端点  (发送到收件箱)</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">           dispatcher.postOneWayMessage(message)</span><br><span class="line">        &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">           <span class="keyword">case</span> e: <span class="type">RpcEnvStoppedException</span> =&gt; logWarning(e.getMessage)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// Message to a remote RPC endpoint.</span></span><br><span class="line">        <span class="comment">// 把消息发送到远程的 RPC 端点.  (发送到发件箱)</span></span><br><span class="line">        postToOutbox(message.receiver, <span class="type">OneWayOutboxMessage</span>(serialize(message)))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Inbox：指令消息收件箱</p>
+<ul>
+<li>一个RpcEndpoint对应一个收件箱</li>
+<li>Dispatcher向Inbox存入消息时，将对应EndpointData加入内部ReceiverQueue</li>
+<li>Dispatcher创建时会启动一个线程轮询ReceiverQueue，进行收件箱消息消费</li>
+</ul>
+</li>
+<li><p>RpcEndpointRef：对远程RpcEndpoint的一个引用。当需要向一个具体的RpcEndpoint发送消息时，需要获取该RpcEndpoint的引用，通过该引用发送消息</p>
+</li>
+<li><p>OutBox：指令消息发件箱</p>
+<ul>
+<li>一个目标RpcEndpoint对应一 个发件箱</li>
+<li>消息放入Outbox后，通过TransportClient发送消息，消息放入发件箱和发送在同一个线程中进行</li>
+</ul>
+</li>
+<li><p>RpcAddress：RpcEndpointRef的地址，Host + Port</p>
+</li>
+<li><p>TransportClient：Netty通信客户端</p>
+<ul>
+<li>一个OutBox对应一个TransportClient</li>
+<li>TransportClient不断轮询OutBox，根据OutBox消息的receiver信息，请求对应的远程TransportServer</li>
+</ul>
+</li>
+<li><p>TransportServer：Netty 通信服务端</p>
+<ul>
+<li>一个RpcEndpoint对应一个TransportServer</li>
+<li>接收远程消息后调用Dispatcher分发消息至收发件箱</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Spark任务调度"><a href="#Spark任务调度" class="headerlink" title="Spark任务调度"></a>Spark任务调度</h2><ul>
+<li><p>Yarn-Cluster模式下，任务提交，启动Driver线程后，Driver初始化SparkContext对象，准备运行的上下文，保持与ApplicationMaster的RPC连接，通过ApplicationMaster申请资源，同时根据用户业务逻辑调度任务，将任务下发到已有的空闲Executor。ResourceManager向ApplicationMaster返回Container资源时，ApplicationMaster尝试在对应的Container启动Executor进程，启动后Executor向Driver反向注册，保持与Driver的心跳，等待Driver分发任务，执行完分发任务会将任务状态上报给Driver</p>
+</li>
+<li><p>一个Spark任务包括：</p>
+<ul>
+<li><p>Job：以Action算子为界，遇到一个Action算子则触发一个Job</p>
+</li>
+<li><p>Stage：Job的子集，以RDD宽依赖（Shuffle）为界</p>
+</li>
+<li><p>Task：Stage的子集，以并行度（分区数）衡量，分区数多少则有多少个task</p>
+<p><img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809133132811.png" alt="image-20220809133132811"></p>
+</li>
+</ul>
+</li>
+<li><p>Spark RDD通过转换算子形成了RDD血缘（依赖）关系图DAG，通过Action的调用，触发Job并调度执行，执行中创建两个调度器：DAGScheduler、TaskScheduler</p>
+<ul>
+<li>DAGScheduler：负责Stage级调度，将job切分成若干Stages，将每个Stage打包成TaskSet交给TaskScheduler调度</li>
+<li>TaskScheduler：负责Task级调度，将TaskSet按指定的调度策略分发到Executor执行</li>
+<li>调度过程中SchedulerBackend提供可用资源，SchedulerBackend有多种实现，对应不同资源管理系统</li>
+</ul>
+</li>
+<li><p>Driver初始化SparkContext时：</p>
+<ul>
+<li>初始化DAGScheduler、TaskScheduler、SchedulerBackend（通信后台）、HeartbeatReceiver、SparkConf（配置对象）、SparkEnv（通信环境），启动SchedulerBackend、HeartbeatReceiver</li>
+<li>SchedulerBackend通过ApplicationMaster申请资源，从TaskScheduler拿到合适的Task分发到Executor执行</li>
+<li>HeartbeatReceiver负责接收Executor心跳信息，监控Executor存活状况，通知TaskScheduler</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809133916210.png" alt="image-20220809133916210"></p>
+<h3 id="Stage级调度"><a href="#Stage级调度" class="headerlink" title="Stage级调度"></a>Stage级调度</h3><ul>
+<li><p>Job提交的方法调用流程：</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809134913443.png" alt="image-20220809134913443" style="zoom:80%;">
+</li>
+<li><p>Job由最终的RDD和Action算子封装成</p>
+</li>
+<li><p>SparkContext将Job交给DAGScheduler，DAGScheduler根据RDD的血缘关系构成的DAG划分多个Stage：</p>
+<ul>
+<li><p>由最终RDD不断通过依赖回溯判断父依赖是否是宽依赖，窄依赖的RDD之间划分到同一个Stage</p>
+</li>
+<li><p>划分的Stages分两类： ResultStage（DAG最下游的Stage，由Action方法决定），ShuffleMapStage（为下游Stage准备数据）</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809140204033.png" alt="image-20220809140204033" style="zoom:80%;">
+</li>
+<li><p>一个Stage是否被提交，需要判断父Stage是否执行，父Stage执行完毕才能提交当前Stage。Stage提交时会将Task信息（分区信息、算子等）序列化并打包成TaskSet交给TaskScheduler，一个Partition对应一个Task</p>
+</li>
+<li><p>TaskScheduler监控Stage的运行状态，只有Executor丢失或Task由于Fetch失败才重新提交失败的Stage，其他类型Task失败在TaskScheduler的调度中重试</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Stage级调度的源码"><a href="#Stage级调度的源码" class="headerlink" title="Stage级调度的源码"></a>Stage级调度的源码</h4><ul>
+<li><p>SparkContext初始化</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用来与其他组件通讯用</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> _schedulerBackend: <span class="type">SchedulerBackend</span> = _</span><br><span class="line"><span class="comment">// DAG 调度器, 是调度系统的中的中的重要组件之一, 负责创建 Job, 将 DAG 中的 RDD 划分到不同的 Stage, 提交 Stage 等.</span></span><br><span class="line"><span class="comment">// SparkUI 中有关 Job 和 Stage 的监控数据都来自 DAGScheduler</span></span><br><span class="line"><span class="meta">@volatile</span> <span class="keyword">private</span> <span class="keyword">var</span> _dagScheduler: <span class="type">DAGScheduler</span> = _</span><br><span class="line"><span class="comment">// TaskScheduler 按照调度算法对集群管理器已经分配给应用程序的资源进行二次调度后分配给任务</span></span><br><span class="line"><span class="comment">// TaskScheduler 调度的 Task 是由DAGScheduler 创建的, 所以 DAGScheduler 是 TaskScheduler的前置调度器</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> _taskScheduler: <span class="type">TaskScheduler</span> = _</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建 SchedulerBackend 和 TaskScheduler</span></span><br><span class="line"><span class="keyword">val</span> (sched, ts):(<span class="type">SchedulerBackend</span>, <span class="type">TaskScheduler</span>) = <span class="type">SparkContext</span>.createTaskScheduler(<span class="keyword">this</span>, master, deployMode)</span><br><span class="line">_schedulerBackend = sched</span><br><span class="line">_taskScheduler = ts</span><br><span class="line"><span class="comment">// 创建 DAGScheduler</span></span><br><span class="line">_dagScheduler = <span class="keyword">new</span> <span class="type">DAGScheduler</span>(<span class="keyword">this</span>)</span><br><span class="line"><span class="comment">// 启动 TaskScheduler, 内部会也会启动 SchedulerBackend</span></span><br><span class="line">_taskScheduler.start()</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Action算子的runJob方法</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">collect</span></span>(): <span class="type">Array</span>[<span class="type">T</span>] = withScope &#123;</span><br><span class="line">    <span class="keyword">val</span> results = sc.runJob(<span class="keyword">this</span>, (iter: <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; iter.toArray)</span><br><span class="line">    <span class="type">Array</span>.concat(results: _*)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">runJob</span></span>[<span class="type">T</span>, <span class="type">U</span>: <span class="type">ClassTag</span>](</span><br><span class="line">                              rdd: <span class="type">RDD</span>[<span class="type">T</span>],</span><br><span class="line">                              func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,</span><br><span class="line">                              partitions: <span class="type">Seq</span>[<span class="type">Int</span>],</span><br><span class="line">                              resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="comment">// 作业的切分                          </span></span><br><span class="line">    dagScheduler.runJob(rdd, cleanedFunc, partitions, callSite, resultHandler, localProperties.get)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DAGScheduler类</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">runJob</span></span>[<span class="type">T</span>, <span class="type">U</span>](</span><br><span class="line">                    rdd: <span class="type">RDD</span>[<span class="type">T</span>],</span><br><span class="line">                    func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,</span><br><span class="line">                    partitions: <span class="type">Seq</span>[<span class="type">Int</span>],</span><br><span class="line">                    callSite: <span class="type">CallSite</span>,</span><br><span class="line">                    resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,</span><br><span class="line">                    properties: <span class="type">Properties</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="comment">// 提交任务  返回值 JobWaiter 用来确定 Job 的成功与失败</span></span><br><span class="line">    <span class="keyword">val</span> waiter = submitJob(rdd, func, partitions, callSite, resultHandler, properties)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">submitJob</span></span>[<span class="type">T</span>, <span class="type">U</span>](</span><br><span class="line">                       rdd: <span class="type">RDD</span>[<span class="type">T</span>],</span><br><span class="line">                       func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,</span><br><span class="line">                       partitions: <span class="type">Seq</span>[<span class="type">Int</span>],</span><br><span class="line">                       callSite: <span class="type">CallSite</span>,</span><br><span class="line">                       resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,</span><br><span class="line">                       properties: <span class="type">Properties</span>): <span class="type">JobWaiter</span>[<span class="type">U</span>] = &#123;</span><br><span class="line">    <span class="comment">// 创建 JobWaiter 对象</span></span><br><span class="line">    <span class="keyword">val</span> waiter = <span class="keyword">new</span> <span class="type">JobWaiter</span>(<span class="keyword">this</span>, jobId, partitions.size, resultHandler)</span><br><span class="line">    <span class="comment">// 向内部事件循环器发送消息 JobSubmitted</span></span><br><span class="line">    eventProcessLoop.post(<span class="type">JobSubmitted</span>(</span><br><span class="line">        jobId, rdd, func2, partitions.toArray, callSite, waiter,</span><br><span class="line">        <span class="type">SerializationUtils</span>.clone(properties)))</span><br><span class="line">    waiter</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">doOnReceive</span></span>(event: <span class="type">DAGSchedulerEvent</span>): <span class="type">Unit</span> = event <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">JobSubmitted</span>(jobId, rdd, func, partitions, callSite, listener, properties) =&gt;</span><br><span class="line">        <span class="comment">// 处理提交的 Job</span></span><br><span class="line">        dagScheduler.handleJobSubmitted(jobId, rdd, func, partitions, callSite, listener, properties)</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">handleJobSubmitted</span></span>(jobId: <span class="type">Int</span>,</span><br><span class="line">                                          finalRDD: <span class="type">RDD</span>[_],</span><br><span class="line">                                          func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _,</span><br><span class="line">                                          partitions: <span class="type">Array</span>[<span class="type">Int</span>],</span><br><span class="line">                                          callSite: <span class="type">CallSite</span>,</span><br><span class="line">                                          listener: <span class="type">JobListener</span>,</span><br><span class="line">                                          properties: <span class="type">Properties</span>) &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> finalStage: <span class="type">ResultStage</span> = <span class="literal">null</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// New stage creation may throw an exception if, for example, jobs are run on a</span></span><br><span class="line">        <span class="comment">// HadoopRDD whose underlying HDFS files have been deleted.</span></span><br><span class="line">        <span class="comment">// Stage 的划分是从后向前推断的, 所以先创建最后的阶段</span></span><br><span class="line">        finalStage = createResultStage(finalRDD, func, partitions, jobId, callSite)</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    submitStage(finalStage)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">createResultStage</span></span>(</span><br><span class="line">                                 rdd: <span class="type">RDD</span>[_],</span><br><span class="line">                                 func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _,</span><br><span class="line">                                 partitions: <span class="type">Array</span>[<span class="type">Int</span>],</span><br><span class="line">                                 jobId: <span class="type">Int</span>,</span><br><span class="line">                                 callSite: <span class="type">CallSite</span>): <span class="type">ResultStage</span> = &#123;</span><br><span class="line">    <span class="comment">// 1. 获取所有父 Stage 的列表</span></span><br><span class="line">    <span class="keyword">val</span> parents: <span class="type">List</span>[<span class="type">Stage</span>] = getOrCreateParentStages(rdd, jobId)</span><br><span class="line">    <span class="comment">// 2. 给 resultStage 生成一个 id</span></span><br><span class="line">    <span class="keyword">val</span> id = nextStageId.getAndIncrement()</span><br><span class="line">    <span class="comment">// 3. 创建 ResultStage</span></span><br><span class="line">    <span class="keyword">val</span> stage: <span class="type">ResultStage</span> = <span class="keyword">new</span> <span class="type">ResultStage</span>(id, rdd, func, partitions, parents, jobId, callSite)</span><br><span class="line">    <span class="comment">// 4. stageId 和 ResultStage 做映射</span></span><br><span class="line">    stageIdToStage(id) = stage</span><br><span class="line">    updateJobIdStageIdMaps(jobId, stage)</span><br><span class="line">    stage</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">getOrCreateParentStages</span></span>(rdd: <span class="type">RDD</span>[_], firstJobId: <span class="type">Int</span>): <span class="type">List</span>[<span class="type">Stage</span>] = &#123;</span><br><span class="line">    <span class="comment">// 获取所有的 Shuffle 依赖(宽依赖)</span></span><br><span class="line">    getShuffleDependencies(rdd).map &#123; shuffleDep =&gt;</span><br><span class="line">        <span class="comment">// 对每个 shuffle 依赖,  获取或者创建新的 Stage: ShuffleMapStage</span></span><br><span class="line">        getOrCreateShuffleMapStage(shuffleDep, firstJobId)</span><br><span class="line">    &#125;.toList</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 得到所有宽依赖</span></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">getShuffleDependencies</span></span>(</span><br><span class="line">                                                 rdd: <span class="type">RDD</span>[_]): <span class="type">HashSet</span>[<span class="type">ShuffleDependency</span>[_, _, _]] = &#123;</span><br><span class="line">    <span class="keyword">val</span> parents = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">ShuffleDependency</span>[_, _, _]]</span><br><span class="line">    <span class="keyword">val</span> visited = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">RDD</span>[_]]</span><br><span class="line">    <span class="keyword">val</span> waitingForVisit = <span class="keyword">new</span> <span class="type">Stack</span>[<span class="type">RDD</span>[_]]</span><br><span class="line">    waitingForVisit.push(rdd)</span><br><span class="line">    <span class="keyword">while</span> (waitingForVisit.nonEmpty) &#123;</span><br><span class="line">        <span class="keyword">val</span> toVisit = waitingForVisit.pop()</span><br><span class="line">        <span class="keyword">if</span> (!visited(toVisit)) &#123;</span><br><span class="line">            visited += toVisit</span><br><span class="line">            toVisit.dependencies.foreach &#123;</span><br><span class="line">                <span class="keyword">case</span> shuffleDep: <span class="type">ShuffleDependency</span>[_, _, _] =&gt;</span><br><span class="line">                    parents += shuffleDep</span><br><span class="line">                <span class="keyword">case</span> dependency =&gt;</span><br><span class="line">                    waitingForVisit.push(dependency.rdd)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    parents</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">submitStage</span></span>(stage: <span class="type">Stage</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> jobId = activeJobForStage(stage)</span><br><span class="line">    <span class="keyword">if</span> (jobId.isDefined) &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (!waitingStages(stage) &amp;&amp; !runningStages(stage) &amp;&amp; !failedStages(stage)) &#123;</span><br><span class="line">            <span class="comment">// 获取所有的父 Stage</span></span><br><span class="line">            <span class="keyword">val</span> missing = getMissingParentStages(stage).sortBy(_.id)</span><br><span class="line">            <span class="comment">// 如果为空, 则提交这个 Stage</span></span><br><span class="line">            <span class="keyword">if</span> (missing.isEmpty) &#123;</span><br><span class="line">                submitMissingTasks(stage, jobId.get)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 如果还有父 Stage , 则递归调用</span></span><br><span class="line">                <span class="keyword">for</span> (parent &lt;- missing) &#123;</span><br><span class="line">                    submitStage(parent)</span><br><span class="line">                &#125;</span><br><span class="line">                waitingStages += stage</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">submitMissingTasks</span></span>(stage: <span class="type">Stage</span>, jobId: <span class="type">Int</span>) &#123;</span><br><span class="line">    <span class="comment">// 任务划分. 每个分区创建一个 Task</span></span><br><span class="line">    <span class="keyword">val</span> tasks: <span class="type">Seq</span>[<span class="type">Task</span>[_]] = <span class="keyword">try</span> &#123;</span><br><span class="line">        stage <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> stage: <span class="type">ShuffleMapStage</span> =&gt;</span><br><span class="line">                partitionsToCompute.map &#123; id =&gt;</span><br><span class="line">                    <span class="keyword">val</span> locs = taskIdToLocations(id)</span><br><span class="line">                    <span class="keyword">val</span> part = stage.rdd.partitions(id)</span><br><span class="line">                    <span class="keyword">new</span> <span class="type">ShuffleMapTask</span>(stage.id, stage.latestInfo.attemptId,</span><br><span class="line">                        taskBinary, part, locs, stage.latestInfo.taskMetrics, properties, <span class="type">Option</span>(jobId),</span><br><span class="line">                        <span class="type">Option</span>(sc.applicationId), sc.applicationAttemptId)</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">case</span> stage: <span class="type">ResultStage</span> =&gt;</span><br><span class="line">                partitionsToCompute.map &#123; id =&gt;</span><br><span class="line">                    <span class="keyword">val</span> p: <span class="type">Int</span> = stage.partitions(id)</span><br><span class="line">                    <span class="keyword">val</span> part = stage.rdd.partitions(p)</span><br><span class="line">                    <span class="keyword">val</span> locs = taskIdToLocations(id)</span><br><span class="line">                    <span class="keyword">new</span> <span class="type">ResultTask</span>(stage.id, stage.latestInfo.attemptId,</span><br><span class="line">                        taskBinary, part, locs, id, properties, stage.latestInfo.taskMetrics,</span><br><span class="line">                        <span class="type">Option</span>(jobId), <span class="type">Option</span>(sc.applicationId), sc.applicationAttemptId)</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 提交任务</span></span><br><span class="line">    <span class="keyword">if</span> (tasks.size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 使用 taskScheduler 提交任务</span></span><br><span class="line">        taskScheduler.submitTasks(<span class="keyword">new</span> <span class="type">TaskSet</span>(</span><br><span class="line">            tasks.toArray, stage.id, stage.latestInfo.attemptId, jobId, properties))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TaskScheduler类</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">submitTasks</span></span>(taskSet: <span class="type">TaskSet</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> tasks = taskSet.tasks</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">this</span>.synchronized &#123;</span><br><span class="line">        <span class="comment">// 创建 TaskManger 对象. 用来追踪每个任务</span></span><br><span class="line">        <span class="keyword">val</span> manager: <span class="type">TaskSetManager</span> = createTaskSetManager(taskSet, maxTaskFailures)</span><br><span class="line">        <span class="keyword">val</span> stage = taskSet.stageId</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// manage 和 TaskSet 交给合适的任务调度器来调度</span></span><br><span class="line">        schedulableBuilder.addTaskSetManager(manager, manager.taskSet.properties)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 跟 ExecutorBackend 通讯</span></span><br><span class="line">    backend.reviveOffers()</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>CoarseGrainedSchedulerBackend</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">reviveOffers</span></span>() &#123;</span><br><span class="line">    <span class="comment">// DriverEndpoint 给自己发信息: ReviveOffers</span></span><br><span class="line">    driverEndpoint.send(<span class="type">ReviveOffers</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DriverEndpoint</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">makeOffers</span></span>() &#123;</span><br><span class="line">    <span class="comment">// 过滤出 Active 的Executor</span></span><br><span class="line">    <span class="keyword">val</span> activeExecutors = executorDataMap.filterKeys(executorIsAlive)</span><br><span class="line">    <span class="comment">// 封装资源</span></span><br><span class="line">    <span class="keyword">val</span> workOffers = activeExecutors.map &#123; <span class="keyword">case</span> (id, executorData) =&gt;</span><br><span class="line">        <span class="keyword">new</span> <span class="type">WorkerOffer</span>(id, executorData.executorHost, executorData.freeCores)</span><br><span class="line">    &#125;.toIndexedSeq</span><br><span class="line">    <span class="comment">// 启动任务</span></span><br><span class="line">    launchTasks(scheduler.resourceOffers(workOffers))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">launchTasks</span></span>(tasks: <span class="type">Seq</span>[<span class="type">Seq</span>[<span class="type">TaskDescription</span>]]) &#123;</span><br><span class="line">    <span class="keyword">for</span> (task &lt;- tasks.flatten) &#123;</span><br><span class="line">        <span class="comment">// 序列化任务</span></span><br><span class="line">        <span class="keyword">val</span> serializedTask = ser.serialize(task)</span><br><span class="line">        <span class="keyword">if</span> (serializedTask.limit &gt;= maxRpcMessageSize) &#123;</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">val</span> executorData = executorDataMap(task.executorId)</span><br><span class="line">            executorData.freeCores -= scheduler.<span class="type">CPUS_PER_TASK</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 发送任务到 Executor. CoarseGrainedExecutorBackend 会收到消息</span></span><br><span class="line">            executorData.executorEndpoint.send(<span class="type">LaunchTask</span>(<span class="keyword">new</span> <span class="type">SerializableBuffer</span>(serializedTask)))</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>CoarseGrainedExecutorBackend</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">receive</span></span>: <span class="type">PartialFunction</span>[<span class="type">Any</span>, <span class="type">Unit</span>] = &#123;</span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">LaunchTask</span>(data) =&gt;</span><br><span class="line">        <span class="keyword">if</span> (executor == <span class="literal">null</span>) &#123;</span><br><span class="line">            exitExecutor(<span class="number">1</span>, <span class="string">&quot;Received LaunchTask command but executor was null&quot;</span>)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 把要执行的任务反序列化</span></span><br><span class="line">            <span class="keyword">val</span> taskDesc = ser.deserialize[<span class="type">TaskDescription</span>](data.value)</span><br><span class="line">            <span class="comment">// 启动任务开始执行</span></span><br><span class="line">            executor.launchTask(<span class="keyword">this</span>, taskId = taskDesc.taskId, attemptNumber = taskDesc.attemptNumber,</span><br><span class="line">                taskDesc.name, taskDesc.serializedTask)</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="Task级调度"><a href="#Task级调度" class="headerlink" title="Task级调度"></a>Task级调度</h3><ul>
+<li><p>Task的调度由TaskScheduler完成，TaskScheduler将TaskSet封装为TaskSetManager，加入调度队列——TaskSetManager监控管理同一个Stage中的Tasks，TaskScheduler以TaskSetManager为单元调度任务</p>
+<p><img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809142905732.png" alt="image-20220809142905732"></p>
+</li>
+<li><p>Driver初始化TaskScheduler后，会启动SchedulerBackend，接收Executor注册信息、维护Executor状态、定期询问TaskScheduler是否有任务运行</p>
+</li>
+<li><p>TaskScheduler在SchedulerBackend询问时，从调度队列按照指定的调度策略选择TaskSetManager去调度运行</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809143144045.png" alt="image-20220809143144045" style="zoom:80%;">
+
+<ul>
+<li>将TaskSetManager加入rootPool调度池后，调用SchedulerBackend.reviveOffers给driverEndpoint发送ReviveOffer消息</li>
+<li>driverEndpoint收到ReviveOffer消息后调用makeOffers方法，过滤得到活跃状态的Executor，将Executor封装成WorkerOffer对象</li>
+<li>准备好计算资源 （WorkerOffer）后，taskScheduler基于计算资源调用resourceOffer在Executor上分配task</li>
+</ul>
+</li>
+</ul>
+<h4 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h4><ul>
+<li><p>TaskScheduler支持两种调度策略：FIFO（默认的调度策略）、FAIR</p>
+</li>
+<li><p>TaskScheduler初始化中会实例化rootPool（树的根节点，Pool类型）</p>
+</li>
+<li><p>FIFO 调度策略：TaskSetManager按照先来先到的方式入队，树结构如下所示</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809145426237.png" alt="image-20220809145426237" style="zoom:80%;">
+</li>
+<li><p>FAIR 调度策略：树结构如下所示</p>
+<img src="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/image-20220809151025413.png" alt="image-20220809151025413" style="zoom:67%;">
+
+<ul>
+<li><p>一个rootPool和多个子Pool，子Pool存储待分配的TaskSetMagager</p>
+</li>
+<li><p>先对子Pool排序，再对子Pool中的TaskSetMagager排序（排序算法相同）</p>
+<ul>
+<li><p>排序过程的比较基于Fair-share，每个排序的对象包含三个属性:  runningTasks值（正在运行的Task数）、minShare值、weight值，比较时综合考量runningTasks 值，minShare值、weight值（minShare使用率和权重使用率少——实际运行 task比例较少的先运行）</p>
+</li>
+<li><p>minShare、weight的值均在公平调度配置文件fairscheduler.xml指定，调度池在构建阶段读取此文件的相关配置</p>
+<ol>
+<li><p>如果A对象的runningTasks大于它的minShare，B对象的runningTasks小于它的minShare， B排在A前面（runningTasks比minShare小的先执行）</p>
+</li>
+<li><p>A、B 对象的runningTasks都小于各自的minShare，比较runningTasks与minShare的比值（minShare使用率），minShare使用率低的先执行</p>
+</li>
+<li><p>A、B 对象的runningTasks都大于各自的minShare，比较runningTasks与weight的比值（权重使用率），权重使用率低的先执行</p>
+</li>
+<li><p>如果上述比较均相等，则比较名字</p>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p>排序完成后，所有的TaskSetManager放入一个ArrayBuffer，依次被取出并发送给Executor执行</p>
+</li>
+</ul>
+</li>
+<li><p>从调度队列中拿到TaskSetManager后，TaskSetManager按照一定的规则取出Task给TaskScheduler，TaskScheduler将Task交给SchedulerBackend发到Executor执行</p>
+</li>
+</ul>
+<h4 id="失败重试与黑名单机制"><a href="#失败重试与黑名单机制" class="headerlink" title="失败重试与黑名单机制"></a>失败重试与黑名单机制</h4><ul>
+<li>Task提交到Executor启动执行后，Executor会将执行状态上报给SchedulerBackend，SchedulerBackend告诉TaskScheduler，TaskScheduler找到该Task对应的TaskSetManager并通知，从而TaskSetManager知道Task的失败与成功状态</li>
+<li>对于失败的Task，TaskSetManager记录失败的次数，如果次数没有超过最大重试次数，则放回待调度的Task池中，否则整个Application失败</li>
+<li>记录Task失败次数过程，会记录Task上一次失败所在的Executor Id和Host，以及其对应的“拉黑”时间，下次再调度该Task时，使用黑名单机制，避免它被调度到上一次失败的节点</li>
+</ul>
+<h4 id="Task级调度源码"><a href="#Task级调度源码" class="headerlink" title="Task级调度源码"></a>Task级调度源码</h4><ul>
+<li><p>FIFO调度</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">FIFOSchedulingAlgorithm</span> <span class="keyword">extends</span> <span class="title">SchedulingAlgorithm</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 是不是先调度 s1</span></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">comparator</span></span>(s1: <span class="type">Schedulable</span>, s2: <span class="type">Schedulable</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">        <span class="keyword">val</span> priority1 = s1.priority</span><br><span class="line">        <span class="keyword">val</span> priority2 = s2.priority</span><br><span class="line">        <span class="keyword">var</span> res = math.signum(priority1 - priority2)</span><br><span class="line">        <span class="keyword">if</span> (res == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> stageId1 = s1.stageId</span><br><span class="line">            <span class="keyword">val</span> stageId2 = s2.stageId</span><br><span class="line">            res = math.signum(stageId1 - stageId2)</span><br><span class="line">        &#125;</span><br><span class="line">        res &lt; <span class="number">0</span>  <span class="comment">// 值小的先调度</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Fair调度</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">FairSchedulingAlgorithm</span> <span class="keyword">extends</span> <span class="title">SchedulingAlgorithm</span> </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">comparator</span></span>(s1: <span class="type">Schedulable</span>, s2: <span class="type">Schedulable</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">        <span class="keyword">val</span> minShare1 = s1.minShare</span><br><span class="line">        <span class="keyword">val</span> minShare2 = s2.minShare</span><br><span class="line">        <span class="keyword">val</span> runningTasks1 = s1.runningTasks</span><br><span class="line">        <span class="keyword">val</span> runningTasks2 = s2.runningTasks</span><br><span class="line">        <span class="keyword">val</span> s1Needy = runningTasks1 &lt; minShare1</span><br><span class="line">        <span class="keyword">val</span> s2Needy = runningTasks2 &lt; minShare2</span><br><span class="line">        <span class="keyword">val</span> minShareRatio1 = runningTasks1.toDouble / math.max(minShare1, <span class="number">1.0</span>)</span><br><span class="line">        <span class="keyword">val</span> minShareRatio2 = runningTasks2.toDouble / math.max(minShare2, <span class="number">1.0</span>)</span><br><span class="line">        <span class="keyword">val</span> taskToWeightRatio1 = runningTasks1.toDouble / s1.weight.toDouble</span><br><span class="line">        <span class="keyword">val</span> taskToWeightRatio2 = runningTasks2.toDouble / s2.weight.toDouble</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> compare = <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (s1Needy &amp;&amp; !s2Needy) &#123; <span class="comment">// 谁的 runningTasks1 &lt; minShare1 谁先被调度</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!s1Needy &amp;&amp; s2Needy) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s1Needy &amp;&amp; s2Needy) &#123; <span class="comment">// 如果都 runningTasks &lt; minShare</span></span><br><span class="line">            <span class="comment">// 则比较 runningTasks / math.max(minShare1, 1.0) 的比值 小的优先级高</span></span><br><span class="line">            compare = minShareRatio1.compareTo(minShareRatio2)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 如果都runningTasks &gt; minShare, 则比较 runningTasks / weight 的比值</span></span><br><span class="line">            <span class="comment">// 小的优先级高</span></span><br><span class="line">            compare = taskToWeightRatio1.compareTo(taskToWeightRatio2)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (compare &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="literal">true</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (compare &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="literal">false</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 如果前面都一样, 则比较 TaskSetManager 或 Pool 的名字</span></span><br><span class="line">            s1.name &lt; s2.name</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/08/08/hadoop%E5%AD%A6%E4%B9%A06/" title="Spark (2)Spark内核">https://thomas-li-sjtu.github.io/2022/08/08/hadoop学习6/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/08/hadoop%E5%AD%A6%E4%B9%A07/" rel="prev" title="Spark (3)SparkSQL">
+      <i class="fa fa-chevron-left"></i> Spark (3)SparkSQL
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/08/12/hadoop%E5%AD%A6%E4%B9%A08/" rel="next" title="Spark (4)Spark Streaming">
+      Spark (4)Spark Streaming <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Yarn%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">Yarn环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1"><span class="nav-number">2.</span> <span class="nav-text">组件通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spark%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6"><span class="nav-number">3.</span> <span class="nav-text">Spark任务调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Stage%E7%BA%A7%E8%B0%83%E5%BA%A6"><span class="nav-number">3.1.</span> <span class="nav-text">Stage级调度</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Stage%E7%BA%A7%E8%B0%83%E5%BA%A6%E7%9A%84%E6%BA%90%E7%A0%81"><span class="nav-number">3.1.1.</span> <span class="nav-text">Stage级调度的源码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Task%E7%BA%A7%E8%B0%83%E5%BA%A6"><span class="nav-number">3.2.</span> <span class="nav-text">Task级调度</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E7%AD%96%E7%95%A5"><span class="nav-number">3.2.1.</span> <span class="nav-text">调度策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%B1%E8%B4%A5%E9%87%8D%E8%AF%95%E4%B8%8E%E9%BB%91%E5%90%8D%E5%8D%95%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.2.</span> <span class="nav-text">失败重试与黑名单机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task%E7%BA%A7%E8%B0%83%E5%BA%A6%E6%BA%90%E7%A0%81"><span class="nav-number">3.2.3.</span> <span class="nav-text">Task级调度源码</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

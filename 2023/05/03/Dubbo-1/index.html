@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Dubbo基本概念和使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dubbo">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="Dubbo基本概念和使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503131208169.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503131352008.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503131608135.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503131727071.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503131811344.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503131929968.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503162146297.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/20200907222150174.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503191240939.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503195154771.png">
+<meta property="article:published_time" content="2023-05-03T04:03:21.000Z">
+<meta property="article:modified_time" content="2023-05-03T11:56:10.280Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="中间件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/image-20230503131208169.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Dubbo | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Dubbo
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-05-03 12:03:21" itemprop="dateCreated datePublished" datetime="2023-05-03T12:03:21+08:00">2023-05-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%A1%86%E6%9E%B6/" itemprop="url" rel="index"><span itemprop="name">框架</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Dubbo基本概念和使用</p>
+<a id="more"></a>
+
+<h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><ul>
+<li><p>架构演变：</p>
+<p><img src="/2023/05/03/Dubbo-1/image-20230503131208169.png" alt="image-20230503131208169"></p>
+<ul>
+<li><p>网站流量很小时，只需一个应用，将所有功能都部署在一起，因此使用数据访问框架（ORM）</p>
+</li>
+<li><p>访问量逐渐增大，需要将应用拆成互不相干的几个应用（垂直应用框架，加速前端页面开发）（MVC）——切分业务，实现各个模块独立部署</p>
+<ul>
+<li>每个独⽴部署的服务之间，公共的部分需要部署多份。对公共部分的修改、部署、更新都需要重复的操作，带来⽐较⼤的成本</li>
+</ul>
+<img src="/2023/05/03/Dubbo-1/image-20230503131352008.png" alt="image-20230503131352008" style="zoom:67%;">
+</li>
+<li><p>垂直应用越来越多，应用之间交互不可避免。抽取核心业务作为独立的服务，形成稳定的服务中心，以需要提高业务复用（分布式服务框架）</p>
+</li>
+<li><p>服务越来越多，需增加一个调度中心基于访问压力实时管理集群容量，提高集群利用率（SOA，Service Oriented Architecture）</p>
+<img src="/2023/05/03/Dubbo-1/image-20230503131608135.png" alt="image-20230503131608135" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>RPC：远程过程调用</p>
+<ul>
+<li><p>一种技术的思想，允许程序调用另一个地址空间（通常是共享网络的另一台机器上）的函数，而不用显式编码远程调用的细节——无论调用本地的还是远程的函数，本质上编写的调用代码基本相同</p>
+</li>
+<li><p>核心模块：通讯，序列化</p>
+<img src="/2023/05/03/Dubbo-1/image-20230503131727071.png" alt="image-20230503131727071" style="zoom: 80%;">
+
+<p><img src="/2023/05/03/Dubbo-1/image-20230503131811344.png" alt="image-20230503131811344"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Dubbo"><a href="#Dubbo" class="headerlink" title="Dubbo"></a>Dubbo</h3><ul>
+<li><p>高性能、轻量级的开源Java RPC框架</p>
+<ul>
+<li>面向接口的远程方法调用</li>
+<li>容错和负载均衡</li>
+<li>服务自动注册和发现</li>
+</ul>
+</li>
+<li><p>服务消费者去注册中心订阅到服务提供者的信息。然后通过dubbo进行远程调⽤</p>
+</li>
+<li><p>基本概念：</p>
+<ul>
+<li>服务提供者（Provider）：暴露服务的服务提供方<ul>
+<li>启动时，向注册中心注册自己提供的服务</li>
+</ul>
+</li>
+<li>服务消费者（Consumer）：调用远程服务的消费方<ul>
+<li>启动时，向注册中心订阅自己所需的服务</li>
+<li>从提供者地址列表中，基于软负载均衡算法，选一台提供者进行调用，如果调用失败，再选另一台调用</li>
+</ul>
+</li>
+<li>注册中心（Registry）：<ul>
+<li>返回服务提供者地址列表给消费者</li>
+<li>如果有变更，将基于长连接推送变更数据给消费者</li>
+</ul>
+</li>
+<li>监控中心（Monitor）：Provider和Consumer在内存中累计调用次数和调用时间，每分钟发送一次统计数据到监控中心</li>
+<li>服务容器负责启动，加载，运行Provider</li>
+</ul>
+<p><img src="/2023/05/03/Dubbo-1/image-20230503131929968.png" alt="image-20230503131929968"></p>
+</li>
+<li><p>环境：</p>
+<ul>
+<li>安装zookeeper（作为注册中心）</li>
+<li>安装dubbo-admin<ul>
+<li>dubbo是一个jar包，能够使java程序连接到zookeeper，利用zookeeper消费、提供服务</li>
+<li>dubbo-admin是一个可视化的监控服务</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>其他注册中心包括：</p>
+<ul>
+<li>nacos：nacos既可以作为注册中心使⽤，也可以作为分布式配置中心使用</li>
+<li>eureka</li>
+<li>redis</li>
+</ul>
+</li>
+<li><p>注意：</p>
+<ul>
+<li>每个服务方法应代表一个功能，而不是某功能的一个步骤，否则将面临分布式事务问题，Dubbo 暂未提供分布式事务支持</li>
+<li>服务接口建议以业务场景为单位划分</li>
+</ul>
+</li>
+</ul>
+<h3 id="Demo"><a href="#Demo" class="headerlink" title="Demo"></a>Demo</h3><ul>
+<li><p>订单服务需要调用用户服务获取某个用户的所有地址</p>
+<ul>
+<li>订单服务：创建订单，位于A服务器</li>
+<li>用户服务：查询用户地址，位于B服务器</li>
+</ul>
+</li>
+<li><p>公共接口层/模块（存放model，service，exception）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 项目名：pub-interface</span></span><br><span class="line"><span class="comment">// Bean模型</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserAddress</span> <span class="keyword">implements</span> <span class="title">Serializable</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Integer id;</span><br><span class="line">    <span class="keyword">private</span> String userAddress;</span><br><span class="line">    <span class="keyword">private</span> String userId;</span><br><span class="line">    <span class="keyword">private</span> String consignee;</span><br><span class="line">    <span class="keyword">private</span> String phoneNum;</span><br><span class="line">    <span class="keyword">private</span> String isDefault;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// UserService接口</span></span><br><span class="line">UserService</span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;UserAddress&gt; <span class="title">getUserAddressList</span><span class="params">(String userId)</span></span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>User模块：</p>
+<ul>
+<li><p>引入公共接口依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">  	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>xxxxx<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>pub-interface<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  		<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.0.1-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 引入dubbo --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>dubbo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.6.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- 由于我们使用zookeeper作为注册中心，所以需要操作zookeeper</span></span><br><span class="line"><span class="comment">dubbo 2.6以前的版本引入zkclient操作zookeeper </span></span><br><span class="line"><span class="comment">dubbo 2.6及以后的版本引入curator操作zookeeper</span></span><br><span class="line"><span class="comment">下面两个zk客户端根据dubbo版本2选1即可</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.101tec<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>zkclient<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.10<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="comment">&lt;!-- curator-framework --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.curator<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>curator-framework<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.12.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置（将dubbo和spring ioc整合）</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--当前应用的名字  --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:application</span> <span class="attr">name</span>=<span class="string">&quot;user&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">dubbo:application</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--指定注册中心的地址  --&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">dubbo:registry</span> <span class="attr">address</span>=<span class="string">&quot;zookeeper://118.24.44.169:2181&quot;</span> /&gt;</span></span><br><span class="line">   <span class="comment">&lt;!--配置当前这个服务在dubbo容器中的端⼝号，每个dubbo容器内部的服务的端⼝号必须是不⼀样的--&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">dubbo:protocol</span> <span class="attr">name</span>=<span class="string">&quot;dubbo&quot;</span> <span class="attr">port</span>=<span class="string">&quot;20880&quot;</span> /&gt;</span></span><br><span class="line">   <span class="comment">&lt;!-- 指定需要暴露的服务，指明该服务具体的实现bean是userServiceImpl--&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">interface</span>=<span class="string">&quot;xxxxx.service.UserService&quot;</span> <span class="attr">ref</span>=<span class="string">&quot;userServiceImpl&quot;</span> /&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--将服务提供者的bean注⼊到ioc容器中--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;userServiceImpl&quot;</span> <span class="attr">class</span>=<span class="string">&quot;xxxxx.service.impl.SiteServiceImpl&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>实现UserService接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">		</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;UserAddress&gt; <span class="title">getUserAddressList</span><span class="params">(String userId)</span> </span>&#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		<span class="keyword">return</span> userAddressDao.getUserAddressById(userId);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启动服务，关联bean配置文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">	ClassPathXmlApplicationContext context = </span><br><span class="line">			<span class="keyword">new</span> ClassPathXmlApplicationContext(<span class="string">&quot;classpath:spring-beans.xml&quot;</span>);</span><br><span class="line">	</span><br><span class="line">	System.in.read();  <span class="comment">// 让当前服务⼀直在线，不会被关闭，按任意键退出</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>Order模块（Consumer）：</p>
+<ul>
+<li><p>引入依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">  	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>xxxxx<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>pub-interface<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  		<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.0.1-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 引入dubbo --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>dubbo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.6.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 由于我们使用zookeeper作为注册中心，所以需要引入zkclient和curator操作zookeeper --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.101tec<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>zkclient<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.10<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- curator-framework --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.curator<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>curator-framework<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.12.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置（将dubbo和spring ioc整合）</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 应用名 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:application</span> <span class="attr">name</span>=<span class="string">&quot;order&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">dubbo:application</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 指定注册中心地址 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:registry</span> <span class="attr">address</span>=<span class="string">&quot;zookeeper://118.24.44.169:2181&quot;</span> /&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 生成远程服务代理，可以和本地bean一样使用demoService --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span> <span class="attr">id</span>=<span class="string">&quot;userService&quot;</span> <span class="attr">interface</span>=<span class="string">&quot;xxxxx.service.UserService&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">dubbo:reference</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>服务：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OrderService</span> </span>&#123;</span><br><span class="line">	</span><br><span class="line">	UserService userService;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * 初始化订单，查询用户的所有地址并返回</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> userId</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;UserAddress&gt; <span class="title">initOrder</span><span class="params">(String userId)</span></span>&#123;</span><br><span class="line">		<span class="keyword">return</span> userService.getUserAddressList(userId);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Demo（注解）"><a href="#Demo（注解）" class="headerlink" title="Demo（注解）"></a>Demo（注解）</h3><ul>
+<li><p>Provider：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.alibaba.dubbo.config.annotation.Service;</span><br><span class="line"><span class="keyword">import</span> xxxxx.bean.UserAddress;</span><br><span class="line"><span class="keyword">import</span> xxxxx.service.UserService;</span><br><span class="line"><span class="keyword">import</span> xxxxx.user.mapper.UserAddressMapper;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span> <span class="comment">//使用dubbo提供的service注解，注册暴露服务</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Autowired</span></span><br><span class="line">	UserAddressMapper userAddressMapper;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Consumer：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OrderController</span> </span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="meta">@Reference</span>  <span class="comment">//使用dubbo提供的reference注解引用远程服务</span></span><br><span class="line">	UserService userService;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="Demo（SpringBoot）"><a href="#Demo（SpringBoot）" class="headerlink" title="Demo（SpringBoot）"></a>Demo（SpringBoot）</h3><ul>
+<li><p>引入依赖：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>dubbo-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.2.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置application.properties：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#提供者配置：</span></span><br><span class="line"><span class="meta">dubbo.application.name</span>=<span class="string">user</span></span><br><span class="line"><span class="meta">dubbo.registry.protocol</span>=<span class="string">zookeeper</span></span><br><span class="line"><span class="meta">dubbo.registry.address</span>=<span class="string">192.168.67.159:2181</span></span><br><span class="line"><span class="meta">dubbo.scan.base-package</span>=<span class="string">xxxxx</span></span><br><span class="line"><span class="meta">dubbo.protocol.name</span>=<span class="string">dubbo</span></span><br><span class="line"><span class="comment"># application.name就是服务名，不能跟别的dubbo提供端重复</span></span><br><span class="line"><span class="comment"># registry.protocol 是指定注册中心协议</span></span><br><span class="line"><span class="comment"># registry.address 是注册中心的地址加端口号</span></span><br><span class="line"><span class="comment"># protocol.name 是分布式固定是dubbo,不要改。</span></span><br><span class="line"><span class="comment"># base-package  注解方式要扫描的包</span></span><br><span class="line"><span class="comment">#消费者配置：</span></span><br><span class="line"><span class="meta">dubbo.application.name</span>=<span class="string">order</span></span><br><span class="line"><span class="meta">dubbo.registry.protocol</span>=<span class="string">zookeeper</span></span><br><span class="line"><span class="meta">dubbo.registry.address</span>=<span class="string">192.168.67.159:2181</span></span><br><span class="line"><span class="meta">dubbo.scan.base-package</span>=<span class="string">com.atguigu.gmall</span></span><br><span class="line"><span class="meta">dubbo.protocol.name</span>=<span class="string">dubbo</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>dubbo注解：@Service、@Reference（如果没有在配置中写dubbo.scan.base-package，需要在启动类上使用@EnableDubbo注解）</p>
+</li>
+</ul>
+<h2 id="Dubbo配置"><a href="#Dubbo配置" class="headerlink" title="Dubbo配置"></a>Dubbo配置</h2><ul>
+<li><p>配置的优先级：JVM 启动 -D 参数优先，XML 次之，Properties 最后</p>
+<img src="/2023/05/03/Dubbo-1/image-20230503162146297.png" alt="image-20230503162146297" style="zoom:67%;">
+</li>
+<li><p>重试：请求失败时自动切换另一个provider地址。通过 retries=”2” 来设置重试次数（不含第一次）</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">retries</span>=<span class="string">&quot;2&quot;</span> /&gt;</span></span><br><span class="line">或</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span> <span class="attr">retries</span>=<span class="string">&quot;2&quot;</span> /&gt;</span></span><br><span class="line">或</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dubbo:method</span> <span class="attr">name</span>=<span class="string">&quot;findFoo&quot;</span> <span class="attr">retries</span>=<span class="string">&quot;2&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dubbo:reference</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>超时时间设置：</p>
+<ul>
+<li><p>Consumer：从发起服务调⽤到收到服务响应的整个过程的时间</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">全局超时配置</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:consumer</span> <span class="attr">timeout</span>=<span class="string">&quot;5000&quot;</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">指定接口以及特定方法超时配置</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span> <span class="attr">interface</span>=<span class="string">&quot;com.foo.BarService&quot;</span> <span class="attr">timeout</span>=<span class="string">&quot;2000&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dubbo:method</span> <span class="attr">name</span>=<span class="string">&quot;sayHello&quot;</span> <span class="attr">timeout</span>=<span class="string">&quot;3000&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dubbo:reference</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Reference(version = &quot;timeout&quot;, timeout = 4000)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Provider：执⾏该服务的超时时间</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">全局超时配置</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:provider</span> <span class="attr">timeout</span>=<span class="string">&quot;5000&quot;</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">指定接口以及特定方法超时配置</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:provider</span> <span class="attr">interface</span>=<span class="string">&quot;com.foo.BarService&quot;</span> <span class="attr">timeout</span>=<span class="string">&quot;2000&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dubbo:method</span> <span class="attr">name</span>=<span class="string">&quot;sayHello&quot;</span> <span class="attr">timeout</span>=<span class="string">&quot;3000&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dubbo:provider</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service(version = &quot;timeout&quot;, timeout = 3000)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>推荐在Provider上尽量多配置Consumer端属性</p>
+<ul>
+<li>Provider比Consumer更清楚服务性能参数，如调用的超时时间，合理的重试次数</li>
+<li>Provider配置后，Consumer不配置则会使用Provider的配置值，即Provider配置可以作为Consumer的缺省值</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>版本号：一个接口的实现出现不兼容升级时使用。此时用版本号过渡，版本号不同的服务相互间不引用</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">老版本服务提供者配置：</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">interface</span>=<span class="string">&quot;com.foo.BarService&quot;</span> <span class="attr">version</span>=<span class="string">&quot;1.0.0&quot;</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">新版本服务提供者配置：</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">interface</span>=<span class="string">&quot;com.foo.BarService&quot;</span> <span class="attr">version</span>=<span class="string">&quot;2.0.0&quot;</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">老版本服务消费者配置：</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span> <span class="attr">id</span>=<span class="string">&quot;barService&quot;</span> <span class="attr">interface</span>=<span class="string">&quot;com.foo.BarService&quot;</span> <span class="attr">version</span>=<span class="string">&quot;1.0.0&quot;</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">新版本服务消费者配置：</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span> <span class="attr">id</span>=<span class="string">&quot;barService&quot;</span> <span class="attr">interface</span>=<span class="string">&quot;com.foo.BarService&quot;</span> <span class="attr">version</span>=<span class="string">&quot;2.0.0&quot;</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">如果不需要区分版本，可以按照以下的方式配置：</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span> <span class="attr">id</span>=<span class="string">&quot;barService&quot;</span> <span class="attr">interface</span>=<span class="string">&quot;com.foo.BarService&quot;</span> <span class="attr">version</span>=<span class="string">&quot;*&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service(version = &quot;default&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultSiteServiceImpl</span> <span class="keyword">implements</span> <span class="title">SiteService</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line"> 	<span class="function"><span class="keyword">public</span> String <span class="title">siteName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line"> 		<span class="keyword">return</span> <span class="string">&quot;default:&quot;</span>+name;</span><br><span class="line"> 	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Service(version = &quot;async&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncSiteServiceImpl</span> <span class="keyword">implements</span> <span class="title">SiteService</span> </span>&#123; </span><br><span class="line"> 	<span class="meta">@Override</span></span><br><span class="line"> 	<span class="function"><span class="keyword">public</span> String <span class="title">siteName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line"> 		<span class="keyword">return</span> <span class="string">&quot;async:&quot;</span> + name;</span><br><span class="line"> 	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Reference(id = &quot;siteService&quot;,version = &quot;async&quot;)</span></span><br><span class="line"><span class="keyword">private</span> SiteService siteService;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="高可用"><a href="#高可用" class="headerlink" title="高可用"></a>高可用</h2><ul>
+<li><p>宕机处理：</p>
+<ul>
+<li>监控中心宕掉不影响使用，只是丢失部分采样数据</li>
+<li>数据库宕掉后，注册中心仍能通过缓存提供服务列表查询，但不能注册新服务</li>
+<li>注册中心的任意一台宕掉后，将自动切换到另一台</li>
+<li><strong>注册中心全部宕掉后，服务提供者和服务消费者仍能通过本地缓存通讯</strong></li>
+<li>服务提供者无状态，任意一台宕掉后，不影响使用</li>
+<li>服务提供者全部宕掉后，服务消费者应用将无法使用，并无限次重连等待服务提供者恢复</li>
+</ul>
+</li>
+<li><p>负载均衡：缺省为 random 随机调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service(version = &quot;default&quot;,loadbalance = &quot;roundrobin&quot;)</span></span><br><span class="line"><span class="meta">@Reference(version = &quot;default&quot;, loadbalance = &quot;roundrobin&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>Random LoadBalance</strong></p>
+<ul>
+<li>按权重设置随机概率。</li>
+<li>在一个截面上碰撞的概率高，但调用量越大分布越均匀，而且按概率使用权重后也比较均匀，有利于动态调整提供者权重</li>
+</ul>
+</li>
+<li><p><strong>RoundRobin LoadBalance</strong></p>
+<ul>
+<li>轮循，按公约后的权重设置轮循比率。</li>
+<li>存在慢的Provider累积请求的问题，比如：第二台机器很慢，但没挂，当请求调到第二台时就卡在那，久而久之，所有请求都卡在调到第二台上</li>
+</ul>
+</li>
+<li><p><strong>LeastActive LoadBalance</strong></p>
+<ul>
+<li>最少活跃调用数，相同活跃数的随机，活跃数为调用前后计数差</li>
+<li>使慢的提供者收到更少请求，因为越慢的提供者的调用前后计数差会越大</li>
+<li>执行过程：<ul>
+<li>Consumer在本地缓存所有Provider</li>
+<li>Consumer在调⽤某⼀个服务时，会选择本地的所有Provider中，属性active值最小的Provider</li>
+<li>选定该Provider，对其active属性+1</li>
+<li>开始调用该服务</li>
+<li>完成调用后，对该Provider的active属性-1</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>ConsistentHash LoadBalance</strong></p>
+<ul>
+<li><p>一致性 Hash，相同参数的请求总是发到同一Provider</p>
+</li>
+<li><p>当某一台提供者挂时，原本发往该提供者的请求，基于虚拟节点，平摊到其它提供者，不会引起剧烈变动</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>服务熔断和降级</p>
+<ul>
+<li><p>服务降级：服务器压力剧增的情况下，根据实际业务情况及流量，对一些服务和页面有策略的不处理或换种简单的方式处理，从而释放服务器资源以保证核心交易正常运作或高效运作</p>
+</li>
+<li><p>向注册中心写入动态配置覆盖规则</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RegistryFactory registryFactory = <span class="module-access"><span class="module"><span class="identifier">ExtensionLoader</span>.</span></span>get<span class="constructor">ExtensionLoader(RegistryFactory.<span class="params">class</span>)</span>.get<span class="constructor">AdaptiveExtension()</span>;</span><br><span class="line">Registry registry = registryFactory.get<span class="constructor">Registry(URL.<span class="params">valueOf</span>(<span class="string">&quot;zookeeper://10.20.153.10:2181&quot;</span>)</span>);</span><br><span class="line">registry.register(<span class="module-access"><span class="module"><span class="identifier">URL</span>.</span></span>value<span class="constructor">Of(<span class="string">&quot;override://0.0.0.0/com.foo.BarService?category=configurators&amp;dynamic=false&amp;application=foo&amp;mock=force:return+null&quot;</span>)</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>mock=force:return+null：Consumer对该服务的方法调用都直接返回 null ，不发起远程调用。用来屏蔽不重要服务不可用时对调用方的影响</li>
+<li>mock=fail:return+null：Consumer对该服务的方法调用在失败后，再返回 null 值，不抛异常。用来容忍不重要服务不稳定时对调用方的影响</li>
+</ul>
+</li>
+<li><p>集群容错：缺省时为failover</p>
+<ul>
+<li><p><strong>Failover Cluster</strong>：当出现失败，重试其它服务器。通常用于读操作，但重试会带来更长延迟</p>
+<ul>
+<li>会出现幂等性问题</li>
+<li>Provider在业务层⾯解决幂等性问题<ul>
+<li>把数据的业务id作为数据库的联合主键，业务id不能重复</li>
+<li>使⽤分布式锁来解决重复消费问题</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Failfast Cluster</strong>：快速失败。只发起一次调用，失败立即报错。通常用于非幂等性的写操作，比如新增记录</p>
+</li>
+<li><p><strong>Failsafe Cluster</strong>：失败安全。出现异常时，直接忽略。通常用于写入审计日志等操作 </p>
+</li>
+<li><p><strong>Failback Cluster</strong>：失败自动恢复。后台记录失败请求，定时重发。通常用于消息通知操作 </p>
+</li>
+<li><p><strong>Forking Cluster</strong>：并行调用多个服务器，只要一个成功即返回。通常用于实时性要求较高的读操作，但需要浪费更多服务资源</p>
+</li>
+<li><p><strong>Broadcast Cluster</strong>：广播调用所有提供者，逐个调用，任意一台报错则报错。通常用于通知所有Provider更新缓存或日志等本地资源信息</p>
+</li>
+<li><p>配置：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">cluster</span>=<span class="string">&quot;failsafe&quot;</span> /&gt;</span></span><br><span class="line">或</span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:reference</span> <span class="attr">cluster</span>=<span class="string">&quot;failsafe&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>本地存根stub’：Provider可能需要在Consumer端执行部分逻辑，如：做 ThreadLocal 缓存，提前验证参数，调用失败后伪造容错数据</p>
+<ul>
+<li><p>核心：API 中带上 Stub，客户端生成 Proxy 实例，<strong>会把 Proxy 通过构造函数传给 Stub</strong> ，然后把 Stub 暴露给用户，Stub 可以决定要不要去调 Proxy</p>
+</li>
+<li><p>Stub使用代理模式包装原有的远程调用服务，让使用者在远程服务调用前后做一些通用处理</p>
+</li>
+<li><p>本地存根执行顺序：</p>
+<ul>
+<li>Consumer发起调用</li>
+<li>如果Consumer存在本地存根 Stub，会先执行本地存根</li>
+<li>本地存根 Stub 持有远程服务的 Proxy 对象。Stub 执行的时候，先执行自己的逻辑（before），然后通过Proxy 发起远程调用，最后在返回之前也执行自己的逻辑（after-returning）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>![image-20230503174609719](Dubbo-1/image-20230503174609719.png)</code></pre>
+<ul>
+<li><p>配置：如果默认将<code>stub</code>属性设置为true，则必须保证本地存根实现类以<code>Stub</code>命名结尾</p>
+<p><img src="/2023/05/03/Dubbo-1/20200907222150174.png"></p>
+</li>
+<li><p>Provider：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SiteServiceStub</span> <span class="keyword">implements</span> <span class="title">SiteService</span> </span>&#123;</span><br><span class="line"> 	<span class="keyword">private</span> <span class="keyword">final</span> SiteService siteService;</span><br><span class="line"> 	<span class="function"><span class="keyword">public</span> <span class="title">SiteServiceStub</span><span class="params">(SiteService siteService)</span> </span>&#123;</span><br><span class="line"> 		<span class="keyword">this</span>.siteService = siteService;</span><br><span class="line"> 	&#125;</span><br><span class="line"> 	<span class="meta">@Override</span></span><br><span class="line"> 	<span class="function"><span class="keyword">public</span> String <span class="title">siteName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line"> 		<span class="keyword">try</span> &#123;</span><br><span class="line"> 			<span class="keyword">return</span> siteService.siteName(name);</span><br><span class="line"> 		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"> 			<span class="keyword">return</span> <span class="string">&quot;stub:&quot;</span>+name;</span><br><span class="line"> 		&#125;</span><br><span class="line"> 	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Consumer：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableAutoConfiguration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StubDubboConsumer</span> </span>&#123;</span><br><span class="line"> 	<span class="meta">@Reference(version = &quot;timeout&quot;, timeout = 1000, stub = &quot;true&quot;)</span></span><br><span class="line"> 	<span class="keyword">private</span> SiteService siteService;</span><br><span class="line"> 	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line"> 		ConfigurableApplicationContext context = SpringApplication.run(StubDubboConsumer.class);</span><br><span class="line"> 		SiteService siteService = (SiteService) context.getBean(SiteService.class);</span><br><span class="line"> 		String name = siteService.siteName(<span class="string">&quot;q-face&quot;</span>);</span><br><span class="line"> 		System.out.println(name);</span><br><span class="line"> 	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<ul>
+<li><p>参数回调：Dubbo基于长连接生成反向代理，在服务端执行客户端的逻辑（消费者调用方法）</p>
+<ul>
+<li><p>接口层</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">SiteService</span> </span>&#123;</span><br><span class="line">    <span class="comment">//同步调用方法</span></span><br><span class="line">    <span class="function">String <span class="title">siteName</span><span class="params">(String name)</span></span>;</span><br><span class="line">    <span class="comment">//回调方法</span></span><br><span class="line">    <span class="comment">//default关键字：接口可以有实现方法，而且不需要实现类去实现其方法</span></span><br><span class="line">    <span class="function"><span class="keyword">default</span> String <span class="title">siteName</span><span class="params">(String name, String key, SiteServiceListener siteServiceListener)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 回调接口和实现类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">SiteServiceListener</span> </span>&#123;</span><br><span class="line"> 	<span class="function"><span class="keyword">void</span> <span class="title">changed</span><span class="params">(String data)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SiteServiceListenerImpl</span> <span class="keyword">implements</span> <span class="title">SiteServiceListener</span>, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">changed</span><span class="params">(String data)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;changed:&quot;</span> + data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Provider</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service(version = &quot;callback&quot;, methods = &#123;@Method(name = &quot;siteName&quot;, arguments = &#123;@Argument(index = 2, callback = true)&#125;)&#125;, callbacks = 3)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CallbackSiteServiceImpl</span> <span class="keyword">implements</span> <span class="title">SiteService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">siteName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">siteName</span><span class="params">(String name, String key, SiteServiceListener siteServiceListener)</span> </span>&#123;</span><br><span class="line">        siteServiceListener.changed(<span class="string">&quot;provider data&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;callback:&quot;</span>+name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Consumer</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableAutoConfiguration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CallbackDubboConsumer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Reference(version = &quot;callback&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> SiteService siteService;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        ConfigurableApplicationContext context = SpringApplication.run(CallbackDubboConsumer.class);</span><br><span class="line">        SiteService siteService = (SiteService) context.getBean(SiteService.class);</span><br><span class="line">        <span class="comment">// key 目的是指明实现类在Provider和Consumer之间保证是同一个</span></span><br><span class="line">        System.out.println(siteService.siteName(<span class="string">&quot;q-face&quot;</span>, <span class="string">&quot;c1&quot;</span>, <span class="keyword">new</span> SiteServiceListenerImpl()));</span><br><span class="line">        System.out.println(siteService.siteName(<span class="string">&quot;q-face&quot;</span>, <span class="string">&quot;c2&quot;</span>, <span class="keyword">new</span> SiteServiceListenerImpl()));</span><br><span class="line">        System.out.println(siteService.siteName(<span class="string">&quot;q-face&quot;</span>, <span class="string">&quot;c3&quot;</span>, <span class="keyword">new</span> SiteServiceListenerImpl()));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>异步调用：</p>
+<p><img src="/2023/05/03/Dubbo-1/image-20230503191240939.png" alt="image-20230503191240939"></p>
+<ul>
+<li><p>从 2.7.0 开始，Dubbo 的所有异步编程接口开始以 CompletableFuture 为基础</p>
+</li>
+<li><p>基于 NIO 的非阻塞实现并行调用，客户端不需要启动多线程即可完成并行调用多个远程服务，相对多线程开销小</p>
+</li>
+<li><p>Consumer通过异步调用，不用等待Provider返回结果就⽴即完成任务，待有结果后再执行之前设定好的监听逻辑</p>
+</li>
+<li><p>接口层</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">SiteService</span> </span>&#123;</span><br><span class="line">    <span class="comment">//同步调用方法</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//回调方法</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//异步调用方法</span></span><br><span class="line">    <span class="function"><span class="keyword">default</span> CompletableFuture&lt;String&gt; <span class="title">siteNameAsync</span><span class="params">(String name)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Provider</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service(version = &quot;async&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncSiteServiceImpl</span> <span class="keyword">implements</span> <span class="title">SiteService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">siteName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;async:&quot;</span> + name;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CompletableFuture&lt;String&gt; <span class="title">siteNameAsync</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;异步调用：&quot;</span> + name);</span><br><span class="line">        <span class="keyword">return</span> CompletableFuture.supplyAsync(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> siteName(name);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Consumer</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableAutoConfiguration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncDubboConsumer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Reference(version = &quot;async&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> SiteService siteService;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        ConfigurableApplicationContext context =</span><br><span class="line">            SpringApplication.run(AsyncDubboConsumer.class);</span><br><span class="line">        SiteService siteService = (SiteService) context.getBean(SiteService.class);</span><br><span class="line">        <span class="comment">//调用异步方法</span></span><br><span class="line">        CompletableFuture&lt;String&gt; future = siteService.siteNameAsync(<span class="string">&quot;q-face&quot;</span>);</span><br><span class="line">        <span class="comment">//设置监听，非阻塞</span></span><br><span class="line">        future.whenComplete((v, e) -&gt; &#123;</span><br><span class="line">            <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;result:&quot;</span> + v);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        System.out.println(<span class="string">&quot;异步调用结束&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><ul>
+<li><p>权重轮询算法：</p>
+<ul>
+<li><p>假如有三台服务器A、B、C，权重分别是6、2、2</p>
+</li>
+<li><p>每台服务器确定两个权重变量：weight、currentWeight，前者不变，后者初始化为0，且currentWeight = currentWeight+weight</p>
+</li>
+<li><p>集群选择currentWeight最大的服务器作为选择结果。并将该最大服务器的 currentWeight减去各服务器的weight总数</p>
+</li>
+<li><p>调整currentWeight = currentWeight+weight，开始新⼀轮的选择</p>
+<p><img src="/2023/05/03/Dubbo-1/image-20230503195154771.png" alt="image-20230503195154771"></p>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\04\15\RocketMQ\" rel="bookmark">RocketMQ</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ 整理</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\04\30\RocketMQ源码分析\" rel="bookmark">RocketMQ源码分析</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ源码阅读</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\10\01\Docker\" rel="bookmark">Docker 核心概念</a></div>
+        <div class="popular-posts-excerpt"><p><p>Docker 核心概念总结</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\25\Java核心技术卷I-1\" rel="bookmark">Java核心技术卷I （1）基本结构与类</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Java核心技术卷I》阅读笔记——基本结构与类</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/" title="Dubbo">https://thomas-li-sjtu.github.io/2023/05/03/Dubbo-1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+              <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag"><i class="fa fa-tag"></i> 中间件</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/01/PassTrans/" rel="prev" title="PASSTRANS：AN IMPROVED PASSWORD REUSE MODEL BASED ON TRANSFORMER">
+      <i class="fa fa-chevron-left"></i> PASSTRANS：AN IMPROVED PASSWORD REUSE MODEL BASED ON TRANSFORMER
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/05/03/Dubbo-2/" rel="next" title="RocketMQ+Dubbo案例">
+      RocketMQ+Dubbo案例 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dubbo"><span class="nav-number">1.1.</span> <span class="nav-text">Dubbo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Demo"><span class="nav-number">1.2.</span> <span class="nav-text">Demo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Demo%EF%BC%88%E6%B3%A8%E8%A7%A3%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">Demo（注解）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Demo%EF%BC%88SpringBoot%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">Demo（SpringBoot）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dubbo%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">Dubbo配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">高可用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">原理</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

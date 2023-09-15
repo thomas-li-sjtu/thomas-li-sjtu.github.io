@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《A Survey on Security and Privacy Issues in Internet-of-Things》论文阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Survey on Security and Privacy Issues in Internet-of-Things">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/03/17/A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《A Survey on Security and Privacy Issues in Internet-of-Things》论文阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-03-17T04:05:32.000Z">
+<meta property="article:modified_time" content="2021-03-19T09:05:12.698Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="IoT">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/03/17/A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>A Survey on Security and Privacy Issues in Internet-of-Things | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/03/17/A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A Survey on Security and Privacy Issues in Internet-of-Things
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-17 12:05:32" itemprop="dateCreated datePublished" datetime="2021-03-17T12:05:32+08:00">2021-03-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>20k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>18 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《A Survey on Security and Privacy Issues in Internet-of-Things》论文阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>物联网在我们的日常生活中无处不在，带来许多有益的功能</li>
+<li>所有这些好处都可能具有隐私损失和安全问题</li>
+<li>为了保护物联网设备的安全，研究者已经做了许多工作来应对这些问题，并找到好的方法来消除这些风险，或者至少最小化它们对用户隐私和安全要求的影响</li>
+<li>本论文为综述</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>物联网（IoT）是嵌入电子设备、软件、传感器、执行器的集合，通过互联网相互连接以收集和交换数据</li>
+<li>物联网与传统互联网的区别在于人类角色的缺失。物联网设备可以创建关于个人行为的信息，对其进行分析，并采取行动【2】</li>
+<li>物联网制造商未能在设备中实施强大的安全系统，因此大量不安全设备连接到互联网存在潜在风险（攻击实例）：<ul>
+<li>2013年12月，企业安全公司 Proofpoint 的一名研究员发现了第一个物联网僵尸网络。根据 Proofpoint 的数据，超过 25% 的僵尸网络是由计算机以外的设备组成的，包括智能电视、婴儿监视器和其他家用电器</li>
+<li>2016年10月21日，包括推特、网飞、Spotify、Airbnb、Reddit、Etsy、SoundCloud 和《纽约时报》在内的许多网站被报告为用户无法访问，原因是使用来自物联网的消费设备网络进行的分布式拒绝服务攻击（DDoS）攻击</li>
+</ul>
+</li>
+<li>隐私与安全问题：收集用户姓名和电话号码等个人信息，监控用户活动</li>
+<li>相关调查：<ul>
+<li>Granjal等人【6】分析了物联网标准化通信协议（PHY、媒体访问控制、网络和应用）和跨层机制的现有解决方案</li>
+<li>Sicari等人【7】介绍了物联网安全领域的研究挑战和当前解决方案，重点介绍了八类主要安全问题：1）认证；2）访问控制；3）保密性；4）隐私；5）信任；6）安全中间件；7）移动安全；和 8）政策执行</li>
+<li>Roman 等人【8】重点分析了集中式和分布式方法。引入适用于集中式和分布式物联网架构的攻击者模型，研究了安全机制设计和部署中的主要挑战和有前景的解决方案</li>
+</ul>
+</li>
+</ul>
+<h2 id="IoT-设备局限性"><a href="#IoT-设备局限性" class="headerlink" title="IoT 设备局限性"></a>IoT 设备局限性</h2><ul>
+<li>为什么物联网很难像传统互联网那样安全和应用安全功能<ul>
+<li>电池容量</li>
+<li>计算能力</li>
+</ul>
+</li>
+</ul>
+<h3 id="电池寿命"><a href="#电池寿命" class="headerlink" title="电池寿命"></a>电池寿命</h3><ul>
+<li>一些物联网设备部署在无法充电的环境中</li>
+<li>执行设计功能的能量有限，繁重的安全指令会耗尽设备资源</li>
+<li>解决方案：<ul>
+<li>对设备使用最低安全要求——不建议，尤其是在处理敏感数据时</li>
+<li>增加电池容量——大多数物联网设备都被设计为重量轻、尺寸小，没有多余的空间放置更大的电池</li>
+<li>从自然资源（如光、热、振动和风）获取能量——需要升级硬件，显著增加成本</li>
+</ul>
+</li>
+</ul>
+<h3 id="轻量级计算"><a href="#轻量级计算" class="headerlink" title="轻量级计算"></a>轻量级计算</h3><ul>
+<li>【9】提到，传统的加密技术无法在物联网系统上工作，这些设备的存储空间有限，无法满足高级加密算法的计算和存储要求——建议重用现有的功能，如在接收机侧应用信号处理来实现物理层认证、发射机的特定模拟特性用于有效编码模拟信息，此类认证方式几乎没有能量开销，因为它利用了无线电信号</li>
+<li>Shafagh等人【10】提出一种面向物联网的加密查询处理算法<ul>
+<li>利用替代的轻量级加密算法，用椭圆曲线 ElGamal 和可变保序编码算法替换了加性同态加密和保序加密，并做出一些更改以适应物联网设备的计算限制</li>
+<li>用端到端（E2E）系统代替了网络应用通信，在客户端执行数据加密/解密</li>
+<li>系统架构主要包括三方面：1)物联网设备；2)用户；3)云</li>
+</ul>
+</li>
+<li>Kotamsetty和Govindarasu  【11】提出了一种方法，通过应用延迟隐藏技术减少物联网在对加密数据执行查询处理时的延迟<ul>
+<li>将大尺寸的查询结果分解成小尺寸的数据集，使得获取剩余加密信息的同时对一组数据执行计算工作</li>
+<li>在每次迭代中请求的适当数据大小，以最小化延迟</li>
+<li>结果表明，对于数据量较大的查询，该方法在延迟方面优于现有的解决方案</li>
+</ul>
+</li>
+<li>Salami等人【12】提出了一种基于状态身份加密的智能家居轻量级加密方案（IBE），公钥只是身份字符串，不需要数字证书<ul>
+<li>将加密过程分为密钥加密和数据加密</li>
+<li>性能分析表明，在加速加密操作和减少大约三分之一的通信开销方面优于常规 IBE方案</li>
+</ul>
+</li>
+</ul>
+<h2 id="IoT-攻击分类"><a href="#IoT-攻击分类" class="headerlink" title="IoT 攻击分类"></a>IoT 攻击分类</h2><ul>
+<li>Andrea 等人【13】提出了物联网设备攻击的新分类，分为四种不同的类型：1）物理攻击；2）网络；3）软件 和4）加密攻击<ul>
+<li>物理攻击</li>
+<li>网络攻击：操纵物联网网络系统造成破坏</li>
+<li>软件攻击：物联网应用程序存在一些安全漏洞</li>
+<li>加密攻击：包括破坏系统加密；可以通过旁路、密码分析和中间人攻击来完成</li>
+<li>提出了一种多层安全方法来解决物联网结构层和加密系统的漏洞和安全问题<ul>
+<li>应用加密散列算法和数字签名来验证设备认证和软件的完整性</li>
+<li>设备应该携带一个错误检测系统，并且它的所有信息必须被加密以保持数据的完整性和机密性</li>
+<li>应用层还可以通过身份验证、加密和完整性验证来提供安全性</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Ronen 和 Shamir【14】根据攻击者的特征如何偏离合法的物联网设备，为物联网攻击引入了新的分类，包括：忽略、减少、误用和扩展系统功能<ul>
+<li>集中在智能灯的功能扩展攻击上</li>
+<li>提出了两种攻击：<ul>
+<li>创建一个秘密通道，从一个实施了连接到内部敏感网络的智能灯的组织机构获取机密信息：通过使用一个光学接收器来完成，该接收器可以通过测量光强微小变化的确切持续时间和频率，从100多米的距离读取数据</li>
+<li>攻击者可以利用这些光在敏感的光频率下产生频闪，可能导致癫痫发作的风险。实验表明，在物联网设备的设计、实现和集成的不同阶段，有必要关注安全问题。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="IoT-认证和访问控制"><a href="#IoT-认证和访问控制" class="headerlink" title="IoT 认证和访问控制"></a>IoT 认证和访问控制</h2><h3 id="IoT-认证方案"><a href="#IoT-认证方案" class="headerlink" title="IoT 认证方案"></a>IoT 认证方案</h3><ul>
+<li>Salman【15】在物联网设备上应用软件定义网络（SDN）的概念，提出了一种新的物联网异构身份认证方案<ul>
+<li>使用雾分布式节点来部署</li>
+<li>每组设备都与一个网关通信，该网关可以支持对事物的认证</li>
+<li>网关连接到一个中央控制器，该控制器可以访问中央数据</li>
+<li>第一阶段从控制器获得网关的认证证书，第二阶段向网关注册，最后一个阶段是物联网设备发送给网关认证请求</li>
+<li>该方案对伪装攻击、中间人攻击和重放攻击具有免疫能力</li>
+</ul>
+</li>
+<li>Porambage等人【16】为分布式物联网应用中资源受限的无线传感器网络，提出并设计了一种普适认证协议和密钥建立方案<ul>
+<li>注册阶段：用于获得到边缘设备和终端用户的加密凭证</li>
+<li>认证阶段：用于相互通信中的认证和密钥建立</li>
+<li>终端用户可以直接向传感器节点认证自己，并获取感测到的数据和服务</li>
+</ul>
+</li>
+<li>Ho等人【17】通过观察5种锁，研究了智能锁的安全漏洞<ul>
+<li>重点研究了车门自动解锁系统的后果</li>
+<li>该研究提出了一种基于触摸意图的通信方案，可以防止锁在没有所有者意图的情况下开锁</li>
+<li>授权用户必须佩戴一个特殊的可穿戴设备，通过耳骨传导麦克风与锁通信</li>
+<li>结果表明，系统只有在检测到人的动作时才会解锁，对任何日常活动引起的振动都没有反应——存在一些限制，例如智能锁增加了硬件，以及可穿戴设备能够传输振动</li>
+</ul>
+</li>
+<li>Sharaf-Dabbagh 和 Saad 【18】提出了一种使用设备唯一指纹进行身份验证的新方法<ul>
+<li>每个设备都有一个独特的指纹，由多个特征组成，如位置、物体的物理状态或发射器状态</li>
+<li>一组物联网对象可能具有不同类型的指纹特征——传统的设备指纹技术不能用于物联网对象的认证，因此用迁移学习来认证具有不同特征空间的设备</li>
+<li>验证消息是否由单个对象发送：假设每个对象的指纹遵循多元高斯分布，采用无限高斯混合模型（infinite Gaussian mixture mode）作为生成模型</li>
+<li>验证发送设备的合法性：将来自 IGMM 的聚类结果与设备的预期聚类形状进行比较——应用 Bhattacharyya 距离完成</li>
+<li>环境会导致某些设备的指纹特征发生变化——应用迁移学习技术来区分由于环境影响导致的正常变化和攻击者产生的恶意变化<ul>
+<li>假设一：更改可以同时影响不止一个对象</li>
+<li>假设二：攻击者不能将所有受环境影响的对象作为目标</li>
+</ul>
+</li>
+<li>提出的认证方法的测试结果表明，与传统的认证技术相比，认证性能有所提高</li>
+</ul>
+</li>
+<li>Zhang and Green【19】提出了一种防御 DDoS 攻击的算法，包括解决网络中每个节点的分布式拒绝服务安全问题<ul>
+<li>考虑由四组节点组成的网络：1）工作节点；2）监控节点；3）合法用户节点；4）攻击者节点</li>
+<li>工作节点被认为是收集信息和执行简单任务的设备，有内存计算、存储和能量限制；工作节点必须区分恶意请求和合法请求。发送相同内容消息的发件人将被标记并保存在已服务请求列表中，以检查进一步的攻击者请求。由于设备的空间限制，列表必须很小</li>
+<li>合法用户节点必须以较低的频率和合理的内容发送请求</li>
+<li>方案中包含了一个监控节点，该节点将负责存储攻击者的旧记录，以防止工作节点服务于恶意攻击</li>
+<li>攻击者的请求只有一次被满足的机会。第二次尝试后，攻击者被放入攻击列表，其数据包将被丢弃</li>
+<li>仿真结果表明，该算法对检测和防范分布式拒绝服务攻击是有效的</li>
+</ul>
+</li>
+<li>Bouij-Pasquier 等人【20】提出了一种授权访问控制模型，称为 SmartOrBAC<ul>
+<li>通过包含协作相关和上下文感知的概念，将物联网网络结构分为四个抽象层，扩展基于组织的访问控制（OrBAC）模型，以适应物联网网络需求</li>
+</ul>
+</li>
+</ul>
+<h3 id="IoT-认证架构"><a href="#IoT-认证架构" class="headerlink" title="IoT 认证架构"></a>IoT 认证架构</h3><ul>
+<li>Dos Santos 等人【21】提出了一种基于相互认证证书的数据报传输层安全（DTLS）体系结构，用于受限物联网设备之间的安全通信<ul>
+<li>引入一种称为物联网安全提供商（IoTSSP）的新设备实现</li>
+<li>IoTSSP 负责管理和分析设备的证书以及设备之间的身份验证和会话建立</li>
+</ul>
+</li>
+<li>【22】提出的解决方案基于轻量级密钥协商协议、IBE 和基于假名的加密，以确保网络中物联网或 WSN 节点之间的匿名性、数据保密性和信任<ul>
+<li>体系结构由一个基站、一个汇聚节点和一组节点组成，基站包含存储节点标识的 PKG 服务器</li>
+<li>要求所有的消息发送到汇聚节点，由汇聚节点将它们发送到最终目的地，并且每个传输都由确认消息来确认</li>
+<li>加密的数据将在发送消息之前产生消息认证码</li>
+<li>节点和汇聚节点之间，以及汇聚节点和基站之间建立共享会话密钥。每个节点都应该使用一个虚拟标识，并应用 PBC 技术</li>
+<li>建立此模型需要四个阶段<ul>
+<li>第一步是网络设置，分为三步设置系统的安全参数——在基站节点中配置 PKG 、汇聚节点参数和节点参数</li>
+<li>第二步强调确保汇聚节点和节点都是网络中合法设备的机制</li>
+<li>第三和第四阶段是在汇聚节点和节点之间、汇聚节点和基站之间建立会话密钥</li>
+</ul>
+</li>
+<li>此方案被证明能够抵抗 WSN 和物联网中大多数已知的攻击，并显示了安全性和隐私保护性能的改善</li>
+</ul>
+</li>
+<li>Yoshigoe 等人【23】提出一种利用合成包注入框架隐藏真实网络流量的方法，从而使黑客难以进行流量分析<ul>
+<li>框架由一个合成包引擎（SPE）组成</li>
+<li>引擎在需要时生成额外的包并将其注入网络</li>
+<li>假包模仿真实动作的行为，比如开门，之后是几秒钟后锁门的动作</li>
+<li>SPE 可以与虚拟专用网结合使用，虚拟专用网可以加密数据并隐藏数据包序列号，以区分真实流量和注入流量</li>
+</ul>
+</li>
+<li>Seitz等人【24】讨论了由非人类直接操作的资源受限设备组成的互联系统的授权和访问控制问题<ul>
+<li>要求设备能够处理来自其他实体的连接，区分来自不同实体的请求，并执行各自的细粒度授权决策</li>
+<li>决策基于本地数据和设备的本地条件，增加了灵活性</li>
+</ul>
+</li>
+<li>Vudcini  c 等人【25】提出了一种基于对象的安全架构（OSCAR），以解决现有面向连接的安全架构，在小型受限物联网设备的规模和由此产生的延迟方面的局限性</li>
+<li>Cirani等人【26】提出了一种基于 IoT-OAuth 的授权服务架构（OAS）</li>
+</ul>
+<h2 id="不同层的-IoT-安全"><a href="#不同层的-IoT-安全" class="headerlink" title="不同层的 IoT 安全"></a>不同层的 IoT 安全</h2><h3 id="物联网感知层安全"><a href="#物联网感知层安全" class="headerlink" title="物联网感知层安全"></a>物联网感知层安全</h3><ul>
+<li>物联网系统旨在收集和交换来自物理世界的数据</li>
+<li>感知层包含各种类型的收集和控制模块，可以进一步分为两部分：感知节点（传感器或控制器等）与交通网络沟通的感知网络【27】<ul>
+<li>感知节点用于数据采集和数据控制</li>
+<li>感知网络向网关发送采集的数据，或者向控制器发送控制指令</li>
+</ul>
+</li>
+<li>感知层的一个安全问题是异常传感器节点的检测。这些节点通常被称为故障节点<ul>
+<li>Chen 等人【28】提出并评估了一种局部故障检测算法，以识别的故障节点</li>
+<li>Da Silva 等人【29】为 WSN 提出了一个分散的入侵检测系统模型</li>
+<li>Wang 等【30】推导了均匀和非均匀环境下的入侵检测概率</li>
+</ul>
+</li>
+<li>感知层另一个安全问题是要使用的加密算法和密钥管理机制<ul>
+<li>公钥算法被认为便于节点认证，具有更大的可扩展性</li>
+<li>Gaubatz等人【31】认为三种低功耗公钥加密算法是无线传感器网络最有前途的候选算法：拉宾方案、NtruEncrypt 和椭圆曲线密码</li>
+<li>密钥管理包括密钥生成、分发、存储、更新和销毁</li>
+<li>现有的密钥分发方案可以分为四组：<ul>
+<li>1)密钥广播分发【32】，【33】</li>
+<li>2)组密钥分发【34】，【35】</li>
+<li>3)主密钥预分配</li>
+<li>4)成对密钥分发【36】，【37】</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>一些物联网用户在向收集服务器提交敏感数据时存在隐私问题<ul>
+<li>在提交之前匿名化数据，这样收集器不能追溯到提交者</li>
+<li>匿名数据聚合在以前的许多著作中已经研究过【38 – 42】</li>
+<li>ao 等人【43】最近的一项工作提出了一种有效的匿名数据报告协议，用于物联网应用中的参与式感知<ul>
+<li>协议由时隙预留阶段和消息提交阶段组成</li>
+<li>时隙预约阶段，一组 N 个用户相互分配一个向量中的消息时隙作为消息提交时间表，每个用户的时隙不被其他用户和聚合器所注意</li>
+<li>消息提交阶段，每个用户基于仅自己知道的时隙信息向聚合器发送编码数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>IMD 是一种新型物联网设备，植入人体用于诊断、监控和治疗目的。一些攻击已经被证明能够成功地危害许多商业 IMD 产品。<ul>
+<li>Halperin 等人【44】介绍了一种商用植入式心律转复除颤器（ICD）的弱点，成功地对 ICD 的通信协议进行了逆向工程，获得病人和ICD的个人信息；发起主动攻击来改变治疗设置，并更快地耗尽电池</li>
+<li>窃听攻击和主动攻击也会危及商业葡萄糖监测和胰岛素输送系统【45 - [47】——对通信协议和数据包格式进行逆向工程，能够通过软件无线电重放和注入信息来改变预期的治疗</li>
+<li>【48】揭示了 IMDs 中的严重安全缺陷，并展示了对手如何远程完全控制胰岛素泵、起搏器和 ICD</li>
+<li>许多研究工作都集中在 IMDs 的访问控制【51 – 57】和减轻资源耗尽攻击【58】，【59】</li>
+</ul>
+</li>
+</ul>
+<h3 id="物联网网络层安全"><a href="#物联网网络层安全" class="headerlink" title="物联网网络层安全"></a>物联网网络层安全</h3><ul>
+<li>对于 WSN 环境中的物联网设备，希望在低功耗无线个人区域网上扩展 IPv6（6LoWPAN），以支持与 IPv6 节点的 IPSec 通信<ul>
+<li>互联网上的现有端点不需要被修改来与 WSN 进行安全通信</li>
+<li>真正的 E2E 安全是在不需要可信赖的网关的情况下实现</li>
+</ul>
+</li>
+<li>Raza 等人【60】提出了一种基于 IP 的传感器网络和传统互联网之间的 E2E 安全通信<ul>
+<li>对 LoWPAN 的扩展支持 IPSec 的身份验证报头和封装安全负载(ESP)</li>
+<li>通信端点能够使用标准化和已建立的 IPv6 机制进行身份验证、加密和检查消息的完整性</li>
+<li>在【61】中扩展了以前的工作<ul>
+<li>详细描述了 6LoWPAN/IPSec 的ESP</li>
+<li>将 6LoWPAN/IPSec 解决方案与常用的 802.15.4 链路层安全性进行比较</li>
+<li>建立  6LoWPAN/IPSec 解决方案和 802.15.4 安全性的全面测试平台性能评估</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Granjal 等人【6】提出了一种新的安全互连模型和安全机制，以实现支持 IP 的无线传感器网络与互联网的安全集成，并考虑了 E2E 安全<ul>
+<li>引入  6LoWPAN 安全报头，以实现互联网上传感器节点和主机之间的E2E安全</li>
+<li>提供了选择性控制 WSN 安全操作所消耗的能量的机制</li>
+</ul>
+</li>
+<li>Jara 等人【62】分析物联网中移动性支持的需求和理想特性，提出了基于移动 IPv6 和 IPSec 的受限环境高效解决方案<ul>
+<li>考虑移动 IPv6 和 IPSec 对受限设备的适用性</li>
+<li>分析、设计、开发和评估了移动 IPv6 和 IPSec 的轻量级版本</li>
+<li>在适应物联网设备能力的效率和安全性方面为动态生态系统提供了最佳解决方案</li>
+</ul>
+</li>
+</ul>
+<h3 id="物联网传输层安全"><a href="#物联网传输层安全" class="headerlink" title="物联网传输层安全"></a>物联网传输层安全</h3><ul>
+<li>Kothmayr 等人【63】基于现有的互联网标准，特别是 DTLS 协议，提出了首个完全实现的物联网系统双向认证方案<ul>
+<li>方案是在完全认证的 DTLS 握手期间执行的，基于包含 RSA 密钥的 X.509 证书的交换</li>
+<li>可以在标准通信栈上工作，为6个局域网提供 UDP/IPv6 网络</li>
+</ul>
+</li>
+<li>Raza 等人【64】为 DTLS 提出了 6LoWPAN<ul>
+<li>将压缩的 DTLS 与 6LoWPAN 联系起来</li>
+<li>提议的 DTLS 压缩显著减少了额外的安全位的数量</li>
+</ul>
+</li>
+<li>Brachmann 等人【66】指出，互联网上采用的 TLS 或 DTLS 等安全协议并不一定意味着在低功耗和有损网络（LLN）中可以实现相同的安全级别，该网络仍然容易受到资源耗尽、泛洪、重放和放大攻击，因为 6LoWPAN 边界路由器通常不执行任何身份验证<ul>
+<li>方法1：将顶级域名映射到 DTLS 协议，以确保应用层的 E2E 安全</li>
+<li>方法2：使用 DTLS-DTLS 隧道来保护 LLN</li>
+</ul>
+</li>
+<li>Hummen 等人【67】研究了在物联网中使用证书进行对等认证，对基于证书的 DTLS 握手进行初步开销估计。分别基于预验证、会话恢复和握手委托，提出了三种降低 DTLS 握手开销的设计思想</li>
+</ul>
+<h3 id="物联网应用层安全"><a href="#物联网应用层安全" class="headerlink" title="物联网应用层安全"></a>物联网应用层安全</h3><ul>
+<li>物联网有多种应用，包括智能家居、医疗保健（如实时健康监控系统）、智能城市（如智能照明、智能停车）、能源管理（如智能电网）、环境监控（如气候监控、野生动物跟踪）、工业互联网和车联网</li>
+<li>大多数现代物联网设备包含可配置的嵌入式计算机系统。有些甚至运行复杂的软件，类似于通用计算机</li>
+<li>物联网正在创造一个新的环境，恶意软件可以用来创建强大的僵尸网络</li>
+<li>【68】新发现一个 Linux 恶意软件，用来将物联网设备捆绑到僵尸网络中<ul>
+<li>使用远程登录或SSH帐户的默认密码获得   shell 访问权限</li>
+<li>之后创建延迟的进程、删除文件，甚至在系统上安装其他恶意软件</li>
+<li>受感染的设备等待 DDos 攻击命令</li>
+<li>2016年10月的大规模互联网中断即是此原因造成的</li>
+</ul>
+</li>
+<li>MalwareMustDie 的研究人员发现了另一个恶意软件家族 IRCTelnet <ul>
+<li>旨在感染基于 Linux 的不安全物联网设备，并将其转化为僵尸网络，进行大规模DDoS攻击【69】</li>
+<li>IRCTelnet 也依赖默认的硬编码密码</li>
+<li>通过暴力破解，登录远程端口并感染设备的操作系统，危害物联网设备。</li>
+</ul>
+</li>
+<li>物联网和 WSN 环境中的分布式拒绝服务攻击已经在【19】和【70 – 74】中进行了深入研究</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>介绍了物联网应用和系统中的安全和隐私问题</li>
+<li>介绍了物联网设备在电池和计算资源方面的局限性，并讨论了延长电池寿命和轻量级计算的可能解决方案</li>
+<li>研究了现有的物联网攻击分类方法和安全机制</li>
+<li>回顾了最近提出的物联网认证方案和架构</li>
+<li>从感知层、网络层、传输层和应用层四个层面分析了安全问题和解决方案</li>
+<li>总体而言，如今商用物联网设备的安全性取决于每个制造商实施的技术、协议和安全机制。根据具体情况，所有物联网设备都可能容易受到某些类型的攻击</li>
+<li>物联网制造业必须与监管机构（如 FSA 和 DHS）以及标准化组织密切合作，以应对新出现的威胁，并为物联网设备和系统制定强大的安全标准</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] IoT Analytics. (2014). Why the Internet of Things Is Called Internet of Things: Definition, History, Disambiguation. [Online]. Available: <a target="_blank" rel="noopener" href="https://iot-analytics.com/Internet-of-things-definition/">https://iot-analytics.com/Internet-of-things-definition/</a></p>
+<p>[2] I. Saif, S. Peasley, and A. Perinkolam. (2015). Safeguarding the Internet of Things: Being Secure, Vigilant, and Resilient in the Connected Age. [Online]. Available: <a target="_blank" rel="noopener" href="https://dupress.deloitte.com/dup-us-en/deloitte-review/issue-17/Internet-of-things-data-security-and-privacy.html">https://dupress.deloitte.com/dup-us-en/deloitte-review/issue-17/Internet-of-things-data-security-and-privacy.html</a></p>
+<p>[3] M. Rouse. (2013). IoT Security (Internet of Things Security). [Online].  Available: <a target="_blank" rel="noopener" href="http://internetofthingsagenda.techtarget.com/definition/IoT-security-Internet-of-Things-security">http://internetofthingsagenda.techtarget.com/definition/IoT-security-Internet-of-Things-security</a></p>
+<p>[4] B. Lam and C. Larose. (2016). How Did the Internet of Things Allow the Latest Attack on the Internet? [Online]. Available: <a target="_blank" rel="noopener" href="https://www.privacyandsecuritymatters.com/2016/10/how-did-the-Internet-of-things-allow-the-latest-attack-on-the-Internet/">https://www.privacyandsecuritymatters.com/2016/10/how-did-the-Internet-of-things-allow-the-latest-attack-on-the-Internet/</a></p>
+<p>[5] Talkin  Cloud.  (2016). IoT  Past  and  Present:  The  History<br>of IoT, and Where It’s Headed Today. [Online]. Available: <a target="_blank" rel="noopener" href="http://talkincloud.com/cloud-computing/iot-past-and-present-history-iot-and-where-its-headed-today?page=2">http://talkincloud.com/cloud-computing/iot-past-and-present-history-iot-and-where-its-headed-today?page=2</a></p>
+<p>[6] J. Granjal, E. Monteiro, and J. S. Silva, “A secure interconnection model for IPv6 enabled wireless sensor networks,” in Proc. IFIP Wireless Days, V enice, Italy, Oct. 2010, pp. 1–6.</p>
+<p>[7] S. Sicari, A. Rizzardi, L. Grieco, and A. Coen-Porisini, “Security, privacy and trust in Internet of Things: The road ahead,” Comput. Netw., vol. 76, pp. 146–164, Jan. 2015.</p>
+<p>[8] R. Roman, J. Zhou, and J. Lopez, “On the features and challenges of security and privacy in distributed Internet of Things,” Comput. Netw., vol. 57, no. 10, pp. 2266–2279, 2013.</p>
+<p>[9] W. Trappe, R. Howard, and R. S. Moore, “Low-energy security: Limits and opportunities in the Internet of Things,” IEEE Security Privacy, vol. 13, no. 1, pp. 14–21, Jan./Feb. 2015.</p>
+<p>[10] H. Shafagh, A. Hithnawi, A. Droescher, S. Duquennoy, and W. Hu, “Poster: Towards encrypted query processing for the Internet of Things,” in Proc. 21st Annu. Int. Conf. Mobile Comput. Netw. (MobiCom), Paris, France, 2015, pp. 251–253.</p>
+<p>[11] R. Kotamsetty and M. Govindarasu, “Adaptive latency-aware query processing on encrypted data for the Internet of Things,” in Proc. 25th Int. Conf. Comput. Commun. Netw. (ICCCN), Aug. 2016, pp. 1–7.</p>
+<p>[12] S. A. Salami, J. Baek, K. Salah, and E. Damiani, “Lightweight encryption for smart home,” in Proc. 11th Int. Conf. Availability Reliability Security (ARES), Salzburg, Austria, Aug. 2016, pp. 382–388.</p>
+<p>[13] I. Andrea, C. Chrysostomou, and G. Hadjichristofi, “Internet of Things: Security vulnerabilities and challenges,” in Proc. IEEE Symp. Comput. Commun. (ISCC), Larnaca, Cyprus, Jul. 2015, pp. 180–187.</p>
+<p>[14] E. Ronen and A. Shamir, “Extended functionality attacks on IoT devices: The case of smart lights,” in Proc. IEEE Eur . Symp. Security Privacy (EuroS P), Saarbrücken, Germany, Mar. 2016, pp. 3–12.</p>
+<p>[15] O. Salman, S. Abdallah, I. H. Elhajj, A. Chehab, and A. Kayssi, “Identity-based authentication scheme for the Internet of Things,” in Proc. IEEE Symp. Comput. Commun. (ISCC), Messina, Italy, Jun. 2016, pp. 1109–1111.</p>
+<p>[16] P . Porambage, C. Schmitt, P . Kumar, A. Gurtov, and M. Ylianttila, “Pauthkey: A pervasive authentication protocol and key establishment scheme for wireless sensor networks in distributed IoT applications,” in Int. J. Distrib. Sensor Netw., vol. 10, Jul. 2014, Art. no. 357430.</p>
+<p>[17] G. Ho et al., “Smart locks: Lessons for securing commodity Internet of Things devices,” in Proc. 11th ACM Asia Conf. Comput. Commun. Security (ASIA CCS), Xi’an, China, 2016, pp. 461–472.</p>
+<p>[18] Y . Sharaf-Dabbagh and W. Saad, “On the authentication of devices in  the Internet of Things,” in Proc. IEEE 17th Int. Symp. World Wireless Mobile Multimedia Netw. (WoWMoM), Coimbra, Portugal, Jun. 2016, pp. 1–3.</p>
+<p>[19] C. Zhang and R. Green, “Communication security in Internet of Thing: Preventive measure and avoid DDoS attack over IoT network,” in Proc. 18th Symp. Commun. Netw. (CNS), San Diego, CA, USA, 2015, pp. 8–15.</p>
+<p>[20] I. Bouij-Pasquier, A. A. Ouahman, A. A. E. Kalam, and M. O. de Montfort, “Smartorbac security and privacy in the Internet of Things,” in Proc. IEEE/ACS 12th Int. Conf. Comput. Syst. Appl. (AICCSA), Marrakesh, Morocco, Nov. 2015, pp. 1–8.</p>
+<p>[21] G. L. dos Santos, V . T. Guimaraes, G. da Cunha Rodrigues, L. Z. Granville, and L. M. R. Tarouco, “A DTLS-based security architecture for the Internet of Things,” in Proc. IEEE Symp. Comput. Commun. (ISCC), Larnaca, Cyprus, Jul. 2015, pp. 809–815.</p>
+<p>[22] S. Jebri, M. Abid, and A. Bouallegue, “An efficient scheme for anonymous communication in IoT,” in Proc. 11th Int. Conf. Inf. Assurance Security (IAS), Marrakesh, Morocco, Dec. 2015, pp. 7–12.</p>
+<p>[23] K. Y oshigoe, W. Dai, M. Abramson, and A. Jacobs, “Overcoming invasion of privacy in smart home environment with synthetic packet injection,” in Proc. TRON Symp. (TRONSHOW), Tokyo, Japan, Dec. 2015, pp. 1–7.</p>
+<p>[24] L. Seitz, G. Selander, and C. Gehrmann, “Authorization framework for the Internet-of-Things,” in Proc. IEEE 14th Int. Symp. World Wireless Mobile Multimedia Netw. (WoWMoM), Madrid, Spain, Jun. 2013, pp. 1–6.</p>
+<p>[25] M. Vu˘ cini´ c et al., “OSCAR: Object security architecture for the Internet of Things,” in Proc. IEEE Int. Symp. World Wireless Mobile Multimedia Netw., Jun. 2014, pp. 1–10.</p>
+<p>[26] S. Cirani, M. Picone, P . Gonizzi, L. V eltri, and G. Ferrari, “IoT-OAS: An OAuth-based authorization service architecture for secure services in IoT scenarios,” IEEE Sensors J., vol. 15, no. 2, pp. 1224–1234, Feb. 2015.</p>
+<p>[27] Q. Jing, A. V . V asilakos, J. Wan, J. Lu, and D. Qiu, “Security of the Internet of Things: Perspectives and challenges,” Wireless Netw., vol. 20, no. 8, pp. 2481–2501, 2014.</p>
+<p>[28] J. Chen, S. Kher, and A. Somani, “Distributed fault detection of wireless sensor networks,” in Proc. Workshop Dependability Issues Wireless Ad Hoc Netw. Sensor Netw. (DIWANS), 2006, pp. 65–72.</p>
+<p>[29] A. P . R. da Silva et al., “Decentralized intrusion detection in wire-less sensor networks,” in Proc. 1st ACM Int. Workshop Qual. Service Amp Security Wireless Mobile Netw. (Q2SWinet), Montreal, QC, Canada, 2005, pp. 16–23.</p>
+<p>[30] Y . Wang, X. Wang, B. Xie, D. Wang, and D. P . Agrawal, “Intrusion detection in homogeneous and heterogeneous wireless sensor networks,” IEEE Trans. Mobile Comput., vol. 7, no. 6, pp. 698–711, Jun. 2008.</p>
+<p>[31] G. Gaubatz, J.-P . Kaps, E. Ozturk, and B. Sunar, “State of the art in ultra-low power public key cryptography for wireless sensor networks,” in Proc. 3rd IEEE Int. Conf. Pervasive Comput. Commun. Workshops, Mar. 2005, pp. 146–150.</p>
+<p>[32] S. C.-H. Huang and D.-Z. Du, “New constructions on broadcast encryption key pre-distribution schemes,” in Proc. IEEE 24th Annu. Joint Conf. Comput. Commun. Soc., vol. 1. Miami, FL, USA, Mar. 2005, pp. 515–523.</p>
+<p>[33] H. Chan, A. Perrig, and D. Song, “Random key predistribution schemes for sensor networks,” in Proc. Symp. Security Privacy, Berkeley, CA, USA, May 2003, pp. 197–213.</p>
+<p>[34] F. M. Al-Turjman, A. E. Al-Fagih, W. M. Alsalih, and H. S. Hassanein, “A delay-tolerant framework for integrated RSNs in IoT,” Comput. Commun., vol. 36, no. 9, pp. 998–1010, 2013.</p>
+<p>[35] H. Liu, M. Bolic, A. Nayak, and I. Stojmenovic, “Taxonomy and challenges of the integration of RFID and wireless sensor networks,” IEEE Netw., vol. 22, no. 6, pp. 26–35, Nov./Dec. 2008.</p>
+<p>[36] H. Chan and A. Perrig, “PIKE: Peer intermediaries for key establishment in sensor networks,” in Proc. IEEE 24th Annu. Joint Conf. Comput. Commun. Soc., vol. 1. Miami, FL, USA, Mar. 2005, pp. 524–535.</p>
+<p>[37] L. Eschenauer and V . D. Gligor, “A key-management scheme for distributed sensor networks,” in Proc. 9th ACM Conf. Comput. Commun. Security (CCS), Washington, DC, USA, 2002, pp. 41–47.</p>
+<p>[38] H. Corrigan-Gibbs and B. Ford, “Dissent: Accountable anonymous group messaging,” in Proc. ACM CCS, Chicago, IL, USA, 2010, pp. 340–350.</p>
+<p>[39] D. I. Wolinsky, H. Corrigan-Gibbs, B. Ford, and A. Johnson, “Dissent in numbers: Making strong anonymity scale,” in Proc. USENIX OSDI, 2012, pp. 179–192.</p>
+<p>[40] H. Corrigan-Gibbs, D. I. Wolinsky, and B. Ford, “Proactively accountable anonymous messaging in verdict,” in Proc. USENIX Security, Washington, DC, USA, 2013, pp. 147–162.</p>
+<p>[41] H. Corrigan-Gibbs, D. Boneh, and D. Mazières, “Riposte: An anonymous messaging system handling millions of users,” in Proc. IEEE S P, San Jose, CA, USA, 2015, pp. 321–338.</p>
+<p>[42] X. Zhao, L. Li, G. Xue, and G. Silva, “Efficient anonymous message submission,” in Proc. IEEE INFOCOM, Orlando, FL, USA, Mar. 2012, pp. 2228–2236.</p>
+<p>[43] Y . Y ao, L. T. Y ang, and N. N. Xiong, “Anonymity-based privacy preserving data reporting for participatory sensing,” IEEE Internet Things J., vol. 2, no. 5, pp. 381–390, Oct. 2015.</p>
+<p>[44] D. Halperin et al., “Pacemakers and implantable cardiac defibrillators: Software radio attacks and zero-power defenses,” in Proc. IEEE S&amp;P, Oakland, CA, USA, 2008, pp. 129–142.</p>
+<p>[45] C. Li, A. Raghunathan, and N. K. Jha, “Hijacking an insulin pump: Security attacks and defenses for a diabetes therapy system,” in Proc. IEEE HealthCom, Columbia, MO, USA, 2011, pp. 150–156.</p>
+<p>[46] J. Radcliffe, “Hacking medical devices for fun and insulin: Breaking the human SCADA system,” in Proc. Black Hat USA, 2011, pp. 1–12.</p>
+<p>[47] E. Marin, D. Singelée, B. Y ang, I. V erbauwhede, and B. Preneel, “On the feasibility of cryptography for a wireless insulin pump system,” in Proc. 6th ACM Conf. Data Appl. Security Privacy (CODASPY), New Orleans, LA, USA, 2016, pp. 113–120.</p>
+<p>[48] B. Jack. (2015). Implantable Medical Devices: Hacking Humans. [Online]. Available: <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Barnaby_Jack#cite_note-medcity-11">https://en.wikipedia.org/wiki/Barnaby_Jack#cite_note-medcity-11</a></p>
+<p>[49] D.  Goldman.  (2013). A  Hacker  Can  Give  You  a  Fatal Overdose.  [Online].  Available: <a target="_blank" rel="noopener" href="http://money.cnn.com/2015/06/10/technology/drug-pump-hack/">http://money.cnn.com/2015/06/10/technology/drug-pump-hack/</a></p>
+<p>[50] Two Safety Communications on the Cybersecurity Vulnerabilities of Two Hospira Infusion Pump Systems, FDA, Silver Spring, MD,  USA,  2015.  [Online].  Available: <a target="_blank" rel="noopener" href="http://www.fda.gov/MedicalDevices/Safety/AlertsandNotices/default.htm">http://www.fda.gov/MedicalDevices/Safety/AlertsandNotices/default.htm</a></p>
+<p>[51] K. B. Rasmussen, C. Castelluccia, T. S. Heydt-Benjamin, and S. Capkun, “Proximity-based access control for implantable medical devices,” in Proc. ACM CCS, Chicago, IL, USA, 2009, pp. 410–419.</p>
+<p>[52] X. Hei and X. Du, “Biometric-based two-level secure access control for implantable medical devices during emergencies,” in Proc. IEEE INFOCOM, Shanghai, China, 2011, pp. 346–350.</p>
+<p>[53] F. Xu, Z. Qin, C. C. Tan, B. Wang, and Q. Li, “Imdguard: Securing implantable medical devices with the external wearable guardian,” in Proc. IEEE INFOCOM, Shanghai, China, 2011, pp. 1862–1870.</p>
+<p>[54] M. Rostami, A. Juels, and F. Koushanfar, “Heart-to-heart (H2H): Authentication for implanted medical devices,” in Proc. ACM CCS, Berlin, Germany, 2013, pp. 1099–1112.</p>
+<p>[55] X. Hei, X. Du, S. Lin, and I. Lee, “PIPAC: Patient infusion pattern based access control scheme for wireless insulin pump system,” in Proc. IEEE INFOCOM, Turin, Italy, 2013, pp. 3030–3038.</p>
+<p>[56] X. Hei, X. Du, and S. Lin, “Poster: Near field communication based access control for wireless medical devices,” in Proc. ACM MobiHoc, Philadelphia, PA, USA, 2014, pp. 423–424.</p>
+<p>[57] G. Zheng, G. Fang, M. A. Orgun, and R. Shankaran, “A non-key based security scheme supporting emergency treatment of wireless implants,” in Proc. IEEE ICC, Sydney, NSW, Australia, 2014, pp. 647–652.</p>
+<p>[58] X. Hei, X. Du, J. Wu, and F. Hu, “Defending resource depletion attacks on implantable medical devices,” in Proc. IEEE GLOBECOM, Miami, FL, USA, 2010, pp. 1–5.</p>
+<p>[59] J. Liu, M. A. Ameen, and K. S. Kwak, “Secure wake-up scheme for WBANs,” IEICE Trans. Commun., vol. 93-B, no. 4, pp. 854–857, Apr. 2010.</p>
+<p>[60] S. Raza et al., “Securing communication in 6LoWPAN with compressed IPsec,” in Proc. Int. Conf. Distrib. Comput. Sensor Syst. Workshops (DCOSS), Barcelona, Spain, Jun. 2011, pp. 1–8.</p>
+<p>[61] S. Raza, S. Duquennoy, J. Hoglund, U. Roedig, and T. V oigt, “Secure communication for the Internet of Things—A comparison of link-layer security and IPsec for 6LoWPAN,” Security Commun. Netw., vol. 7, no. 12, pp. 2654–2668, 2014.</p>
+<p>[62] A. J. Jara, D. Fernandez, P . Lopez, M. A. Zamora, and A. F. Skarmeta, “Lightweight MIPv6 with IPsec support,” Mobile Inf. Syst., vol. 10, no. 1, pp. 37–77, 2014.</p>
+<p>[63] T. Kothmayr, C. Schmitt, W. Hu, M. Brünig, and G. Carle, “DTLS based security and two-way authentication for the Internet of Things,” Ad Hoc Netw., vol. 11, no. 8, pp. 2710–2723, Nov. 2013.</p>
+<p>[64] S. Raza, D. Trabalza, and T. V oigt, “6LoWPAN compressed DTLS for CoAP ,” in Proc. IEEE 8th Int. Conf. Distrib. Comput. Sensor Syst., Hangzhou, China, May 2012, pp. 287–289.</p>
+<p>[65] S. Raza, H. Shafagh, K. Hewage, R. Hummen, and T. V oigt, “Lithe: Lightweight secure CoAP for the Internet of Things,” IEEE Sensors J., vol. 13, no. 10, pp. 3711–3720, Oct. 2013.</p>
+<p>[66] M. Brachmann, S. L. Keoh, O. G. Morchon, and S. S. Kumar, “End-to-end transport security in the IP-based Internet of Things,” in Proc. 21st Int. Conf. Comput. Commun. Netw. (ICCCN), Munich, Germany, Jul. 2012, pp. 1–5.</p>
+<p>[67] R. Hummen, J. H. Ziegeldorf, H. Shafagh, S. Raza, and K. Wehrle, “Towards viable certificate-based authentication for the Internet of Things,” in Proc. 2nd ACM Workshop Hot Topics Wireless Netw. Security Privacy (HotWiSec), Budapest, Hungary, 2013, pp. 37–42.</p>
+<p>[68] Wikipedia.  (2016). Mirai.  [Online].  Available: <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Mirai_(malware)">https://en.wikipedia.org/wiki/Mirai_(malware)</a></p>
+<p>[69] S. Khandelwal. (2016). New IoT Botnet Malware Discovered; Infecting  More  Devices  Worldwide.  [Online].  Available: <a target="_blank" rel="noopener" href="http://thehackernews.com/2016/10/linux-irc-iot-botnet.html">http://thehackernews.com/2016/10/linux-irc-iot-botnet.html</a></p>
+<p>[70] Z. A. Baig, M. Baqer, and A. I. Khan, “A pattern recognition scheme for distributed denial of service (DDoS) attacks in wireless sensor networks,” in Proc. 18th Int. Conf. Pattern Recognit. (ICPR), vol. 3 . Hong Kong, 2006, pp. 1050–1054.</p>
+<p>[71] X. Du, M. Guizani, Y . Xiao, and H.-H. Chen, “Defending DoS attacks on broadcast authentication in wireless sensor networks,” in Proc. IEEE Int. Conf. Commun., Beijing, China, May 2008, pp. 1653–1657.</p>
+<p>[72] K. Gill and S.-H. Y ang, “A scheme for preventing denial of service attacks on wireless sensor networks,” in Proc. 35th Annu. Conf. IEEE Ind. Electron., Porto, Portugal, Nov. 2009, pp. 2603–2609.</p>
+<p>[73] R. Nanda and P . V . Krishna, “Mitigating denial of service attacks in hierarchical wireless sensor networks,” Netw. Security, vol. 2011, no. 10, pp. 14–18, 2011.</p>
+<p>[74] K. Sonar and H. Upadhyay, An Approach to Secure Internet of Things Against DDoS. Ahmedabad, India: Springer, 2016, pp. 367–376.</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\07\A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications\" rel="bookmark">A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Survey on Internet of Things: Architecture, Enabling Technologies, Security and Privacy, and Applications》阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\21\Evaluating_Critical_Security_Issues_of_the_IoT_World_Present_and_Future_Challenges\" rel="bookmark">Evaluating Critical Security Issues of the IoT World Present and Future Challenges</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Evaluating Critical Security Issues of the IoT World Present and Future Challenges》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\22\IoT_Cybersecurity_Research_A_Review_of_Current_Research_Topics\" rel="bookmark">Internet of Things (IoT) Cybersecurity Research：A Review of Current Research Topics</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Internet of Things (IoT) Cybersecurity Research: A Review of Current Research Topics》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\11\IoT_Internet_of_Threats\" rel="bookmark">IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices</a></div>
+        <div class="popular-posts-excerpt"><p><p>《IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices》论文阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/03/17/A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things/" title="A Survey on Security and Privacy Issues in Internet-of-Things">https://thomas-li-sjtu.github.io/2021/03/17/A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/IoT/" rel="tag"><i class="fa fa-tag"></i> IoT</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/04/Reasoning-Analytically-About-Password-Cracking-Software/" rel="prev" title="Reasoning Analytically About Password-Cracking Software">
+      <i class="fa fa-chevron-left"></i> Reasoning Analytically About Password-Cracking Software
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/19/Improved-training-of-wasserstein-gans/" rel="next" title="Improved training of wasserstein gans">
+      Improved training of wasserstein gans <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IoT-%E8%AE%BE%E5%A4%87%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">IoT 设备局限性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%B5%E6%B1%A0%E5%AF%BF%E5%91%BD"><span class="nav-number">3.1.</span> <span class="nav-text">电池寿命</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E8%AE%A1%E7%AE%97"><span class="nav-number">3.2.</span> <span class="nav-text">轻量级计算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IoT-%E6%94%BB%E5%87%BB%E5%88%86%E7%B1%BB"><span class="nav-number">4.</span> <span class="nav-text">IoT 攻击分类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IoT-%E8%AE%A4%E8%AF%81%E5%92%8C%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="nav-number">5.</span> <span class="nav-text">IoT 认证和访问控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IoT-%E8%AE%A4%E8%AF%81%E6%96%B9%E6%A1%88"><span class="nav-number">5.1.</span> <span class="nav-text">IoT 认证方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IoT-%E8%AE%A4%E8%AF%81%E6%9E%B6%E6%9E%84"><span class="nav-number">5.2.</span> <span class="nav-text">IoT 认证架构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E5%B1%82%E7%9A%84-IoT-%E5%AE%89%E5%85%A8"><span class="nav-number">6.</span> <span class="nav-text">不同层的 IoT 安全</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%A9%E8%81%94%E7%BD%91%E6%84%9F%E7%9F%A5%E5%B1%82%E5%AE%89%E5%85%A8"><span class="nav-number">6.1.</span> <span class="nav-text">物联网感知层安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%A9%E8%81%94%E7%BD%91%E7%BD%91%E7%BB%9C%E5%B1%82%E5%AE%89%E5%85%A8"><span class="nav-number">6.2.</span> <span class="nav-text">物联网网络层安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%A9%E8%81%94%E7%BD%91%E4%BC%A0%E8%BE%93%E5%B1%82%E5%AE%89%E5%85%A8"><span class="nav-number">6.3.</span> <span class="nav-text">物联网传输层安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%A9%E8%81%94%E7%BD%91%E5%BA%94%E7%94%A8%E5%B1%82%E5%AE%89%E5%85%A8"><span class="nav-number">6.4.</span> <span class="nav-text">物联网应用层安全</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

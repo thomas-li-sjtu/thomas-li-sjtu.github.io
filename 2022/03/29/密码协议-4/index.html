@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《密码协议》课程笔记（4） 零知识证明协议">
+<meta property="og:type" content="article">
+<meta property="og:title" content="密码协议(4) 零知识证明协议">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《密码协议》课程笔记（4） 零知识证明协议">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220401184203211.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220401184149762.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220401184343083.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402130807081.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402134441323.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402135150949.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220430133245428.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402143147394.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402145514025.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402151407965.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402152414570.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402152436926.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161100742.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161138188.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161253236.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161524911.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402162322095.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402173757648.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402174205761.png">
+<meta property="article:published_time" content="2022-03-29T10:59:00.000Z">
+<meta property="article:modified_time" content="2022-04-30T08:08:15.008Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220401184203211.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>密码协议(4) 零知识证明协议 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          密码协议(4) 零知识证明协议
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-29 18:59:00" itemprop="dateCreated datePublished" datetime="2022-03-29T18:59:00+08:00">2022-03-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">信息安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《密码协议》课程笔记（4） 零知识证明协议</p>
+<a id="more"></a>
+
+<h2 id="零知识证明协议"><a href="#零知识证明协议" class="headerlink" title="零知识证明协议"></a>零知识证明协议</h2><h3 id="理论前提"><a href="#理论前提" class="headerlink" title="理论前提"></a>理论前提</h3><ul>
+<li><p>介绍：</p>
+<ul>
+<li>参与者：证明者、验证者</li>
+<li>证明者不透露任何超出命题真实性的信息的情况下，使验证者相信命题的有效性（命题类似于”我知道这个公钥的私钥，而且在任何情况下，私钥都是不同的”）——互不信任的各方的沟通</li>
+</ul>
+</li>
+<li><p>证明：</p>
+<ul>
+<li><p>NP可以被描述为一组语言，存在一个有效的过程来检查（而不是计算）一个字符串是否属于该语言</p>
+<ul>
+<li>给定一个来自语言L的字符串x和证书y，易检查x是否属于L</li>
+<li>定义为，一组可以在多项式时间内，被非确定性图灵机识别的语言（确定性图灵机TM模拟非确定性图灵机NTM的方法，和用确定性有限自动机DFA模拟非确定性有限自动机NFA的模拟方法相同）</li>
+</ul>
+</li>
+<li><p>确定性有限自动机DFA：对当前状态，给定一个输入能确定下一个状态</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220401184203211.png" alt="image-20220401184203211" style="zoom:67%;">
+</li>
+<li><p>非确定有限自动机NFA：对当前状态，给定一个输入时下一个状态可能有多个</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220401184149762.png" alt="image-20220401184149762" style="zoom:67%;">
+</li>
+<li><p>模拟过程：本质上按顺序遍历搜索树</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220401184343083.png" alt="image-20220401184343083" style="zoom:67%;">
+
+<ul>
+<li>final states：NFA中所有的final state</li>
+<li>如果告知，某条能到达final state的路径在搜索树里，此时可以直接验证</li>
+</ul>
+</li>
+<li><p>证明系统举例：</p>
+<ul>
+<li>给定一个公式：$(x&amp;&amp;y&amp;&amp;z)||(x&amp;&amp;y)||z$</li>
+<li>证明者必须证明这个公式能够等于True，一般而言，证明者确实能够找到这样的一组$x,y,z$</li>
+<li>验证者只需要收到赋值后，检查公式是否为True，以验证证明者是否正确——这只需要多项式时间</li>
+</ul>
+</li>
+<li><p>证明系统的性质：</p>
+<ul>
+<li>验证者的策略有效</li>
+<li>完整性（正确的断言会有一个令人信服的证明策略），可靠性soundness（错误的断言不存在证明策略）</li>
+<li>Goedel’s incompleteness theorem——任何“足够复杂”的证明系统，不可能既完整又可靠</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>知识：Bob在与Alice互动后获得知识，如果：在交互之后，Bob可以轻松地计算一些之前对他来说很难的东西</p>
+</li>
+<li><p>交互式证明：</p>
+<ul>
+<li>上面的证明系统+允许双方通话+允许验证者投硬币<ul>
+<li>完整性：如果x在L中，接受的概率大于等于2/3</li>
+<li>可靠性：如果x不在L中，接受的概率小于等于1/3</li>
+</ul>
+</li>
+<li>验证者的策略是一个概率多项式时间的过程</li>
+<li>验证者的计算能力不受资源限制</li>
+</ul>
+</li>
+<li><p>零知识证明：</p>
+<ul>
+<li>设(P, V)是某一语言L的交互式证明系统，P是证明者，V是验证者。称P是完全零知识，如果对于每个概率多项式时间的交互V，都存在一个概率多项式时间算法M（模拟器），使得L中的每个x都有：$(P,V)(x)$ 和$M(x)$同分布</li>
+<li>V没有从P中获得任何知识，因为同样的输出也可以在没有访问P的情况下获得</li>
+<li>分布相同：perfect zero knowledge；计算上不可区分：computational zero knowledge</li>
+</ul>
+</li>
+<li><p>图的同构的交互式证明（是一个NP问题）</p>
+<ul>
+<li><p>图$G_1=(V_1,E_1)$和图$G_2=(V_2,E_2)$是同构的，如果存在一对一的映射$\pi：V_1\rightarrow V_2$使得$(u,v)\in E_1,(\pi(u),\pi(v))\in E_2$</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402130807081.png" alt="image-20220402130807081" style="zoom: 50%;">
+</li>
+<li><p>定义语言GNI：$GNI=(G_1,G_2), G_1\ and\ G_2\ are\ non-isomorphic$</p>
+</li>
+<li><p>如果两个图是非同构的，证明者可以凭此说服验证者（GNI的交互式证明如下）</p>
+<ul>
+<li>输入：$G_1=({1,…,n}, E_1)$和$G_2=({1,…,n},E_2)$</li>
+<li>验证者随机选择数字1或2，据此确定使用$G_1$或者$G_2$，并随机选择一个1到n的排列作为映射$\pi$，将图映射为新的图$H$，把$H$发给证明者，证明者发回和$H$同构的图序号1或者2——如果$G_1$和$G_2$确实不同构，则证明者一定可以知道到底哪个图才和$H$同构，因此证明者必须发回正确的序号才能让验证者接受<ul>
+<li>完整性：如果两个图非同构，则验证者发送的图只能同构于其中一个，证明者总是能返回正确的答案</li>
+<li>可靠性：如果两个图同构，证明者只有一半的概率返回正确答案，重复此过程则可靠性更高</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>图的三着色性的交互式证明</p>
+<ul>
+<li><p>形式化定义：$G=(V,E)$是三着色的，如果存在一个映射$\phi: V\rightarrow (1,2,3)$使得任意的$(u,v)\in E:\phi(u)\neq\phi(v)$</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402134441323.png" alt="image-20220402134441323" style="zoom:67%;">
+</li>
+<li><p>输入：一个图，证明者可以用三个颜色给图的顶点着色</p>
+</li>
+<li><p>证明者选择一个随机的颜色排列，将顶点的颜色放入信封发给验证者</p>
+</li>
+<li><p>验证者收到后随机选择一个边，证明者揭示对应的节点颜色，若两个节点的颜色不同，验证者接受</p>
+</li>
+<li><p>完整性：如果$G$是三着色的，则一定满足条件；可靠性：如果$G$不是三着色的，则至少有两个节点颜色一致，验证者选中相应边的概率为$1/|E|$，若重复多轮，则蒙混过关的概率会逐渐下降，最终低于1/3</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402135150949.png" alt="image-20220402135150949" style="zoom:50%;">
+</li>
+</ul>
+</li>
+<li><p>若两个零知识证明系统串联，则最终的交互过程仍然是零知识的；如果两个零知识证明系统并联，则不是零知识的，因为验证者可以通过让证明者相互竞争算力，选择计算量更大的证明者，获得知识</p>
+</li>
+<li><p>所有NP问题都可以用于零知识证明</p>
+</li>
+</ul>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><ul>
+<li><p>Fiat-Shamir Identification</p>
+<ul>
+<li>前提：可信中心发布n，$n=pq$，p和q保密；A选择一个和n互质的素数s，计算$v=s^2\ mod\ n$，在可信中心注册v作为A的公钥</li>
+<li>过程：<ul>
+<li>A给B：$x=r^2\ mod\ n$</li>
+<li>B给A：$e$，e为0或者e为1</li>
+<li>A给B：$y=rs^e\ mod\ n$</li>
+<li>B验证：$xv^e=y^2$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>$\sum-protocol$  <strong>重点</strong>（假设验证者是诚实的）</p>
+<ul>
+<li><p>定义：</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220430133245428.png" alt="image-20220430133245428" style="zoom:67%;">
+</li>
+<li><p>令$R={(v;w)}$为一个二元关系（v是证明者和验证者的公共输入statement，w是证明者的私有输入witness），此时给定一些多项式p，对于所有的元素都有$|w|\leq p(|v|)$</p>
+</li>
+<li><p>令$L_R={v|\exist w:(v;w)\in R}$</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402143147394.png" alt="image-20220402143147394" style="zoom:67%;">
+</li>
+<li><p>关系R的$\sum-protocol$是一个证明者和一个验证者之间的协议，形式类似于上图，并满足：</p>
+<ul>
+<li>完整性：如果按协议执行，验证者接受（验证时等式成立）</li>
+<li>特殊的可靠性：对于任意的$v\in L_R$且任意一对$c\neq c’$的三元组$(a,c,r)$、$(a,c’,r’)$，可以很快计算出一个w，使得$(v;w)\in R$——证明者作弊成功的可能性最多为1/n，n为挑战空间的规模</li>
+<li>特殊的honest-verifier zero-knowledge：对于任意的$v\in L_R$，存在一个概率多项式时间算法，能够模拟出三元组$(a,c,r)$，其概率分布和诚实参与者交互结果的概率分布相同——对于诚实的验证者才是零知识的（证明此性质，需要去掉证明者端，验证者随机生成c和s，根据v、c、r构造a，使得验证的等式成立）</li>
+</ul>
+</li>
+<li><p>Schnorr’s protocol 和 Okamoto’s protocol 都是特殊的honest-verifier zero-knowledge（证明略）</p>
+</li>
+</ul>
+</li>
+<li><p>并联的$\sum-protocol$（基础的$\sum-protocol$为Schnorr’s protocol，见上一个blog）</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402145514025.png" alt="image-20220402145514025" style="zoom:67%;">
+
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402151407965.png" alt="image-20220402151407965" style="zoom:67%;">
+</li>
+<li><p>AND-Composition of sigma protocol：二者要使用一个公共的challenge（即图中的c）！</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402152414570.png" alt="image-20220402152414570" style="zoom:67%;">
+
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402152436926.png" alt="image-20220402152436926" style="zoom:67%;">
+</li>
+<li><p>EQ-Composition of sigma protocol</p>
+<ul>
+<li><p>特殊的AND composition：证明者使用相同的w，即${(v_1,v_2;w)|(v_1;w)\in R, (v_2;w)\in R}$</p>
+</li>
+<li><p>使用相同的random tape $s_p$</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161100742.png" alt="image-20220402161100742" style="zoom:67%;">
+
+<ul>
+<li><p>完整性：</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161138188.png" alt="image-20220402161138188" style="zoom:67%;">
+</li>
+<li><p>特殊的可靠性：收到$(a_1,a_2,c,r)$和$(a_1,a_2,c’,r’)$，其中$c\neq c’$时，有下图的推理，因此可以得到$x=(r-r’)/(c-c’)$</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161253236.png" alt="image-20220402161253236" style="zoom:67%;">
+</li>
+<li><p>honest-verifier zero-knowledge：实际的、模拟的会话的分布一致，分别为</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402161524911.png" alt="image-20220402161524911" style="zoom:67%;">
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>OR-Composition of sigma protocol：${(v_1,v_2;w_1,w_2|(v_1;w_1)\in R_1\vee (v_2;w_2)\in R_2)}$——验证者能确信证明者 知道其中一个秘密值，但无法确定证明者拥有的是哪个秘密值</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402162322095.png" alt="image-20220402162322095" style="zoom:67%;">
+</li>
+<li><p>非交互性证明：证明者和验证者之间交互至多一次——证明者发送一条消息给验证者，即可使其相信证明者拥有某个知识</p>
+<ul>
+<li><p>任意实体都可以当验证者</p>
+</li>
+<li><p>可以将任意的sigma protocol转为非交互的，记为sigma-proof</p>
+</li>
+<li><p>以schnorr’s protocol为例（实现Schnorr signature 方案）：</p>
+<ul>
+<li>给定公钥h，知识为$x=log_gh$</li>
+<li>不再借助验证者“均匀采样以获得挑战c”，证明者直接计算a和消息m的哈希获得挑战c，即$c\leftarrow H(a,m)$</li>
+<li>具体算法（基于阶为n生成元为g的群和哈希算法H）：<ul>
+<li>假设长为k的比特串，其中$2^k\leq n$</li>
+<li>密钥生成：生成公私钥对(h,x)，其中$h=g^x$</li>
+<li>签名生成：输入消息m和私钥x，选择$u\in_R Z_n$，设置$a\leftarrow g^u,c\leftarrow H(a,m),r\leftarrow_n u+xc$，消息m的签名为$(c,r)$</li>
+<li>签名验证：给定消息m、$(c,r)$和公钥h，若$c=H(g^rh^{-c},m)$成立则验证成功</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>群签名</strong>：</p>
+<ul>
+<li><p>代表一个组的签名，该签名不会透露哪个用户实际产生了签名，但必要时仍然能够证明哪个组成员产生了给定的组签名</p>
+</li>
+<li><p>组管理员$P_0$，组成员$P_l,l\geq 1$；密钥生成（一个公钥h，管理员以及各个成员的私钥$x_i$）、签名生成（给定消息m、公钥h和私钥$x_i$，输出一个签名s）、签名验证（给定消息m、公钥h、签名s，根据h决定s是否合法）、签名打开（给定消息m、公钥h、管理员私钥$x_0$、签名s，输出签名人的身份）</p>
+</li>
+<li><p>除了组管理器以外，没人能够知道这些签名是否由同一组成员生成（称为不可链接性）</p>
+</li>
+<li><p>具体算法</p>
+<ul>
+<li><p>密钥生成：所有成员选择自己的私钥$x_i\in_RZ_n$，公钥为$h=(g^{x_0},…,g^{x_l})$</p>
+</li>
+<li><p>签名生成：$P_i$基于ElGamal加密，使用$h_0$计算$(a,b)=(g^r,h_0^rg^{x_i}),r\in_R Z_n$；给出下面关系的一个证明，作为非交互证明，表示$(a,b)$确实加密了$h_i$并且加密者知道私钥</p>
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402173757648.png" alt="image-20220402173757648" style="zoom:80%;">
+
+<img src="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/image-20220402174205761.png" alt="image-20220402174205761" style="zoom:67%;">
+</li>
+<li><p>签名验证：类似于Schnorr signature</p>
+</li>
+<li><p>签名打开：给定$(a,b)$，组管理员输出$d=a^{x_0}$，使用EQ-composition证明$log_ad=log_gh_0$，此时根据d，任何人都可以计算$b/d$，其结果就是产生此签名的成员的公钥</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\28\Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service\" rel="bookmark">Empirical Analysis of Password Reuse and Modification across Online Service</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Empirical Analysis of Password Reuse and Modification across Online Service》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/" title="密码协议(4) 零知识证明协议">https://thomas-li-sjtu.github.io/2022/03/29/密码协议-4/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/" rel="prev" title="密码协议(3) 身份认证协议">
+      <i class="fa fa-chevron-left"></i> 密码协议(3) 身份认证协议
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/01/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-5/" rel="next" title="密码协议(5) 门限密码">
+      密码协议(5) 门限密码 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%B6%E7%9F%A5%E8%AF%86%E8%AF%81%E6%98%8E%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.</span> <span class="nav-text">零知识证明协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E5%89%8D%E6%8F%90"><span class="nav-number">1.1.</span> <span class="nav-text">理论前提</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">应用</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

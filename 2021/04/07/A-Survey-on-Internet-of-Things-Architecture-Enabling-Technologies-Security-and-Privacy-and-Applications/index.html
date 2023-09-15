@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《A Survey on Internet of Things: Architecture, Enabling Technologies, Security and Privacy, and Applications》阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《A Survey on Internet of Things: Architecture, Enabling Technologies, Security and Privacy, and Applications》阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210409105837373.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210410190718373.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210410190757542.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210410190933017.png">
+<meta property="article:published_time" content="2021-04-07T03:55:35.000Z">
+<meta property="article:modified_time" content="2021-04-10T11:09:37.816Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="IoT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210409105837373.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-07 11:55:35" itemprop="dateCreated datePublished" datetime="2021-04-07T11:55:35+08:00">2021-04-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《A Survey on Internet of Things: Architecture, Enabling Technologies, Security and Privacy, and Applications》阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>雾/边缘计算凭借分布式架构的优势和接近终端用户的优势，可以为物联网应用提供更快的响应和更高的服务质量——基于雾/边缘计算的物联网成为未来物联网发展的基础设施</li>
+<li>研究物联网的架构、使能技术和相关问题，然后探索雾/边缘计算和物联网的集成</li>
+<li>本文从系统架构、支持技术、安全和隐私问题等方面对物联网进行了全面概述，并介绍了雾/边缘计算与物联网的集成以及应用<ul>
+<li>首先探讨了网络物理系统和物联网之间的关系</li>
+<li>介绍物联网中的现有架构、支持技术以及安全和隐私问题</li>
+<li>研究了物联网与雾/边缘计算的关系，讨论基于雾/边缘计算的物联网中的问题</li>
+<li>介绍几个应用，包括智能电网、智能交通和智能城市，以展示如何在现实应用中实施基于雾/边缘计算的物联网</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>在雾/边缘计算中，由于带宽和能耗的考虑，不同种类的物联网设备生成的海量数据可以在网络边缘处理，而不是传输到集中式云基础设施【103、116】——被组织为分布式架构，在靠近最终用户的联网边缘设备中处理数据和存储数据，因此相比云计算能提供更快响应和更高质量的服务【147】</li>
+<li>物联网的概念和特征：<ul>
+<li>将设备和设施与各种网络连接起来，随时随地为所有应用提供高效安全的服务【9、80】</li>
+<li>物联网是网络或互联网的延伸【10】——各种网络应该共存，这些网络之间的互操作性对于信息交付和支持应用程序至关重要【7、87】——互连是物联网中的一个关键架构问题【131】</li>
+<li>物联网中连接的事物不再局限于设备或物体，还可以是信息、人类行为等——物联网应该包括以更广泛的方式处理对象连接的机制</li>
+</ul>
+</li>
+<li>大多数专注于特定应用程序的系统都是在外联网或内部网中实现，彼此之间没有交互。物联网应该覆盖大规模网络中的所有东西，其中各种网络应该共存，并且能够通过各种网关和中间件相互交互，由复杂的控制平面支持【87】——一种设想是，应该设计一种集成各种网络的通用网络基础设施，基于物联网的系统或应用在通用基础设施上高效共享网络资源和信息，通用网络基础设施的实施也可以降低网络部署的成本【156】</li>
+<li>Andrea 等人【8】从应用、网络和物理系统的角度介绍了物联网的安全漏洞和挑战，并考虑了与物理系统、网络、软件和加密相关的技术中的安全和隐私问题；Botta 等人【18】设想了云计算和物联网的集成——但大多数现有调查仅关注物联网的特定方面</li>
+<li>本文贡献：<ul>
+<li>回顾物联网的研究现状，介绍雾/边缘计算与物联网的集成及相关问题</li>
+<li>从体系结构、支持技术、安全和隐私问题等方面对物联网进行了全面概述，提出物联网可能面临的开放问题和挑战</li>
+</ul>
+</li>
+</ul>
+<h2 id="CPS-与-IoT"><a href="#CPS-与-IoT" class="headerlink" title="CPS 与 IoT"></a>CPS 与 IoT</h2><h3 id="CPS-概述"><a href="#CPS-概述" class="headerlink" title="CPS 概述"></a>CPS 概述</h3><ul>
+<li>CPS：通过现代计算和通信技术的集成，能够有效地集成网络和物理组件的系统【5、130】，强调网络和物理组件之间的相互作用，利用网络组件实现物理组件的安全、高效和智能监控【23】</li>
+<li>CPS是物理组件、传感器、执行器、通信网络和控制中心的集成<ul>
+<li>传感器用于测量和监控物理组件的状态</li>
+<li>执行器用于确保物理组件上的理想操作</li>
+<li>通信网络用于在传感器、执行器和控制中心之间传递测量数据和反馈意见</li>
+<li>控制中心用于分析测量数据并向致动器发送反馈命令【23、143】</li>
+</ul>
+</li>
+</ul>
+<h3 id="CPS-与-IoT-的差异"><a href="#CPS-与-IoT-的差异" class="headerlink" title="CPS 与 IoT 的差异"></a>CPS 与 IoT 的差异</h3><ul>
+<li><p>共同：</p>
+<ul>
+<li>CPS 和物联网都旨在实现网络世界和物理世界的互动【99】</li>
+<li>CPS 和物联网都通过智能传感器设备测量物理组件的状态信息，无需人工输入</li>
+<li>CPS 和物联网中测量的状态信息通过有线或无线通信网络传输和共享</li>
+<li>CPS 和物联网都可以通过分析测量的状态信息，为应用提供安全、高效和智能的服务</li>
+</ul>
+</li>
+<li><p>差异：</p>
+<ul>
+<li><p>CPS 的本质是系统，主要目标是测量物理设备的状态信息，确保物理设备安全、高效、智能地运行；CPS 中存在传感器/执行器层、通信层和应用（控制）层，是一个垂直架构</p>
+</li>
+<li><p>物联网是一种网络基础设施，连接大量设备以及监控和控制设备，主要目标是互连各种网络，以便跨异构网络进行数据收集、资源共享、分析和管理——物联网是一种水平架构，应该集成所有CPS应用的通信层，实现互联，且互连不局限于物理连接控制</p>
+<p><img src="/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210409105837373.png" alt="image-20210409105837373"></p>
+</li>
+<li><p>CPS 和物联网的基本区别在于，CPS 被认为是一个系统，而物联网被认为是“互联网”</p>
+</li>
+</ul>
+</li>
+<li><p>共同要求是实时、可靠和安全的数据传输；不同要求为：</p>
+<ul>
+<li>对于CPS，有效、可靠、准确、实时的控制是首要目标</li>
+<li>对于物联网，资源共享与管理、数据共享与管理、不同网络间的接口、大规模数据和大数据的收集与存储、数据挖掘、数据聚合与信息提取、高质量的网络服务质量（QoS）是重要的目标</li>
+</ul>
+</li>
+</ul>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><h3 id="三层架构"><a href="#三层架构" class="headerlink" title="三层架构"></a>三层架构</h3><ul>
+<li>感知层：又称传感器层，在物联网架构中作为底层实现【11】<ul>
+<li>通过智能设与物理设备和组件进行交互，将事物连接到物联网网络</li>
+<li>测量、收集和处理相关联的状态信息，传输到上层</li>
+</ul>
+</li>
+<li>网络层：也称传输层，在物联网架构中被实现为中间层【68】<ul>
+<li>接收感知层提供的经过处理的信息，通过集成网络将数据和信息传输到物联网集线器、设备和应用程序的路由</li>
+<li>各种设备（集线器、交换机、网关、云计算等）、各种通信技术（蓝牙、Wi-Fi、长期演进等）集成在这一层</li>
+<li>通过异构网络之间的接口或网关，向不同的事物或应用程序传输数据</li>
+</ul>
+</li>
+<li>应用层：<ul>
+<li>接收从网络层传输的数据，并使用这些数据来提供所需的服务或操作</li>
+</ul>
+</li>
+<li>网络和应用层的功能和操作是多样和复杂的——为了建立通用、灵活的物联网多层架构，需要在网络层和应用层之间开发一个服务层，以提供物联网中的数据服务——面向服务的架构（SoA）【7、136】</li>
+</ul>
+<h3 id="基于SoA的架构"><a href="#基于SoA的架构" class="headerlink" title="基于SoA的架构"></a>基于SoA的架构</h3><ul>
+<li>一个基于组件的模型，通过接口和协议连接应用程序的不同功能单元（服务）【10、86、135】</li>
+<li>服务层分为两个子层：服务组合子层和服务管理子层</li>
+<li>SoA架构：<ul>
+<li>感知层作为架构的底层，用于测量、收集和提取与物理设备相关的数据【52】</li>
+<li>网络层用于确定路由，并通过集成异构网络提供数据传输支持【10、47】</li>
+<li>服务层位于网络层和应用层之间，提供服务来支持应用层【10】，由服务发现、服务组合、服务管理和服务接口组成<ul>
+<li>服务发现用于发现期望的服务请求</li>
+<li>服务组合用于与连接的对象交互，划分或集成服务以满足服务请求</li>
+<li>服务管理用于管理和确定满足服务请求的信任机制</li>
+<li>服务接口用于支持所有提供的服务之间的交互</li>
+</ul>
+</li>
+<li>应用层用于支持用户的服务请求</li>
+</ul>
+</li>
+</ul>
+<h2 id="不同层的使能技术和挑战"><a href="#不同层的使能技术和挑战" class="headerlink" title="不同层的使能技术和挑战"></a>不同层的使能技术和挑战</h2><h3 id="感知层"><a href="#感知层" class="headerlink" title="感知层"></a>感知层</h3><ul>
+<li>主要功能是识别和跟踪对象</li>
+<li>RFID（射频识别）<ul>
+<li>用于无接触地识别和跟踪物体，通过短距离无线电信号进行数据交换【8、162】</li>
+<li>基于射频识别的系统由射频识别标签、射频识别阅读器和天线组成【62】</li>
+<li>与其他技术相比，RFID 具有快速扫描、耐用、可重复使用、大容量存储等好处</li>
+</ul>
+</li>
+<li>无线传感器网络<ul>
+<li>WSN 可以监控和跟踪设备的状态，通过多跳将状态数据传输到控制中心或汇聚节点【6、69】</li>
+<li>WSN 可扩展性强、可动态重新配置、可靠、小尺寸、低成本、低能耗</li>
+<li>在物联网中，射频识别和 WSN 都可以用于数据采集，前者主要用于对象识别，WSN 主要用于感知与周围环境相关联的现实世界物理参数【123】</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>条形码<ul>
+<li>也称一维码，以几条黑线和白色间隔存储信息</li>
+<li>线和间距具有不同的宽度，以线性或一维方向组织，并以特殊的编码规则排列【49】</li>
+<li>信息可由用红外光束扫描【93】</li>
+</ul>
+</li>
+<li>二维码<ul>
+<li>通过使用平面上布局的黑白像素来记录信息，其中黑色像素表示二进制“1”，白色像素表示二进制“0”【49】</li>
+<li>与条形码相比，二维码信息量大、可靠性高、鲁棒性【123】</li>
+</ul>
+</li>
+<li>射频识别传感器网络（RSN）是射频识别系统和传感器网络的集成<ul>
+<li>传感器网络与射频识别系统协作，识别和跟踪对象的状态【138】</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="网络层"><a href="#网络层" class="headerlink" title="网络层"></a>网络层</h3><p>一些能够在物联网中实现可靠和安全通信的协议</p>
+<ul>
+<li><p>IEEE 802.15.4：</p>
+<ul>
+<li>为无线个人区域网络（WPANs）【7、37】中的物理层和 MAC 层设计的协议</li>
+<li>专注于低速率 WPANs，以低能耗、低速率传输和低成本提供个人区域内所有事物的低速率连接【4】</li>
+</ul>
+</li>
+<li><p>6LoWPAN：</p>
+<ul>
+<li>低功耗无线局域网（LoWPANs）由大量通过无线通信连接的低成本设备组成【123】</li>
+<li>结合 IPv6 和 LoWPANs 设计 6LoWPAN：好的连通性，与传统体系结构的兼容性，低能耗，自组织</li>
+</ul>
+</li>
+<li><p>ZigBee：</p>
+<ul>
+<li>设计用于低能耗的短期通信【99】</li>
+<li>包括五层：物理层、媒体访问控制层、传输层、网络层和应用层</li>
+<li>低能耗、低成本、低数据速率、低复杂性、可靠性和安全性</li>
+<li>支持多种拓扑结构，包括星形、树形和网状拓扑结构【13】</li>
+</ul>
+</li>
+<li><p>Z-Wave：</p>
+<ul>
+<li>在控制单元和一个或多个终端设备之间提供可靠的传输，适用于低带宽网络</li>
+<li>所有节点与从节点都由控制器控制，并具有路由能力，支持动态路由</li>
+<li>ZigBee 和 Z-Wave 区别是物理层工作的频段，且 Z-Wave 实现简单</li>
+</ul>
+</li>
+<li><p>消息队列遥测传输（MQTT）：</p>
+<ul>
+<li>一种消息协议，用于收集远程传感器上的测量数据并将数据传输到服务器【7】</li>
+<li>简单、轻量级，支持低带宽、高延迟的网络，可以在各种平台上实现</li>
+</ul>
+</li>
+<li><p>受限应用协议（CoAP）：</p>
+<ul>
+<li>一种基于代表性状态转移（REST）架构的消息传递协议【7、17、38】</li>
+<li>物联网中大部分设备都是资源受限的（低存储、低计算力），因此复杂的 HTTP 不能用于物联网；CoAP 建议修改一些超文本传输协议功能，以满足物联网的要求</li>
+<li>CoAP 协议是 6LoWPAN 协议栈中的应用层协议，旨在使资源受限的设备实现 RESTful 交互</li>
+<li>CoAP 支持群组通信和推送通知，但不支持广播</li>
+</ul>
+</li>
+<li><p>数据分发服务（DDS）：</p>
+<ul>
+<li>DDS 是一种发布/订阅协议，用于支持高性能设备间通信【7、44】，以数据为中心</li>
+<li>支持多播以实现高服务质量和高可靠性。DDS 适用于实时受限的物联网和设备间通信【7】</li>
+</ul>
+</li>
+<li><p>高级消息队列协议（AMQP）：</p>
+<ul>
+<li>开放的标准消息队列协议，用于在应用层提供消息服务（排队、路由、安全、可靠性等）</li>
+<li>AMQP 关注面向消息的环境，可以认为是一个面向消息的中间件协议</li>
+<li>客户端可以与消息中间件实现稳定的通信，即使这些客户端和中间件是由不同的编程语言产生的</li>
+</ul>
+</li>
+</ul>
+<h3 id="服务层"><a href="#服务层" class="headerlink" title="服务层"></a>服务层</h3><p>位于网络层和应用层之间，为对象或应用程序提供高效和安全的服务</p>
+<h4 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h4><ul>
+<li>接口应该有效地管理互连的设备</li>
+<li>为了支持物联网中的应用，接口配置文件（IFP）可以被认为是一种服务标准，用来促进各种设备或应用程序提供的服务之间的交互——实现通用即插即用</li>
+<li>已经为物联网开发了多种接口技术，但以低成本实现更有效、安全和可扩展的接口技术仍然是未来支持物联网研究的一大挑战</li>
+</ul>
+<h4 id="服务管理"><a href="#服务管理" class="headerlink" title="服务管理"></a>服务管理</h4><ul>
+<li>有效地发现设备和应用程序，并安排高效可靠的服务来满足请求</li>
+<li>服务可以被视为一种行为，包括数据的收集、交换和存储，或者这些行为的关联，以实现一个特殊的目标【10、86】</li>
+<li>初级服务：在设备或应用程序中公开主要功能</li>
+<li>次要服务：基于主要服务或其他次要服务实现辅助功能</li>
+<li>基于 SoA 的服务中，设备或应用程序提供的每个服务被视为一个标准服务，在各种异构设备和应用程序中有效、方便地使用，无需任何更改</li>
+</ul>
+<h4 id="中间件"><a href="#中间件" class="headerlink" title="中间件"></a>中间件</h4><ul>
+<li>中间件是一种软件或服务编程，提供介于物联网技术和应用之间的抽象概念</li>
+<li>通过使用中间件，具有不同接口的设备和应用程序可以相互交换信息和共享资源</li>
+<li>相关研究：<ul>
+<li>面向消息的中间件</li>
+<li>语义网络中间件</li>
+<li>基于位置的服务和监视中间件</li>
+<li>通信中间件</li>
+<li>普适中间件</li>
+</ul>
+</li>
+<li>中间件集成到 IoT 的问题<ul>
+<li>互操作性</li>
+<li>可扩展性</li>
+<li>自发互动性</li>
+<li>多样性</li>
+</ul>
+</li>
+<li>物联网中间件应该实现信任、安全和隐私</li>
+</ul>
+<h4 id="资源管理与共享"><a href="#资源管理与共享" class="headerlink" title="资源管理与共享"></a>资源管理与共享</h4><ul>
+<li>集成各种异构网络，为物联网中的所有应用提供数据交付</li>
+<li>现有的资源共享机制主要集中在频谱共享——频谱共享用于有效地协调同一频率上的多个网络，以最大化网络资源的利用率【77、126、164】；可以分为三个维度，包括时间、频率和空间</li>
+<li>智能设备大多资源受限，无法从环境中获取能量，因此，资源管理中应考虑节能方案【108】，如通过从分布式能量资源获取能量来提高传感器寿命的方案【21】、通过占空比方案来降低传感器能量的方案【97】，平衡能量消耗并增加传感器网络寿命的基于能量的路由协议【150、151】等</li>
+<li>适用于由异构网络组成的物联网网络基础设施的方案也是未来研究的一个挑战</li>
+</ul>
+<h2 id="安全与隐私"><a href="#安全与隐私" class="headerlink" title="安全与隐私"></a>安全与隐私</h2><h3 id="物联网的安全特性"><a href="#物联网的安全特性" class="headerlink" title="物联网的安全特性"></a>物联网的安全特性</h3><h4 id="机密性"><a href="#机密性" class="headerlink" title="机密性"></a>机密性</h4><ul>
+<li>确保数据在整个过程中只对授权用户可用，不能被非授权用户窃听或干扰</li>
+<li>大量的测量设备集成在物联网中，要确保测量设备收集的数据不会向其相邻设备泄露安全信息</li>
+<li>应该开发和使用增强的技术，包括安全的密钥管理机制等【22】</li>
+</ul>
+<h4 id="完整性"><a href="#完整性" class="headerlink" title="完整性"></a>完整性</h4><ul>
+<li>确保数据在通信网络中的数据传递过程中不会受到有意或无意的干扰而被篡改，最终为授权用户提供准确的数据</li>
+<li>如果物联网应用接收到伪造数据或篡改数据，可能会估计出错误的运行状态，做出错误的反馈命令</li>
+<li>增强了安全数据完整性的机制：虚假数据过滤方案等【143】</li>
+</ul>
+<h4 id="可用性"><a href="#可用性" class="headerlink" title="可用性"></a>可用性</h4><ul>
+<li>确保无论何时请求数据和设备，数据和设备都可供授权用户和服务使用</li>
+<li>物联网中服务通常是以实时方式请求，如果请求的数据不能及时交付，服务就不能被调度和提供</li>
+<li>最严重的威胁之一是拒绝服务（DoS）攻击，应对策略之一是开发安全有效的路由协议【82】</li>
+</ul>
+<h4 id="身份识别和认证"><a href="#身份识别和认证" class="headerlink" title="身份识别和认证"></a>身份识别和认证</h4><ul>
+<li>确保未授权的设备或应用程序无法连接到物联网，认证确保网络中传递的数据是合法的，请求数据的设备或应用程序也是合法的</li>
+<li>物联网中，识别和认证每个数据和对象是困难的，因为大量不同的对象组成了物联网——必须设计高效的认证机制</li>
+</ul>
+<h4 id="隐私"><a href="#隐私" class="headerlink" title="隐私"></a>隐私</h4><ul>
+<li>保证数据只能由相应的用户控制，其他用户无法访问或处理数据</li>
+<li>机密性旨在加密数据而不被未授权用户窃听和干扰，隐私确保用户只能基于接收到的数据进行某些特定的控制，而不能从接收到的数据中推断出其他有价值的信息</li>
+</ul>
+<h4 id="信任"><a href="#信任" class="headerlink" title="信任"></a>信任</h4><ul>
+<li>保证上述安全和隐私目标在不同对象、不同物联网层和不同应用之间的交互过程中得以实现</li>
+<li>分为各物联网层之间的信任、设备之间的信任以及设备和应用程序之间的信任</li>
+<li>需要设计物联网中的信任管理系统</li>
+</ul>
+<h3 id="安全挑战"><a href="#安全挑战" class="headerlink" title="安全挑战"></a>安全挑战</h3><h4 id="感知层-1"><a href="#感知层-1" class="headerlink" title="感知层"></a>感知层</h4><p>伪造收集的数据和销毁感知设备</p>
+<ul>
+<li>节点捕获攻击<ul>
+<li>攻击者通过物理替换整个节点，或者篡改节点或设备的硬件来捕获和控制物联网中的节点或设备【162】</li>
+<li>重要信息（组通信密钥、无线电密钥、匹配密钥等）会暴露，攻击者可以将与捕获节点相关联的重要信息复制到恶意节点，将恶意节点伪装成授权节点连接到物联网网络或系统——节点复制攻击</li>
+<li>需要研究监控和检测恶意节点的有效方案【15】</li>
+</ul>
+</li>
+<li>恶意代码注入攻击<ul>
+<li>通过向节点或设备的内存中注入恶意代码，控制物联网中的节点或设备</li>
+<li>恶意代码可以执行特定的功能、授权攻击者进入物联网系统，甚至获得对物联网系统的完全控制</li>
+<li>需要设计有效的代码认证方案并将其集成到物联网中【114、142】</li>
+</ul>
+</li>
+<li>虚假数据注入攻击<ul>
+<li>利用物联网中捕获的节点或设备，攻击者注入虚假数据代替捕获的节点或设备测量的正常数据</li>
+<li>物联网应用在收到虚假数据后，可能会返回错误的反馈命令或提供错误的服务</li>
+<li>对策：虚假数据过滤方案等【71、72】</li>
+</ul>
+</li>
+<li>重放攻击<ul>
+<li>使用恶意节点或设备向目的主机发送目的主机已经接收到的合法身份信息，以使恶意节点或设备获得物联网的信任【89、162】，或破坏认证的有效性</li>
+<li>对策：安全时间戳方案【31】</li>
+</ul>
+</li>
+<li>密码分析攻击和边信道攻击（side channel attacks）<ul>
+<li>密码分析攻击可以使用获得的密文或明文来推断加密算法中使用的加密密钥【157】——效率很低</li>
+<li>边侧信道攻击【137】中，攻击者在物联网的加密设备上部署一些技术来获得加密密钥，该密钥在物联网中用于加密数据和解密数据<ul>
+<li>典型方式为定时攻击——通过分析执行加密算法所需的时间信息来获得加密密钥</li>
+</ul>
+</li>
+<li>对策：开发高效安全的加密算法和密钥管理方案【22】</li>
+</ul>
+</li>
+<li>窃听和干扰<ul>
+<li>物联网中的大多数设备将通过无线网络进行通信，无线链路中传递的信息可能被非授权用户窃听【42、163】；攻击者也可以发送噪声数据或信号来干扰无线链路中传递的信息</li>
+<li>对策：安全的加密算法和密钥管理方案；有效的安全噪声过滤方案【90】</li>
+</ul>
+</li>
+<li>睡眠剥夺攻击<ul>
+<li>物联网中大多数设备或节点的供电能力较低，为了延长设备和节点的生命周期，设备或节点被编程为遵循睡眠例程以降低功耗【8、112】</li>
+<li>攻击者破坏睡眠程序，使设备或节点一直保持清醒，直到资源消耗完</li>
+<li>对策：能量获取方案，如从外部环境（太阳能等）获取能量【21】；减轻睡眠剥夺攻击的安全占空比机制</li>
+</ul>
+</li>
+</ul>
+<h4 id="网络层-1"><a href="#网络层-1" class="headerlink" title="网络层"></a>网络层</h4><p>网络资源可用性的影响，且与无线网络有关</p>
+<ul>
+<li><p>DoS 攻击</p>
+<ul>
+<li>通过攻击网络协议或者用海量流量轰击物联网网络，使得物联网系统的服务不可用，消耗掉物联网中所有可用的资源【83】</li>
+<li>包括 Ping of Death，TearDrop，UDP flood，SYN flood，Land Attack</li>
+<li>需要研究攻击方案，然后开发有效的防御方案来减轻攻击</li>
+</ul>
+</li>
+<li><p>欺骗攻击</p>
+<ul>
+<li>让攻击者获得物联网系统的完全访问权限，并将恶意数据发送到系统中【8】</li>
+<li>包括 IP 欺骗【91】、RFID 欺骗【88】等<ul>
+<li>IP 欺骗攻击中，攻击者欺骗并记录物联网中其他授权设备的有效 IP 地址，利用获得的有效 IP 地址发送恶意数据，使恶意数据看起来是有效的</li>
+<li>在 RFID 欺骗攻击中，攻击者欺骗并记录有效 RFID 标签的信息，将带有该有效标签标识的恶意数据发送到物联网系统</li>
+</ul>
+</li>
+<li>对策：安全的信任管理、身份识别和认证【28、32】</li>
+</ul>
+</li>
+<li><p>天坑攻击（Sinkhole attacks）</p>
+<ul>
+<li>受攻击的设备或节点声称具有更高的功率、计算和通信能力，使得更多的相邻设备或节点将选择受攻击的设备或节点作为数据路由过程中的转发节点【117】</li>
+<li>天坑攻击不仅会破坏已传送数据的机密性，还可能是发起额外攻击（DoS攻击等）的基本步骤</li>
+<li>对策：研究和应用安全多路由协议等技术【57】</li>
+</ul>
+</li>
+<li><p>虫洞攻击</p>
+<ul>
+<li>由物联网中两个合作的恶意设备或节点发起，不同位置的恶意设备可以通过私有链路交换路由信息，实现虚假一跳传输，即使彼此相距很远[67]</li>
+<li>由于转发跳数减少，更多的数据将通过这两个恶意设备或节点传递。随着获得更多的传送数据，虫洞攻击可以导致类似天坑攻击的破坏</li>
+<li>对策：修改路由协议，以增强路由选择过程中的安全性【26】，其他技术涉及部署安全硬件（GPS、定向天线等）</li>
+</ul>
+</li>
+<li><p>中间人攻击</p>
+<ul>
+<li>攻击者控制恶意设备，虚拟地位于物联网中的两个通信设备之间【96】，成为在这两个正常设备之间存储和转发所有数据的中间设备，而两个正常设备不能检测到恶意设备的存在，认为它们直接相互通信</li>
+<li>通过监控、窃听、篡改和控制两个正常设备之间的通信来侵犯物联网中受限数据的机密性、完整性和隐私性</li>
+<li>恶意节点捕获攻击需要物理篡改设备硬件，中间人攻击只能依靠物联网中使用的通信协议来发起</li>
+<li>对策：安全通信协议和密钥管理方案【22、82】</li>
+</ul>
+</li>
+<li><p>路由信息攻击</p>
+<ul>
+<li>针对物联网系统中的路由协议，路由信息可以被对手操纵和重新发送，造成路由环路，导致源路径的扩展和端到端延迟的增加【8】</li>
+<li>对策：使用安全路由协议和信任管理来建立物联网设备之间的安全链路，确保识别信息和 IP 地址不会泄露</li>
+</ul>
+</li>
+<li><p>Sybil 攻击</p>
+<ul>
+<li>恶意设备（即 Sybil 设备）声称几个合法身份，并在物联网系统中冒充它们【8、95、158】</li>
+<li>sybil 设备有多个合法身份，发送的虚假数据很容易被其良性相邻设备接受。选择 sybil 设备作为转发节点的路由可能会考虑确定几条不同的交叉路径，但实际上只确定了一条路径，所有传输的数据都需要通过 sybil 设备</li>
+<li>对策：开发安全的识别和认证机制【32】</li>
+</ul>
+</li>
+<li><p>非授权访问</p>
+<ul>
+<li>物联网中集成了大量基于射频识别的设备，大多数射频识别标签缺乏适当的认证机制</li>
+<li>攻击者可以访问射频识别标签，获取、修改和删除存储在标签中的信息【8、60】</li>
+</ul>
+</li>
+</ul>
+<h4 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h4><p>支持用户请求的服务，应用层的挑战集中在软件攻击上</p>
+<ul>
+<li>网络钓鱼攻击<ul>
+<li>攻击者通过受感染的电子邮件和网络钓鱼网站假冒用户的身份验证凭据来获取用户的机密数据，如身份和密码【8、54】</li>
+<li>对策：安全的授权访问、身份识别和身份验证；用户自己保持警惕</li>
+</ul>
+</li>
+<li>恶意病毒/蠕虫<ul>
+<li>通过恶意自传播攻击（蠕虫、木马等）感染物联网应用，获取或篡改机密数据</li>
+<li>对策：在物联网应用中部署可靠的防火墙、病毒检测和其他防御机制</li>
+</ul>
+</li>
+<li>恶意脚本<ul>
+<li>恶意脚本指以损害物联网系统功能为目的，在软件中添加、在软件中修改、从软件中删除的脚本【8】</li>
+<li>攻击者很容易通过运行恶意脚本（java 攻击小程序、active-x 脚本等）欺骗客户；恶意脚本可能导致机密数据泄露，甚至整个系统关闭</li>
+<li>对策：在物联网系统中部署有效的脚本检测技术，包括蜜罐技术、静态代码检测和动态动作检测</li>
+</ul>
+</li>
+</ul>
+<h3 id="隐私-1"><a href="#隐私-1" class="headerlink" title="隐私"></a>隐私</h3><ul>
+<li>物联网中收集和使用的所有数据都应该经过以下步骤：<ul>
+<li>数据收集：感知和收集物联网中对象的状态数据</li>
+<li>数据聚合：大量相关数据集成到综合信息中</li>
+<li>数据挖掘和分析：为物联网中的特殊应用提取集成综合信息的潜在价值</li>
+</ul>
+</li>
+<li>隐私作为物联网的新挑战，会导致财产损失，甚至危及人类安全——在智能电网中，如果攻击者获得了客户的能耗隐私数据，可以推断用户在家或不在家的时间，并有概率对用户进行盗窃等</li>
+<li>基于不同的数据处理步骤，隐私保护机制分为三类<ul>
+<li>数据收集中的隐私保护【65】</li>
+<li>数据聚合中的隐私保护</li>
+<li>数据挖掘和分析中的隐私保护【20、134】</li>
+<li>数据收集、数据挖掘和数据分析中的隐私可以通过各种技术如加密、密钥管理等进行保护，现有的物联网隐私保护工作大多集中在第二个（相关数据可以在几个不同的位置进行处理，传统加密机制很难保护）</li>
+</ul>
+</li>
+<li>数据聚合中的隐私保护机制<ul>
+<li>基于匿名的隐私保护【104】<ul>
+<li>K-匿名、L-多样性、T-贴近度（K-anonymity，L-diversity，T-closeness）【105】</li>
+<li>流量分析技术可能影响匿名通信系统【75、76、148】</li>
+</ul>
+</li>
+<li>基于加密的隐私保护【39】<ul>
+<li>同态加密、承诺机制、秘密共享、零知识证明，确保数据不会被对手窃听【39】</li>
+<li>现有的加密技术只能实现数据传输的保密性，可能无法很好地保护隐私</li>
+</ul>
+</li>
+<li>基于扰动的隐私保护【48、100、101】<ul>
+<li>数据定制、数据共享、随机噪声注入等，干扰原始数据，实现隐私保护【48】</li>
+<li>数据的利用可能会阻碍该技术在物联网中的应用</li>
+<li>大多数基于扰动的隐私保护都是通过降低数据的效用来实现的。由于效用低，数据可能无法或只能部分支持物联网应用程序请求的服务</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="物联网与雾-边缘计算的集成"><a href="#物联网与雾-边缘计算的集成" class="headerlink" title="物联网与雾/边缘计算的集成"></a>物联网与雾/边缘计算的集成</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ul>
+<li>大数据需要物联网的支持，因为物联网支持的海量传感和驱动数据，但物联网应用中采集的数据一般都是非结构化数据，需要进一步分析提取有用信息</li>
+<li>在物联网中，连续的数据流会影响各种组织的数据存储容量，需要额外的数据中心来处理从物联网应用中收集的大量数据——一个可能的解决方案是将数据移动到云中</li>
+</ul>
+<h3 id="基于云计算-边缘计算的物联网"><a href="#基于云计算-边缘计算的物联网" class="headerlink" title="基于云计算/边缘计算的物联网"></a>基于云计算/边缘计算的物联网</h3><ul>
+<li><p>云计算用于通过互联网提供计算服务或数据存储，这提供了灵活性、效率以及存储和使用数据的能力等优势</p>
+</li>
+<li><p>许多物联网应用需要高效地存储、处理和分析跨越大地理区域的大量事物和对象的数据——雾/边缘计算</p>
+<ul>
+<li>雾/边缘计算可以为网络边缘的设备提供计算和存储服务，计算节点可以是任何具有存储、计算和网络连接能力的网络设备（路由器、交换机、视频监控摄像机、服务器等）</li>
+<li>不同类型的物联网数据根据性能要求定向到适当的位置进行进一步分析</li>
+<li>高优先级数据在雾/边缘计算节点上处理，低优先级数据定向到一些聚合节点进行进一步的处理和分析</li>
+</ul>
+</li>
+<li><p>挑战：</p>
+<ul>
+<li>如何有效地管理雾/边缘计算基础设施，并将可用资源分配给物联网设备。物联网设备可以请求大量的服务，每个雾/边缘服务节点只有有限的计算和存储能力——雾/边缘节点和物联网服务之间的接口</li>
+<li>如何有效地管理雾/边缘计算资源——雾/边缘节点之间的资源管理。当分配雾/边缘节点来提供服务时，需要考虑不同的需求，包括服务可用性、能耗</li>
+<li>安全和隐私问题（认证、访问控制、入侵检测、信任管理等）</li>
+</ul>
+</li>
+<li><p>终端设备和边缘节点之间的资源分配</p>
+<ul>
+<li><p>每个最终用户可以有一个满意度函数来评估分配的资源，以提供其请求的服务</p>
+<p><img src="/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210410190718373.png" alt="image-20210410190718373"></p>
+<ul>
+<li><p>r 是分配的资源</p>
+</li>
+<li><p>主要目标为最大化所有最终用户的总体满意度</p>
+<p><img src="/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210410190757542.png" alt="image-20210410190757542"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>边缘节点间的资源分配</p>
+<ul>
+<li><p>如果雾/边节点没有足够的资源向附近的终端用户提供所请求的服务，而其相邻节点有备用资源，则可以将一些本地数据移动到其相邻节点进行处理和存储</p>
+</li>
+<li><p>资源贫乏的雾/边节点不关心哪个资源节点帮助它提供计算服务，资源丰富的节点不关心它处理的数据。所有雾/边缘节点唯一关心的是实现最小成本</p>
+<p><img src="/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/image-20210410190933017.png" alt="image-20210410190933017"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h2><h3 id="智能电网"><a href="#智能电网" class="headerlink" title="智能电网"></a>智能电网</h3><ul>
+<li>引入分布式能源发电机以提高分布式能源的利用率，引入电动汽车以提高储能能力和减少二氧化碳排放，引入智能电表和双向通信网络以实现客户和公用事业提供商之间的互动</li>
+<li>通过与物联网集成，可以在智能电网通信网络中部署智能电表【74】，监控能源生产、储存和消耗，与公用事业提供商互动，以报告客户的能源需求信息，并接收客户的实时电价【71、160】</li>
+<li>借助 fog/edge 计算设施，存储和处理从智能电表收集的数据</li>
+<li>攻击者可以捕获这些智能电表、雾/边缘计算基础设施中的节点，并获取或修改收集的数据，获得能耗信息的机密性和隐私性——公用事业提供商可能会错误地估计电网的能源供应和需求，反馈错误的能源调度决策，从而导致电网中能源供应和需求的不平衡，甚至造成大规模停电【72】</li>
+</ul>
+<h3 id="智能交通"><a href="#智能交通" class="headerlink" title="智能交通"></a>智能交通</h3><ul>
+<li>智能交通管理、控制系统、通信网络和计算技术相结合，使交通系统可靠、高效和安全【73】</li>
+<li>大量智能车辆被包括在内并通过无线网络相互连接【58、61】，智能车辆可以高效地感知和共享交通数据，并以极高的效率、可靠性和安全性安排驾驶员的行程</li>
+<li>每辆智能车辆都配备有多个电子控制单元，以监控车辆中的子系统。电子控制单元被组织成一个内部网络，以共享车辆内收集的数据【121】</li>
+<li>大量收集的数据可以在 fog/edge 计算基础设施中进一步存储和处理</li>
+<li>攻击者可以通过对车辆网络和基于雾/边缘计算的物联网基础设施中的雾/边缘计算节点发起恶意攻击，通过部署在受损车辆中的通信接口与其他车辆共享误导的交通状态数据，从而侵入系统并控制车辆中的电子控制单元【12、140】，在这种情况下，破坏交通状态数据的保密性、完整性和隐私性，对交通系统造成严重损害（拥堵道路的数量增加等）</li>
+</ul>
+<h3 id="智慧城市"><a href="#智慧城市" class="headerlink" title="智慧城市"></a>智慧城市</h3><ul>
+<li>通过引入信息和通信技术（ICT）解决方案来管理公共事务【155】</li>
+<li>作为一个复杂的物联网应用，可能由几个子应用或服务组成【84、155】，包括智能电网、智能交通、建筑结构健康、废物管理、环境监测、智能健康、智能照明等</li>
+<li>基于雾/边缘计算的物联网可以在智能城市中实现高效的子应用和服务</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>物联网进行了全面综述，包括体系结构、支持技术、安全和隐私问题，以及雾/边缘计算和物联网的集成，不同的应用</li>
+<li>讨论了物联网的可能架构，包括传统的三层架构和基于 SoA 的四层架构</li>
+<li>对基于SoA的物联网架构，分别详细描述了层中的使能技术</li>
+<li>提出可能影响物联网有效性的潜在安全和隐私问题及其潜在解决方案</li>
+<li>讨论了物联网与雾/边缘计算的关系及相关问题</li>
+<li>本次调查的主要目的是对物联网及其与雾/边缘计算的集成提供清晰、全面和深入的理解，概述物联网所涉及的广泛主题，并强调尚未解决的领域，以进一步促进物联网的发展</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\03\17\A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things\" rel="bookmark">A Survey on Security and Privacy Issues in Internet-of-Things</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Survey on Security and Privacy Issues in Internet-of-Things》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\21\Evaluating_Critical_Security_Issues_of_the_IoT_World_Present_and_Future_Challenges\" rel="bookmark">Evaluating Critical Security Issues of the IoT World Present and Future Challenges</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Evaluating Critical Security Issues of the IoT World Present and Future Challenges》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\22\IoT_Cybersecurity_Research_A_Review_of_Current_Research_Topics\" rel="bookmark">Internet of Things (IoT) Cybersecurity Research：A Review of Current Research Topics</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Internet of Things (IoT) Cybersecurity Research: A Review of Current Research Topics》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\11\IoT_Internet_of_Threats\" rel="bookmark">IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices</a></div>
+        <div class="popular-posts-excerpt"><p><p>《IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices》论文阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/" title="A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications">https://thomas-li-sjtu.github.io/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/IoT/" rel="tag"><i class="fa fa-tag"></i> IoT</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/28/Generative-Adversarial-Nets/" rel="prev" title="Generative Adversarial Nets">
+      <i class="fa fa-chevron-left"></i> Generative Adversarial Nets
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/11/IoT_Internet_of_Threats/" rel="next" title="IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices">
+      IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CPS-%E4%B8%8E-IoT"><span class="nav-number">3.</span> <span class="nav-text">CPS 与 IoT</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CPS-%E6%A6%82%E8%BF%B0"><span class="nav-number">3.1.</span> <span class="nav-text">CPS 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CPS-%E4%B8%8E-IoT-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="nav-number">3.2.</span> <span class="nav-text">CPS 与 IoT 的差异</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">4.</span> <span class="nav-text">架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text">三层架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8ESoA%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="nav-number">4.2.</span> <span class="nav-text">基于SoA的架构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E5%B1%82%E7%9A%84%E4%BD%BF%E8%83%BD%E6%8A%80%E6%9C%AF%E5%92%8C%E6%8C%91%E6%88%98"><span class="nav-number">5.</span> <span class="nav-text">不同层的使能技术和挑战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E5%B1%82"><span class="nav-number">5.1.</span> <span class="nav-text">感知层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E5%B1%82"><span class="nav-number">5.2.</span> <span class="nav-text">网络层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%B1%82"><span class="nav-number">5.3.</span> <span class="nav-text">服务层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3"><span class="nav-number">5.3.1.</span> <span class="nav-text">接口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="nav-number">5.3.2.</span> <span class="nav-text">服务管理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="nav-number">5.3.3.</span> <span class="nav-text">中间件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E4%B8%8E%E5%85%B1%E4%BA%AB"><span class="nav-number">5.3.4.</span> <span class="nav-text">资源管理与共享</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81"><span class="nav-number">6.</span> <span class="nav-text">安全与隐私</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%A9%E8%81%94%E7%BD%91%E7%9A%84%E5%AE%89%E5%85%A8%E7%89%B9%E6%80%A7"><span class="nav-number">6.1.</span> <span class="nav-text">物联网的安全特性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%BA%E5%AF%86%E6%80%A7"><span class="nav-number">6.1.1.</span> <span class="nav-text">机密性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="nav-number">6.1.2.</span> <span class="nav-text">完整性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="nav-number">6.1.3.</span> <span class="nav-text">可用性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BA%AB%E4%BB%BD%E8%AF%86%E5%88%AB%E5%92%8C%E8%AE%A4%E8%AF%81"><span class="nav-number">6.1.4.</span> <span class="nav-text">身份识别和认证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%90%E7%A7%81"><span class="nav-number">6.1.5.</span> <span class="nav-text">隐私</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%A1%E4%BB%BB"><span class="nav-number">6.1.6.</span> <span class="nav-text">信任</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98"><span class="nav-number">6.2.</span> <span class="nav-text">安全挑战</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E5%B1%82-1"><span class="nav-number">6.2.1.</span> <span class="nav-text">感知层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E5%B1%82-1"><span class="nav-number">6.2.2.</span> <span class="nav-text">网络层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%B1%82"><span class="nav-number">6.2.3.</span> <span class="nav-text">应用层</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%90%E7%A7%81-1"><span class="nav-number">6.3.</span> <span class="nav-text">隐私</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%A9%E8%81%94%E7%BD%91%E4%B8%8E%E9%9B%BE-%E8%BE%B9%E7%BC%98%E8%AE%A1%E7%AE%97%E7%9A%84%E9%9B%86%E6%88%90"><span class="nav-number">7.</span> <span class="nav-text">物联网与雾&#x2F;边缘计算的集成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">7.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E4%BA%91%E8%AE%A1%E7%AE%97-%E8%BE%B9%E7%BC%98%E8%AE%A1%E7%AE%97%E7%9A%84%E7%89%A9%E8%81%94%E7%BD%91"><span class="nav-number">7.2.</span> <span class="nav-text">基于云计算&#x2F;边缘计算的物联网</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8"><span class="nav-number">8.</span> <span class="nav-text">应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E7%94%B5%E7%BD%91"><span class="nav-number">8.1.</span> <span class="nav-text">智能电网</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E4%BA%A4%E9%80%9A"><span class="nav-number">8.2.</span> <span class="nav-text">智能交通</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%BA%E6%85%A7%E5%9F%8E%E5%B8%82"><span class="nav-number">8.3.</span> <span class="nav-text">智慧城市</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">9.</span> <span class="nav-text">结论</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/1.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/image-20210127142612916.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/image-20210127142956533.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/image-20210127143042142.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/2.PNG">
+<meta property="article:published_time" content="2021-01-22T09:17:16.000Z">
+<meta property="article:modified_time" content="2021-01-27T06:54:52.008Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/1.PNG">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-22 17:17:16" itemprop="dateCreated datePublished" datetime="2021-01-22T17:17:16+08:00">2021-01-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>19k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>17 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录</p>
+<a id="more"></a>
+
+<font face="宋体">
+<font size="4">
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>现有的通过模拟对抗密码猜测来评估密码强度的方法，是不准确的或对于实时客户端密码检查数量级太大、太慢</li>
+<li>神经网络通常比最先进的方法（如概率上下文无关文法和马尔可夫模型）更有效地猜测密码</li>
+<li>神经网络可以被高度压缩到几百千字节，而不会大大降低猜测的有效性</li>
+<li>JavaScript中实现了第一个密码猜测的原则性客户端模型。该模型以亚秒的延迟，分析了密码在任意时间猜测攻击中的抵抗能力</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>评估密码强度的常用方法是运行或模拟密码猜测技术</li>
+<li>一套配置良好的猜测技术，包括概率方法和现成的密码恢复工具</li>
+<li>不适用于密码强度的实时评估，有时也不适用于任何实际有用的密码强度评估</li>
+<li>提出了使用人工神经网络来猜测密码</li>
+<li>首先全面测试了神经网络模型大小、模型结构、训练数据和训练技术的变化对网络猜测不同类型密码的能力的影响</li>
+<li>与最先进的密码猜测模型进行了比较，包括马尔可夫模型【65】、概率上下文无关文法【59，93】、软件工具【74，83】</li>
+<li>神经网络比其他密码猜测方法更能成功地猜测密码，尤其是超过10<sup>10</sup>次的猜测和非传统的密码策略——密码猜测攻击通常会远远超过$10^{10}$次猜测【44，46】</li>
+<li>使用最近提出的蒙特卡罗方法来评估概率模型对大量猜测的性能</li>
+<li>使用的神经网络可以被高度压缩，而且猜测效率损失最小——足够小，可以包含在移动设备的应用程序中，与加密软件捆绑在一起，或者用于网页密码表</li>
+<li>在JavaScript中实现并测试了一个神经网络密码检查程序，适合用于移动应用程序、浏览器扩展和网页密码表。在一秒内的实现密码强度实时反馈，比现有客户端方法更准确地测量对猜测的抵抗力</li>
+<li>贡献：<ul>
+<li>提出神经网络模型，并综合评估其训练、参数和压缩的变化对猜测效果的影响</li>
+<li>建立了一个可压缩和有效的密码猜测模型，用于客户端密码检查</li>
+<li>JavaScript实现此检查器，并测试</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="背景和相关工作"><a href="#背景和相关工作" class="headerlink" title="背景和相关工作"></a>背景和相关工作</h2><h3 id="密码猜测攻击"><a href="#密码猜测攻击" class="headerlink" title="密码猜测攻击"></a>密码猜测攻击</h3><ul>
+<li>没有限速策略时，可以实施大规模猜测</li>
+<li>散列密码数据库被盗，即数据库被拖库，则可进行离线攻击【20，23，27，45，46，67，73，75，87】</li>
+<li>加密密钥从密码派生或受密码保护，此情况下也容易受到大规模猜测的攻击</li>
+</ul>
+<h3 id="测量密码强度"><a href="#测量密码强度" class="headerlink" title="测量密码强度"></a>测量密码强度</h3><ul>
+<li>密码强度模型通常采用两种概念形式<ul>
+<li>依赖于纯粹的统计方法，如香农熵或其他先进的统计方法【21，22】——所需的样本量太大</li>
+<li>模拟对抗性密码猜测【34，65，89】</li>
+</ul>
+</li>
+<li>密码猜测的学术研究主要集中在以大密码集作为输入，然后按概率降序输出猜测的概率方法——密码破解工具依靠高效的启发式方法来模拟常见的密码特征</li>
+<li>概率上下文无关文法【93】：<ul>
+<li>密码是用模板结构（例如，6个字母后跟2个数字）和对应的结构终端构建的</li>
+<li>密码的概率是其结构的概率乘以其终端的概率</li>
+<li>通过平滑将概率分配给未发现的终端也是有益的【60】</li>
+<li>使用自然语言词典来实例化终端可以改进猜测【91】</li>
+</ul>
+</li>
+<li>马尔可夫模型【70】：<ul>
+<li>根据前一个字符或上下文字符预测密码中下一个字符的概率</li>
+<li>可能会有过度拟合的风险——平滑和退避方法补偿过度拟合</li>
+<li>6-grams 马尔可夫模型加性平滑通常是建模英文密码的最佳方法</li>
+</ul>
+</li>
+<li>损坏的Wordlist方法（Mangled Wordlist Methods）：<ul>
+<li>软件工具通常用这种方法于生成密码猜测</li>
+<li>这种类型的两种流行工具是Hashcat 和John the Ripper</li>
+<li>使用人工规则来转换词表（密码和字典条目），或者模拟人类编写密码的常见行为进行转换</li>
+</ul>
+</li>
+</ul>
+<h3 id="主动密码检查"><a href="#主动密码检查" class="headerlink" title="主动密码检查"></a>主动密码检查</h3><ul>
+<li>以上密码猜测模型可以精确地模拟人工创建的密码，但它们需要数小时或数天以及兆字节或千兆字节的磁盘空间</li>
+<li>当前的实时密码检查程序可以根据它们是否完全运行在客户端进行分类</li>
+<li>服务器端组件在安全性上有很大问题——将密码发送到服务器进行密码检查会破坏所有安全保证，例如保护密钥的密码不应该离开用户的设备</li>
+<li>客户端的密码检查器，例如在浏览器运行的那种，往往根据密码的长度或包含的不同字符类来给密码打分【33，88】</li>
+<li>只有 zxcvbn 【94，95】使用了几十种更先进的启发式方法，给出了合理准确的强度估计——无法简洁地对模型进行编码和计算实时结果，不能直接模拟对抗性猜测</li>
+</ul>
+<h3 id="神经网络"><a href="#神经网络" class="headerlink" title="神经网络"></a>神经网络</h3><ul>
+<li>用于近似高维函数，擅长模糊分类问题和生成新序列</li>
+<li>基于前面的元素生成字符串中下一个元素的概率【49，84】</li>
+<li>序列可能是不精确的、新颖的序列【49】——神经网络可能适合于密码猜测</li>
+<li>神经网络可以在比马尔可夫模型小得多的空间内模拟自然语言</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="系统设计"><a href="#系统设计" class="headerlink" title="系统设计"></a>系统设计</h2><h3 id="密码强度测量"><a href="#密码强度测量" class="headerlink" title="密码强度测量"></a>密码强度测量</h3><ul>
+<li>神经网络：给定密码的前一个字符，训练产生密码的下一个字符</li>
+<li>依赖于一个特殊的密码结束符号来模拟在一系列字符之后密码结束的概率</li>
+</ul>
+<blockquote>
+<pre><code> For example, to calculate the probability of the entire password ‘bad’, 
+ we would start with an empty password, and query the network for the probability of seeing a ‘b’, 
+ then seeing an ‘a’ after ‘b’, and then of seeing a ‘d’ after ‘ba’, then of seeing a complete password after ‘bad’</code></pre>
+</blockquote>
+<p>  <img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/1.PNG" alt="1.PNG"></p>
+<ul>
+<li>使用改进的波束（beam）搜索【64】（深度优先和宽度优先的混合搜索）枚举概率高于给定阈值的所有可能密码，并筛选排序</li>
+<li>可以在GPU上有效地实现</li>
+<li>传统的通过枚举计算猜测数的方法，计算量较大。除了猜测数枚举之外，还可以使用 Monte Carlo 模拟来准确高效地估计猜测数【34】</li>
+</ul>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ul>
+<li>模型体系结构<ul>
+<li>使用循环神经网络（RNN）</li>
+<li>网络中的连接可以按顺序处理元素，并使用内部记忆来记忆关于序列中先前元素的信息</li>
+<li>实现了两种不同的循环体系结构</li>
+</ul>
+</li>
+<li>字母表大小<ul>
+<li>关注的是字符级模型，而不是更常见的单词级模型</li>
+<li>除了字符外，还允许神经网络对音节或标记等子单词单元进行建模</li>
+<li>基于【68】对2000个不同的标记建模，并以和字符相同的方法表示，以输出下一个字符为 a 或 pass 的概率</li>
+<li>对所有字母建模是不必要的开销，而且有些字符，比如大写字母和稀有字符，在神经网络之外建模更好——预测了 a 时，根据训练数据中 a 和 A 出现次数来预测是否大写</li>
+</ul>
+</li>
+<li>密码上下文<ul>
+<li>尝试使用密码中所有前面的字符作为上下文，并且只使用前面的10个字符</li>
+<li>当少于十个上下文字符时，用零填充输入</li>
+<li>以相反的顺序提供上下文字符——例如，从“rowssap”预测“d”而不是“passwor”——有时被证明可以提高性能【48】</li>
+</ul>
+</li>
+<li>模型大小<ul>
+<li>评估改变模型大小对猜测成功率的影响，测试了一个有 15700675 个参数的大型神经网络和一个有 682851 个参数的小型网络</li>
+</ul>
+</li>
+<li>迁移学习<ul>
+<li>利用迁移学习来训练神经网络——神经网络的不同部分学习在训练期间识别不同的现象【97】</li>
+<li>针对非传统密码策略的一个关键问题：几乎没有合适训练数据（训练样本的稀疏性）</li>
+<li>首先对模型进行训练集中所有密码的学习。然后，模型的下层被冻结。最后，该模型仅对训练集中符合策略的密码进行重新训练</li>
+<li>模型中的较低层学习数据的低级特征，而较高层学习数据的高级特征</li>
+</ul>
+</li>
+<li>训练数据<ul>
+<li>实验了不同的训练数据集</li>
+<li>后面使用了两组</li>
+</ul>
+</li>
+</ul>
+<h3 id="客户端模型"><a href="#客户端模型" class="headerlink" title="客户端模型"></a>客户端模型</h3><ul>
+<li><p>减少用户所经历的延迟，通过网络传输尽可能少的数据</p>
+</li>
+<li><p>模型尺寸优化：</p>
+<ul>
+<li>利用图形技术对基于浏览器的游戏和可视化，编码了三维模型</li>
+</ul>
+</li>
+<li><p>包含四个步骤：权重量化、定点编码、锯齿形编码和无损压缩</p>
+<blockquote>
+<p>weight quantization, fixed-point encoding, ZigZag encoding, and lossless compression</p>
+</blockquote>
+<ul>
+<li><p>权重量化：</p>
+<ul>
+<li>对神经网络的权值进行量化，以便用更少的数字来表示它们</li>
+<li>只发送最高有效数字，而不是发送32位浮点数（权值）的所有数字</li>
+<li>有利于减小模型尺寸，但增加了误差；实验发现，权重量化到小数点后三位，误差最小</li>
+</ul>
+</li>
+<li><p>定点编码</p>
+<ul>
+<li>使用无符号整数而不是线上的浮点数更简洁地描述量化值</li>
+<li>如：在内部表示-5.0和5.0之间的量化权重，最小精度为0.005等效在-1000和1000之间的量化权重，精度为1</li>
+</ul>
+</li>
+<li><p>锯齿形编码</p>
+<ul>
+<li>避免产生负数</li>
+<li>有符号的值通过使用最后一位作为符号位进行编码——0的值被编码为0，-1的值被编码为1，1被编码为2，-2被编码为3</li>
+</ul>
+</li>
+<li><p>无损压缩</p>
+<ul>
+<li>使用常规的 gzip 或 deflate 编码作为压缩的最后阶段</li>
+<li>没有考虑其他压缩工具——浏览器对它们的本地支持并没有那么广泛</li>
+</ul>
+</li>
+<li><p>Bloom筛选词列表</p>
+<ul>
+<li>存储了一个频繁猜测密码的单词列表</li>
+<li>将前200万个最常出现的密码存储在一系列压缩 Bloom过滤器中</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>延迟优化</p>
+<ul>
+<li>目标延迟接近100毫秒</li>
+<li>预计算：<ul>
+<li>减少了将密码概率转换为猜测数的延迟——客户机上表中快速查找</li>
+<li>对猜测数映射的概率进行量化，猜测数变得不精确——结果通常以更宽泛的量化形式呈现给用户，如用户可能被告知他们的密码是“弱”或“强”</li>
+</ul>
+</li>
+<li>缓存中间结果<ul>
+<li>计算10个字符密码的概率需要对神经网络进行11次完整的计算</li>
+<li>缓存每个子串的概率</li>
+</ul>
+</li>
+<li>多线程<ul>
+<li>在与用户界面不同的线程中运行神经网络</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>实现</p>
+<ul>
+<li>在 Keras 库上构建服务器端，在神经网络的 neoctex 浏览器构建客户端</li>
+<li>使用 Keras 的 Theano 后端库——用 GPU 训练神经网络</li>
+<li>模型通常使用三个长-短期记忆（LSTM）递归层和两个密集连接层，共五层</li>
+<li>为了更严格地低估客户端实现中的猜测数，计算猜测数时不考虑密码大小写</li>
+<li>计算了猜测数之后，应用一个恒定的比例因子作为安全参数，以使模型更为保守</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="测试方法"><a href="#测试方法" class="headerlink" title="测试方法"></a>测试方法</h2><ul>
+<li>与其他多种密码破解方法进行比较，包括 PCFGs、Markov 模型、JtR 和 Hashcat</li>
+<li>主要指标是人工创建密码测试集的可猜测性，单个密码的可猜测性通过猜测者破解密码所需的猜测次数来衡量</li>
+<li>对于基于概率的方法 PCFG、Markov 模型和神经网络，使用 Monte Carlo 方法【34】计算猜测数<ul>
+<li>生成并计算至少一百万个随机密码的概率，以提供准确的估计</li>
+<li>观察到95%的置信区间小于猜测数估计值的10%；超过10%的密码只有在超过10<sup>18</sup>次猜测后才会被猜到</li>
+<li>对所有的 Monte Carlo 模拟，建立了高达$10^{25}$个的猜测模型</li>
+</ul>
+</li>
+<li>对于测量 JtR 和 Hashcat 计算密码可猜测性，列举了两个方法所做的所有猜测。在不同测试集中，进行了大约10<sup>13</sup>到10<sup>15</sup>次猜测</li>
+</ul>
+<h3 id="训练数据"><a href="#训练数据" class="headerlink" title="训练数据"></a>训练数据</h3><ul>
+<li>混合使用了泄漏和破解的密码集</li>
+<li>第一组为密码猜测服务（PGS）训练集【89】，包含了 Rockyou【90】 和 Yahoo【43】 泄露的密码集。对于使用自然语言的猜测方法，还包括 web2【11】 列表、Google web【47】 语料库和词形变化字典【78】，共3300万个密码和590万个自然语言单词</li>
+<li>第二组（PGS++训练集）使用额外的泄漏和破解密码集【1、2、3、6、7、9、12、13、14、15、16、20、23、25、42、43、55、56、57、62、63、67、75、77、85、90】来扩充PGS训练集。使用自然语言的方法同上；共1.05亿个密码和590万个自然语言单词</li>
+</ul>
+<h3 id="测试数据"><a href="#测试数据" class="headerlink" title="测试数据"></a>测试数据</h3><ul>
+<li>使用了五个测试数据集</li>
+<li>1class8：3062个为研究收集的密码，长度超过8个字符【59】</li>
+<li>1class16：2054个密码，长度超过16个字符【59】</li>
+<li>3class12：990个密码，必须包含至少三个字符类（大写字母、小写字母、符号、数字），并至少12个字符【80】</li>
+<li>4class8：2997个密码，必须包含所有四个字符类，并且至少8个字符【66】</li>
+<li>webhost：000webhost泄漏中至少包含8个字符的密码中，随机抽取30000个密码【40】</li>
+</ul>
+<h3 id="猜测设置"><a href="#猜测设置" class="headerlink" title="猜测设置"></a>猜测设置</h3><ul>
+<li>PCFG<ul>
+<li>带有终端平滑和混合结构的PCFG【60】</li>
+<li>训练数据中包含了自然语言词典，每个单词的加权数为密码的十分之一</li>
+<li>分离了结构和终端的训练</li>
+</ul>
+</li>
+<li>马尔可夫模型<ul>
+<li>训练了4、5和6-gram的模型</li>
+<li>在测试中使用了带加性平滑的6-gram模型【65】</li>
+</ul>
+</li>
+<li>Mangled Wordlist Methods<ul>
+<li>使用流行的破解工具Hashcat和John the Ripper计算猜测数</li>
+<li>Hashcat 使用自带的 best64 和 gen2 规则集【83】；对于JtR，我们使用 SpiderLabs 的规则【86】；先前的工作发现它们在猜测通用密码方面是有效的【89】</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h2><h3 id="训练神经网络"><a href="#训练神经网络" class="headerlink" title="训练神经网络"></a>训练神经网络</h3><p><img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/image-20210127142612916.png" alt="image-20210127142612916"></p>
+<ul>
+<li>迁移学习<ul>
+<li>迁移学习改进了密码猜测，主要是在较高的猜测数（如上图 a）</li>
+</ul>
+</li>
+<li>包括自然语言词典<ul>
+<li>将自然语言词典包含在神经网络训练数据</li>
+<li>在 1class16 上测试，因为特别可能受益于自然语言词典【91】</li>
+<li>自然语言训练降低了神经网络的猜测效率（上图 b）</li>
+<li>神经网络并没有受益，因为没有区分密码训练和自然语言词典</li>
+</ul>
+</li>
+<li>辅导网络<ul>
+<li>尝试用大网络随机生成的密码来提高小模型在猜测长密码方面的有效性（如上图 c）</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/image-20210127142956533.png" alt="image-20210127142956533"></p>
+<ul>
+<li>模型大小<ul>
+<li>至少对于一些密码集，神经网络模型可以比其他模型小几个数量级（如上图）</li>
+<li>长密码更类似于英语短语，建模它们可能需要更多的参数，因此比建模短密码需要更大的网络</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/image-20210127143042142.png" alt="image-20210127143042142"></p>
+<ul>
+<li>后向与前向训练<ul>
+<li>在神经网络的某些应用中，向后而不是向前处理输入可能更有效（密码倒序和正序）</li>
+<li>尝试向后、向前猜测密码，并使用混合方法，其中一半网络向前检查密码，另一半反向检查密码</li>
+<li>只观察到总体上的边际差异</li>
+<li>混合方法增加了训练所需的时间，但在精度上只有很小的提高</li>
+</ul>
+</li>
+<li>密码标记化<ul>
+<li>使用混合的、子字级别的密码模型不会显著提高在低猜测数下的猜测性能（如上图 b）</li>
+<li>混合模型可以用多种不同的方式表示同一个词，而蒙特卡洛估计中，密码是唯一表示的</li>
+<li>通过枚举最可能的10<sup>7</sup>个猜测来计算猜测数</li>
+<li>对于长密码，可能会有早期的好处</li>
+</ul>
+</li>
+<li>循环架构<ul>
+<li>实验了两种不同类型的递归神经网络结构：长短期记忆（LSTM）模型和对LSTM模型的再改进</li>
+<li>网络的总体输出几乎没有影响，改进后的LSTM模型更精确 </li>
+</ul>
+</li>
+</ul>
+<h3 id="猜测有效性"><a href="#猜测有效性" class="headerlink" title="猜测有效性"></a>猜测有效性</h3><ul>
+<li>神经网络更善于在猜测次数更多的情况下以及针对更复杂或更长的密码策略时猜测密码，如 4class8， 1class16， 3class12<br>  <img src="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/2.PNG" alt="2.PNG"></li>
+<li>尽管神经网络的性能通常优于其他模型，但使用多种猜测方法仍应优于使用任何单一猜测方法进行准确的强度估计</li>
+<li>较大的神经网络模型更严格地适应低质量数据，因此泛化能力比较差</li>
+<li>网络较晚猜到但其他方法容易猜到的密码，通常与自然语言单词中的单词相似；反之，则是新颖的不同于训练集的密码</li>
+</ul>
+<h3 id="浏览器实现"><a href="#浏览器实现" class="headerlink" title="浏览器实现"></a>浏览器实现</h3><ul>
+<li>比较压缩模型与所有服务器端模型（大型神经网络、PCFG、马尔可夫模型、JtR 和 Hashcat）的猜测有效性</li>
+<li>模型编码</li>
+<li>权重与概率曲线量化：预先计算从密码概率到猜测数的映射，并将映射发送到客户端——通过量化猜测数字曲线的概率</li>
+<li>评估反馈速度<ul>
+<li>执行了两个测试来测量计算猜测数的速度：<ul>
+<li>测试使用半缓存密码生成猜测数的时间——测量在密码末尾添加字符时计算猜测数的时间</li>
+<li>测试计算每个密码的总时间</li>
+</ul>
+</li>
+<li>从 1class8 训练集中随机选择了500个密码子集进行这些测试</li>
+<li>半缓存测试中，计算猜测数的平均时间为17ms（stdev:4ms）</li>
+<li>完全密码测试中，平均时间为124ms（stdev:48ms）</li>
+</ul>
+</li>
+<li>与其他密码表的比较<ul>
+<li>最好的估计器是 Dropbox 的 zxcvbn meter，它依靠手工制作的启发式、统计方法和纯文本词典作为训练数据来估计猜测数</li>
+<li>将结果与 zxcvbn 和进行比较，后者是使用远不那么复杂的启发式方法来估计密码强度。Yahoo meter 不产生猜测数，但将密码分为最弱、较弱、较弱、较强和较强</li>
+<li>客户端神经网络方法比测试的其他方法更精确，不安全错误和可比较安全错误最多减少两倍</li>
+<li>对于10000个最可能的密码，zxcvbn 会产生84 个不安全错误，而神经网络只会产生 11 个不安全错误</li>
+<li>神经网络可以通过简单的再训练轻松地将目标重新定位到其他策略</li>
+</ul>
+</li>
+</ul>
+<hr>
+<font>
+<font size="3">
+
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>该网络在效率和有效性方面优于最先进的密码猜测方法</li>
+<li>压缩神经网络密码模型，以便它们可以作为网页的一部分下载</li>
+<li>剩下的一个挑战是在密码创建期间为用户提供可解释的建议以改进密码</li>
+</ul>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] CSDN password leak. <a target="_blank" rel="noopener" href="http://thepasswordproject.com/leaked">http://thepasswordproject.com/leaked</a> password lists and dictionaries.</p>
+<p>[2] Faith writer leak. <a target="_blank" rel="noopener" href="https://wiki.skullsecurity.org/Passwords#Leaked">https://wiki.skullsecurity.org/Passwords#Leaked</a> passwords.</p>
+<p>[3] Hak5  leak. <a target="_blank" rel="noopener" href="https://wiki.skullsecurity.org/Passwords#Leaked">https://wiki.skullsecurity.org/Passwords#Leaked</a> passwords.</p>
+<p>[4] Msgpack:  It’s like JSON but fast and small. <a target="_blank" rel="noopener" href="http://msgpack.org/index.html">http://msgpack.org/index.html</a>.</p>
+<p>[5] Neocortex Github repository. <a target="_blank" rel="noopener" href="https://github.com/scienceai/neocortex">https://github.com/scienceai/neocortex</a>.</p>
+<p>[6] Perl monks password leak. <a target="_blank" rel="noopener" href="http://news.softpedia.com/news/PerlMonks-ZF0-Hack-Has-Wider-Implications-118225.shtml">http://news.softpedia.com/news/PerlMonks-ZF0-Hack-Has-Wider-Implications-118225.shtml</a>.</p>
+<p>[7] Phpbb password leak. <a target="_blank" rel="noopener" href="https://wiki.skullsecurity.org/Passwords">https://wiki.skullsecurity.org/Passwords</a>.</p>
+<p>[8] Protocol buffer encoding. <a target="_blank" rel="noopener" href="https://developers.google.com/protocol-buffers/docs/encoding">https://developers.google.com/protocol-buffers/docs/encoding</a>.</p>
+<p>[9] Stratfor  leak. <a target="_blank" rel="noopener" href="http://thepasswordproject.com/leaked">http://thepasswordproject.com/leaked</a> password lists and dictionaries.</p>
+<p>[10] Using Web workers. <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Web">https://developer.mozilla.org/en-US/docs/Web/API/Web</a> Workers API/Using web workers.Accessed:Feb 2016.</p>
+<p>[11] The “web2” file of English words. <a target="_blank" rel="noopener" href="http://www.bee-man.us/computer/grep/grep.htm#web2">http://www.bee-man.us/computer/grep/grep.htm#web2</a>, 2004.</p>
+<p>[12] Password  leaks:  Elitehacker. <a target="_blank" rel="noopener" href="https://wiki.skullsecurity.org/Passwords">https://wiki.skullsecurity.org/Passwords</a>, 2009.</p>
+<p>[13] Password leaks: Alypaa. <a target="_blank" rel="noopener" href="https://wiki.skullsecurity.org/Passwords">https://wiki.skullsecurity.org/Passwords</a>, 2010.</p>
+<p>[14] Specialforces.com  password  leak. <a target="_blank" rel="noopener" href="http://www.databreaches.net/update-specialforces-com-hackers-acquired-8000-credit-card-numbers/">http://www.databreaches.net/update-specialforces-com-hackers-acquired-8000-credit-card-numbers/</a>, 2011.</p>
+<p>[15] Y ouPorn  password  leak, 2012.<a target="_blank" rel="noopener" href="http://thepasswordproject.com/leaked">http://thepasswordproject.com/leaked</a> password lists and dictionaries.</p>
+<p>[16] WOM  V egas  password  leak,  2013. <a target="_blank" rel="noopener" href="https://www.hackread.com/wom-vegas-breached-10000-user-accounts-leaked-by-darkweb-goons/">https://www.hackread.com/wom-vegas-breached-10000-user-accounts-leaked-by-darkweb-goons/</a>.</p>
+<p>[17] BASTIEN, F  . , LAMBLIN, P  . , PASCANU, R., BERGSTRA, J., GOODFELLOW, I. J., BERGERON, A., BOUCHARD, N., AND BENGIO, Y. Theano: New features and speed improvements. In Proc. NIPS 2012 Deep Learning workshop (2012).</p>
+<p>[18] BERGSTRA, J., BREULEUX, O., BASTIEN, F  .  , LAMBLIN, P. , PASCANU, R., DESJARDINS, G., TURIAN, J., WARDE-FARLEY, D., AND BENGIO, Y. Theano: A CPU and GPU math expression compiler. In Proc. SciPy (2010).</p>
+<p>[19] BISHOP, M., AND KLEIN, D. V. Improving system security via proactive password checking. Computers &amp; Security 14, 3 (1995), 233–249.</p>
+<p>[20] BONNEAU, J. The Gawker hack: How a million passwords were lost. Light Blue Touchpaper Blog, December 2010. <a target="_blank" rel="noopener" href="http://www.lightbluetouchpaper.org/2010/12/15/the-gawker-hack-how-a-million-passwords-were-lost/">http://www.lightbluetouchpaper.org/2010/12/15/the-gawker-hack-how-a-million-passwords-were-lost/</a>.</p>
+<p>[21] BONNEAU, J.  The science of guessing:  Analyzing an anonymized corpus of 70 million passwords. In Proc. IEEE Symp. Security &amp; Privacy (2012).</p>
+<p>[22] BONNEAU, J.  Statistical metrics for individual password strength. In Proc. WPS (2012).[23] BRODKIN, J.  10 (or so) of the worst passwords exposed by the LinkedIn hack. Ars Technica, June 6, 2012. <a target="_blank" rel="noopener" href="http://arstechnica.com/security/2012/06/10-or-so-of-the-worst-passwords-exposed-by-the-linkedin-hack/">http://arstechnica.com/security/2012/06/10-or-so-of-the-worst-passwords-exposed-by-the-linkedin-hack/</a>.</p>
+<p>[24] BUCILU˘A, C., CARUANA, R., AND NICULESCU-MIZIL, A. Model compression. In Proc. KDD (2006).</p>
+<p>[25] BURNETT, M. Xato password set. <a target="_blank" rel="noopener" href="https://xato.net/">https://xato.net/</a>. </p>
+<p>[26] CASTELLUCCIA, C., D¨URMUTH, M., AND PERITO, D. Adaptive password-strength meters from Markov models. In Proc. NDSS (2012).</p>
+<p>[27] CHANG, J. M.  Passwords and email addresses leaked in Kickstarter hack attack. ABC News, Feb 17, 2014. <a target="_blank" rel="noopener" href="http://abcnews.go.com/Technology/passwords-email-addresses-leaked-kickstarter-hack/story?id=22553952">http://abcnews.go.com/Technology/passwords-email-addresses-leaked-kickstarter-hack/story?id=22553952</a>.</p>
+<p>[28] CHOLLET, F. Keras Github repository. <a target="_blank" rel="noopener" href="https://github.com/fchollet/keras">https://github.com/fchollet/keras</a>.</p>
+<p>[29] CHUN, W. WebGL Models: End-to-End. In OpenGL Insights. 2012.</p>
+<p>[30] CIARAMELLA, A., D’ARCO, P . , DE SANTIS, A., GALDI, C., AND TAGLIAFERRI, R. Neural network techniques for proactive password checking. IEEE TDSC 3, 4 (2006), 327–339.</p>
+<p>[31] CLERCQ, J. D. Resetting the password of the KRBTGT active directory account, 2014. <a target="_blank" rel="noopener" href="http://windowsitpro.com/security/resetting-password-krbtgt-active-directory-account">http://windowsitpro.com/security/resetting-password-krbtgt-active-directory-account</a>.</p>
+<p>[32] DAS, A., BONNEAU, J., CAESAR, M., BORISOV, N., AND WANG, X. The tangled web of password reuse. In Proc. NDSS (2014).</p>
+<p>[33] DE CARN´E DE CARNA V ALET, X., AND MANNAN, M. From very weak to very strong: Analyzing password-strength meters. In Proc. NDSS (2014).</p>
+<p>[34] DELL’AMICO, M., AND FILIPPONE, M. Monte Carlo strength evaluation: Fast and reliable password checking. In Proc. CCS (2015).</p>
+<p>[35] DELL’AMICO, M., MICHIARDI, P. , AND ROUDIER, Y. Password strength: An empirical analysis.  In Proc. INFOCOM (2010).</p>
+<p>[36] DUCKETT, C.  Login duplication allows 20m Alibaba accounts to be attacked. ZDNet, February 5, 2016. <a target="_blank" rel="noopener" href="http://www.zdnet.com/article/login-duplication-allows-20m-alibaba-accounts-to-be-attacked/">http://www.zdnet.com/article/login-duplication-allows-20m-alibaba-accounts-to-be-attacked/</a>.</p>
+<p>[37] D¨URMUTH, M., ANGELSTORF, F., CASTELLUCCIA, C., PERITO, D., AND CHAABANE, A. OMEN: Faster password guessing using an ordered markov enumerator. In Proc. ESSoS (2015).</p>
+<p>[38] FAHL, S., HARBACH, M., ACAR, Y. , AND SMITH, M. On the ecological validity of a password study. In Proc. SOUPS (2013).</p>
+<p>[39] FLORˆENCIO, D., HERLEY, C., AND V AN OORSCHOT, P. C . An administrator’s guide to internet password research. In Proc. USENIX LISA (2014).</p>
+<p>[40] FOX-BREWSTER, T.  13 million passwords appear to have leaked from this free web host. F orbes, October 28, <a target="_blank" rel="noopener" href="http://www.forbes.com/sites/thomasbrewster/2015/10/28/000webhost-database-leak/">http://www.forbes.com/sites/thomasbrewster/2015/10/28/000webhost-database-leak/</a>.</p>
+<p>[41] GAILL Y, J.-L. gzip. <a target="_blank" rel="noopener" href="http://www.gzip.org/">http://www.gzip.org/</a>.</p>
+<p>[42] GOODIN,  D.  10,000  Hotmail  passwords  mysteriously leaked to web. The Register,  October 5, <a target="_blank" rel="noopener" href="http://www.theregister.co.uk/2009/10/05/hotmail">http://www.theregister.co.uk/2009/10/05/hotmail</a> passwords leaked/.</p>
+<p>[43] GOODIN, D.  Hackers expose 453,000 credentials allegedly taken from Yahoo service. Ars Technica, July 12, 2012. <a target="_blank" rel="noopener" href="http://arstechnica.com/security/2012/07/yahoo-service-hacked/">http://arstechnica.com/security/2012/07/yahoo-service-hacked/</a>.</p>
+<p>[44] GOODIN, D.  Anatomy of a hack: How crackers ransack passwords like “qeadzcwrsfxv1331”. Ars Technica, May 27, 2013. <a target="_blank" rel="noopener" href="http://arstechnica.com/security/2013/05/how-crackers-make-minced-meat-out-of-your-passwords/">http://arstechnica.com/security/2013/05/how-crackers-make-minced-meat-out-of-your-passwords/</a>.</p>
+<p>[45] GOODIN, D. Why LivingSocial’s 50-million password breach is graver than you may think. Ars Technica, April 27, 2013.<a target="_blank" rel="noopener" href="http://arstechnica.com/security/2013/04/why-livingsocials-50-million-password-breach-is-graver-than-you-may-think/">http://arstechnica.com/security/2013/04/why-livingsocials-50-million-password-breach-is-graver-than-you-may-think/</a>.</p>
+<p>[46] GOODIN, D. Once seen as bulletproof, 11 million+ Ashley Madison passwords already cracked. Ars Technica, September 10, 2015. <a target="_blank" rel="noopener" href="http://arstechnica.com/security/2015/09/once-seen-as-bulletproof-11-million-ashley-madison-passwords-already-cracked/">http://arstechnica.com/security/2015/09/once-seen-as-bulletproof-11-million-ashley-madison-passwords-already-cracked/</a>.</p>
+<p>[47] GOOGLE. Web  1T  5-gram  version  1, <a target="_blank" rel="noopener" href="http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC2006T13">http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC2006T13</a>.</p>
+<p>[48] GRA VES, A. Supervised Sequence Labelling with Recurrent Neural Networks. Springer, 2012.</p>
+<p>[49] GRA VES, A. Generating sequences with recurrent neural networks. arXiv preprint arXiv:1308.0850, 2013.</p>
+<p>[50] GREENBERG, A. The police tool that pervs use to steal nude pics from Apple’s iCloud. Wired, September 2, 2014. <a target="_blank" rel="noopener" href="https://www.wired.com/2014/09/eppb-icloud/">https://www.wired.com/2014/09/eppb-icloud/</a>.</p>
+<p>[51] HAN, S., MAO, H., AND DA L LY, W. J. A deep neural network compression pipeline: Pruning, quantization, Huffman encoding. arXiv preprint arXiv:1510.00149, 2015.</p>
+<p>[52] HENRY, A. Five best password managers. LifeHacker, January 11, 2015. <a target="_blank" rel="noopener" href="http://lifehacker.com/5529133/">http://lifehacker.com/5529133/</a>.</p>
+<p>[53] HERLEY, C., AND V AN OORSCHOT, P. A research agenda acknowledging the persistence of passwords. IEEE Security &amp; Privacy Magazine 10, 1 (Jan. 2012), 28–36.</p>
+<p>[54] HOCHREITER, S., AND SCHMIDHUBER, J. Long short-term memory. Neural computation 9, 8 (1997), 1735–1780.</p>
+<p>[55] HUNT, T.  A brief Sony password analysis. <a target="_blank" rel="noopener" href="http://www.troyhunt.com/2011/06/brief-sony-password-analysis.html">http://www.troyhunt.com/2011/06/brief-sony-password-analysis.html</a>, 2011.</p>
+<p>[56] HUYNH, T. ABC Australia hacked nearly 50,000 user credentials posted online, half cracked in 45 secs. Techgeek, February 27, 2013. <a target="_blank" rel="noopener" href="http://techgeek.com.au/2013/02/27/abc-australia-hacked-nearly-50000-user-credentials-posted-online/">http://techgeek.com.au/2013/02/27/abc-australia-hacked-nearly-50000-user-credentials-posted-online/</a>.</p>
+<p>[57] JOHNSTONE, L. 9,885 user accounts leaked from Intercessors for America by Anonymous. <a target="_blank" rel="noopener" href="http://www.cyberwarnews.info/2013/07/24/9885-user-accounts-leaked-from-intercessors-for-america-by-anonymous/">http://www.cyberwarnews.info/2013/07/24/9885-user-accounts-leaked-from-intercessors-for-america-by-anonymous/</a>, 2013.</p>
+<p>[58] JOZEFOWICZ, R., ZAREMBA, W., AND SUTSKEVER, I. An empirical exploration of recurrent network architectures. In Proc. ICML (2015).</p>
+<p>[59] KELLEY, P . G., KOMANDURI, S., MAZUREK, M. L., SH AY, R., VIDAS, T . , BAUER, L., CHRISTIN, N., CRANOR, L. F., AND LOPEZ, J. Guess again (and again and again): Measuring password strength by simulating password-cracking algorithms. In Proc. IEEE Symp. Security &amp; Privacy (2012).</p>
+<p>[60] KOMANDURI, S. Modeling the adversary to evaluate password strengh with limited samples. PhD thesis, Carnegie Mellon University, 2016.</p>
+<p>[61] KOMANDURI, S., SH AY, R., CRANOR, L. F., HERLEY, C., AND SCHECHTER, S. Telepathwords: Preventing weak passwords by reading users’ minds. In Proc. USENIX Security (2014).</p>
+<p>[62] KREBS, B.  Fraud bazaar carders.cc hacked. <a target="_blank" rel="noopener" href="http://krebsonsecurity.com/2010/05/fraud-bazaar-carders-cc-hacked/">http://krebsonsecurity.com/2010/05/fraud-bazaar-carders-cc-hacked/</a>.</p>
+<p>[63] LEE,  M.  Hackers have released what they claim are the details of over 21,000 user accounts belonging to Billabong customers. ZDNet, July 13, 2012. <a target="_blank" rel="noopener" href="http://www.zdnet.com/article/over-21000-plain-text-passwords-stolen-from-billabong/">http://www.zdnet.com/article/over-21000-plain-text-passwords-stolen-from-billabong/</a>.</p>
+<p>[64] LOWERRE, B. T. The HARPY speech recognition system. PhD thesis, Carnegie Mellon University, 1976.</p>
+<p>[65] MA, J., YANG, W., LUO, M., AND LI, N. A study of probabilistic password models. In Proc. IEEE Symp. Security &amp; Privacy (2014).</p>
+<p>[66] MAZUREK, M. L., KOMANDURI, S., VIDAS, T., BAUER, L., CHRISTIN, N., CRANOR, L. F., KELLEY, P . G., SH AY, R., AND UR, B. Measuring password guessability for an entire university. In Proc. CCS (2013).</p>
+<p>[67] MCALLISTER, N. Twitter breach leaks emails, passwords of 250,000 users. The Register, Feb 2, 2013.</p>
+<p>[68] MIKOLOV, T . , SUTSKEVER, I., DEORAS, A., LE, H.-S., KOMBRINK, S., AND CERNOCKY, J. Subword language modeling with neural networks. Preprint (<a target="_blank" rel="noopener" href="http://www.fit.vutbr.cz/~imikolov/rnnlm/char.pdf">http://www.fit.vutbr.cz/~imikolov/rnnlm/char.pdf</a>), 2012.</p>
+<p>[69] MITZENMACHER, M. Compressed Bloom filters. IEEE/ACM Transactions on Networking (TON) 10, 5 (2002), 604–612.</p>
+<p>[70] NARA Y ANAN, A., AND SHMA TIKOV, V. Fast dictionary attacks on passwords using time-space tradeoff. In Proc. CCS (2005).</p>
+<p>[71] NEEF, S.  Using neural networks for password cracking. Blog post. <a target="_blank" rel="noopener" href="https://0day.work/using-neural-networks-for-password-cracking/">https://0day.work/using-neural-networks-for-password-cracking/</a>, 2016.</p>
+<p>[72] NIELSEN, J., AND HACKOS, J. T. Usability engineering, vol. 125184069. Academic press Boston, 1993.</p>
+<p>[73] PERLROTH, N. Adobe hacking attack was bigger than previously thought. The New York Times Bits Blog, October 29, 2013. <a target="_blank" rel="noopener" href="http://bits.blogs.nytimes.com/2013/10/29/adobe-online-attack-was-bigger-than-previously-thought/">http://bits.blogs.nytimes.com/2013/10/29/adobe-online-attack-was-bigger-than-previously-thought/</a>.</p>
+<p>[74] PESL Y AK, A. John the Ripper. <a target="_blank" rel="noopener" href="http://www.openwall.com/john/">http://www.openwall.com/john/</a>, 1996-.</p>
+<p>[75] PROTALINSKI,  E.  8.24 million Gamigo passwords leaked after hack. ZDNet, July 23, 2012. <a target="_blank" rel="noopener" href="http://www.zdnet.com/article/8-24-million-gamigo-passwords-leaked-after-hack/">http://www.zdnet.com/article/8-24-million-gamigo-passwords-leaked-after-hack/</a>.</p>
+<p>[76] RAGAN, S. Mozilla’s bug tracking portal compromised, reused passwords to blame. CSO, September 4, 2015. <a target="_blank" rel="noopener" href="http://www.csoonline.com/article/2980758/">http://www.csoonline.com/article/2980758/</a>.</p>
+<p>[77] SCHNEIER, B. Myspace passwords aren’t so dumb. <a target="_blank" rel="noopener" href="http://www.wired.com/politics/security/commentary/securitymatters/2006/12/72300">http://www.wired.com/politics/security/commentary/securitymatters/2006/12/72300</a>, 2006.</p>
+<p>[78] SCOWL.  Spell checker oriented word lists. <a target="_blank" rel="noopener" href="http://wordlist.sourceforge.net/">http://wordlist.sourceforge.net</a>, 2015.</p>
+<p>[79] SH AY, R., BAUER, L., CHRISTIN, N., CRANOR, L. F., FORGET, A., KOMANDURI, S., MAZUREK, M. L., MELICHER, W., SEGRETI, S. M., AND UR, B. A spoonful of sugar? The impact of guidance and feedback on password-creation behavior. In Proc. CHI (2015).</p>
+<p>[80] SH AY, R., KOMANDURI, S., DURITY, A. L., HUH, P . S., MAZUREK, M. L., SEGRETI, S. M., UR, B., BAUER, L., CHRISTIN, N., AND CRANOR, L. F. Can long passwords be secure and usable? In Proc. CHI (2014).</p>
+<p>[81] SONG, D. X., WAGNER, D., AND TIAN, X. Timing analysis of keystrokes and timing attacks on SSH. In Proc. USENIX Security Symposium (2001).</p>
+<p>[82] SPIDEROAK.  Zero knowledge cloud solutions. <a target="_blank" rel="noopener" href="https://spideroak.com/">https://spideroak.com/</a>, 2016.</p>
+<p>[83] STEUBE, J. Hashcat. <a target="_blank" rel="noopener" href="https://hashcat.net/oclhashcat/">https://hashcat.net/oclhashcat/</a>, 2009-.</p>
+<p>[84] SUTSKEVER, I., MARTENS, J., AND HINTON, G. E. Generating text with recurrent neural networks. In Proc. ICML (2011).</p>
+<p>[85] TRUSTW A VE.  eHarmony password dump analysis, June <a target="_blank" rel="noopener" href="http://blog.spiderlabs.com/2012/06/eharmony-password-dump-analysis.html">http://blog.spiderlabs.com/2012/06/eharmony-password-dump-analysis.html</a>.</p>
+<p>[86] TRUSTW A VE SPIDERLABS.  SpiderLabs/KoreLogic-Rules. <a target="_blank" rel="noopener" href="https://github.com/SpiderLabs/KoreLogic-Rules">https://github.com/SpiderLabs/KoreLogic-Rules</a>, 2012.</p>
+<p>[87] TSUKA Y AMA,  H.  Evernote hacked;  millions must change passwords. Washington Post, March 4, 2013. <a target="_blank" rel="noopener" href="https://www.washingtonpost.com/8279306c-84c7-11e2-98a3-b3db6b9ac586">https://www.washingtonpost.com/8279306c-84c7-11e2-98a3-b3db6b9ac586</a> story.html.</p>
+<p>[88] UR, B., KELLEY, P . G., KOMANDURI, S., LEE, J., MAASS, M., MAZUREK, M., PASSARO, T  .  , SH AY, R., VIDAS, T., BAUER, L., CHRISTIN, N., AND CRANOR, L. F. How does your password measure up? The effect of strength meters on password creation. In Proc. USENIX Security (2012).</p>
+<p>[89] UR, B., SEGRETI, S. M., BAUER, L., CHRISTIN, N., CRANOR, L. F., KOMANDURI, S., KURILOV A, D., MAZUREK, M. L., MELICHER, W., AND SH AY, R. Measuring real-world accuracies and biases in modeling password guessability. In Proc. USENIX Security (2015).</p>
+<p>[90] VANCE, A. If your password is 123456, just make it hackme. New York Times, January 20, 2010. <a target="_blank" rel="noopener" href="http://www.nytimes.com/2010/01/21/technology/21password.html">http://www.nytimes.com/2010/01/21/technology/21password.html</a>.</p>
+<p>[91] VERAS, R., COLLINS, C., AND THORPE, J. On the semantic patterns of passwords and their security impact. In Proc. NDSS (2014).</p>
+<p>[92] WEIR, M., AGGARW AL, S., COLLINS, M., AND STERN, H. Testing metrics for password creation policies by attacking large sets of revealed passwords. In Proc. CCS (2010).</p>
+<p>[93] WEIR, M., AGGARW AL, S., MEDEIROS, B. D., AND GLODEK, B. Password cracking using probabilistic context-free grammars. In Proc. IEEE Symp. Security &amp; Privacy (2009).</p>
+<p>[94] WHEELER, D. zxcvbn: Realistic password strength estimation. <a target="_blank" rel="noopener" href="https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/">https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/</a>, 2012.</p>
+<p>[95] WHEELER, D. L. zxcvbn: Low-budget password strength estimation. In Proc. USENIX Security (2016).</p>
+<p>[96] XUE, J., LI, J., YU, D., SELTZER, M., AND GONG, Y. Singular value decomposition based low-footprint speaker adaptation and personalization for deep neural network. InProc. ICASSP(2014).</p>
+<p>[97] YOSINSKI, J., CLUNE, J., BENGIO, Y. , AND LIPSON, H. How transferable are features in deep neural networks? In Proc. NIPS (2014).</p>
+<font>
+<font>
+
+</font></font></font></font></font></font></font></font></font></font></font></font></font></font></font></font>
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/" title="Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks">https://thomas-li-sjtu.github.io/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/" rel="prev" title="Python深度学习（3）实践——函数API与生成网络">
+      <i class="fa fa-chevron-left"></i> Python深度学习（3）实践——函数API与生成网络
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/25/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-1/" rel="next" title="Java核心技术卷I （1）基本结构与类">
+      Java核心技术卷I （1）基本结构与类 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF%E5%92%8C%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">背景和相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B%E6%94%BB%E5%87%BB"><span class="nav-number">3.1.</span> <span class="nav-text">密码猜测攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E9%87%8F%E5%AF%86%E7%A0%81%E5%BC%BA%E5%BA%A6"><span class="nav-number">3.2.</span> <span class="nav-text">测量密码强度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E5%8A%A8%E5%AF%86%E7%A0%81%E6%A3%80%E6%9F%A5"><span class="nav-number">3.3.</span> <span class="nav-text">主动密码检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"><span class="nav-number">3.4.</span> <span class="nav-text">神经网络</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1"><span class="nav-number">4.</span> <span class="nav-text">系统设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%BC%BA%E5%BA%A6%E6%B5%8B%E9%87%8F"><span class="nav-number">4.1.</span> <span class="nav-text">密码强度测量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">4.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.3.</span> <span class="nav-text">客户端模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E6%96%B9%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">测试方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE"><span class="nav-number">5.1.</span> <span class="nav-text">训练数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE"><span class="nav-number">5.2.</span> <span class="nav-text">测试数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8C%9C%E6%B5%8B%E8%AE%BE%E7%BD%AE"><span class="nav-number">5.3.</span> <span class="nav-text">猜测设置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0"><span class="nav-number">6.</span> <span class="nav-text">评估</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"><span class="nav-number">6.1.</span> <span class="nav-text">训练神经网络</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8C%9C%E6%B5%8B%E6%9C%89%E6%95%88%E6%80%A7"><span class="nav-number">6.2.</span> <span class="nav-text">猜测有效性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E5%AE%9E%E7%8E%B0"><span class="nav-number">6.3.</span> <span class="nav-text">浏览器实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

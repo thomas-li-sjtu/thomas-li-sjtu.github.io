@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks》 阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks》 阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529122744141.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529123143953.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529123244233.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529123451286.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529133308705.png">
+<meta property="article:published_time" content="2021-05-28T05:48:35.000Z">
+<meta property="article:modified_time" content="2021-05-29T05:35:49.843Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="WSN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529122744141.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-28 13:48:35" itemprop="dateCreated datePublished" datetime="2021-05-28T13:48:35+08:00">2021-05-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks》 阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li><p>在过去的几年里，WSN 得到了极大的关注</p>
+</li>
+<li><p>WSN 设备由于其高密度使用而暴露于攻击中，而与正常行为严重偏离的传感器读数是不准确和不可靠的。这些异常数据被认为是异常数据</p>
+</li>
+<li><p>异常值的识别不当会导致数据不准确和高能耗</p>
+</li>
+<li><p>为了检测离群点并提高精度，提出了一种两阶段算法</p>
+<ul>
+<li>聚类技术描述了训练阶段传感器数据的分组（微聚类，合并）</li>
+<li>基于密度的离群点检测技术，来检测异常点</li>
+</ul>
+</li>
+<li><p>实验结果表明，该方法准确率为 99.56%，虚警率低</p>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>近年来，WSN 在开发不同的应用方面发挥了重要作用，并因其复杂和多方面的先决条件而吸引了分析人员的注意</li>
+<li>WSN 由间隔很远的传感器组成，这些传感器的电池功率有限，可以检查和记录不同的自然条件，如压力、湿度、强度等</li>
+<li>由于某些恶意攻击、降低的电池消耗和错误，数据的测量可以不同于其原始模式——异常值。异常值是与数据的其余部分有很大差异的数据实例</li>
+</ul>
+<h3 id="WSN-中的问题"><a href="#WSN-中的问题" class="headerlink" title="WSN 中的问题"></a>WSN 中的问题</h3><ul>
+<li>WSN 面临的主要挑战是通过降低能耗和提高数据准确性来延长网络寿命<ul>
+<li>能量：能量在信息分类、信息处理和信息传输中被消耗。节点进行稳定的活动需要节点组件消耗大量的能量。能量规划、硬件的执行是 WSN 分析师面临的最关键的研究挑战【6】</li>
+<li>安全：错误信息的发生几率很大。每个传感器节点和基站都应该有能力确认接收到的数据确实是由可信的发送者发送的</li>
+<li>部署：传感器网络的大量部署导致网络堵塞，这是由于少数传感器节点发出大量的干扰信号。静态部署根据优化策略选择最佳位置，而动态部署为了优化而任意丢弃节点【9】</li>
+</ul>
+</li>
+</ul>
+<h3 id="当前系统局限性"><a href="#当前系统局限性" class="headerlink" title="当前系统局限性"></a>当前系统局限性</h3><ul>
+<li>由于资源和计算的限制，为现有的传感器网络提供安全性是一项令人担忧的工作</li>
+<li>现有网络部署在更远的距离，增加物理攻击的风险，并可能暴露其漏洞</li>
+<li>另一个限制为障碍物对信号的阻挡——信号的最终强度取决于位置</li>
+<li>更换耗尽能量的传感器是很困难的，这导致整个网络的吞吐量降低</li>
+</ul>
+<h3 id="无线网络集群"><a href="#无线网络集群" class="headerlink" title="无线网络集群"></a>无线网络集群</h3><ul>
+<li>为了提高网络运行的效率，采用分簇技术，缩小大型平面传感器网络的规模</li>
+<li>传感器节点被安排在称为集群的特定组中，每一个簇都包括 m 个被称为簇成员的节点（CM）和一个被称为簇头的特殊节点（CH）【11】</li>
+<li>加入和合并包含在单个集合中的信息，最佳方法称为基于集群的数据聚合</li>
+</ul>
+<h3 id="WSN-数据聚合"><a href="#WSN-数据聚合" class="headerlink" title="WSN 数据聚合"></a>WSN 数据聚合</h3><ul>
+<li>收集和聚合有意义信息的过程称为数据聚合</li>
+<li>WSN 中数据聚合是节约受限资源的一种方式。WSN 限制了计算能力、电池功率，这导致应用程序设计的复杂性，并经常在与网络协议紧密耦合的应用程序中出现问题【12】</li>
+<li>数据聚合的工作原理：<ul>
+<li>选择节点并将其划分为簇</li>
+<li>簇可以满足预期的参数条件，包括 RSSI、TTL、MRIC、数据传输、电池利用率等，这些参数决定簇中节点数目</li>
+<li>为每个簇的所有节点选择一个簇头 CH，负责组织簇内的节点，从簇的节点收集数据，将数据移动到相邻的 CH，以进行更多的数据交换和更新</li>
+<li>通过数据立方体方法【13】累积信息，将聚集的信息移动到基站以供附加使用</li>
+</ul>
+</li>
+</ul>
+<h3 id="WSN-异常检测"><a href="#WSN-异常检测" class="headerlink" title="WSN 异常检测"></a>WSN 异常检测</h3><ul>
+<li>离群值或异常值是一种明显偏离其余数据的对象</li>
+<li>离群值是在考虑约束总体时不具有共同行为的感知结果</li>
+<li>与给定标准或普通数据集类型严重偏离的一点信息被视为异常值</li>
+<li>异常值分为全局异常值、环境异常值和集体异常值<ul>
+<li>给定的数据集中，如果一个对象与数据集的其他部分偏离很大，则为全局异常值</li>
+<li>某些情况下，全局异常值也称为点异常值，是异常值中最不复杂的类型</li>
+<li>在特定的环境或条件下，个别信息出现的可能性很小，被称为环境异常值</li>
+<li>集体异常值定义为与整个数据集显著偏离的对象或数据实例，而不是单个数据对象</li>
+</ul>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li><p>用于检测异常值的最早算法之一是统计方法【14】</p>
+<ul>
+<li>假设信息遵循参数分布</li>
+<li>统计模型可以用一个属性来处理大多数异常值【15】，而在其他一些情况下，可以用多个属性来处理多达 k&lt;4 的数据能力</li>
+</ul>
+</li>
+<li><p>用于处理大数据应用的节能且安全的路由协议【19】</p>
+<ul>
+<li>有助于根据应用程序的重要性对其进行优先排序，有助于满足大数据场景中的所有要求，如网络延迟、路由开销和延迟</li>
+<li>安全路由协议是一个完整的过程，分为三个步骤，即路径识别、通知传输和路径维护</li>
+</ul>
+</li>
+<li><p>【1】提出蚁群聚类算法——基于密度的快速聚类——对动态数据流进行聚类</p>
+<ul>
+<li>形成由低密度区域分隔的高密度区域</li>
+<li>粗略的聚类是在一次通过一个窗口的过程中形成的，并且使用一个旋转的窗口模型来读取流</li>
+<li>它结合了求和与聚类，只需要四个参数</li>
+<li>具有单个点的聚类被认为是异常值</li>
+</ul>
+</li>
+<li><p>【7】定义了基于聚类的方法是最流行的方法，不需要信息传播的先验知识</p>
+<ul>
+<li>任何一个聚类偏离度很大或者比其他聚类小，并且如果任何数据实例不属于任何一个聚类，那么它们就被识别为异常值</li>
+<li>来自数据集的信息首先被分成簇。在每个簇中，数据点被批准为自由度【16】（In each cluster the data point is<br>approved as a degree of the membership）</li>
+</ul>
+</li>
+<li><p>【20】研究 WSN，使用压缩感知和信任感知提供更好的安全性并减少消息开销</p>
+<ul>
+<li>协议可以分为基于分层或基于平面的路由</li>
+<li>主要目的是增加路径的可信度，减少消息数和跳数以及传送距离</li>
+</ul>
+</li>
+<li><p>【17、18】提出一种通用的方法。随着深度学习网络的发展，许多分析人员希望利用它们来分离信息中隐藏的特征</p>
+</li>
+<li><p>异常检测解决方案可分为两类</p>
+<ul>
+<li>监督异常检测</li>
+<li>无监督异常检测</li>
+</ul>
+</li>
+</ul>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><ul>
+<li>两个阶段：加载、合并数据形成簇，之后孤立点检测</li>
+<li>首先识别每一个簇，每个簇包含 L 个数据点形成$\vec{W_i}$，使用线性和（LS）、平方和（SS）计算簇的半径 r 和中心 o，LS 和 SS 均为 d 维向量，维度是一个节点中的特征数<ul>
+<li>$LS = \sum_{i=1}^L{\vec{W_i}}$</li>
+<li>$SS=\sum_{i=1}^L{\vec{W_i}^2}$</li>
+<li>$r = \sqrt{\frac{SS}{L}-(\frac{LS}{L}})^2$</li>
+<li>$o=\frac{LS}{L}$</li>
+</ul>
+</li>
+<li>一个点$l$可以加入一个簇$\mu$，当将点加入簇后$radius(\mu)&lt;\epsilon$</li>
+<li>两个簇可以合并为一个簇$\mu=(L_i+L_j,LS_i+LS_j,SS_i+SS_j)$，当合并后$radius(\mu)&lt;\epsilon$</li>
+</ul>
+<h3 id="识别簇"><a href="#识别簇" class="headerlink" title="识别簇"></a>识别簇</h3><ul>
+<li><p>加载数据，预处理以去除遗漏属性值</p>
+</li>
+<li><p>分组</p>
+</li>
+<li><p>经过分组，第一个簇被建立，每个节点都是一个 CH</p>
+</li>
+<li><p>$Suitability(d_j,M_i)=\frac{\sum_{k=0}^ndist(d_j,m_{ik})}{n}$，其中 n 为$M_i$中的 n 个采样</p>
+</li>
+<li><p>检查每个簇，节点被包含在最合适的一个，参数$\epsilon$取决于簇的最大半径</p>
+<img src="/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529122744141.png" alt="image-20210529122744141" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="合并"><a href="#合并" class="headerlink" title="合并"></a>合并</h3><ul>
+<li><p>簇中每个数据点被视为微簇，半径为 0</p>
+</li>
+<li><p>每个微簇一开始与其他微簇合并在同一个簇下，但需要和其他微簇对比，如果合并后的半径小于$\epsilon$，说明合并后更好</p>
+<img src="/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529123143953.png" alt="image-20210529123143953" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="最终聚类与异常点检测"><a href="#最终聚类与异常点检测" class="headerlink" title="最终聚类与异常点检测"></a>最终聚类与异常点检测</h3><img src="/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529123244233.png" alt="image-20210529123244233" style="zoom:67%;">
+
+<img src="/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529123451286.png" alt="image-20210529123451286" style="zoom:67%;">
+
+<ul>
+<li>随机选择一个微簇，同其他 n 个同一簇下的微簇对比</li>
+<li>计算密度：$Reach(o_{ui},o_{uj})\le w$，其中$o_{ui}、o_{uj}$为微簇的中心，若满足此关系，则密度可获得（density obtainable）</li>
+<li>计算选择概率$ProbPick=1-(obtainable/n)$</li>
+<li>若此概率小于阈值，则微簇将和相邻簇合并</li>
+</ul>
+<h2 id="实验和结论"><a href="#实验和结论" class="headerlink" title="实验和结论"></a>实验和结论</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li>IBRL 数据集</li>
+<li>包含从位于英特尔伯克利研究实验室的 54 个传感器中收集的数据，数据以时间戳的方式被收集，其中每 31s 收集一次信息</li>
+<li>主要含有四个属性：湿度，温度，光线和电压</li>
+</ul>
+<h3 id="评估方式"><a href="#评估方式" class="headerlink" title="评估方式"></a>评估方式</h3><ul>
+<li>混淆矩阵评估</li>
+</ul>
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><img src="/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/image-20210529133308705.png" alt="image-20210529133308705" style="zoom:67%;">
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>本文提出了一种自然启发算法，用于找到异常值</li>
+<li>首先，形成初始集群，并且每个群集都被拆分以形成不同的微簇，以便在找到异常值时获得更高的准确性</li>
+<li>群集中的每个数据点被认为是微簇，通过计算不同微簇之间的适用性来执行合并操</li>
+<li>异常值检测算法基于PICK-N-DROP方法，有助于解体较小的聚类并将其内容融为最合适的集群</li>
+<li>实验结果表明，具有 99.56% 的精度和较少的误报率</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\05\27\A-Review-IDS-in-Remote-Sensor-Network\" rel="bookmark">A Review：IDS in Remote Sensor Network</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Review：IDS in Remote Sensor Network》阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\05\26\WSN-DS-A-Dataset-for-Intrusion-Detection-Systems-in-Wireless-Sensor-Networks\" rel="bookmark">WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks</a></div>
+        <div class="popular-posts-excerpt"><p><p>《WSN-DS：A Dataset for Intrusion Detection Systems in Wireless Sensor Networks》阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/" title="An Efficient Algorithm for Anomaly Detection in Wireless Sensor Networks">https://thomas-li-sjtu.github.io/2021/05/28/An-Efficient-Algorithm-for-Anomaly-Detection-in-Wireless-Sensor-Network/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/WSN/" rel="tag"><i class="fa fa-tag"></i> WSN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/27/A-Review-IDS-in-Remote-Sensor-Network/" rel="prev" title="A Review：IDS in Remote Sensor Network">
+      <i class="fa fa-chevron-left"></i> A Review：IDS in Remote Sensor Network
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/29/Improved-Isolation-Forest-for-WSN-IDS/" rel="next" title="Improved-Isolation-Forest-for-WSN-IDS">
+      Improved-Isolation-Forest-for-WSN-IDS <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#WSN-%E4%B8%AD%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">WSN 中的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%93%E5%89%8D%E7%B3%BB%E7%BB%9F%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">当前系统局限性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E7%BA%BF%E7%BD%91%E7%BB%9C%E9%9B%86%E7%BE%A4"><span class="nav-number">2.3.</span> <span class="nav-text">无线网络集群</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WSN-%E6%95%B0%E6%8D%AE%E8%81%9A%E5%90%88"><span class="nav-number">2.4.</span> <span class="nav-text">WSN 数据聚合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WSN-%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B"><span class="nav-number">2.5.</span> <span class="nav-text">WSN 异常检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%86%E5%88%AB%E7%B0%87"><span class="nav-number">4.1.</span> <span class="nav-text">识别簇</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E5%B9%B6"><span class="nav-number">4.2.</span> <span class="nav-text">合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E7%BB%88%E8%81%9A%E7%B1%BB%E4%B8%8E%E5%BC%82%E5%B8%B8%E7%82%B9%E6%A3%80%E6%B5%8B"><span class="nav-number">4.3.</span> <span class="nav-text">最终聚类与异常点检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%92%8C%E7%BB%93%E8%AE%BA"><span class="nav-number">5.</span> <span class="nav-text">实验和结论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E6%96%B9%E5%BC%8F"><span class="nav-number">5.2.</span> <span class="nav-text">评估方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">5.3.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

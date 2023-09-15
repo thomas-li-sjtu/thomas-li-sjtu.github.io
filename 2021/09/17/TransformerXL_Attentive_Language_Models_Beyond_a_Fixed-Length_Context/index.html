@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="2019年《Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context》论文阅读笔记——基于2018年《Character-Level Language Modeling with Deeper Self-Attention》（vanilla Transformer）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transformer-XL：Attentive Language Models Beyond a Fixed-Length Context">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="2019年《Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context》论文阅读笔记——基于2018年《Character-Level Language Modeling with Deeper Self-Attention》（vanilla Transformer）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210917220418883.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210918131409123.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919134327657.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919134610146.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919134732806.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919135112100.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919141952132.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919142312742.png">
+<meta property="article:published_time" content="2021-09-17T11:22:47.000Z">
+<meta property="article:modified_time" content="2021-09-19T07:23:59.458Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="自然语言处理">
+<meta property="article:tag" content="AE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210917220418883.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Transformer-XL：Attentive Language Models Beyond a Fixed-Length Context | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Transformer-XL：Attentive Language Models Beyond a Fixed-Length Context
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-09-17 19:22:47" itemprop="dateCreated datePublished" datetime="2021-09-17T19:22:47+08:00">2021-09-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>2019年《Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context》论文阅读笔记——基于2018年《Character-Level Language Modeling with Deeper Self-Attention》（vanilla Transformer）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>vanilla Transformer有学习长期依赖的能力，但是固定长度上下文的限制</li>
+<li>本文提出一种新的体系结构Transformer-XL，在不破坏时间一致性的前提下学习固定长度之外的依赖性：段级别的递归机制+新位置编码方案</li>
+<li>Transformer-XL学习序列的依赖性比Rnn多80%，比Transformer多450%，评估期间比Transformer快1800倍</li>
+<li>给定训练集WikiText-103，能够生成数千个token的连贯样本文章</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>神经网络对顺序数据建模长期依赖性一致是一个挑战，递归神经网络已经是一个标准解决方案，但梯度爆炸和梯度消失一直影响RNN的效果，即使有LSTM和梯度剪裁技术——经验上，LSTM平均能够使用200个上下文词语</p>
+</li>
+<li><p>注意力机制使模型能学习长距离单词对之间的联系，18年的vanilla Transformer大大优于LSTM，但此工作在数百个字符的独立固定长度片段上执行，没有跨片段的信息，即模型很难捕获超过预定义上下文长度的任何长期依赖关系——比如当前输入和下一个输入的依赖关系，因此模型缺少必要的上下文信息来预测最开始的几个单词，导致性能不够；同时，在预测时vanilla Transformer需要一个一个输出，效率低下</p>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210917220418883.png" alt="image-20210917220418883"></p>
+</li>
+<li><p>本文提出Transformer-XL以解决固定长度上下文的上述限制</p>
+<ul>
+<li>不再为每个新片段从头开始计算隐藏状态，而是重用在之前片段中获得的隐藏状态（在内存里保存）</li>
+<li>展示了使用相对位置编码而不是绝对位置编码的必要性</li>
+<li>引入了一个简单但更有效的相对位置编码公式，以”注意“到比训练样本更远的内容</li>
+</ul>
+</li>
+<li><p>本文在自注意力模型中引入递归的概念，并推导一种新的位置编码方案，实验结果显示，Transformer-XL是第一个在字符级和单词级建模上比RNN好得多的自注意力模型</p>
+</li>
+</ul>
+<h2 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h2><ul>
+<li>给定一段语料$x=(x_1,…,x_T)$，语言模型的任务是估计联合概率$P(x)$，$P(x)$通常可以分解为$P(x)=\prod_tP(x_t|x_{&lt;t})$，从而简化为估计多个条件概率</li>
+<li>估计条件概率时，通常使用一个训练好的神经网络将上下文编码为一个隐藏状态，单词嵌入与其相乘得到logits，logits送入softmax函数，得到下一个令牌的概率分布</li>
+</ul>
+<h3 id="Vanilla-Transformer"><a href="#Vanilla-Transformer" class="headerlink" title="Vanilla Transformer"></a>Vanilla Transformer</h3><ul>
+<li>vanilla transformer将整个语料库分割成更短的segment，并只在每个segment上训练模型，忽略之前segment的所有上下文信息<ul>
+<li>此时依赖长度上限是segment的长度</li>
+<li>导致上下文碎片问题</li>
+</ul>
+</li>
+<li>评估过程里，每一步都使用与训练长度相同的segment，只在最后一个位置进行一次预测，之后segment向右移动一位。此过程尽可能利用了训练过程中学到的上下文，但成本高，速度慢</li>
+<li>具体过程见第一个图</li>
+</ul>
+<h3 id="状态重用的段级递归"><a href="#状态重用的段级递归" class="headerlink" title="状态重用的段级递归"></a>状态重用的段级递归</h3><ul>
+<li><p>本文在Transformer中引入递归机制，训练中为前一个segment计算的隐藏状态序列被保留，当模型处理下一个segment时，缓存中的状态序列作为扩展的上下文被重用，此时网络能够利用历史信息，建模长期依赖关系</p>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210918131409123.png" alt="image-20210918131409123"></p>
+</li>
+<li><p>形式化表述如下：</p>
+<ul>
+<li><p>两个连续segment长为$L$，$s_r=[x_{r,1},…,x_{r,L}]$，$s_{r+1}=[x_{r+1,1},…,x_{r+1,L}]$</p>
+</li>
+<li><p>假设第$r$个segment（$s_r$）生成的第$n$层隐藏状态序列为$h_r^n\in R^{L\times d}$，其中$d$为隐藏层维度，则第$r+1$个segment（$s_{r+1}$）对应的第$n$层隐藏状态序列为：</p>
+<p>![image-20210919111055322](Transformer-XL_ Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919111055322.png)</p>
+</li>
+<li><p>其中，函数$SG$代表stop-gradient，符号$\circ$表明将两个隐藏序列沿长度维度连接，$W$代表模型的参数</p>
+</li>
+<li><p>与标准的Transformer相比，主要差异在于$k_{r+1}^n$与$v_{r+1}^n$为基于扩展的上下文$\widetilde{h}_{r+1}^{n-1}$，因此获得了上一个segment的缓存$h_r^{n-1}$</p>
+</li>
+<li><p>此机制创建了隐藏状态下的segment级别递归，因此利用的有效上下文可以超过这两个部分。但是这里循环依赖项$h_{r+1}^n$与$h_{r}^{n-1}$在每个segment上，向下移动一层，这与一般的RNN是不同的，即可能的最长依赖长度随层的数目和segment的长度线性增长，如第二个图的(b)</p>
+</li>
+<li><p>此机制还提高了计算速度，在评估期间能够重用前面的状态</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="相对位置编码"><a href="#相对位置编码" class="headerlink" title="相对位置编码"></a>相对位置编码</h3><ul>
+<li><p>还有一个问题是，在重用隐藏状态时，如何保持位置信息的一致性，若按以往的编码方式，则模型无法区分相对位置相同的两个token</p>
+</li>
+<li><p>解决方案为，只编码隐藏状态下的相对位置信息</p>
+<ul>
+<li><p>位置编码提供关于信息如何收集的时间线索，因此将相同的信息注入到每一层的注意力得分中，而不是加入初始的嵌入</p>
+</li>
+<li><p>例如，query不需要知道每个key的绝对位置，只需要知道key之间的相对距离即可，通过将相对距离动态地插入注意力得分，query根据距离的不同，可以区分$x_{r,j}$和$x_{r+1,j}$，此时绝对距离可以通过相对距离递归恢复</p>
+</li>
+<li><p>标准的Transformer中，同一个segment中，query和key之间的注意力得分可以分解为：</p>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919134327657.png" alt="image-20210919134327657"></p>
+</li>
+<li><p>之后更改为下式，其中(a)表示基于内容的寻址，(b)捕获依赖于内容的位置偏差，(c)控制全局内容偏差，(d)编码全局位置偏差</p>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919134610146.png" alt="image-20210919134610146"></p>
+</li>
+</ul>
+</li>
+<li><p>最终Transformer-XL的架构为：</p>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919134732806.png" alt="image-20210919134732806"></p>
+</li>
+</ul>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="主要结果"><a href="#主要结果" class="headerlink" title="主要结果"></a>主要结果</h3><ul>
+<li><p>将Transformer-XL应用于单词级和字符级的数据集，如WikiText-103、enwik8、text8、One Billion Word、Penn Treebank</p>
+</li>
+<li><p>WikiText-103是目前可用的最大的具有长期依赖性的词级语言建模基准，包含来自28K篇文章的1.03亿个token，在训练期间将注意力长度设置为384，在评估期间设置为1600</p>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919135112100.png" alt="image-20210919135112100"></p>
+</li>
+<li><p>enwik8包含1亿字节未经处理的维基百科文本，将本文架构与表2中的结果进行了比较，12层Transformer-XL实现了新的SoTA结果；同时为了看是否可以通过增加模型尺寸获得更好的性能，训练了18层和24层的模型，最终获得了一个新的SoTA结果——Transformer-XL不需要任何辅助损失函数，所有优势都归功于更好的架构</p>
+</li>
+</ul>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919141952132.png" alt="image-20210919141952132"></p>
+<ul>
+<li><p>text8和enwik8相似，包含1亿个经过处理的维基百科字符，但text8的文本均为小写、删除26个字母和空格之外的任何字符，因此只需将enwik8上的最佳模型根据相同的超参数调整为text8上的模型即可，同样Transformer-XL获得了新的SoTA结果</p>
+<p><img src="/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/image-20210919142312742.png" alt="image-20210919142312742"></p>
+</li>
+<li><p>数据集One Billion Word、Penn Treebank采取类似的方式进行对比，均为SoTA</p>
+</li>
+</ul>
+<h3 id="消融实验"><a href="#消融实验" class="headerlink" title="消融实验"></a>消融实验</h3><ul>
+<li>进行了两组消融研究，以检查Transformer-XL中使用的两种机制的效果：递归和相对位置编码</li>
+<li>略</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>Transformer-XL获得了很好的结果，建立了比RNN和Transformer更长时间的依赖模型，并且评估阶段的运行速度更快</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\23\BART\" rel="bookmark">BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension》（BART）论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\16\BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding\" rel="bookmark">BERT Pre-training of Deep Bidirectional Transformers for Language Understanding</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\24\Bert-over-Bert\" rel="bookmark">BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data</a></div>
+        <div class="popular-posts-excerpt"><p><p>《BoB: BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data》（BoB）2021ACL</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\09\GSum\" rel="bookmark">A General Framework forGuided Neural Abstractive Summarization</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A General Framework forGuided Neural Abstractive Summarization》（GSum）2021 NAACL</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\24\Glancing-Transformer-for-Non-Autoregressive-Neural-Machine-Translation\" rel="bookmark">Glancing Transformer for Non-Autoregressive Neural Machine Translation</a></div>
+        <div class="popular-posts-excerpt"><p><p>2021年《Glancing Transformer for Non-Autoregressive Neural Machine Translation》阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/" title="Transformer-XL：Attentive Language Models Beyond a Fixed-Length Context">https://thomas-li-sjtu.github.io/2021/09/17/TransformerXL_Attentive_Language_Models_Beyond_a_Fixed-Length_Context/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Transformer/" rel="tag"><i class="fa fa-tag"></i> Transformer</a>
+              <a href="/tags/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" rel="tag"><i class="fa fa-tag"></i> 自然语言处理</a>
+              <a href="/tags/AE/" rel="tag"><i class="fa fa-tag"></i> AE</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/16/BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding/" rel="prev" title="BERT Pre-training of Deep Bidirectional Transformers for Language Understanding">
+      <i class="fa fa-chevron-left"></i> BERT Pre-training of Deep Bidirectional Transformers for Language Understanding
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/09/19/XLNet-Generalized-Autoregressive-Pretraining-for-Language-Understanding/" rel="next" title="XLNet：Generalized Autoregressive Pretraining for Language Understanding">
+      XLNet：Generalized Autoregressive Pretraining for Language Understanding <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vanilla-Transformer"><span class="nav-number">3.1.</span> <span class="nav-text">Vanilla Transformer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E9%87%8D%E7%94%A8%E7%9A%84%E6%AE%B5%E7%BA%A7%E9%80%92%E5%BD%92"><span class="nav-number">3.2.</span> <span class="nav-text">状态重用的段级递归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%AF%B9%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81"><span class="nav-number">3.3.</span> <span class="nav-text">相对位置编码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">4.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E7%BB%93%E6%9E%9C"><span class="nav-number">4.1.</span> <span class="nav-text">主要结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C"><span class="nav-number">4.2.</span> <span class="nav-text">消融实验</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">5.</span> <span class="nav-text">结论</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

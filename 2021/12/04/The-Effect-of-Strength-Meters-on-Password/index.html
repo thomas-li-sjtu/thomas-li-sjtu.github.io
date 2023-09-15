@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《How Does Your Password Measure Up? The Effect of Strength Meters on Password Creation》（USENIX 2012）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How Does Your Password Measure Up，The Effect of Strength Meters on Password Creation">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《How Does Your Password Measure Up? The Effect of Strength Meters on Password Creation》（USENIX 2012）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/1.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/2.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/3.PNG">
+<meta property="article:published_time" content="2021-12-03T16:37:08.000Z">
+<meta property="article:modified_time" content="2021-12-15T12:38:33.882Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/1.PNG">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>How Does Your Password Measure Up，The Effect of Strength Meters on Password Creation | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          How Does Your Password Measure Up，The Effect of Strength Meters on Password Creation
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-12-04 00:37:08" itemprop="dateCreated datePublished" datetime="2021-12-04T00:37:08+08:00">2021-12-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《How Does Your Password Measure Up? The Effect of Strength Meters on Password Creation》（USENIX 2012）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>密码表：帮助用户创建更强的基于文本的密码，提供密码强度的可视反馈</li>
+<li>具有各种视觉外观的密码表导致用户创建更长的密码</li>
+<li><strong>严格的计量表让密码包含更多数字、符号、大写字母，也让参与者花更多时间创建密码</strong></li>
+<li>过于严格的计量表和没有可视化的计量表，会让参与者对满足计量表的重视程度降低</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>系统管理员采取措施<ul>
+<li>系统分配密码——难记忆</li>
+<li>严格的密码组成要求——用户用简单可预测的方式满足需求</li>
+</ul>
+</li>
+<li>使用密码表以鼓励用户创建更强密码</li>
+<li>研究具有不同评分算法和视觉组件的密码表对用户创建的密码安全性、可用性的影响</li>
+<li>15组测试，<strong>一个不具有密码表，十四个具有不同视觉功能或评分算法的密码表。并都要求密码包含至少8个字符</strong><ul>
+<li>任何测试过的<strong>密码表都会导致用户创建的密码更长。而对密码评分的密码表会导致更长的密码被创建</strong></li>
+<li>模拟最先进的密码破解算法，比较每种情况下进行5亿次，500亿次，5万亿次猜测的情况下破解密码的百分比</li>
+<li>无密码表的情况下创建的密码被破解速度最快</li>
+<li>只有两组带有可视条的严格密码表的测试里，有显著下降的密码破解率</li>
+</ul>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><p>&emsp;&emsp;在此之前，与密码计量器相关的工作主要集中在密码评分上，而不是计量器如何影响用户创建密码的安全性和可用性。 </p>
+<ul>
+<li>计量表<ul>
+<li>估计密码强度的算法是先前工作的重点。传统的基于规则的密码表缺乏足够的复杂性来指导用户使用不同的密码——自适应的马尔科夫算法。  </li>
+<li>本文使用简单的基于规则的算法来估计强度，重点在于计量表如何影响用户创建密码的可用性和安全性。</li>
+</ul>
+</li>
+<li>视觉显示<ul>
+<li>密码表可视化设计的文献较少</li>
+<li>如果指标显示的进度比用户预期的快，则指标可以改善用户体验，否则会导致用户放弃手头的任务</li>
+</ul>
+</li>
+<li>密码组成策略<ul>
+<li>没有干预的情况下，用户倾向于创建简单的密码</li>
+<li>期望用户以可预测的方式遵守策略，可能会降低密码强度</li>
+<li>严格的策略会降低效率，并导致用户记录他们的密码</li>
+</ul>
+</li>
+<li>可预测性的测量<ul>
+<li>可猜测性是比熵更为准确的衡量密码强度的方法</li>
+<li>一个给定的算法，在给定的参数集和训练下，在给定猜测数后，将破解一定百分比的密码</li>
+</ul>
+</li>
+</ul>
+<h2 id="实际使用中的密码表"><a href="#实际使用中的密码表" class="headerlink" title="实际使用中的密码表"></a>实际使用中的密码表</h2><ul>
+<li>Alexa中100个访问量最大的全球网站，有96个允许用户注册和创建密码，70个站点（73%）给出了用户密码的反馈</li>
+<li>某些情况下，同一家公司拥有的所有网站都使用相同的计量表</li>
+<li>一般的评分依据包含密码长度、数字、大写字母和特殊字符的使用以及黑名单单词的使用，大多数密码表在输入字符时动态更新</li>
+<li>有的密码表有独特的视觉特性</li>
+</ul>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><ul>
+<li>进行了两部分的在线研究</li>
+<li>通过MTurk招募参与者，分配到15个组中。每个参与者想象其电子邮件供应商要求创建至少8位的新密码。我们要求参与者通过此界面创建密码，并完成创建密码体验的调查</li>
+<li>两天后再次登录，进行另一项关于如何处理密码的调查<br><img src="/2021/12/04/The-Effect-of-Strength-Meters-on-Password/1.PNG" alt="1"> </li>
+</ul>
+<h3 id="密码评分算法"><a href="#密码评分算法" class="headerlink" title="密码评分算法"></a>密码评分算法</h3><ul>
+<li>密码表通过评分功能判断密码强度，通过视觉组件显示该分数</li>
+<li>用启发式的方法（包括密码长度和字符种类）给密码分配一个分数。0代表空白字段，100代表填充了密码表并为“优秀”的文本</li>
+<li>若要在15个条件中尽量多获得100分，参与者需要满足两个文献中确定为更强的策略之一（称Basic16和Compresive8）</li>
+<li>除非另有规定，否则密码的分数应以基本16分和综合8分中的较大者为准。每次击键都会重新计算分数并更新密码表</li>
+<li>Basic16：<ul>
+<li>密码包含至少16个字符。</li>
+<li>本文的计分中，前8个字符各为4分，所有后续字符均各为8分</li>
+</ul>
+</li>
+<li>Compresive8：<ul>
+<li>密码至少包含8个字符，包括大写字母，小写字母，数字和符号。且此</li>
+<li>密码不能出现在破解字典OpenWall Mangled Wordlists中</li>
+<li>计分策略中每个字符为4分，包含大写字符，数字和符号则分别获得17分。第二个唯一数字，符号或大写字母将增加8分，第三个唯一数字增加4分</li>
+</ul>
+</li>
+<li>密码的分数以两个策略评分中较大的为准</li>
+</ul>
+<h3 id="分组（条件）"><a href="#分组（条件）" class="headerlink" title="分组（条件）"></a>分组（条件）</h3><p>&emsp;&emsp;15个条件分为四大类。</p>
+<ul>
+<li><p>计量表有无</p>
+<ol>
+<li>无计量表。<br>不提供密码表</li>
+<li>基准计量表。<br>代表默认密码表。分数是将Basic16和Compresive8标准中的较高者。分数增加，颜色由红到黄再到绿。还提供了一个文本化的建议，例如“考虑增加一个数字或使您的密码更长。”</li>
+</ol>
+</li>
+<li><p>外观条件的不同</p>
+<ol>
+<li>Three-segment<br>类似于基准计量表，不同的是数值条被具有三个不同部分的条代替</li>
+<li>Green<br>类似基准计量表，但不随密码得分增加而改变颜色</li>
+<li>Tiny<br>类似基准计量表，但尺寸在水平方向减小50%，竖直方向减小60%</li>
+<li>Huge<br>类似基准计量表，尺寸在水平方向增加50%，竖直方向增加120%</li>
+<li>Text-only<br>无可视条形图</li>
+<li>No suggesttion<br>类似基准计量表，但不给出增加密码得分的建议</li>
+</ol>
+</li>
+<li><p>计分条件的不同</p>
+<ol>
+<li>Half-score<br>能在基准计量表获得满分的密码，在这里只能获得一半的分数。要在此获得满分，需要密码长度为28字符，或者长度为21字符，包含五个不同的大写字母，五个不同的数字和五个不同的符号</li>
+<li>One-third-score<br>类似于Half-score。包含40个字母的密码将在此获得满分</li>
+<li>Nudge-16<br>只计算Basic16的得分，以测试特定的密码策略</li>
+<li>Nudge-comp8<br>只计算Comprehensive8的得分</li>
+</ol>
+</li>
+<li><p>混合条件</p>
+<ol>
+<li>Text-only half-score  </li>
+<li>Bold text-only half-score<br>文本加粗</li>
+<li>Bunny<br>密码分数反映在动画兔八哥跳舞的速度。当比分为0时，他一动不动。他的速度随着比分的增加而增加。这种情况探索了一种视觉反馈机制，而不是传统的条状视觉组件</li>
+</ol>
+</li>
+<li><p>密码破解</p>
+<ul>
+<li>模拟了Weir等人设计的密码破解算法</li>
+<li>培训数据包括来自OpenWall的4000万个被破坏的单词列表的密码，来自RockYou网站的23200万个被泄露的密码，以及来自MySpace的约47000个密码</li>
+<li>所有字符串的训练数据都是从Google Web语料库中获取的，由此产生了包含1400万个字母字符串的字典</li>
+<li>一个流行的密码破解工具John the Ripper4，在一台现代台式机上，大约一小时就能破解5亿个散列密码</li>
+</ul>
+</li>
+</ul>
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><p>&emsp;&emsp;收集到数据后，首先比较在每个条件下创建的密码的特征，包括它们的长度和使用的字符类。接下来，模拟一个破解算法来评估不同强度的攻击在每个条件下破解密码的比例。</p>
+<h3 id="密码特征"><a href="#密码特征" class="headerlink" title="密码特征"></a>密码特征</h3><ul>
+<li><p>密码表的存在显著增加了密码长度。密码长度在不同条件下有显著变化，其中包含的数字、大写字母和符号的数目也有显著变化<br><img src="/2021/12/04/The-Effect-of-Strength-Meters-on-Password/2.PNG" alt="2"> </p>
+</li>
+<li><p>密码中大写字符和符号并不常见。在几乎所有的情况下，大多数参与者都没有在密码中使用任何大写字符，尽管密码表提示这样做</p>
+</li>
+</ul>
+<h3 id="密码可猜测性"><a href="#密码可猜测性" class="headerlink" title="密码可猜测性"></a>密码可猜测性</h3><ul>
+<li>考虑了三个攻击：一个资源有限的弱攻击者猜测5亿次，一个中等攻击者猜测500亿次，一个强攻击者猜测5万亿次。下图显示了按条件破解密码的比例</li>
+<li>任何条件下的密码表都有较小的优势<br><img src="/2021/12/04/The-Effect-of-Strength-Meters-on-Password/3.PNG" alt="3"> </li>
+</ul>
+<h3 id="密码可记忆性"><a href="#密码可记忆性" class="headerlink" title="密码可记忆性"></a>密码可记忆性</h3><ul>
+<li>为了评估参与者创建的密码的可记忆性，我们考虑了在研究的第二天返回的参与者的比例，参与者在创建后几分钟和几天后输入密码的能力</li>
+<li>68.8%的参与者返回并完成了研究的第二部分。15种条件中，返回的参与者比例没有显著差异，创建的密码长度、密码包含的位数或被中等或强攻击者破解的密码百分比方面没有显著差异</li>
+<li>弱攻击者破解的未返回参与者创建的密码的百分比，明显高于返回的参与者创建的密码</li>
+<li>返回的参与者的密码中有更多的大写字母和符号</li>
+<li>参与者回忆密码的能力在不同情况下没有显著差异</li>
+<li>两天后，当他们收到一封邮件，用密码返回并登录时，在每种情况下，77%到89%的受试者都能在前三次尝试内成功登录</li>
+<li>38.0%的返回者说他们储存或写下了密码</li>
+<li>不同条件下储存密码的参与者比例没有差异</li>
+</ul>
+<h3 id="密码创建过程"><a href="#密码创建过程" class="headerlink" title="密码创建过程"></a>密码创建过程</h3><ul>
+<li>分析参与者在密码创建过程中的击键行为发现，在不同的密码表下，参与者的行为是不同的</li>
+<li>密码量表似乎鼓励参与者达到一定目标，例如填满计量表或密码评价不再为“坏”或“差”</li>
+<li>大多数看到最严格的密码表的参与者都会在创建密码时做出改变，删除输入的内容并创建一个不同的密码</li>
+<li>在所有四个严格条件下，以及在nudge-16中，参与者对其密码所做的更改比在无计量表或基准计量表中所做的更改要多</li>
+<li>在平均密码创建时间为23.5秒的情况下，参与者在Half-score、one-third-score和bold text-only half-score下花费的时间明显更长</li>
+<li>严格的条件下以及在nudge-16和bunny中发生的更改要多得多</li>
+<li>创建了初始密码，完全删除了密码字段，并保存了与初始密码相差一次或多次的最终密码，则他们已经更改了密码。超过一半的参与者在half-score、one-third-score和bold text-only half-score中更改了密码</li>
+</ul>
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><h3 id="密码表的有效性"><a href="#密码表的有效性" class="headerlink" title="密码表的有效性"></a>密码表的有效性</h3><ul>
+<li>用户看到一个密码表，哪怕是一个跳舞的兔子，其创建的密码都会更长</li>
+<li>所有14种情况下使用密码表创建的密码，都被不同强度的对抗模型以较低的速率破解</li>
+<li>目前流行网站上使用的密码表在鼓励用户创建强密码方面不够强烈</li>
+<li>用户所能容忍的密码表严格性似乎是有限度的</li>
+<li>对密码表的视觉显示进行调整并没有导致密码组成或用户情绪上的显著差异，一个重要的因素似乎是文本和视觉组件的结合，而不仅仅是有文字或者只有视觉组件</li>
+<li>用户对自己创建密码强度有一定估计。分数近似于用户的期望值的密码表似乎对创建安全的密码有积极作用，而分数偏离期望值的非常严格的密码表则导致不太好的用户情绪，用户有可能放弃创建强密码</li>
+<li>大规模部署更严格的密码强度表可以训练用户常规地创建更强的密码</li>
+</ul>
+<h3 id="将来的工作"><a href="#将来的工作" class="headerlink" title="将来的工作"></a>将来的工作</h3><ul>
+<li>交替的评分算法，改进的文本反馈，以及导致密码可用性和安全性之间最佳折衷的严格程度</li>
+<li>没能尝试所有可能的密码表</li>
+</ul>
+<h3 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h3><ul>
+<li>参与者为一项在线研究创建了密码，他们实际上并没有用这些密码保护任何有价值的东西</li>
+<li>意识到自己正在参与密码研究的参与者可能会比其他人更仔细地思考自己的密码，更密切地关注密码表</li>
+<li>没有试验过各种各样的破解算法</li>
+<li>训练猜测算法所用的数据并没有针对用英语以外的语言创建密码的参与者进行优化，这可能导致破解的密码更少</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>密码表导致用户创建更长的密码。但是，除非密码表对密码进行严格的评分，否则生成的密码只能稍稍抵抗密码破解攻击</li>
+<li>严格评定密码的密码表会导致用户使用更长的密码</li>
+<li>视觉组件的外观似乎并没有实质性的影响</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\22\Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks\" rel="bookmark">Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/" title="How Does Your Password Measure Up，The Effect of Strength Meters on Password Creation">https://thomas-li-sjtu.github.io/2021/12/04/The-Effect-of-Strength-Meters-on-Password/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/25/SentenceBert/" rel="prev" title="Sentence Embeddings using Siamese BERT-Networks">
+      <i class="fa fa-chevron-left"></i> Sentence Embeddings using Siamese BERT-Networks
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/06/Beware-Your-Hands-Reveal-Your-Secrets/" rel="next" title="Beware Your Hands Reveal Your Secrets">
+      Beware Your Hands Reveal Your Secrets <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%99%85%E4%BD%BF%E7%94%A8%E4%B8%AD%E7%9A%84%E5%AF%86%E7%A0%81%E8%A1%A8"><span class="nav-number">4.</span> <span class="nav-text">实际使用中的密码表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E8%AF%84%E5%88%86%E7%AE%97%E6%B3%95"><span class="nav-number">5.1.</span> <span class="nav-text">密码评分算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E7%BB%84%EF%BC%88%E6%9D%A1%E4%BB%B6%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">分组（条件）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">6.</span> <span class="nav-text">结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E7%89%B9%E5%BE%81"><span class="nav-number">6.1.</span> <span class="nav-text">密码特征</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%8F%AF%E7%8C%9C%E6%B5%8B%E6%80%A7"><span class="nav-number">6.2.</span> <span class="nav-text">密码可猜测性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%8F%AF%E8%AE%B0%E5%BF%86%E6%80%A7"><span class="nav-number">6.3.</span> <span class="nav-text">密码可记忆性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B"><span class="nav-number">6.4.</span> <span class="nav-text">密码创建过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">讨论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E8%A1%A8%E7%9A%84%E6%9C%89%E6%95%88%E6%80%A7"><span class="nav-number">7.1.</span> <span class="nav-text">密码表的有效性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%86%E6%9D%A5%E7%9A%84%E5%B7%A5%E4%BD%9C"><span class="nav-number">7.2.</span> <span class="nav-text">将来的工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">7.3.</span> <span class="nav-text">局限性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">8.</span> <span class="nav-text">结论</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

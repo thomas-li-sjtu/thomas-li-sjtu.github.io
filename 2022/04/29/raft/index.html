@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《In Search of an Understandable Consensus Algorithm》(raft，2014)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Raft一致性算法">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《In Search of an Understandable Consensus Algorithm》(raft，2014)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/image-20220429213355995.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/image-20220430173931733.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/image-20220430174206219.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/image-20220430190617596.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/image-20220430192348368.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/image-20220501114331245.png">
+<meta property="article:published_time" content="2022-04-29T11:36:14.000Z">
+<meta property="article:modified_time" content="2022-12-09T06:22:23.974Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/04/29/raft/image-20220429213355995.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/04/29/raft/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Raft一致性算法 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/04/29/raft/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Raft一致性算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-29 19:36:14" itemprop="dateCreated datePublished" datetime="2022-04-29T19:36:14+08:00">2022-04-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《In Search of an Understandable Consensus Algorithm》(raft，2014)</p>
+ <a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>Raft是一个管理replicated log的一致性算法</li>
+<li>和Paxos算法的运行结果相同，但更加可理解</li>
+<li>Raft分离了共识的关键元素，如领导者选举、日志复制</li>
+<li>包括一个改变集群成员的新机制，使用overlapping majority来保证安全</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>共识算法使得一组机器能以一个连贯的集体工作，大多数共识的实现都基于Paxos</li>
+<li>Raft分离了领导者选举、日志复制和安全模块，缩减了状态空间——减少不确定的程度，以及服务器之间发生不一致问题的情况</li>
+<li>Raft的特征<ul>
+<li>Stronger leader：日志条目只能从领导者流向其他服务器，简化了复制日志管理</li>
+<li>Leader election：使用随机计时器选举leader</li>
+<li>Membership changes：改变集群中服务器集合的时候，大多数两种不同的配置会在过渡期间重合，使得集群在配置更改期间继续运行 &gt; the majorities of two different configurations overlap during transitions</li>
+</ul>
+</li>
+</ul>
+<h2 id="复制状态机"><a href="#复制状态机" class="headerlink" title="复制状态机"></a>复制状态机</h2><ul>
+<li>共识算法通常出现在复制状态机的环境中</li>
+<li>复制状态机用于解决分布式系统中各种容错问题，使用独立的复制状态机来管理leader election，并存储能够在领导者挂掉后恢复的配置信息</li>
+<li>通常使用复制日志实现复制状态机：服务器存储包含系列命令的日志，状态机按顺序执行相同的命令——由于状态机是确定性的，给定相同的状态和输入，最终一定会得到一致的状态和输出</li>
+<li>一致性算法需要保证复制日志的一致性，其特点为：<ul>
+<li>确保安全性（不返回错误结果），即使网络延迟、分区、数据包丢失、数据包重复或数据包乱序</li>
+<li>只要大多数服务器运行并可以相互通信，则一定可用——例如，五个服务器的集群能够在两个服务器故障下仍然提供服务</li>
+<li>不依赖时间来保证日志的一致</li>
+<li>只要集群里大多服务器响应了一轮RPC，就可以完成一个命令</li>
+</ul>
+</li>
+</ul>
+<h2 id="Paxos的问题"><a href="#Paxos的问题" class="headerlink" title="Paxos的问题"></a>Paxos的问题</h2><ul>
+<li>Paxos首先定义一个能在单个决策上达成共识的协议，然后组合该协议的多个实例以促进一些系列的决策</li>
+<li>Paxos的问题：<ul>
+<li>Paxos解释性不好——Paxos的不透明性来自其选择一个子集作为基础，没有直观的解释</li>
+<li>实际实现存在困难——没有广泛认可的multi-Paxos算法</li>
+<li>实际系统和Paxos几乎没有相似之处</li>
+</ul>
+</li>
+<li>本文将问题分解：只要有可能，就将问题分成可以相对独立解决、解释的的部分</li>
+<li>本文通过减少要考虑的状态数来简化状态空间，例如限制日志变得不一样的方式，消除了一定不确定性；引入随机化的方法，通过相似的方式来处理所有可能的选择，从而减少了状态空间——use randomization to simplify the Raft leader election algorithm</li>
+</ul>
+<h2 id="Raft一致性算法"><a href="#Raft一致性算法" class="headerlink" title="Raft一致性算法"></a>Raft一致性算法</h2><p><img src="/2022/04/29/raft/image-20220429213355995.png" alt="image-20220429213355995"></p>
+<ul>
+<li>raft选举一个领导者，让领导者完全负责复制日志的管理：接受客户机的日志条目，并复制到其他服务器，告诉服务器何时应用日志条目</li>
+<li>基于领导者，Raft将共识问题分解为三个子问题<ul>
+<li>领导者选举（当领导者挂掉，需要选择新的领导者）</li>
+<li>日志复制</li>
+<li>安全：如果任何一个服务器将一个特定的日志条目应用到它的状态，则其他服务器不能对同一个日志条目，应用不同的命令</li>
+</ul>
+</li>
+</ul>
+<h3 id="Raft基础"><a href="#Raft基础" class="headerlink" title="Raft基础"></a>Raft基础</h3><ul>
+<li><p>Raft集群包含多个服务器，服务器将充当leader、follower、candidate</p>
+<ul>
+<li><p>一般的，只有一个leader，其他均为follower</p>
+</li>
+<li><p>follower不主动发出请求，只回应leader和candidate</p>
+</li>
+<li><p>leader处理所有客户端请求（若客户端联系follower，follower将重定向到leader）</p>
+</li>
+<li><p>candidate用于选举新的leader</p>
+<img src="/2022/04/29/raft/image-20220430173931733.png" alt="image-20220430173931733" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>Raft将时间分为任意长度的项（term），用连续的整数编号，每个term都以选举leader开始（在多个candidate中），如果发生分裂投票（split vote），则term会结束，新的term将马上开始</p>
+<img src="/2022/04/29/raft/image-20220430174206219.png" alt="image-20220430174206219" style="zoom:67%;">
+</li>
+<li><p>term使得服务器检测到过时的信号——服务器都会存储term编号，并且在通信时先交换、更新各自的term为最大值</p>
+<ul>
+<li>如果candidate或leader发现自己的term较小，则回到follower状态</li>
+<li>服务器会忽略带有过期term的请求</li>
+</ul>
+</li>
+<li><p>Raft使用RPC进行通信，基本的一致性算法只需要两种RPC：RequectVote RPC和AppendEntries RPC</p>
+<ul>
+<li>RequectVote RPC由candidate在选举期间发起</li>
+<li>AppendEntries RPC由领导者发起，以复制日志和检查其他服务器存活状态（心跳检测）</li>
+<li>可能会有第三个RPC，用于服务器间传递快照</li>
+<li>若没有及时收到响应，则会重试RPC</li>
+</ul>
+</li>
+</ul>
+<h3 id="Leader选举"><a href="#Leader选举" class="headerlink" title="Leader选举"></a>Leader选举</h3><ul>
+<li>Raft使用心跳机制触发leader选举——leader定期向followers发送心跳（无日志条目的AppendEntries RPC），若follower在一个选举超时的时间内没有收到信息，则开始选举新的leader</li>
+<li>发起选举的follower的操作：<ul>
+<li>增加当前term，过渡为candidate状态</li>
+<li>为自己投票，并行地向集群中其他服务器发出RequestVote RPC</li>
+<li>candidate持续此状态，直到：<ul>
+<li>成为leader<ul>
+<li>要求该candidate从大多数服务器获得选票</li>
+<li>给定期限里，服务器按先到先得原则为至多一个candidate投票</li>
+<li>向其他服务器发送心跳</li>
+</ul>
+</li>
+<li>另一个服务器成为leader<ul>
+<li>要求新leader的term至少等于candidate的term，candidate转为follower</li>
+<li>否则拒绝该RPC，仍未candidate</li>
+</ul>
+</li>
+<li>没有人成为leader<ul>
+<li>选票可能被分割，没有人获得大多数选票</li>
+<li>每个candidate都会超时，各自的term增加，开启新一轮的RequestVote RPC</li>
+<li>如果没有额外措施，分裂投票可能会一直重复</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Raft使用随机选举暂停（randomized election timeouts）确保分裂投票很少发生——选举超时的时间，从固定的时间间隔里随机选择</li>
+</ul>
+<h3 id="Log复制"><a href="#Log复制" class="headerlink" title="Log复制"></a>Log复制</h3><ul>
+<li><p>每个客户端请求都包含一个复制状态机要执行的命令，leader将该命令作为新条目添加到日志，并行地向follower发送AppendEntries RPC以复制该条目</p>
+</li>
+<li><p>条目复制后，leader将条目应用到状态机并把结果发回给客户机，若follower崩溃或网络数据丢失，则leader无限期充实AppendEntries，即使已经响应客户端，直到所有follower存储所有日志条目</p>
+</li>
+<li><p>日志格式如图：</p>
+<ul>
+<li><p>条目存储一个状态机命令以及条目被leader收到时的term号</p>
+</li>
+<li><p>term用于检测日志的不一致</p>
+</li>
+<li><p>每个日志条目都有一个整数索引，以便于在所有日志中检索它</p>
+<img src="/2022/04/29/raft/image-20220430190617596.png" alt="image-20220430190617596" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>leader决定日志条目应用到状态机的时间，以保证安全——此时该条目称为committed，Raft保证committed的条目会被所有可用的状态机执行</p>
+<ul>
+<li>一个log会被commit，如果该log在大多数服务器上被复制</li>
+<li>一旦follower得知日志条目被commit，follower就将该条目应用到其本地状态机（按日志顺序）</li>
+</ul>
+</li>
+<li><p>Raft维护日志匹配属性：</p>
+<ul>
+<li>如果不同日志中的两个条目有相同的索引和term，则存储相同的命令</li>
+<li>如果不同日志中的两个条目具有相同的索引和term，则其前面的条目都相同</li>
+</ul>
+</li>
+<li><p>每当日志被扩展时，都会检查日志匹配属性</p>
+</li>
+<li><p>leader挂掉可能会导致旧的leader没能完全复制它的所有条目，此时发生不一致问题，例如：</p>
+<img src="/2022/04/29/raft/image-20220430192348368.png" alt="image-20220430192348368" style="zoom:67%;">
+* leader强迫follower复制自己的日志，以处理日志的不一致——即，冲突的条目会被leader的条目覆盖，leader要找到最新的一致条目，然后删除follower之后的条目，并把leader在该点之后的条目发过去
+* 此过程在响应AppendEntries RPC执行的一致性检查中进行
+* leader为每个follower维护next index，即下一个日志条目的索引
+* When a leader first comes to power, it initializes all nextIndexvalues to the index just after the last one in its log.
+</li>
+<li><p>leader从不覆盖或删除自己日志中的条目</p>
+</li>
+</ul>
+<h3 id="Safety"><a href="#Safety" class="headerlink" title="Safety"></a>Safety</h3><ul>
+<li>添加对哪些服务器可以被选为领导者的限制，完善Raft算法</li>
+</ul>
+<h4 id="选举限制"><a href="#选举限制" class="headerlink" title="选举限制"></a>选举限制</h4><ul>
+<li><p>leader必须最终存储所有commit的日志条目</p>
+</li>
+<li><p>Raft保证从每个新leader当选的时刻起，过去的term中commit的条目就存在于其身上——日志条目只从leader流动到follower</p>
+</li>
+<li><p>Raft使用voting来防止不包含所有commit条目的candidate赢得选举，candidate必须获得集群中的大多数投票才能称为leader</p>
+</li>
+<li><p>RequestVote  RPC包含有关candidate日志的信息，如果投票人的日志比candidate的日志更fresh，投票人将拒绝给他投票——通过比较日志中最后条目的索引和term来确定新鲜程度（先看term，再看索引）</p>
+</li>
+</ul>
+<h4 id="从过去的term来commit条目"><a href="#从过去的term来commit条目" class="headerlink" title="从过去的term来commit条目"></a>从过去的term来commit条目</h4><ul>
+<li>不通过计算副本从过去的term来commit 条目，而是对副本计数，仅仅commit leader当前term的日志条目</li>
+<li>当leader从以前的term中复制条目时，日志条目会保留它们的原始term编号</li>
+</ul>
+<h4 id="Safety-argument"><a href="#Safety-argument" class="headerlink" title="Safety argument"></a>Safety argument</h4><p>论证leader完整性性质成立——基于安全性证明（略）</p>
+<h4 id="Follower和candidate挂掉"><a href="#Follower和candidate挂掉" class="headerlink" title="Follower和candidate挂掉"></a>Follower和candidate挂掉</h4><ul>
+<li>Raft无限重试来处理follower和candidate挂掉的问题</li>
+<li>如果崩溃的服务器重新启动，RPC将成功完成</li>
+<li>如果服务器完成RPC，但在响应前崩溃，它在重新启动会再次收到相同的RPC</li>
+<li>如果follower收到的AppendEntries RPC包含其日志中已经存在的条目，则会忽略</li>
+</ul>
+<h4 id="时间和可用性"><a href="#时间和可用性" class="headerlink" title="时间和可用性"></a>时间和可用性</h4><ul>
+<li>安全性不能依赖于时间：系统不能因为某个事件的发生得比预期快/慢产生错误的结果</li>
+<li>要求：<code>broadcastTime &lt;&lt; electionTimeout &lt;&lt; MTBF</code> 以保证选出leader<ul>
+<li>broadcastTime为服务器向集群中其他服务器并行发送RPC，并收到响应的平均时间</li>
+<li>electionTimeout为选举超时时间</li>
+<li>MTBF为单台服务器的平均故障间隔时间</li>
+</ul>
+</li>
+<li>第一个和第三个时间为底层系统的属性，选举超时一般在10ms到500ms</li>
+</ul>
+<h2 id="集群成员变更"><a href="#集群成员变更" class="headerlink" title="集群成员变更"></a>集群成员变更</h2><ul>
+<li>以上都在假设集群中服务器固定</li>
+<li>自动化配置更改，并合并到Raft共识算法，保证过渡期间不会有两个leader在同一个term当选</li>
+<li>配置更改使用两个阶段：<ul>
+<li>首先集群切换到一个过渡配置（称为joint consensus）</li>
+<li>一旦提交了联合共识，则系统转换到新的配置</li>
+</ul>
+</li>
+<li>联合共识结合了新的和旧的配置</li>
+</ul>
+<img src="/2022/04/29/raft/image-20220501114331245.png" alt="image-20220501114331245" style="zoom:67%;">
+
+<ul>
+<li>使用复制日志中的特殊条目来存储和传递集群配置</li>
+<li>上图显示了配置更改过程<ul>
+<li>图中$C_{old}$为旧的配置，$C_{new}$为新的配置</li>
+<li>$C_{old,new}$为联合共识的配置</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/04/29/raft/" title="Raft一致性算法">https://thomas-li-sjtu.github.io/2022/04/29/raft/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/27/MIT6.824-2/" rel="prev" title="MIT-6.824 (2)">
+      <i class="fa fa-chevron-left"></i> MIT-6.824 (2)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/03/How-to-Attack-and-Generate-Honeywords/" rel="next" title="How to Attack and Generate Honeywords">
+      How to Attack and Generate Honeywords <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="nav-number">3.</span> <span class="nav-text">复制状态机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Paxos%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">Paxos的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Raft%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">Raft一致性算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Raft%E5%9F%BA%E7%A1%80"><span class="nav-number">5.1.</span> <span class="nav-text">Raft基础</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader%E9%80%89%E4%B8%BE"><span class="nav-number">5.2.</span> <span class="nav-text">Leader选举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Log%E5%A4%8D%E5%88%B6"><span class="nav-number">5.3.</span> <span class="nav-text">Log复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Safety"><span class="nav-number">5.4.</span> <span class="nav-text">Safety</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E9%99%90%E5%88%B6"><span class="nav-number">5.4.1.</span> <span class="nav-text">选举限制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E8%BF%87%E5%8E%BB%E7%9A%84term%E6%9D%A5commit%E6%9D%A1%E7%9B%AE"><span class="nav-number">5.4.2.</span> <span class="nav-text">从过去的term来commit条目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Safety-argument"><span class="nav-number">5.4.3.</span> <span class="nav-text">Safety argument</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Follower%E5%92%8Ccandidate%E6%8C%82%E6%8E%89"><span class="nav-number">5.4.4.</span> <span class="nav-text">Follower和candidate挂掉</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E5%92%8C%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="nav-number">5.4.5.</span> <span class="nav-text">时间和可用性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E6%88%90%E5%91%98%E5%8F%98%E6%9B%B4"><span class="nav-number">6.</span> <span class="nav-text">集群成员变更</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

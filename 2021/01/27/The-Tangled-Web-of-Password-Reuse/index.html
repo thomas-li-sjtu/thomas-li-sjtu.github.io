@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《The Tangled Web of Password Reuse》论文阅读记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Tangled Web of Password Reuse">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《The Tangled Web of Password Reuse》论文阅读记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/1.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/2.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/image-20210127165113824.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/image-20210127165533635.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/8.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/3.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/4.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/5.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/6.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/7.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/10.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/11.PNG">
+<meta property="article:published_time" content="2021-01-27T09:17:16.000Z">
+<meta property="article:modified_time" content="2021-01-27T09:26:27.517Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码重用">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/1.PNG">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>The Tangled Web of Password Reuse | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          The Tangled Web of Password Reuse
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-27 17:17:16" itemprop="dateCreated datePublished" datetime="2021-01-27T17:17:16+08:00">2021-01-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《The Tangled Web of Password Reuse》论文阅读记录</p>
+<a id="more"></a>
+
+<font face="宋体">
+
+<font size="3">
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>首次研究了攻击者如何利用来自一个站点的已知密码，来更好的猜测该用户在其他站点的密码</li>
+<li>数据集为来自11个网站的几十万个泄露的密码。对密码重用进行了用户调查</li>
+<li>确定了一些用户通常用来在站点之间转换基本密码的简单技巧，攻击者可以使用这些技巧来大大简化密码猜测</li>
+<li>开发了第一个跨站点密码猜测算法，该算法能够在100次尝试内猜出30%的转换密码，而标准密码猜测算法（JTR）在没有跨站点密码知识的情况下只能猜出14%</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>用户倾向于选择容易记忆的简单密码【20、33】</li>
+<li>在线服务经常使用密码组合策略或密码表来帮助用户了解密码的强度</li>
+<li>典型的互联网用户估计有25个不同的在线帐户【10、11、32】，传统的组合策略或密码表无法防止密码重用，因为这些工具只能看到单个站点的密码</li>
+<li>用户通常使用简单的技巧来处理不同网站上的密码策略，例如对常用密码短语进行调整，这大大提高攻击者在其他站点猜测密码的能力</li>
+<li>贡献：<ul>
+<li>基于迄今为止，为此目的收集的最大数据集，对同一用户在不同网站帐户的直接密码重用率进行了经验估计（43%）</li>
+<li>广泛分析同一用户在不同在线账户中密码不同的相似性，揭示了用户如何修改密码以便跨不同站点重用</li>
+<li>进行了一项调查，以了解用户在不同在线账户上构建密码的行为</li>
+<li>提出跨站点猜测算法，并评估了算法在离线和在线攻击场景下的可行性</li>
+</ul>
+</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h3 id="密码组合策略"><a href="#密码组合策略" class="headerlink" title="密码组合策略"></a>密码组合策略</h3><ul>
+<li>最难破解的密码是随机字符串</li>
+<li>用户通常会产生高度倾斜的密码选择分布，反映便于回忆的常见语义</li>
+<li>密码身份验证机制通常强制实施密码组合策略，即一组限制密码长度和格式的规则</li>
+<li>复杂的策略会使服务的可用性复杂化，会让用户写下/电子存储密码列表，降低安全性</li>
+<li>【46、21】证明，使用密码表能够帮助用户理解密码的安全性</li>
+</ul>
+<h3 id="相关工作-1"><a href="#相关工作-1" class="headerlink" title="相关工作"></a>相关工作</h3><ul>
+<li>替代密码的方法：【22】<ul>
+<li>生物测定、公钥证书和硬件令牌</li>
+<li>但需要定制硬件，不易部署，不易与现有服务合并等</li>
+</ul>
+</li>
+<li>密码组合策略和密码计的存在下，用户确实倾向于创建更强大的密码<ul>
+<li>【46】探讨了用户对密码计提供的基于视觉和文本反馈的反应</li>
+<li>【21、35、41、44】研究了不同密码组合策略的优势</li>
+</ul>
+</li>
+<li>基于马尔可夫模型和概率上下文无关文法的密码猜测算法——使用训练集来得到生成具有一定长度的候选子串的概率</li>
+<li>所有这些工作都侧重于在离线场景中破解密码——本文设置攻击者的猜测次数有限，但利用了泄露的密码信息和用户如何跨站点修改密码的知识</li>
+<li>【32】在三个月的时间里监控了50万用户的密码习惯，然而，他们的研究只考虑了站点之间相同的密码，而没有考虑相关的密码，没有研究不同站点之间的转换规则或密码相似性</li>
+<li>【49】研究了当用户因密码过期政策而被迫更改密码时，他们是如何修改密码的。他们创建了一个通用算法，可以根据用户以前的密码猜测未来的密码——分析是基于单一来源的密码，因此所有密码都符合相同的密码组合策略。本文模拟了一个更普通的攻击者，不仅每个用户的训练数据更少，还必须为不同的网站处理不同的组合策略</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="测量研究"><a href="#测量研究" class="headerlink" title="测量研究"></a>测量研究</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li><p>数据集的来源各不相同，但大多数是 SQL 注入攻击或网络钓鱼活动的结果</p>
+</li>
+<li><p>只使用同时带有邮件地址和密码的泄漏数据集，得到6077个用户，每个用户至少有两个从不同网站泄露的密码</p>
+</li>
+<li><p>使用 John the Ripper 工具包反转了尽可能多的散列，以更好地比较密码字符串</p>
+</li>
+<li><p>剩余的散列，通过搜索一个最大的在线数据库——有87亿个 MD5 散列预映像【7】——破解，最终只有12个散列不能破解</p>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/1.PNG"></p>
+</li>
+</ul>
+<h3 id="不同站点的密码组合策略"><a href="#不同站点的密码组合策略" class="headerlink" title="不同站点的密码组合策略"></a>不同站点的密码组合策略</h3><ul>
+<li>手动调查所有泄露密码网站的密码组成策略</li>
+<li>下面描述了来自【3】的更广泛的网站密码组合策略，并从各个类别前25个站点随机选择一组受欢迎的网站，手动确定密码组成策略<ul>
+<li>Char5：至少5个字符</li>
+<li>Char6：至少6个字符</li>
+<li>Char8：至少8个字符</li>
+<li>Char6LU：至少6个字符，包括一个小写字母和一个大写字母</li>
+<li>Char8DSU：至少8个字符，包括一个数字或一个符号或一个大写字母</li>
+<li>Char8LDS：至少8个字符，包含至少一个字母和至少一个数字或符号</li>
+<li>Char6D：至少6个字符，包括至少一个字母和数字</li>
+<li>Char6-12：6-12个字符</li>
+<li>Strong1：<ul>
+<li>7-32个字符，包含至少一个字母和数字</li>
+<li>无特殊字符</li>
+<li>和用户ID不同</li>
+<li>不能和使用过的最后五个密码中的任何一个相同</li>
+</ul>
+</li>
+<li>Strong2：<ul>
+<li>8-20个字符，包含至少一个字母和数字</li>
+<li>无空格，区分大小写</li>
+<li>和用户ID不同</li>
+<li>无指定的特殊符号</li>
+</ul>
+</li>
+<li>Strong3：<ul>
+<li>8-20个字符，包含至少一个字母和数字</li>
+<li>可有指定的特殊符号</li>
+<li>和用户ID不同</li>
+<li>无空格，不区分大小写<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/2.PNG"></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="密码相似性"><a href="#密码相似性" class="headerlink" title="密码相似性"></a>密码相似性</h3><ul>
+<li>分析密码数据集，测量不同密码之间的相似性</li>
+<li>9个字符串的相似性度量：<ul>
+<li>Distance-like functions：基于距离<ul>
+<li>Manhattan【36】, Cosine【27】</li>
+<li>每个字符视作是一个维度，其频率是维度值</li>
+<li>每个字符串映射到多维空间中的一个点</li>
+<li>计算点之间的距离</li>
+</ul>
+</li>
+<li>Edit-distance like functions：基于编辑距离<ul>
+<li>Levenshtein【38】，Damerau Levenshtein【28】</li>
+<li>确定将一个字符串转换为另一个字符串所需的编辑操作（如插入、删除、替换、换位）的数量</li>
+</ul>
+</li>
+<li>Token-based distance functions：基于标记<ul>
+<li>Dice【30】, Overlap【37】</li>
+<li>将字符串分割成更小的标记，之后计算相似性</li>
+</ul>
+</li>
+<li>Alignment-like functions：基于对齐<ul>
+<li>Smith Waterman【45】，Neddleman Wunsch【40】，最大公共子序列（LCS）</li>
+<li>反映一对字符串之间最大对齐或子序列之间相似性分数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>调查同一个网站不同用户密码的相似度：<ul>
+<li>随机抽取1000个密码对（下图 a），计算相似性得分 CDF——同一网站内的用户使用几乎明显不同的密码</li>
+<li>从随机选择的用户中随机抽取了1000对密码（下图 b）——不同的人选择的密码有很大的不同</li>
+</ul>
+</li>
+</ul>
+<img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/image-20210127165113824.png" alt="image-20210127165113824" style="zoom:67%;">
+
+<ul>
+<li><p>调查给定用户在不同网站上选择密码的相似度</p>
+<ul>
+<li>（下图 a）几乎40%的密码具有在[0.9，1.0]范围内的相似性分数</li>
+<li>（下图 b）密码不相同的相似性分数，几乎30%的非相同密码具有在[0.8，1.0]范围内的相似性分数——用户在不同网站上使用的密码之间存在不小的相似性</li>
+</ul>
+<img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/image-20210127165533635.png" alt="image-20210127165533635" style="zoom: 80%;">
+</li>
+<li><p>密码分作三组</p>
+<ul>
+<li><p>相同：在不同的web帐户上使用相同的密码</p>
+</li>
+<li><p>子字符串：来自不同web帐户的密码是彼此的子字符串</p>
+</li>
+<li><p>其他：密码要么完全不同，要么遵循更复杂的转换规则</p>
+</li>
+</ul>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/8.PNG"></p>
+<ul>
+<li><p>最频繁的插入/删除操作发生在字符串的末尾</p>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/3.PNG"></p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="调查"><a href="#调查" class="headerlink" title="调查"></a>调查</h2><ul>
+<li>对不同大学的用户进行匿名调查，收到224份答复，结果如下图：<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/4.PNG"></li>
+<li>77%的参与者会修改或重用现有的密码</li>
+<li>某些转换规则更为普遍。最常见的选择是在结尾或开头添加数字、字母大写和在结尾或开头添加符号</li>
+<li>用户修改他们的密码，以满足不同网站实施的密码限制；倾向于对现有密码进行小的修改来满足这些限制</li>
+<li>大多数参与者在密码字符串的末尾插入数字，在开头插入大写字母</li>
+<li>65%的参与者维护的密码类型不超过四种。大多数参与者（61%）记住了他们的密码</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="猜测算法"><a href="#猜测算法" class="headerlink" title="猜测算法"></a>猜测算法</h2><ul>
+<li>背景：给定一个泄露的密码，攻击者试图猜测同一用户其他在线帐户的密码</li>
+</ul>
+<h3 id="主要的转换规则"><a href="#主要的转换规则" class="headerlink" title="主要的转换规则"></a>主要的转换规则</h3><ul>
+<li>在40%的泄漏密码中得到转换规则，并在剩余60%的数据上测试了猜测算法</li>
+<li>不考虑额外的转换——添加一些随机的额外字符或在结尾添加表情符号</li>
+<li>表中转换规则按概率递减的顺序排列<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/5.PNG"></li>
+</ul>
+<h3 id="猜测算法设计"><a href="#猜测算法设计" class="headerlink" title="猜测算法设计"></a>猜测算法设计</h3><ul>
+<li><p>算法生成一组有序的候选密码</p>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/6.PNG"></p>
+</li>
+<li><p>操作由几个阶段组成，每个阶段之后，检查是否已经猜到了所需的目标密码。在每一步之后，都会返回原始密码</p>
+<ul>
+<li>字符序列特征分析：<ul>
+<li>在输入密码中查找已知的模式序列，如键盘上的相邻键、字母顺序模式和顺序交替键（如输入密码时按住shift或control）——使用这种顺序模式的用户很可能在其他站点的密码中使用类似的模式</li>
+<li>将密码拆分为令牌，其中每个令牌表示属于某种模式的一系列字符，如“qwerasdf”将拆分为两个部分“qwer”和“asdf”</li>
+<li>尝试不同的令牌排列作为候选密码</li>
+<li>若不成功：<ul>
+<li>扩展令牌以包含序列中的下一个字符（qwert）</li>
+<li>用属于同一类别的类似大小的令牌替换令牌（1234）</li>
+<li>分析RockYou密码列表，以提高正确替换的可能性。文章末尾附上了常见的替换</li>
+<li>考虑反向顺序</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>删除：姐妹密码长度大于6，因为大多数网站要求密码长度大于6<ul>
+<li>尝试迭代删除属于以下集合{Digit，Symbol，Uppercase letter，Lowercase letter}的字符——人们通常会添加属于这些不同类别的字符，以实现不同的密码组合策略</li>
+<li>若不成功：尝试依次从字符串前面、后面、然后两者的组合中删除字符</li>
+</ul>
+</li>
+<li>插入：姐妹密码长度小于10，因为RockYou数据集中90％的密码长度小于或等于10<ul>
+<li>前面或结尾插入数字或符号是最常见的选择</li>
+<li>尝试在前端插入数字和符号</li>
+<li>首先判断姐妹密码中字符类型，之后插入除这些类型之外的单个字符——从RockYou密码列表中计算出各个字符的插入概率</li>
+<li>从RockYou列表中计算前20个可能的二元插入和三元插入</li>
+</ul>
+</li>
+<li>大写：<ul>
+<li>首先尝试将密码中的所有字母大写</li>
+<li>若失败<ul>
+<li>尝试将字符串前面的字母大写</li>
+<li>尝试将字符串后面的字母大写</li>
+<li>两者组合</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Leet：<ul>
+<li>尝试流行的Leet转换（o-&gt;0、a-&gt;@、s-&gt;$、i-&gt;1、e-&gt;3、t-&gt;7）</li>
+<li>尝试所有可能的Leet转换</li>
+</ul>
+</li>
+<li>子字符串移动：<ul>
+<li>将输入密码拆分为子字符串，其中定界字符属于集合{Digit，Symbol，Uppercase letter}</li>
+<li>如“xyz@123”拆作xyz @  123，则@为定界符，依次尝试子串的所有可能置换，则123@xyz作为结果</li>
+</ul>
+</li>
+<li>子词修改：<ul>
+<li>根据常用英文单词拆分输入密码，然后将每个单词的第一个字母大写</li>
+<li>尝试按不同的顺序重新排列单词</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>对1000个随机非相同密码对进行采样，决定规则的排序</p>
+</li>
+<li><p>猜测算法本质上对输入密码应用固定顺序的转换，而不是尝试所有可能的转换 </p>
+</li>
+</ul>
+<h3 id="算法评估"><a href="#算法评估" class="headerlink" title="算法评估"></a>算法评估</h3><p>根据破解目标密码所需的猜测次数来评估猜测算法的性能</p>
+<ul>
+<li><p>对比算法</p>
+<ul>
+<li>RockYou guesser：<ul>
+<li>先建立一个单词列表以及可能的前缀后缀插入<ul>
+<li>对于给定的泄露密码，首先在词典【9】（Moby Words II）寻找这个单词，确定可能的前缀和后缀</li>
+<li>在其他密码中查看，是否给定密码为子串，确定前后缀</li>
+</ul>
+</li>
+<li>由此，得到一个可能的前缀后缀插入的映射</li>
+</ul>
+</li>
+<li>Edit Distance (ED) guesser：<ul>
+<li>使用【49】的基于 ED 的猜测器</li>
+<li>以从 RockYou 列表中计算出的概率递减顺序插入字符，在特定位置应用编辑转换</li>
+<li>编辑距离最大为 2，否则转换数目过大</li>
+</ul>
+</li>
+<li>JTR：<ul>
+<li>将数据集中每对密码中的一个附加到一个列表中</li>
+<li>生成剩余密码的 MD5 哈希，对它们运行 JTR</li>
+<li>使用默认的57个规则集，对密码列表进行转换，查看匹配率</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/7.PNG"></p>
+</li>
+<li><p>专注于评估不相同的密码对</p>
+<ul>
+<li>重试次数限制在10次，猜测算法可以破解几乎30%的互为子串的密码对</li>
+<li>猜测算法在100次尝试内破解80%的互为子串的密码对</li>
+<li>ED Guesser 需要数百万次尝试来破解最多65%的子串密码对</li>
+</ul>
+</li>
+<li><p>猜测算法更适合于在线攻击场景</p>
+</li>
+<li><p>研究无法破解的密码的相似性与破解了的密码的相似性：</p>
+<ul>
+<li>破解：<ul>
+<li>大多数密码对相似性得分都在[0.8，1]的范围内<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/10.PNG"></li>
+</ul>
+</li>
+<li>未破解：<ul>
+<li>大多数密码对的相似性得分在[0.1,0.5]范围内<br><img src="/2021/01/27/The-Tangled-Web-of-Password-Reuse/11.PNG"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>猜测算法能够成功地预测相似的密码，并且随后的回报率会迅速下降</p>
+</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><h3 id="有效性"><a href="#有效性" class="headerlink" title="有效性"></a>有效性</h3><ul>
+<li>大多数调查参与者比普通人群年轻一些，受教育程度更高</li>
+<li>所有的密码数据集都代表真实的密码数据</li>
+<li>调查结果与泄露的密码数据集进行了比较，发现了类似的观察结果</li>
+</ul>
+<h3 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h3><ul>
+<li>研究仅涉及基于文本的密码</li>
+<li>猜测算法相对简单，没有利用可能提高性能的更先进的模型——更复杂的方法高度依赖于培训数据</li>
+<li>主要目标是表明，即使使用一组相当简单的规则也能显著提高攻击性能</li>
+<li>没有足够的数据来分析相似的网站类别是否影响了密码重用的选择</li>
+</ul>
+<h3 id="对策"><a href="#对策" class="headerlink" title="对策"></a>对策</h3><ul>
+<li>单点登录技术</li>
+<li>双因素身份验证——密码与手机验证码</li>
+<li>此密码猜测算法可作为测试工具，用户可以在不同的站点输入密码，并在本地评估跨站点猜测的难度</li>
+<li>开发一个在线服务，以进行跨站点密码安全度量。密码构造页面可以将用户输入的密码与站点可合法获取的用户密码进行比较</li>
+</ul>
+<hr>
+</font>
+<font size="3">
+
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>43%的用户直接在站点之间重复使用密码</li>
+<li>许多用户跨站点对其密码进行小的修改，并且许多用户的修改过程相似</li>
+<li>猜测算法能够在不到10次尝试中破解大约10%的非同一密码对，并且在少于100次尝试中破解大约30%的非同一密码对</li>
+</ul>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] 55K Twitter Passwords Leaked. <a target="_blank" rel="noopener" href="http://www.newser.com/story/145750/55k-twitter-passwords-leaked.html">http://www.newser.com/story/145750/55k-twitter-passwords-leaked.html</a>.</p>
+<p>[2] 6.46 million LinkedIn passwords leaked online. <a target="_blank" rel="noopener" href="http://www.zdnet.com/blog/btl/6-46-million-linkedin-passwords-leaked-online/79290">http://www.zdnet.com/blog/btl/6-46-million-linkedin-passwords-leaked-online/79290</a>.</p>
+<p>[3] Alexa. <a target="_blank" rel="noopener" href="http://www.alexa.com/">http://www.alexa.com</a>.</p>
+<p>[4] John the ripper password cracking toolkit. <a target="_blank" rel="noopener" href="http://www.openwall.com/john/">http://www.openwall.com/john/</a>.</p>
+<p>[5] Leet Transformations. <a target="_blank" rel="noopener" href="http://qntm.org/l33t">http://qntm.org/l33t</a>.</p>
+<p>[6] LinkedIn confirms password leak, encourages users to update passwords. <a target="_blank" rel="noopener" href="http://www.cbsnews.com/8301-501465-162-57448443-501465/linkedin-confirms-password-leak-encourages-users-to-update-passwords/">http://www.cbsnews.com/8301-501465-162-57448443-501465/linkedin-confirms-password-leak-encourages-users-to-update-passwords/</a>.</p>
+<p>[7] MD5 Decryptor. <a target="_blank" rel="noopener" href="http://www.md5decrypter.co.uk/">http://www.md5decrypter.co.uk/</a>.</p>
+<p>[8] Millions  of  LinkedIn  passwords  reportedly  leaked  online. <a target="_blank" rel="noopener" href="http://news.cnet.com/8301-1009_3-57448079-83/millions-of-linkedin-passwords-reportedly-leaked-online/">http://news.cnet.com/8301-1009_3-57448079-83/millions-of-linkedin-passwords-reportedly-leaked-online/</a>.</p>
+<p>[9] Moby Words II. <a target="_blank" rel="noopener" href="http://icon.shef.ac.uk/Moby/">http://icon.shef.ac.uk/Moby/</a>.</p>
+<p>[10] No wonder hackers have it easy: Most of us now have 26  different  online  accounts  -  but  only  five passwords. <a target="_blank" rel="noopener" href="http://www.dailymail.co.uk/sciencetech/article-2174274/No-wonder-hackers-easy-Most-26-different-online-accounts--passwords.html">http://www.dailymail.co.uk/sciencetech/article-2174274/No-wonder-hackers-easy-Most-26-different-online-accounts--passwords.html</a>.</p>
+<p>[11] Online Passwords: Keep it Complicated. <a target="_blank" rel="noopener" href="http://www.guardian.co.uk/technology/2012/oct/05/online-security-passwords-tricks-hacking">http://www.guardian.co.uk/technology/2012/oct/05/online-security-passwords-tricks-hacking</a>.</p>
+<p>[12] Over  55,000  Twitter  passwords  exposed,  posted  online. <a target="_blank" rel="noopener" href="http://news.yahoo.com/blogs/technology-blog/over-55-000-twitter-passwords-exposed-posted-online-165625320.html">http://news.yahoo.com/blogs/technology-blog/over-55-000-twitter-passwords-exposed-posted-online-165625320.html</a>.</p>
+<p>[13] RockYou  leak. <a target="_blank" rel="noopener" href="http://techcrunch.com/2009/12/14/rockyou-hack-security-myspace-facebook-passwords/">http://techcrunch.com/2009/12/14/rockyou-hack-security-myspace-facebook-passwords/</a>.</p>
+<p>[14] RockYou Password Analysis. <a target="_blank" rel="noopener" href="http://thepasswordproject.com/rockyou_passpal_0.4_dump">http://thepasswordproject.com/rockyou_passpal_0.4_dump</a>.</p>
+<p>[15] Survey Questions. <a target="_blank" rel="noopener" href="http://web.engr.illinois.edu/%E2%88%BCdas17/passwordreuse.html">http://web.engr.illinois.edu/∼das17/passwordreuse.html</a>.</p>
+<p>[16] Thousands of Twitter passwords exposed. <a target="_blank" rel="noopener" href="http://news.cnet.com/8301-1009_3-57430475-83/thousands-of-twitter-passwords-exposed/">http://news.cnet.com/8301-1009_3-57430475-83/thousands-of-twitter-passwords-exposed/</a>.</p>
+<p>[17] Yahoo hacked, 450,000 passwords posted online. <a target="_blank" rel="noopener" href="http://www.cnn.com/2012/07/12/tech/web/yahoo-users-hacked">http://www.cnn.com/2012/07/12/tech/web/yahoo-users-hacked</a>.</p>
+<p>[18] Yahoo V oice hack leaks 450,000 passwords. <a target="_blank" rel="noopener" href="http://www.guardian.co.uk/technology/2012/jul/12/yahoo-voice-hack-attack-passwords-stolen">http://www.guardian.co.uk/technology/2012/jul/12/yahoo-voice-hack-attack-passwords-stolen</a>.</p>
+<p>[19] Yahoo’s password leak. <a target="_blank" rel="noopener" href="http://news.cnet.com/8301-1009_3-57471178-83/yahoos-password-leak-what-you-need-to-know-faq/">http://news.cnet.com/8301-1009_3-57471178-83/yahoos-password-leak-what-you-need-to-know-faq/</a>.</p>
+<p>[20] A. Adams and M. A. Sasse, “Users Are Not The Enemy,” Commun. ACM, vol. 42, no. 12, pp. 40–46, 1999.</p>
+<p>[21] J. Bonneau, “The science of guessing: analyzing an anonymized corpus of 70 million passwords,” in Proceedings of the 33rd IEEE Symposium on Security and Privacy, ser. SP ’12, May 2012.</p>
+<p>[22] J. Bonneau, C. Herley, P . C. v. Oorschot, and F. Stajano, “The Quest to Replace Passwords: A Framework for Comparative Evaluation of Web Authentication Schemes,” in Proceedings of the 2012 IEEE Symposium on Security and Privacy, ser. SP ’12, 2012, pp. 553–567.</p>
+<p>[23] J. Bonneau, M. Just, and G. Matthews, “What’s in a Name? Evaluating Statistical Attacks on Personal Knowledge Questions,” in Proceedings of the 14th International conference on Financial Cryptography and Data Security, ser. FC’10, 2010, pp. 98–113.</p>
+<p>[24] J. Bonneau and S. Preibusch, “The password thicket: technical and market failures in human authentication on the web,” in Proceedings of the 9th Workshop on the Economics of Information Security, June 2016 [Online]. Available: <a target="_blank" rel="noopener" href="http://www.jbonneau.com/doc/BP10-WEIS-password_thicket.pdf">http://www.jbonneau.com/doc/BP10-WEIS-password_thicket.pdf</a></p>
+<p>[25] W. E. Burr, D. F. Dodson, and W. T. Polk. (2006) Electronic Authentication Guideline. [Online]. Available: <a target="_blank" rel="noopener" href="http://csrc.nist.gov/publications/nistpubs/800-63/SP800-63V1_0_2.pdf">http://csrc.nist.gov/publications/nistpubs/800-63/SP800-63V1_0_2.pdf</a></p>
+<p>[26] S. Chiasson, P . C. van Oorschot, and R. Biddle, “A Usability Study and Critique of Two Password Managers,” in Proceedings of the 15th conference on USENIX Security Symposium, ser. USENIX-SS’06, 2006.</p>
+<p>[27] W. W. Cohen, P . Ravikumar, and S. E. Fienberg, “A Comparison of String Distance Metrics for Name-Matching Tasks,” in Proceedings of IJCAI-03 Workshop on Information Integration, 2003, pp. 73–78.</p>
+<p>[28] F. J. Damerau, “A Technique for Computer Detection and Correction of Spelling Errors,” Commun. ACM, vol. 7, no. 3, pp. 171–176, Mar. 1964.</p>
+<p>[29] M. Dell’Amico, P . Michiardi, and Y . Roudier, “Password Strength: An Empirical Analysis,” in Proceedings of the 29th conference onInformation Communications, ser. INFOCOM’10, 2010, pp. 983–991.</p>
+<p>[30] L. R. Dice, “Measures of the Amount of Ecologic Association Between Species,” Ecology, vol. 26, no. 3, pp. 297–302, Jul. 1945.</p>
+<p>[31] S. Egelman, J. Bonneau, S. Chiasson, D. Dittrich, and S. Schechter, “It’s Not Stealing If Y ou Need It: A Panel on the Ethics of Performing Research Using Public Data of Illicit origin,” in Proceedings of the 3rd Workshop on Ethics in Computer Security Research, ser. WECSR ’12, 2012, pp. 124–132.</p>
+<p>[32] D. Florˆ encio and C. Herley, “A Large-Scale Study of Web Password Habits,” in Proceedings of the 16th International Conference on the World Wide Web, ser. WWW ’07, 2007, pp. 657–666.</p>
+<p>[33] S. Gaw and E. W. Felten, “Password Management Strategies for Online Accounts,” in Proceedings of the 2nd Symposium on Usable Privacy and Security, ser. SOUPS ’06, 2006, pp. 44–55.</p>
+<p>[34] P . G. Kelley, S. Komanduri, M. L. Mazurek, R. Shay, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, and J. Lopez, “Guess Again (and Again and Again): Measuring Password Strength by Simulating Password-Cracking Algorithms,” in Proceedings of the 33rd IEEE Symposium on Security and Privacy, ser. SP ’12, 2012, pp. 523–537.</p>
+<p>[35] S. Komanduri, R. Shay, P . G. Kelley, M. L. Mazurek, L. Bauer, N. Christin, L. F. Cranor, and S. Egelman, “Of Passwords and People: Measuring the Effect of Password-Composition Policies,” in Proceedings of the International Conference on Human Factors in Computing Systems, ser. CHI ’11, 2011, pp. 2595–2604.</p>
+<p>[36] E. F. Krause, Taxicab Geometry: An Adventure in Non-Euclidean Geometry. Dover Publications, 1987.</p>
+<p>[37] M. Levandowsky and D. Winter, “Distance between Sets,” Nature, vol. 234, no. 5, pp. 34–34, 1971.</p>
+<p>[38] V . I. Levenshtein, “Binary codes capable of correcting deletions, insertions, and reversals,” Soviet Physics Doklady, vol. 10, no. 8, pp. 707–710, 1966.</p>
+<p>[39] A. Narayanan and V . Shmatikov, “Fast Dictionary Attacks on Passwords Using Time-Space Tradeoff,” in Proceedings of the 12th ACM conference on Computer and communications security, ser. CCS ’05, 2005, pp. 364–372.</p>
+<p>[40] S. B. Needleman and C. D. Wunsch, “A General Method Applicable to the Search for Similarities in the Amino Acid Sequence of Two Proteins,” Journal of Molecular Biology, vol. 48, no. 3, pp. 443–453, 1970.</p>
+<p>[41] D. Perito, C. Castelluccia, and M. Duermuth, “Adaptive Password-Strength Meters from Markov Models,” in Proceedings of the 19th Network and Distributed Systems Security Symposium, ser. NDSS ’12, 2012.</p>
+<p>[42] S. Rane and W. Sun, “Privacy Preserving String Comparisons Based on Levenshtein Distance,” in Proceedings of IEEE International Workshop on Information F orensics and Security, ser. WIFS ’10, 2010.</p>
+<p>[43] B. Ross, C. Jackson, N. Miyake, D. Boneh, and J. C. Mitchell, “Stronger Password Authentication Using Browser Extensions,” in Proceedings of the 14th conference on USENIX Security Symposium, ser. USENIX-SS ’05, 2005.</p>
+<p>[44] R. Shay, S. Komanduri, P . G. Kelley, P . G. Leon, M. L. Mazurek, L. Bauer, N. Christin, and L. F. Cranor, “Encountering Stronger Password Requirements: User Attitudes and Behaviors,” in Proceedings of the 6th Symposium on Usable Privacy and Security, ser. SOUPS ’10, 2010, pp. 1–20.</p>
+<p>[45] T. Smith and M. Waterman, “Identification of Common Molecular Subsequences,” Journal of Molecular Biology, vol. 147, no. 1, pp. 195–197, 1981.</p>
+<p>[46] B. Ur, P . G. Kelley, S. Komanduri, J. Lee, M. Maass, M. L. Mazurek, T. Passaro, R. Shay, T. Vidas, L. Bauer, N. Christin, and L. F. Cranor, “How does your password measure up? The effect of strength meters on password creation,” in Proceedings of the 21st USENIX conference on Security symposium, ser. USENIX-SS ’12. USENIX Association, 2012, pp. 65–80.</p>
+<p>[47] M. Weir, S. Aggarwal, M. Collins, and H. Stern, “Testing Metrics for Password Creation Policies by Attacking Large Sets of Revealed Passwords,” in Proceedings of the 17th ACM conference on Computer and Communications Security, ser. CCS ’10, 2010, pp. 162–175.</p>
+<p>[48] M. Weir, S. Aggarwal, B. de Medeiros, and B. Glodek, “Password Cracking Using Probabilistic Context-Free Grammars,” in Proceedings of the 30th IEEE Symposium on Security and Privacy, ser. SP ’09, 2009, pp. 391–405.</p>
+<p>[49] Y . Zhang, F. Monrose, and M. K. Reiter, “The Security of Modern Password Expiration: An Algorithmic Framework and Empirical Analysis,” in Proceedings of the 17th ACM conference on Computer and communications security, ser. CCS ’10, 2010, pp. 176–186. </p>
+</font>
+</font>
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\28\Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service\" rel="bookmark">Empirical Analysis of Password Reuse and Modification across Online Service</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Empirical Analysis of Password Reuse and Modification across Online Service》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/" title="The Tangled Web of Password Reuse">https://thomas-li-sjtu.github.io/2021/01/27/The-Tangled-Web-of-Password-Reuse/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E9%87%8D%E7%94%A8/" rel="tag"><i class="fa fa-tag"></i> 密码重用</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/25/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-1/" rel="prev" title="Java核心技术卷I （1）基本结构与类">
+      <i class="fa fa-chevron-left"></i> Java核心技术卷I （1）基本结构与类
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/28/Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service/" rel="next" title="Empirical Analysis of Password Reuse and Modification across Online Service">
+      Empirical Analysis of Password Reuse and Modification across Online Service <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E7%BB%84%E5%90%88%E7%AD%96%E7%95%A5"><span class="nav-number">3.1.</span> <span class="nav-text">密码组合策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C-1"><span class="nav-number">3.2.</span> <span class="nav-text">相关工作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E9%87%8F%E7%A0%94%E7%A9%B6"><span class="nav-number">4.</span> <span class="nav-text">测量研究</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">4.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E7%AB%99%E7%82%B9%E7%9A%84%E5%AF%86%E7%A0%81%E7%BB%84%E5%90%88%E7%AD%96%E7%95%A5"><span class="nav-number">4.2.</span> <span class="nav-text">不同站点的密码组合策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E7%9B%B8%E4%BC%BC%E6%80%A7"><span class="nav-number">4.3.</span> <span class="nav-text">密码相似性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%9F%A5"><span class="nav-number">5.</span> <span class="nav-text">调查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8C%9C%E6%B5%8B%E7%AE%97%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">猜测算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E7%9A%84%E8%BD%AC%E6%8D%A2%E8%A7%84%E5%88%99"><span class="nav-number">6.1.</span> <span class="nav-text">主要的转换规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8C%9C%E6%B5%8B%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1"><span class="nav-number">6.2.</span> <span class="nav-text">猜测算法设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E8%AF%84%E4%BC%B0"><span class="nav-number">6.3.</span> <span class="nav-text">算法评估</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">讨论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E6%95%88%E6%80%A7"><span class="nav-number">7.1.</span> <span class="nav-text">有效性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">7.2.</span> <span class="nav-text">局限性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%AD%96"><span class="nav-number">7.3.</span> <span class="nav-text">对策</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">8.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

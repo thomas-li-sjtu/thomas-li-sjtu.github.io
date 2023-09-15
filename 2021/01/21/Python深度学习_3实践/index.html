@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Python深度学习》笔记整理：第二部分 深度学习实践——函数API与生成网络 代码基于 Keras 框架">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python深度学习（3）实践——函数API与生成网络">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Python深度学习》笔记整理：第二部分 深度学习实践——函数API与生成网络 代码基于 Keras 框架">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/image-20210121183545463.png">
+<meta property="article:published_time" content="2021-01-21T10:27:00.000Z">
+<meta property="article:modified_time" content="2021-01-21T13:32:56.423Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="TensorFlow">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/image-20210121183545463.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Python深度学习（3）实践——函数API与生成网络 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python深度学习（3）实践——函数API与生成网络
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-21 18:27:00" itemprop="dateCreated datePublished" datetime="2021-01-21T18:27:00+08:00">2021-01-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>22k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>20 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Python深度学习》笔记整理：第二部分 深度学习实践——函数API与生成网络</p>
+<p>代码基于 Keras 框架</p>
+<a id="more"></a>
+
+<h2 id="函数API"><a href="#函数API" class="headerlink" title="函数API"></a>函数API</h2><h3 id="函数API-1"><a href="#函数API-1" class="headerlink" title="函数API"></a>函数API</h3><h4 id="函数API-2"><a href="#函数API-2" class="headerlink" title="函数API"></a>函数API</h4><ul>
+<li><p>Sequential 模型假设，网络只有一个输入和一个输出，而且网络是层的线性堆叠</p>
+</li>
+<li><p>网络结构为通常有向无环图</p>
+</li>
+<li><p>使用函数式 API 直接操作张量，或把层当作函数来使用，接收张量并返回张量</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Sequential模型</span></span><br><span class="line">seq_model = Sequential()   </span><br><span class="line">seq_model.add(layers.Dense(<span class="number">32</span>, activation=<span class="string">&#x27;relu&#x27;</span>, input_shape=(<span class="number">64</span>,))) </span><br><span class="line">seq_model.add(layers.Dense(<span class="number">32</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">seq_model.add(layers.Dense(<span class="number">10</span>, activation=<span class="string">&#x27;softmax&#x27;</span>))</span><br><span class="line"><span class="comment"># 函数API</span></span><br><span class="line">input_tensor = Input(shape=(<span class="number">64</span>,))   </span><br><span class="line">x = layers.Dense(<span class="number">32</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(input_tensor) </span><br><span class="line">x = layers.Dense(<span class="number">32</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">output_tensor = layers.Dense(<span class="number">10</span>, activation=<span class="string">&#x27;softmax&#x27;</span>)(x)</span><br><span class="line"></span><br><span class="line">model = Model(input_tensor, output_tensor)  <span class="comment"># 将输入张量和输出张量转换为一个模型</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果试图利用不相关的输入和输出来构建一个模型，会报错 RuntimeError</p>
+</li>
+<li><p>进行编译、训练或评估时，其 API 与 Sequential 模型相同</p>
+</li>
+</ul>
+<h4 id="多输入"><a href="#多输入" class="headerlink" title="多输入"></a>多输入</h4><ul>
+<li><p>在某一时刻用一个可以组合多个张量的层将不同的输入分支合并，如相加、连接</p>
+</li>
+<li><p>双输入的问答模型</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Model </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> Input </span><br><span class="line"> </span><br><span class="line">text_vocabulary_size = <span class="number">10000</span> </span><br><span class="line">question_vocabulary_size = <span class="number">10000</span> </span><br><span class="line">answer_vocabulary_size = <span class="number">500</span> </span><br><span class="line"></span><br><span class="line"><span class="comment"># 参考文本的输入</span></span><br><span class="line">text_input = Input(shape=(<span class="literal">None</span>,), dtype=<span class="string">&#x27;int32&#x27;</span>, name=<span class="string">&#x27;text&#x27;</span>)  <span class="comment"># 文本输入，可对输入命名 </span></span><br><span class="line">embedded_text = layers.Embedding( </span><br><span class="line">    text_vocabulary_size, <span class="number">64</span>)(text_input)   </span><br><span class="line">encoded_text = layers.LSTM(<span class="number">32</span>)(embedded_text)   </span><br><span class="line"><span class="comment"># 问题的输入</span></span><br><span class="line">question_input = Input(shape=(<span class="literal">None</span>,), </span><br><span class="line">                       dtype=<span class="string">&#x27;int32&#x27;</span>, </span><br><span class="line">                       name=<span class="string">&#x27;question&#x27;</span>)  <span class="comment"># 使用不同的层实例</span></span><br><span class="line">embedded_question = layers.Embedding(question_vocabulary_size, </span><br><span class="line">                                     <span class="number">32</span>)(question_input) </span><br><span class="line">encoded_question = layers.LSTM(<span class="number">16</span>)(embedded_question) </span><br><span class="line"><span class="comment"># 编码后的问题和文本连接起来</span></span><br><span class="line">concatenated = layers.concatenate([encoded_text, encoded_question], </span><br><span class="line">                                  axis=<span class="number">-1</span>)   </span><br><span class="line"> </span><br><span class="line">answer = layers.Dense(answer_vocabulary_size, </span><br><span class="line">                      activation=<span class="string">&#x27;softmax&#x27;</span>)(concatenated)</span><br><span class="line">model = Model([text_input, question_input], answer)  <span class="comment"># 指定两个输入和输出</span></span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>, </span><br><span class="line">              loss=<span class="string">&#x27;categorical_crossentropy&#x27;</span>, </span><br><span class="line">              metrics=[<span class="string">&#x27;acc&#x27;</span>])</span><br><span class="line">...</span><br><span class="line"><span class="comment"># 模型输入</span></span><br><span class="line">model.fit([text, question], answers, epochs=<span class="number">10</span>, batch_size=<span class="number">128</span>)  <span class="comment"># 输入组成的列表</span></span><br><span class="line"> </span><br><span class="line">model.fit(&#123;<span class="string">&#x27;text&#x27;</span>: text, <span class="string">&#x27;question&#x27;</span>: question&#125;, answers, </span><br><span class="line">          epochs=<span class="number">10</span>, batch_size=<span class="number">128</span>)  <span class="comment"># 输入组成的字典，必须对输入进行命名</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="多输出"><a href="#多输出" class="headerlink" title="多输出"></a>多输出</h4><ul>
+<li><p>一个网络试图同时预测数据的不同性质</p>
+</li>
+<li><p>三输出模型</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> Input </span><br><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Model </span><br><span class="line"> </span><br><span class="line">vocabulary_size = <span class="number">50000</span> </span><br><span class="line">num_income_groups = <span class="number">10</span> </span><br><span class="line"></span><br><span class="line">posts_input = Input(shape=(<span class="literal">None</span>,), dtype=<span class="string">&#x27;int32&#x27;</span>, name=<span class="string">&#x27;posts&#x27;</span>) </span><br><span class="line">embedded_posts = layers.Embedding(<span class="number">256</span>, vocabulary_size)(posts_input) </span><br><span class="line">x = layers.Conv1D(<span class="number">128</span>, <span class="number">5</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(embedded_posts) </span><br><span class="line">x = layers.MaxPooling1D(<span class="number">5</span>)(x) </span><br><span class="line">x = layers.Conv1D(<span class="number">256</span>, <span class="number">5</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">x = layers.Conv1D(<span class="number">256</span>, <span class="number">5</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">x = layers.MaxPooling1D(<span class="number">5</span>)(x) </span><br><span class="line">x = layers.Conv1D(<span class="number">256</span>, <span class="number">5</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">x = layers.Conv1D(<span class="number">256</span>, <span class="number">5</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">x = layers.GlobalMaxPooling1D()(x) </span><br><span class="line">x = layers.Dense(<span class="number">128</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x)</span><br><span class="line"><span class="comment"># 输出层都具有名称</span></span><br><span class="line">age_prediction = layers.Dense(<span class="number">1</span>, name=<span class="string">&#x27;age&#x27;</span>)(x)   </span><br><span class="line">income_prediction = layers.Dense(num_income_groups, </span><br><span class="line">                                 activation=<span class="string">&#x27;softmax&#x27;</span>, </span><br><span class="line">                                 name=<span class="string">&#x27;income&#x27;</span>)(x) </span><br><span class="line">gender_prediction = layers.Dense(<span class="number">1</span>, activation=<span class="string">&#x27;sigmoid&#x27;</span>, name=<span class="string">&#x27;gender&#x27;</span>)(x) </span><br><span class="line"> </span><br><span class="line">model = Model(posts_input, </span><br><span class="line">              [age_prediction, income_prediction, gender_prediction])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>损失函数要不同——使用损失组成的列表或字典来为不同输出指定不同损失，并指定损失的权重</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 列表</span></span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>, </span><br><span class="line">              loss=[<span class="string">&#x27;mse&#x27;</span>, <span class="string">&#x27;categorical_crossentropy&#x27;</span>, <span class="string">&#x27;binary_crossentropy&#x27;</span>], </span><br><span class="line">              loss_weights=[<span class="number">0.25</span>, <span class="number">1.</span>, <span class="number">10.</span>]) </span><br><span class="line"><span class="comment"># 字典 要求输出层具有名字</span></span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>,   </span><br><span class="line">              loss=&#123;<span class="string">&#x27;age&#x27;</span>: <span class="string">&#x27;mse&#x27;</span>, </span><br><span class="line">                    <span class="string">&#x27;income&#x27;</span>: <span class="string">&#x27;categorical_crossentropy&#x27;</span>,  </span><br><span class="line">                    <span class="string">&#x27;gender&#x27;</span>: <span class="string">&#x27;binary_crossentropy&#x27;</span>&#125;, </span><br><span class="line">              loss_weights=&#123;<span class="string">&#x27;age&#x27;</span>: <span class="number">0.25</span>, </span><br><span class="line">                            <span class="string">&#x27;income&#x27;</span>: <span class="number">1.</span>,  </span><br><span class="line">                            <span class="string">&#x27;gender&#x27;</span>: <span class="number">10.</span>&#125;)</span><br><span class="line"><span class="comment"># fit</span></span><br><span class="line">model.fit(posts, &#123;<span class="string">&#x27;age&#x27;</span>: age_targets, </span><br><span class="line">                  <span class="string">&#x27;income&#x27;</span>: income_targets, </span><br><span class="line">                  <span class="string">&#x27;gender&#x27;</span>: gender_targets&#125;, </span><br><span class="line">         epochs=<span class="number">10</span>, batch_size=<span class="number">64</span>)  </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="有向无环图"><a href="#有向无环图" class="headerlink" title="有向无环图"></a>有向无环图</h4><ul>
+<li><p>Inception 模块：完整的Inception V3架构内置于 Keras，<code>keras.applications.inception_v3.InceptionV3</code></p>
+<img src="/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/image-20210121183545463.png" alt="image-20210121183545463" style="zoom: 67%;">
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="comment"># 每个分支都有相同的步幅值</span></span><br><span class="line">branch_a = layers.Conv2D(<span class="number">128</span>, <span class="number">1</span>, </span><br><span class="line">                         activation=<span class="string">&#x27;relu&#x27;</span>, strides=<span class="number">2</span>)(x)   </span><br><span class="line">branch_b = layers.Conv2D(<span class="number">128</span>, <span class="number">1</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x)   </span><br><span class="line">branch_b = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, strides=<span class="number">2</span>)(branch_b) </span><br><span class="line">branch_c = layers.AveragePooling2D(<span class="number">3</span>, strides=<span class="number">2</span>)(x)   </span><br><span class="line">branch_c = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(branch_c) </span><br><span class="line"> </span><br><span class="line">branch_d = layers.Conv2D(<span class="number">128</span>, <span class="number">1</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">branch_d = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(branch_d) </span><br><span class="line">branch_d = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, strides=<span class="number">2</span>)(branch_d) </span><br><span class="line"><span class="comment"># 分支输出连接在一起</span></span><br><span class="line">output = layers.concatenate( </span><br><span class="line">    [branch_a, branch_b, branch_c, branch_d], axis=<span class="number">-1</span>) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>残差连接</p>
+<ul>
+<li><p>解决梯度消失和表示瓶颈</p>
+</li>
+<li><p>让前面某层的输出作为后面某层的输入</p>
+</li>
+<li><p>前面层的输出没有与后面层的激活连接，而是与后面层的激活相加——前提是激活的形状相同，否则用线性变换将前面层的输出改为目标形状</p>
+<ul>
+<li><p>尺寸相同</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"> </span><br><span class="line">x = ... </span><br><span class="line">y = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x)</span><br><span class="line">y = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, padding=<span class="string">&#x27;same&#x27;</span>)(y) </span><br><span class="line">y = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, padding=<span class="string">&#x27;same&#x27;</span>)(y) </span><br><span class="line"> </span><br><span class="line">y = layers.add([y, x])  <span class="comment"># 原始x与输出特征相加</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>尺寸不同</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"> </span><br><span class="line">x = ... </span><br><span class="line">y = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x) </span><br><span class="line">y = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, padding=<span class="string">&#x27;same&#x27;</span>)(y) </span><br><span class="line">y = layers.MaxPooling2D(<span class="number">2</span>, strides=<span class="number">2</span>)(y) </span><br><span class="line"> </span><br><span class="line">residual = layers.Conv2D(<span class="number">128</span>, <span class="number">1</span>, strides=<span class="number">2</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x)   </span><br><span class="line"> </span><br><span class="line">y = layers.add([y, residual])  <span class="comment"># 将原始x张量线性下采样，使其与y具有相同的形状</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="共享层权重"><a href="#共享层权重" class="headerlink" title="共享层权重"></a>共享层权重</h4><ul>
+<li><p>几个分支全都共享相同的知识并执行相同的运算，并同时对不同的输入集合学习这些表示</p>
+</li>
+<li><p>评估两个句子的语义相似度：两个句子可以互换，因为相似度是对称的关系</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> Input </span><br><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Model </span><br><span class="line"> </span><br><span class="line">lstm = layers.LSTM(<span class="number">32</span>)  <span class="comment"># 实例化一个LSTM层</span></span><br><span class="line"><span class="comment"># 构建模型的左分支</span></span><br><span class="line">left_input = Input(shape=(<span class="literal">None</span>, <span class="number">128</span>))   </span><br><span class="line">left_output = lstm(left_input) </span><br><span class="line"><span class="comment"># 构建模型的右分支</span></span><br><span class="line">right_input = Input(shape=(<span class="literal">None</span>, <span class="number">128</span>))   </span><br><span class="line">right_output = lstm(right_input)  <span class="comment"># 调用已有的层实例，重复使用它的权重</span></span><br><span class="line"><span class="comment"># 构建一个分类器</span></span><br><span class="line">merged = layers.concatenate([left_output, right_output], axis=<span class="number">-1</span>)   </span><br><span class="line">predictions = layers.Dense(<span class="number">1</span>, activation=<span class="string">&#x27;sigmoid&#x27;</span>)(merged) </span><br><span class="line"> </span><br><span class="line">model = Model([left_input, right_input], predictions)   </span><br><span class="line">model.fit([left_data, right_data], targets) </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="模型视为层"><a href="#模型视为层" class="headerlink" title="模型视为层"></a>模型视为层</h4><ul>
+<li><p>在一个输入张量上调用模型，并得到一个输出张量；或者模型具有多个输入张量和多个输出张量，此时用张量列表调用模型</p>
+</li>
+<li><p>共享卷积基</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> applications </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> Input </span><br><span class="line"><span class="comment"># 实例化Xception网络（只有卷积基）</span></span><br><span class="line">xception_base = applications.Xception(weights=<span class="literal">None</span>, </span><br><span class="line">                                      include_top=<span class="literal">False</span>)   </span><br><span class="line"></span><br><span class="line">left_input = Input(shape=(<span class="number">250</span>, <span class="number">250</span>, <span class="number">3</span>))   </span><br><span class="line">right_input = Input(shape=(<span class="number">250</span>, <span class="number">250</span>, <span class="number">3</span>)) </span><br><span class="line"><span class="comment"># 相同的视觉模型调用两次</span></span><br><span class="line">left_features = xception_base(left_input)   </span><br><span class="line">right_features = xception_base(right_input) </span><br><span class="line"> </span><br><span class="line">merged_features = layers.concatenate( </span><br><span class="line">    [left_features, right_features], axis=<span class="number">-1</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="TensorBoard"><a href="#TensorBoard" class="headerlink" title="TensorBoard"></a>TensorBoard</h3><h4 id="回调函数"><a href="#回调函数" class="headerlink" title="回调函数"></a>回调函数</h4><ul>
+<li><p><code>keras.callback</code>模块</p>
+</li>
+<li><p>在调用<code>fit</code>时传入模型的一个对象（实现特定方法的类实例） ，在训练过程中的不同时间点被模型调用，访问模型状态与性能数据， 并采取一些行动</p>
+<ul>
+<li>模型检查点（model checkpointing） ：在训练过程中的不同时间点保存模型的当前权重</li>
+<li>提前终止（early stopping） ：如果验证损失不再改善，则中断训练，并保存模型</li>
+<li>训练过程中动态调节某些参数值：如优化器的学习率</li>
+<li>训练过程中记录训练指标和验证指标，或将模型学到的表示可视化</li>
+</ul>
+</li>
+<li><p>ModelCheckpoint 与 EarlyStopping </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> keras </span><br><span class="line"> </span><br><span class="line">callbacks_list = [   </span><br><span class="line">    keras.callbacks.EarlyStopping(   </span><br><span class="line">        monitor=<span class="string">&#x27;acc&#x27;</span>,  <span class="comment"># 监控模型的验证精度  </span></span><br><span class="line">        patience=<span class="number">1</span>,  <span class="comment"># 精度在多于一轮的时间（即两轮）内不再改善则停止训练</span></span><br><span class="line">    ), </span><br><span class="line">    keras.callbacks.ModelCheckpoint(  <span class="comment"># 每轮过后保存当前权重</span></span><br><span class="line">        filepath=<span class="string">&#x27;my_model.h5&#x27;</span>,  <span class="comment"># 目标模型文件的保存路径</span></span><br><span class="line">        <span class="comment"># val_loss没有改善，则不覆盖模型文件</span></span><br><span class="line">        monitor=<span class="string">&#x27;val_loss&#x27;</span>,   </span><br><span class="line">        save_best_only=<span class="literal">True</span>, </span><br><span class="line">    ) </span><br><span class="line">] </span><br><span class="line"> </span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>, </span><br><span class="line">              loss=<span class="string">&#x27;binary_crossentropy&#x27;</span>, </span><br><span class="line">              metrics=[<span class="string">&#x27;acc&#x27;</span>])   </span><br><span class="line"><span class="comment"># 回调函数要监控验证损失和验证精度，因此必须传入验证数据</span></span><br><span class="line">model.fit(x, y, </span><br><span class="line">          epochs=<span class="number">10</span>, </span><br><span class="line">          batch_size=<span class="number">32</span>, </span><br><span class="line">          callbacks=callbacks_list, </span><br><span class="line">          validation_data=(x_val, y_val)) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ReduceLROnPlateau：验证损失不再改善时，说明陷入损失平台，使用这个回调函数来降低（增大）学习率，跳出局部最小值</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">callbacks_list = [ </span><br><span class="line">    keras.callbacks.ReduceLROnPlateau( </span><br><span class="line">        monitor=<span class="string">&#x27;val_loss&#x27;</span>  <span class="comment"># 监控模型验证损失</span></span><br><span class="line">        factor=<span class="number">0.1</span>,  <span class="comment"># 触发时将学习率除以 10</span></span><br><span class="line">        patience=<span class="number">10</span>,   <span class="comment"># 验证损失在10轮内没有改善时触发此回调函数</span></span><br><span class="line">    ) </span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编写自己的回调函数</p>
+<ul>
+<li><p>创建<code>keras.callbacks.Callback</code>类的子类</p>
+<ul>
+<li><code>on_epoch_begin</code>：每轮开始时被调用</li>
+<li><code>on_epoch_end</code>：每轮结束时被调用</li>
+<li><code>on_batch_begin</code>：处理每个批量之前被调用</li>
+<li><code>on_batch_end</code>：处理每个批量之后被调用</li>
+<li><code>on_train_begin</code>：训练开始时被调用</li>
+<li><code>on_train_end </code>：训练结束时被调用</li>
+</ul>
+</li>
+<li><p>示例：每轮结束时保存对验证集第一个样本每层的激活，格式为 Numpy</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> keras </span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ActivationLogger</span>(<span class="params">keras.callbacks.Callback</span>):</span> </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">set_model</span>(<span class="params">self, model</span>):</span> </span><br><span class="line">        self.model = model  <span class="comment"># 训练之前由父模型调用，告诉回调函数哪个模型在调用 </span></span><br><span class="line">        layer_outputs = [layer.output <span class="keyword">for</span> layer <span class="keyword">in</span> model.layers] </span><br><span class="line">        self.activations_model = keras.models.Model(model.<span class="built_in">input</span>, </span><br><span class="line">                                                    layer_outputs)  <span class="comment"># 模型实例，返回每层的激活</span></span><br><span class="line"><span class="comment"># log参数是一个字典，里面包含前一个批量、前一个轮次或前一次训练的信息， 即训练指标和验证指标等</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">on_epoch_end</span>(<span class="params">self, epoch, logs=<span class="literal">None</span></span>):</span> </span><br><span class="line">        <span class="keyword">if</span> self.validation_data <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">            <span class="keyword">raise</span> RuntimeError(<span class="string">&#x27;Requires validation_data.&#x27;</span>) </span><br><span class="line">        validation_sample = self.validation_data[<span class="number">0</span>][<span class="number">0</span>:<span class="number">1</span>]  <span class="comment"># 获取验证数据的第一个样本</span></span><br><span class="line">        activations = self.activations_model.predict(validation_sample) </span><br><span class="line">        f = <span class="built_in">open</span>(<span class="string">&#x27;activations_at_epoch_&#x27;</span> + <span class="built_in">str</span>(epoch) + <span class="string">&#x27;.npz&#x27;</span>, <span class="string">&#x27;w&#x27;</span>)   </span><br><span class="line">        np.savez(f, activations) </span><br><span class="line">        f.close() </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="TensorBoard-1"><a href="#TensorBoard-1" class="headerlink" title="TensorBoard"></a>TensorBoard</h4><ul>
+<li><p>需要创建一个目录，保存它生成的日志文件</p>
+</li>
+<li><p>用 TensorBoard 回调函数实例启动训练</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">callbacks = [ </span><br><span class="line">    keras.callbacks.TensorBoard( </span><br><span class="line">        log_dir=<span class="string">&#x27;my_log_dir&#x27;</span>,  <span class="comment"># 日志文件写入位置</span></span><br><span class="line">        histogram_freq=<span class="number">1</span>,  <span class="comment"># 每一轮之后记录激活直方图</span></span><br><span class="line">        embeddings_freq=<span class="number">1</span>,  <span class="comment"># 每一轮后记录嵌入数据</span></span><br><span class="line">    ) </span><br><span class="line">] </span><br><span class="line">history = model.fit(x_train, y_train, </span><br><span class="line">                    epochs=<span class="number">20</span>, </span><br><span class="line">                    batch_size=<span class="number">128</span>, </span><br><span class="line">                    validation_split=<span class="number">0.2</span>, </span><br><span class="line">                    callbacks=callbacks)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启动</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tensorboard --logdir=my_log_dir</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将模型绘制为层组成的图</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.utils <span class="keyword">import</span> plot_model </span><br><span class="line"> </span><br><span class="line">plot_model(model, to_file=<span class="string">&#x27;model.png&#x27;</span>)</span><br><span class="line"><span class="comment"># 显示每一层的形状信息</span></span><br><span class="line">plot_model(model, show_shapes=<span class="literal">True</span>, to_file=<span class="string">&#x27;model.png&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="模型性能提高"><a href="#模型性能提高" class="headerlink" title="模型性能提高"></a>模型性能提高</h3><h4 id="高级架构模式"><a href="#高级架构模式" class="headerlink" title="高级架构模式"></a>高级架构模式</h4><ul>
+<li><p>批标准化</p>
+<ul>
+<li><p>有助于梯度传播</p>
+</li>
+<li><p>通常在卷积层或密集连接层之后使用</p>
+</li>
+<li><p>接收<code>axis</code>参数，默认为-1，即张量最后一个轴</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">conv_model.add(layers.Conv2D(<span class="number">32</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>))   </span><br><span class="line">conv_model.add(layers.BatchNormalization()) </span><br><span class="line"> </span><br><span class="line">dense_model.add(layers.Dense(<span class="number">32</span>, activation=<span class="string">&#x27;relu&#x27;</span>))   </span><br><span class="line">dense_model.add(layers.BatchNormalization())</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>深度可分离卷积：比 CNN 更快，但假设输入中的空间位置高度相关、不同的通道之间相对独立</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Sequential, Model </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"> </span><br><span class="line">height = <span class="number">64</span> </span><br><span class="line">width = <span class="number">64</span> </span><br><span class="line">channels = <span class="number">3</span> </span><br><span class="line">num_classes = <span class="number">10</span> </span><br><span class="line"> </span><br><span class="line">model = Sequential() </span><br><span class="line">model.add(layers.SeparableConv2D(<span class="number">32</span>, <span class="number">3</span>, </span><br><span class="line">                                 activation=<span class="string">&#x27;relu&#x27;</span>, </span><br><span class="line">                                 input_shape=(height, width, channels,))) </span><br><span class="line">model.add(layers.SeparableConv2D(<span class="number">64</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.MaxPooling2D(<span class="number">2</span>)) </span><br><span class="line"> </span><br><span class="line">model.add(layers.SeparableConv2D(<span class="number">64</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.SeparableConv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.MaxPooling2D(<span class="number">2</span>)) </span><br><span class="line"> </span><br><span class="line">model.add(layers.SeparableConv2D(<span class="number">64</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.SeparableConv2D(<span class="number">128</span>, <span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.GlobalAveragePooling2D()) </span><br><span class="line"> </span><br><span class="line">model.add(layers.Dense(<span class="number">32</span>, activation=<span class="string">&#x27;relu&#x27;</span>)) </span><br><span class="line">model.add(layers.Dense(num_classes, activation=<span class="string">&#x27;softmax&#x27;</span>)) </span><br><span class="line"> </span><br><span class="line">model.<span class="built_in">compile</span>(optimizer=<span class="string">&#x27;rmsprop&#x27;</span>, loss=<span class="string">&#x27;categorical_crossentropy&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="超参数优化"><a href="#超参数优化" class="headerlink" title="超参数优化"></a>超参数优化</h4><ul>
+<li>过程如下<ul>
+<li>选择一组超参数</li>
+<li>构建相应的模型</li>
+<li>训练并衡量验证数据性能</li>
+<li>自动选择下一组超参数</li>
+<li>重复</li>
+<li>衡量测试集上性能</li>
+</ul>
+</li>
+</ul>
+<h4 id="模型集成"><a href="#模型集成" class="headerlink" title="模型集成"></a>模型集成</h4><ul>
+<li>多个子模型共同决定一个结果</li>
+<li>平均或加权决定最终结果</li>
+</ul>
+<h2 id="生成网络"><a href="#生成网络" class="headerlink" title="生成网络"></a>生成网络</h2><h3 id="LSTM-生成文本"><a href="#LSTM-生成文本" class="headerlink" title="LSTM 生成文本"></a>LSTM 生成文本</h3><ul>
+<li><p>使用前面的标记作为输入，训练一个网络（通常是循环神经网络或卷积神经网络）来预测序列中接下来的一个或多个标记</p>
+</li>
+<li><p>采样策略</p>
+<ul>
+<li>贪婪采样：始终选择可能性最大的下一个字符</li>
+<li>随机采样：从下一个字符的概率分布中进行采样</li>
+</ul>
+</li>
+<li><p>引入 softmax 温度（softmax temperature）控制采样时随机性的大小，即表示所选择的下一个字符会有多么出人意料（越大，则越出人意料）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np </span><br><span class="line"><span class="comment"># 第一个参数为softmax的分布结果</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">reweight_distribution</span>(<span class="params">original_distribution, temperature=<span class="number">0.5</span></span>):</span>   </span><br><span class="line">    distribution = np.log(original_distribution) / temperature </span><br><span class="line">    distribution = np.exp(distribution) </span><br><span class="line">    <span class="keyword">return</span> distribution / np.<span class="built_in">sum</span>(distribution)  <span class="comment"># 返回原始分布重新加权后的结果，除以求和是为了让其和保持1</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>字符级文本生成（一维卷积也可生成字符）</p>
+<ul>
+<li><p>解析初始文本文件</p>
+</li>
+<li><p>字符序列向量化（独热编码）</p>
+</li>
+<li><p>构建网络</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"> </span><br><span class="line">model = keras.models.Sequential() </span><br><span class="line">model.add(layers.LSTM(<span class="number">128</span>, input_shape=(maxlen, <span class="built_in">len</span>(chars)))) </span><br><span class="line">model.add(layers.Dense(<span class="built_in">len</span>(chars), activation=<span class="string">&#x27;softmax&#x27;</span>))</span><br><span class="line">optimizer = keras.optimizers.RMSprop(lr=<span class="number">0.01</span>) </span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&#x27;categorical_crossentropy&#x27;</span>, optimizer=optimizer)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>训练并采样</p>
+<ul>
+<li><p>根据文本，生成下一个字符概率分布</p>
+</li>
+<li><p>分布重新加权</p>
+</li>
+<li><p>随机采样</p>
+</li>
+<li><p>添加到文本尾部</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 采样下一个字符</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sample</span>(<span class="params">preds, temperature=<span class="number">1.0</span></span>):</span> </span><br><span class="line">    preds = np.asarray(preds).astype(<span class="string">&#x27;float64&#x27;</span>) </span><br><span class="line">    preds = np.log(preds) / temperature </span><br><span class="line">    exp_preds = np.exp(preds) </span><br><span class="line">    preds = exp_preds / np.<span class="built_in">sum</span>(exp_preds) </span><br><span class="line">    probas = np.random.multinomial(<span class="number">1</span>, preds, <span class="number">1</span>) </span><br><span class="line">    <span class="keyword">return</span> np.argmax(probas)</span><br><span class="line"><span class="comment"># 文本生成循环，一边训练，一边生成文本</span></span><br><span class="line"><span class="keyword">import</span> random </span><br><span class="line"><span class="keyword">import</span> sys </span><br><span class="line"> </span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">60</span>):   </span><br><span class="line">    print(<span class="string">&#x27;epoch&#x27;</span>, epoch) </span><br><span class="line">    model.fit(x, y, batch_size=<span class="number">128</span>, epochs=<span class="number">1</span>)  <span class="comment"># 拟合一次</span></span><br><span class="line">    <span class="comment"># 随机选择一个文本种子</span></span><br><span class="line">    start_index = random.randint(<span class="number">0</span>, <span class="built_in">len</span>(text) - maxlen - <span class="number">1</span>)   </span><br><span class="line">    generated_text = text[start_index: start_index + maxlen] </span><br><span class="line">    print(<span class="string">&#x27;--- Generating with seed: &quot;&#x27;</span> + generated_text + <span class="string">&#x27;&quot;&#x27;</span>) </span><br><span class="line">    <span class="keyword">for</span> temperature <span class="keyword">in</span> [<span class="number">0.2</span>, <span class="number">0.5</span>, <span class="number">1.0</span>, <span class="number">1.2</span>]:  <span class="comment"># 尝试一系列不同采样温度</span></span><br><span class="line">        print(<span class="string">&#x27;------ temperature:&#x27;</span>, temperature) </span><br><span class="line">        sys.stdout.write(generated_text) </span><br><span class="line"> </span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">400</span>):  <span class="comment"># 从种子文本开始，生成400个字符</span></span><br><span class="line">            <span class="comment"># 生成的字符 one-hot 编码</span></span><br><span class="line">            sampled = np.zeros((<span class="number">1</span>, maxlen, <span class="built_in">len</span>(chars)))   </span><br><span class="line">            <span class="keyword">for</span> t, char <span class="keyword">in</span> <span class="built_in">enumerate</span>(generated_text): </span><br><span class="line">                sampled[<span class="number">0</span>, t, char_indices[char]] = <span class="number">1.</span> </span><br><span class="line"> 		    <span class="comment"># 对下一个字符采样</span></span><br><span class="line">            preds = model.predict(sampled, verbose=<span class="number">0</span>)[<span class="number">0</span>]   </span><br><span class="line">            next_index = sample(preds, temperature) </span><br><span class="line">            next_char = chars[next_index] </span><br><span class="line"> </span><br><span class="line">            generated_text += next_char </span><br><span class="line">            generated_text = generated_text[<span class="number">1</span>:] </span><br><span class="line"> </span><br><span class="line">            sys.stdout.write(next_char)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="迁移"><a href="#迁移" class="headerlink" title="迁移"></a>迁移</h3><ul>
+<li>风格（style）指图像中不同空间尺度的纹理、颜色和视觉图案，内容（content）指图像的高级宏观结构</li>
+<li>网络更靠底部的层激活包含关于图像的局部信息，而更靠近顶部的层则包含更加全局、更加抽象的信息</li>
+<li>内容损失：预训练的卷积神经网络更靠顶部的某层在目标图像上计算得到的激活，同一层在生成图像上计算得到的激活，二者的 L2 范数</li>
+<li>风格损失：<ul>
+<li>目标内容图像和生成图像之间保持相似的较高层激活</li>
+<li>较低层和较高层的激活中保持类似的相互关系</li>
+</ul>
+</li>
+</ul>
+<h4 id="风格迁移实现（VGG19-网络为例）"><a href="#风格迁移实现（VGG19-网络为例）" class="headerlink" title="风格迁移实现（VGG19 网络为例）"></a>风格迁移实现（VGG19 网络为例）</h4><ul>
+<li><p>创建一个网络，同时计算风格参考图像、目标图像和生成图像的 VGG19 层激活</p>
+</li>
+<li><p>网络接收三张图像的批量，分别是风格参考图像、目标图像和一个用于保存生成图像的占位符</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> backend <span class="keyword">as</span> K </span><br><span class="line"> </span><br><span class="line">target_image = K.constant(preprocess_image(target_image_path))  </span><br><span class="line">style_reference_image = K.constant(preprocess_image(style_reference_image_path)) </span><br><span class="line">combination_image = K.placeholder((<span class="number">1</span>, img_height, img_width, <span class="number">3</span>))   </span><br><span class="line"> </span><br><span class="line">input_tensor = K.concatenate([target_image,   </span><br><span class="line">                              style_reference_image, </span><br><span class="line">                              combination_image], axis=<span class="number">0</span>) </span><br><span class="line"> </span><br><span class="line">model = vgg19.VGG19(input_tensor=input_tensor,   </span><br><span class="line">                    weights=<span class="string">&#x27;imagenet&#x27;</span>, </span><br><span class="line">                    include_top=<span class="literal">False</span>) </span><br><span class="line">print(<span class="string">&#x27;Model loaded.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定义内容损失：目标图像和生成图像在 VGG19 卷积神经网络的顶层具有相似的结果</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">content_loss</span>(<span class="params">base, combination</span>):</span> </span><br><span class="line">    <span class="keyword">return</span> K.<span class="built_in">sum</span>(K.square(combination - base))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定义风格损失：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 计算输入矩阵的格拉姆矩阵——原始特征矩阵中相互关系的映射</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">gram_matrix</span>(<span class="params">x</span>):</span> </span><br><span class="line">    features = K.batch_flatten(K.permute_dimensions(x, (<span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>))) </span><br><span class="line">    gram = K.dot(features, K.transpose(features)) </span><br><span class="line">    <span class="keyword">return</span> gram </span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">style_loss</span>(<span class="params">style, combination</span>):</span> </span><br><span class="line">        S = gram_matrix(style) </span><br><span class="line">        C = gram_matrix(combination) </span><br><span class="line">        channels = <span class="number">3</span> </span><br><span class="line">        size = img_height * img_width </span><br><span class="line">        <span class="keyword">return</span> K.<span class="built_in">sum</span>(K.square(S - C)) / (<span class="number">4.</span> * (channels ** <span class="number">2</span>) * (size ** <span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定义总变差损失：使生成图像具有空间连续性，可以理解为正则化损失</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">total_variation_loss</span>(<span class="params">x</span>):</span> </span><br><span class="line">    a = K.square( </span><br><span class="line">        x[:, :img_height - <span class="number">1</span>, :img_width - <span class="number">1</span>, :] - </span><br><span class="line">        x[:, <span class="number">1</span>:, :img_width - <span class="number">1</span>, :]) </span><br><span class="line">    b = K.square( </span><br><span class="line">        x[:, :img_height - <span class="number">1</span>, :img_width - <span class="number">1</span>, :] - </span><br><span class="line">        x[:, :img_height - <span class="number">1</span>, <span class="number">1</span>:, :]) </span><br><span class="line">    <span class="keyword">return</span> K.<span class="built_in">sum</span>(K.<span class="built_in">pow</span>(a + b, <span class="number">1.25</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定义最终的损失</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 层的名称映射为激活张量的字典</span></span><br><span class="line">outputs_dict = <span class="built_in">dict</span>([(layer.name, layer.output) <span class="keyword">for</span> layer <span class="keyword">in</span> model.layers])   </span><br><span class="line"><span class="comment"># 用于内容损失的层</span></span><br><span class="line">content_layer = <span class="string">&#x27;block5_conv2&#x27;</span>   </span><br><span class="line"><span class="comment"># 用于风格损失的层</span></span><br><span class="line">style_layers = [<span class="string">&#x27;block1_conv1&#x27;</span>,   </span><br><span class="line">                <span class="string">&#x27;block2_conv1&#x27;</span>, </span><br><span class="line">                <span class="string">&#x27;block3_conv1&#x27;</span>, </span><br><span class="line">                <span class="string">&#x27;block4_conv1&#x27;</span>, </span><br><span class="line">                <span class="string">&#x27;block5_conv1&#x27;</span>] </span><br><span class="line"><span class="comment"># 损失分量的加权平均所使用的权重</span></span><br><span class="line">total_variation_weight = <span class="number">1e-4</span>   </span><br><span class="line">style_weight = <span class="number">1.</span> </span><br><span class="line">content_weight = <span class="number">0.025</span> </span><br><span class="line"><span class="comment"># 内容损失</span></span><br><span class="line">loss = K.variable(<span class="number">0.</span>)   </span><br><span class="line">layer_features = outputs_dict[content_layer] </span><br><span class="line">target_image_features = layer_features[<span class="number">0</span>, :, :, :] </span><br><span class="line">combination_features = layer_features[<span class="number">2</span>, :, :, :] </span><br><span class="line">loss += content_weight * content_loss(target_image_features,   </span><br><span class="line">                                      combination_features) </span><br><span class="line"><span class="comment"># 添加每个目标层的风格损失分量</span></span><br><span class="line"><span class="keyword">for</span> layer_name <span class="keyword">in</span> style_layers:   </span><br><span class="line">    layer_features = outputs_dict[layer_name] </span><br><span class="line">    style_reference_features = layer_features[<span class="number">1</span>, :, :, :] </span><br><span class="line">    combination_features = layer_features[<span class="number">2</span>, :, :, :] </span><br><span class="line">    sl = style_loss(style_reference_features, combination_features) </span><br><span class="line">    loss += (style_weight / <span class="built_in">len</span>(style_layers)) * sl </span><br><span class="line"><span class="comment"># 添加总变差损失</span></span><br><span class="line">loss += total_variation_weight * total_variation_loss(combination_image) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置梯度下降</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 获取损失相对于生成图像的梯度</span></span><br><span class="line">grads = K.gradients(loss, combination_image)[<span class="number">0</span>]   </span><br><span class="line"><span class="comment"># 获取当前损失值和当前梯度值的函数</span></span><br><span class="line">fetch_loss_and_grads = K.function([combination_image], [loss, grads])   </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Evaluator</span>(<span class="title">object</span>):   </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(<span class="keyword">self</span>)</span></span>: </span><br><span class="line">        <span class="keyword">self</span>.loss_value = None </span><br><span class="line">        <span class="keyword">self</span>.grads_values = None</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">loss</span><span class="params">(<span class="keyword">self</span>, x)</span></span>: </span><br><span class="line">        assert <span class="keyword">self</span>.loss_value is None </span><br><span class="line">        x = x.reshape((<span class="number">1</span>, img_height, img_width, <span class="number">3</span>)) </span><br><span class="line">        outs = fetch_loss_and_grads([x]) </span><br><span class="line">        loss_value = outs[<span class="number">0</span>] </span><br><span class="line">        grad_values = outs[<span class="number">1</span>].flatten().astype(<span class="string">&#x27;float64&#x27;</span>) </span><br><span class="line">        <span class="keyword">self</span>.loss_value = loss_value </span><br><span class="line">        <span class="keyword">self</span>.grad_values = grad_values </span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">self</span>.loss_value </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">grads</span><span class="params">(<span class="keyword">self</span>, x)</span></span>: </span><br><span class="line">        assert <span class="keyword">self</span>.loss_value is <span class="keyword">not</span> None </span><br><span class="line">        grad_values = np.copy(<span class="keyword">self</span>.grad_values) </span><br><span class="line">        <span class="keyword">self</span>.loss_value = None </span><br><span class="line">        <span class="keyword">self</span>.grad_values = None </span><br><span class="line">        <span class="keyword">return</span> grad_values </span><br><span class="line"> </span><br><span class="line">evaluator = Evaluator()</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>风格迁移循环</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> scipy.optimize <span class="keyword">import</span> fmin_l_bfgs_b </span><br><span class="line"><span class="keyword">from</span> scipy.misc <span class="keyword">import</span> imsave </span><br><span class="line"><span class="keyword">import</span> time </span><br><span class="line"> </span><br><span class="line">result_prefix = <span class="string">&#x27;my_result&#x27;</span> </span><br><span class="line">iterations = <span class="number">20</span> </span><br><span class="line"> </span><br><span class="line">x = preprocess_image(target_image_path)  <span class="comment"># 目标图像</span></span><br><span class="line">x = x.flatten()  <span class="comment"># 图像展平，scipy.optimize.fmin_l_bfgs_b 只能处理展平的向量</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(iterations): </span><br><span class="line">    print(<span class="string">&#x27;Start of iteration&#x27;</span>, i) </span><br><span class="line">    start_time = time.time() </span><br><span class="line">    <span class="comment"># L-BFGS 最优化，以将神经风格损失最小化；计算损失的函数和计算梯度的函数作为单独的参数传入</span></span><br><span class="line">    x, min_val, info = fmin_l_bfgs_b(evaluator.loss,   </span><br><span class="line">                                     x, </span><br><span class="line">                                     fprime=evaluator.grads, </span><br><span class="line">                                     maxfun=<span class="number">20</span>) </span><br><span class="line">    <span class="comment"># 保存图片</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="变分自编码器"><a href="#变分自编码器" class="headerlink" title="变分自编码器"></a>变分自编码器</h3><h4 id="从潜在空间采样"><a href="#从潜在空间采样" class="headerlink" title="从潜在空间采样"></a>从潜在空间采样</h4><ul>
+<li>VAE 非常适合用于学习具有良好结构的潜在空间，其中特定方向表示数据中有意义的变化轴</li>
+<li>自编码器是一种网络类型，其目的是将输入编码到低维潜在空间，然后再解码回来</li>
+<li>经典的图像自编码器接收一张图像，通过一个编码器模块将其映射到潜在向量空间，然后再通过一个解码器模块将其解码为与原始图像具有相同尺寸的输出。使用与输入图像相同的图像作为目标数据来训练这个自编码器——学习对原始输入进行重新构建</li>
+</ul>
+<h4 id="VAE"><a href="#VAE" class="headerlink" title="VAE"></a>VAE</h4><ul>
+<li><p>VAE 向自编码器添加了一点统计限制，迫使其学习连续的、高度结构化的潜在空间——将图像转换为统计分布的参数</p>
+</li>
+<li><p>假设输入图像是由统计过程生成的，VAE 使用平均值和方差两个参数从分布中随机采样一个元素，并将这个元素解码到原始输入。这迫使潜在空间的任何位置都对应有意义的表示，即潜在空间采样的每个点都能解码为有<br>效的输出</p>
+</li>
+<li><p>通过两个损失函数进行训练：</p>
+<ul>
+<li><p>重构损失（reconstruction loss）：迫使解码后的样本匹配初始输入</p>
+</li>
+<li><p>正则化损失（regularization loss）：有助于学习具有良好结构的潜在空间，并降低训练数据上的过拟合</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">z_mean, <span class="attr">z_log_variance</span> = encoder(input_img)   </span><br><span class="line"><span class="comment"># 使用小随机数epsilon来抽取一个潜在点</span></span><br><span class="line"><span class="attr">z</span> = z_mean + exp(z_log_variance) * epsilon   </span><br><span class="line"> </span><br><span class="line"><span class="attr">reconstructed_img</span> = decoder(z)   </span><br><span class="line"> </span><br><span class="line"><span class="attr">model</span> = Model(input_img, reconstructed_img) </span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>编码器</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> keras </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> backend <span class="keyword">as</span> K </span><br><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Model </span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np </span><br><span class="line"> </span><br><span class="line">img_shape = (<span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>) </span><br><span class="line">batch_size = <span class="number">16</span> </span><br><span class="line">latent_dim = <span class="number">2</span>  <span class="comment"># 假设潜在空间为一个二维平面</span></span><br><span class="line"> </span><br><span class="line">input_img = keras.Input(shape=img_shape) </span><br><span class="line"> </span><br><span class="line">x = layers.Conv2D(<span class="number">32</span>, <span class="number">3</span>, </span><br><span class="line">                  padding=<span class="string">&#x27;same&#x27;</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(input_img) </span><br><span class="line">x = layers.Conv2D(<span class="number">64</span>, <span class="number">3</span>, </span><br><span class="line">                  padding=<span class="string">&#x27;same&#x27;</span>, activation=<span class="string">&#x27;relu&#x27;</span>, </span><br><span class="line">                  strides=(<span class="number">2</span>, <span class="number">2</span>))(x) </span><br><span class="line">x = layers.Conv2D(<span class="number">64</span>, <span class="number">3</span>, </span><br><span class="line">                  padding=<span class="string">&#x27;same&#x27;</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">x = layers.Conv2D(<span class="number">64</span>, <span class="number">3</span>, </span><br><span class="line">                  padding=<span class="string">&#x27;same&#x27;</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line">shape_before_flattening = K.int_shape(x) </span><br><span class="line"> </span><br><span class="line">x = layers.Flatten()(x) </span><br><span class="line">x = layers.Dense(<span class="number">32</span>, activation=<span class="string">&#x27;relu&#x27;</span>)(x) </span><br><span class="line"><span class="comment"># 输入图像被编码为两个参数</span></span><br><span class="line">z_mean = layers.Dense(latent_dim)(x)   </span><br><span class="line">z_log_var = layers.Dense(latent_dim)(x)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>潜在空间采样——任何对象都应该是一个层， 如果代码不是内置层的一部分， 应该将其包装到一个 Lambda 层 </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sampling</span>(<span class="params">args</span>):</span> </span><br><span class="line">    z_mean, z_log_var = args </span><br><span class="line">    epsilon = K.random_normal(shape=(K.shape(z_mean)[<span class="number">0</span>], latent_dim), </span><br><span class="line">                              mean=<span class="number">0.</span>, stddev=<span class="number">1.</span>) </span><br><span class="line">    <span class="keyword">return</span> z_mean + K.exp(z_log_var) * epsilon </span><br><span class="line"> </span><br><span class="line">z = layers.Lambda(sampling)([z_mean, z_log_var])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>解码器</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">decoder_input = layers.Input(K.int_shape(z)[<span class="number">1</span>:])   </span><br><span class="line"> </span><br><span class="line">x = layers.Dense(np.prod(shape_before_flattening[<span class="number">1</span>:]),   </span><br><span class="line">                 activation=<span class="string">&#x27;relu&#x27;</span>)(decoder_input)  <span class="comment"># 对输入进行上采样</span></span><br><span class="line"> </span><br><span class="line">x = layers.Reshape(shape_before_flattening[<span class="number">1</span>:])(x)   </span><br><span class="line"><span class="comment"># 将z 解码为与原始输入图像具有相同尺寸的特征图</span></span><br><span class="line">x = layers.Conv2DTranspose(<span class="number">32</span>, <span class="number">3</span>,   </span><br><span class="line">                           padding=<span class="string">&#x27;same&#x27;</span>, </span><br><span class="line">                           activation=<span class="string">&#x27;relu&#x27;</span>, </span><br><span class="line">                           strides=(<span class="number">2</span>, <span class="number">2</span>))(x) </span><br><span class="line">x = layers.Conv2D(<span class="number">1</span>, <span class="number">3</span>, </span><br><span class="line">                  padding=<span class="string">&#x27;same&#x27;</span>, </span><br><span class="line">                  activation=<span class="string">&#x27;sigmoid&#x27;</span>)(x) </span><br><span class="line"><span class="comment"># 解码器模型实例化</span></span><br><span class="line">decoder = Model(decoder_input, x)   </span><br><span class="line"> </span><br><span class="line">z_decoded = decoder(z)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>计算损失的自定义层</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CustomVariationalLayer</span>(<span class="params">keras.layers.Layer</span>):</span> </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">vae_loss</span>(<span class="params">self, x, z_decoded</span>):</span> </span><br><span class="line">        x = K.flatten(x) </span><br><span class="line">        z_decoded = K.flatten(z_decoded) </span><br><span class="line">        xent_loss = keras.metrics.binary_crossentropy(x, z_decoded)  </span><br><span class="line">        kl_loss = <span class="number">-5e-4</span> * K.mean( </span><br><span class="line">            <span class="number">1</span> + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=<span class="number">-1</span>) </span><br><span class="line">        <span class="keyword">return</span> K.mean(xent_loss + kl_loss) </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span>   </span><br><span class="line">        x = inputs[<span class="number">0</span>] </span><br><span class="line">        z_decoded = inputs[<span class="number">1</span>] </span><br><span class="line">        loss = self.vae_loss(x, z_decoded) </span><br><span class="line">        self.add_loss(loss, inputs=inputs) </span><br><span class="line">        <span class="keyword">return</span> x  <span class="comment"># 不使用这个值，但层必须要有返回值</span></span><br><span class="line">    </span><br><span class="line">y = CustomVariationalLayer()([input_img, z_decoded])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="GAN"><a href="#GAN" class="headerlink" title="GAN"></a>GAN</h3><ul>
+<li>替代 VAE 学习图像的潜在空间，但这个潜在空间无法保证具有有意义的结构，而且是不连续的</li>
+<li>分为生成器网络和判别器网络</li>
+<li>最优化过程寻找的不是一个最小值，而是一个平衡</li>
+<li>gan 网络将 generator 网络和 discriminator 网络连接在一起：gan(x) = discriminator(generator(x))。生成器将潜在空间向量解码为图像，判别器对这些图像的真实性进行评估</li>
+</ul>
+<h4 id="相关技巧"><a href="#相关技巧" class="headerlink" title="相关技巧"></a>相关技巧</h4><ul>
+<li><p>tanh 作为生成器最后一层的激活， 而不用 sigmoid</p>
+</li>
+<li><p>使用正态分布（高斯分布）对潜在空间中的点进行采样</p>
+</li>
+<li><p>在训练过程中引入随机性</p>
+<ul>
+<li>向判别器的标签添加随机噪声</li>
+<li>在判别器中使用 dropout</li>
+</ul>
+</li>
+<li><p>稀疏的梯度会妨碍训练</p>
+<ul>
+<li>使用步进卷积代替最大池化来进行下采样</li>
+<li>使用 LeakyReLU 层来代替 ReLU 激活</li>
+</ul>
+</li>
+<li><p>每当在生成器和判别器中都使用步进的卷积时，内核大小要被步幅大小整除</p>
+</li>
+</ul>
+<h4 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> keras </span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> layers </span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np </span><br><span class="line"> </span><br><span class="line">latent_dim = <span class="number">32</span> </span><br><span class="line">height = <span class="number">32</span> </span><br><span class="line">width = <span class="number">32</span> </span><br><span class="line">channels = <span class="number">3</span> </span><br><span class="line"> </span><br><span class="line">generator_input = keras.Input(shape=(latent_dim,)) </span><br><span class="line"><span class="comment"># 输入转换为大小为 16*16 的 128 个通道的特征图</span></span><br><span class="line">x = layers.Dense(<span class="number">128</span> * <span class="number">16</span> * <span class="number">16</span>)(generator_input)   </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line">x = layers.Reshape((<span class="number">16</span>, <span class="number">16</span>, <span class="number">128</span>))(x) </span><br><span class="line"> </span><br><span class="line">x = layers.Conv2D(<span class="number">256</span>, <span class="number">5</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x) </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line"> </span><br><span class="line">x = layers.Conv2DTranspose(<span class="number">256</span>, <span class="number">4</span>, strides=<span class="number">2</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x)   </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line"> </span><br><span class="line">x = layers.Conv2D(<span class="number">256</span>, <span class="number">5</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x) </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line">x = layers.Conv2D(<span class="number">256</span>, <span class="number">5</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x) </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line"><span class="comment"># 生成一个大小为 32*32 的单通道特征图</span></span><br><span class="line">x = layers.Conv2D(channels, <span class="number">7</span>, activation=<span class="string">&#x27;tanh&#x27;</span>, padding=<span class="string">&#x27;same&#x27;</span>)(x)   </span><br><span class="line"><span class="comment"># 生成器模型实例化，将(latent_dim,)的输入映射到形状为(32, 32, 3) 的图像</span></span><br><span class="line">generator = keras.models.Model(generator_input, x)   </span><br><span class="line">generator.summary()</span><br></pre></td></tr></table></figure>
+
+<h4 id="判别器"><a href="#判别器" class="headerlink" title="判别器"></a>判别器</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">discriminator_input = layers.Input(shape=(height, width, channels)) </span><br><span class="line">x = layers.Conv2D(<span class="number">128</span>, <span class="number">3</span>)(discriminator_input) </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line">x = layers.Conv2D(<span class="number">128</span>, <span class="number">4</span>, strides=<span class="number">2</span>)(x)  </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line">x = layers.Conv2D(<span class="number">128</span>, <span class="number">4</span>, strides=<span class="number">2</span>)(x) </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line">x = layers.Conv2D(<span class="number">128</span>, <span class="number">4</span>, strides=<span class="number">2</span>)(x) </span><br><span class="line">x = layers.LeakyReLU()(x) </span><br><span class="line">x = layers.Flatten()(x) </span><br><span class="line"> </span><br><span class="line">x = layers.Dropout(<span class="number">0.4</span>)(x)   </span><br><span class="line"> </span><br><span class="line">x = layers.Dense(<span class="number">1</span>, activation=<span class="string">&#x27;sigmoid&#x27;</span>)(x)  <span class="comment"># 分类层</span></span><br><span class="line"><span class="comment"># 判别器模型实例化，将(32, 32, 3)的输入转换为一个二进制分类决策</span></span><br><span class="line">discriminator = keras.models.Model(discriminator_input, x)   </span><br><span class="line">discriminator.summary() </span><br><span class="line"> </span><br><span class="line">discriminator_optimizer = keras.optimizers.RMSprop( </span><br><span class="line">    lr=<span class="number">0.0008</span>, </span><br><span class="line">    clipvalue=<span class="number">1.0</span>,  <span class="comment"># 优化器中使用梯度裁剪，限制梯度范围</span></span><br><span class="line">    decay=<span class="number">1e-8</span>)  <span class="comment"># 衰减学习率，稳定训练过程</span></span><br><span class="line"> </span><br><span class="line">discriminator.<span class="built_in">compile</span>(optimizer=discriminator_optimizer, </span><br><span class="line">                     loss=<span class="string">&#x27;binary_crossentropy&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="对抗网络"><a href="#对抗网络" class="headerlink" title="对抗网络"></a>对抗网络</h4><ul>
+<li><p>模型将潜在空间的点转换为一个分类决策，训练的标签都是“真实图像”</p>
+</li>
+<li><p>训练过程中需要将判别器设置为冻结</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">discriminator.trainable = <span class="literal">False</span>   </span><br><span class="line"> </span><br><span class="line">gan_input = keras.Input(shape=(latent_dim,))  </span><br><span class="line">gan_output = discriminator(generator(gan_input))  </span><br><span class="line">gan = keras.models.Model(gan_input, gan_output)</span><br><span class="line">gan_optimizer = keras.optimizers.RMSprop(lr=<span class="number">0.0004</span>, clipvalue=<span class="number">1.0</span>, decay=<span class="number">1e-8</span>) </span><br><span class="line">gan.<span class="built_in">compile</span>(optimizer=gan_optimizer, loss=<span class="string">&#x27;binary_crossentropy&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="训练"><a href="#训练" class="headerlink" title="训练"></a>训练</h4><ul>
+<li>对抗损失开始大幅增加，而判别损失则趋向于零——判别器最终支配了生成器——尝试减小判别器的学习率， 并增大判别器的 dropout 比率</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os </span><br><span class="line"><span class="keyword">from</span> keras.preprocessing <span class="keyword">import</span> image </span><br><span class="line"> </span><br><span class="line">(x_train, y_train), (_, _) = keras.datasets.cifar10.load_data()   </span><br><span class="line"> </span><br><span class="line">x_train = x_train[y_train.flatten() == <span class="number">6</span>]   </span><br><span class="line"> </span><br><span class="line">x_train = x_train.reshape( (x_train.shape[<span class="number">0</span>],) + </span><br><span class="line">    (height, width, channels)).astype(<span class="string">&#x27;float32&#x27;</span>) / <span class="number">255.</span>   </span><br><span class="line"> </span><br><span class="line">iterations = <span class="number">10000</span> </span><br><span class="line">batch_size = <span class="number">20</span> </span><br><span class="line">save_dir = <span class="string">&#x27;your_dir&#x27;</span>   </span><br><span class="line"> </span><br><span class="line">start = <span class="number">0</span> </span><br><span class="line"><span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(iterations): </span><br><span class="line">    random_latent_vectors = np.random.normal(size=(batch_size, </span><br><span class="line">                                            latent_dim))  <span class="comment"># 潜在空间中采样随机点</span></span><br><span class="line"> </span><br><span class="line">    generated_images = generator.predict(random_latent_vectors)  <span class="comment"># 解码为</span></span><br><span class="line">虚假图像</span><br><span class="line"> </span><br><span class="line">    stop = start + batch_size </span><br><span class="line">    real_images = x_train[start: stop] </span><br><span class="line">    combined_images = np.concatenate([generated_images, real_images])  <span class="comment"># 虚假图像与真实图像合在一起  </span></span><br><span class="line">    <span class="comment"># 合并标签，区分真实和虚假的图像</span></span><br><span class="line">    labels = np.concatenate([np.ones((batch_size, <span class="number">1</span>)), </span><br><span class="line">                             np.zeros((batch_size, <span class="number">1</span>))])</span><br><span class="line">    <span class="comment"># 标签中添加随机噪声</span></span><br><span class="line">    labels += <span class="number">0.05</span> * np.random.random(labels.shape)   </span><br><span class="line">    <span class="comment"># 训练判别器</span></span><br><span class="line">    d_loss = discriminator.train_on_batch(combined_images, labels)   </span><br><span class="line">    <span class="comment"># 在潜在空间中采样随机点</span></span><br><span class="line">    random_latent_vectors = np.random.normal(size=(batch_size, </span><br><span class="line">                                            latent_dim))   </span><br><span class="line">    <span class="comment"># 合并标签，全部是“真实图像”</span></span><br><span class="line">    misleading_targets = np.zeros((batch_size, <span class="number">1</span>))   </span><br><span class="line">    <span class="comment"># gan 模型训练生成器，此时冻结判别器权重</span></span><br><span class="line">    a_loss = gan.train_on_batch(random_latent_vectors, </span><br><span class="line">                                misleading_targets)   </span><br><span class="line"> </span><br><span class="line">    start += batch_size </span><br><span class="line">    <span class="keyword">if</span> start &gt; <span class="built_in">len</span>(x_train) - batch_size: </span><br><span class="line">        start = <span class="number">0</span> </span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> step % <span class="number">100</span> == <span class="number">0</span>:  <span class="comment"># 每 100 步保存并绘图  </span></span><br><span class="line">        gan.save_weights(<span class="string">&#x27;gan.h5&#x27;</span>)   </span><br><span class="line"> </span><br><span class="line">        print(<span class="string">&#x27;discriminator loss:&#x27;</span>, d_loss)   </span><br><span class="line">        print(<span class="string">&#x27;adversarial loss:&#x27;</span>, a_loss) </span><br><span class="line">        <span class="comment"># 保存一张生成图像</span></span><br><span class="line">        img = image.array_to_img(generated_images[<span class="number">0</span>] * <span class="number">255.</span>, scale=<span class="literal">False</span>)   </span><br><span class="line">        img.save(os.path.join(save_dir, </span><br><span class="line">                      <span class="string">&#x27;generated_frog&#x27;</span> + <span class="built_in">str</span>(step) + <span class="string">&#x27;.png&#x27;</span>)) </span><br><span class="line">        <span class="comment"># 保存一张真实图像，用于对比</span></span><br><span class="line">        img = image.array_to_img(real_images[<span class="number">0</span>] * <span class="number">255.</span>, scale=<span class="literal">False</span>)   </span><br><span class="line">        img.save(os.path.join(save_dir, </span><br><span class="line">                      <span class="string">&#x27;real_frog&#x27;</span> + <span class="built_in">str</span>(step) + <span class="string">&#x27;.png&#x27;</span>)) </span><br></pre></td></tr></table></figure>
+
+
+
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\03\Hands-on-ML-2\" rel="bookmark">Hands-on Machine Learning（2）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（2）用 tf 自定义模型训练网络</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\04\Hands-on-ML-3\" rel="bookmark">Hands-on Machine Learning（3）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（3）数据接口与 CNN</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\06\Hands-on-ML-4\" rel="bookmark">Hands-on Machine Learning（4）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（4）RNN 和 1D CNN 处理序列</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\06\Hands-on-ML-5\" rel="bookmark">Hands-on Machine Learning（5）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（5）字符级RNN、单词级RNN、基于RNN的编码-解码器</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\07\Hands-on-ML-6\" rel="bookmark">Hands-on Machine Learning（6）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（6）RNN 的注意力机制（Transformer 架构）</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/01/21/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_3%E5%AE%9E%E8%B7%B5/" title="Python深度学习（3）实践——函数API与生成网络">https://thomas-li-sjtu.github.io/2021/01/21/Python深度学习_3实践/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/TensorFlow/" rel="tag"><i class="fa fa-tag"></i> TensorFlow</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/19/Python%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0_2%E5%AE%9E%E8%B7%B5/" rel="prev" title="Python深度学习（2）实践——CNN与RNN">
+      <i class="fa fa-chevron-left"></i> Python深度学习（2）实践——CNN与RNN
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/22/Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks/" rel="next" title="Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks">
+      Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0API"><span class="nav-number">1.</span> <span class="nav-text">函数API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0API-1"><span class="nav-number">1.1.</span> <span class="nav-text">函数API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%87%BD%E6%95%B0API-2"><span class="nav-number">1.1.1.</span> <span class="nav-text">函数API</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E8%BE%93%E5%85%A5"><span class="nav-number">1.1.2.</span> <span class="nav-text">多输入</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E8%BE%93%E5%87%BA"><span class="nav-number">1.1.3.</span> <span class="nav-text">多输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E5%90%91%E6%97%A0%E7%8E%AF%E5%9B%BE"><span class="nav-number">1.1.4.</span> <span class="nav-text">有向无环图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E5%B1%82%E6%9D%83%E9%87%8D"><span class="nav-number">1.1.5.</span> <span class="nav-text">共享层权重</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%A7%86%E4%B8%BA%E5%B1%82"><span class="nav-number">1.1.6.</span> <span class="nav-text">模型视为层</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TensorBoard"><span class="nav-number">1.2.</span> <span class="nav-text">TensorBoard</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.1.</span> <span class="nav-text">回调函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorBoard-1"><span class="nav-number">1.2.2.</span> <span class="nav-text">TensorBoard</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%80%A7%E8%83%BD%E6%8F%90%E9%AB%98"><span class="nav-number">1.3.</span> <span class="nav-text">模型性能提高</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%AB%98%E7%BA%A7%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.3.1.</span> <span class="nav-text">高级架构模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B6%85%E5%8F%82%E6%95%B0%E4%BC%98%E5%8C%96"><span class="nav-number">1.3.2.</span> <span class="nav-text">超参数优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E9%9B%86%E6%88%90"><span class="nav-number">1.3.3.</span> <span class="nav-text">模型集成</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E7%BD%91%E7%BB%9C"><span class="nav-number">2.</span> <span class="nav-text">生成网络</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LSTM-%E7%94%9F%E6%88%90%E6%96%87%E6%9C%AC"><span class="nav-number">2.1.</span> <span class="nav-text">LSTM 生成文本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%81%E7%A7%BB"><span class="nav-number">2.2.</span> <span class="nav-text">迁移</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E5%AE%9E%E7%8E%B0%EF%BC%88VGG19-%E7%BD%91%E7%BB%9C%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="nav-number">2.2.1.</span> <span class="nav-text">风格迁移实现（VGG19 网络为例）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E5%88%86%E8%87%AA%E7%BC%96%E7%A0%81%E5%99%A8"><span class="nav-number">2.3.</span> <span class="nav-text">变分自编码器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E6%BD%9C%E5%9C%A8%E7%A9%BA%E9%97%B4%E9%87%87%E6%A0%B7"><span class="nav-number">2.3.1.</span> <span class="nav-text">从潜在空间采样</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#VAE"><span class="nav-number">2.3.2.</span> <span class="nav-text">VAE</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GAN"><span class="nav-number">2.4.</span> <span class="nav-text">GAN</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E6%8A%80%E5%B7%A7"><span class="nav-number">2.4.1.</span> <span class="nav-text">相关技巧</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E5%99%A8"><span class="nav-number">2.4.2.</span> <span class="nav-text">生成器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A4%E5%88%AB%E5%99%A8"><span class="nav-number">2.4.3.</span> <span class="nav-text">判别器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E6%8A%97%E7%BD%91%E7%BB%9C"><span class="nav-number">2.4.4.</span> <span class="nav-text">对抗网络</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83"><span class="nav-number">2.4.5.</span> <span class="nav-text">训练</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

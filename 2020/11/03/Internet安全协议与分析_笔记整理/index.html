@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Internet 安全协议，6个安全协议实例+安全协议分析方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Internet 安全协议基础">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="Internet 安全协议，6个安全协议实例+安全协议分析方法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201103185444.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013150856843.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151033528.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151143515.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151349786.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151855016.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/thomas-li-sjtu/cloudimg/master/img/20201103192232.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013152202433.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013152357602.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151223521.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013113528569.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013114915578.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013123444314.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013123807139.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013130941976.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013132006596.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013133058590.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013140540214.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013135833727.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015143841205.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015144214229.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015145119308.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015145422765.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015150655248.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015165548517.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015165822110.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015170239100.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015171707201.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015185725856.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015190358715.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016121144602.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016121208560.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201101111418188.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016143101520.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016144005838.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016150306151.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016150802399.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016151506417.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016152727036.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016152949310.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019221040569.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019222513232.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223340498.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223619292.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223823832.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223723107.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019225151611.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019230230856.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019230209912.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020111309276.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020112626105.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020112801696.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020112858644.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020113041176.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020113413379.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020113652271.png">
+<meta property="article:published_time" content="2020-11-03T04:12:57.000Z">
+<meta property="article:modified_time" content="2020-11-04T15:53:35.462Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="协议">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201103185444.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Internet 安全协议基础 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Internet 安全协议基础
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-03 12:12:57" itemprop="dateCreated datePublished" datetime="2020-11-03T12:12:57+08:00">2020-11-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">信息安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Internet 安全协议，6个安全协议实例+安全协议分析方法</p>
+<a id="more"></a>
+
+<h2 id="第一部分-安全协议基础"><a href="#第一部分-安全协议基础" class="headerlink" title="第一部分 安全协议基础"></a>第一部分 安全协议基础</h2><h3 id="第一章-概述"><a href="#第一章-概述" class="headerlink" title="第一章 概述"></a>第一章 概述</h3><h4 id="1-1-Internet协议与安全需求"><a href="#1-1-Internet协议与安全需求" class="headerlink" title="1.1 Internet协议与安全需求"></a>1.1 Internet协议与安全需求</h4><ul>
+<li><p>信息系统安全范围：物理安全，计算机安全，网络安全</p>
+</li>
+<li><p>信息安全的目标：保密性，完整性，可用性——CIA</p>
+</li>
+<li><p>攻击类型：Interruption（拦截），Interception（窃听），Modification（篡改），Fabrication（伪造）</p>
+</li>
+<li><p>网络安全需求：</p>
+<ul>
+<li>身份鉴别</li>
+<li>访问控制</li>
+<li>可用性（3A）</li>
+<li>数据机密性</li>
+<li>数据完整性</li>
+<li>抗否认性</li>
+</ul>
+</li>
+<li><p>常见安全协议：</p>
+<ul>
+<li>Kerberos协议：解决分布式场景下的安全认证与授权问题</li>
+<li>IPSEC：解决IP层的安全加固问题</li>
+<li>SSL/TLS协议：解决传输层的安全加固问题</li>
+<li>SET协议：提供安全支付的一种经典问题解决方案</li>
+<li>PGP协议：无政府状态下的互联网信任安全问题解决方案</li>
+<li>CSP： 提供一种电子合约签订的解决方案</li>
+</ul>
+</li>
+</ul>
+<h4 id="1-2-密码学回顾"><a href="#1-2-密码学回顾" class="headerlink" title="1.2 密码学回顾"></a>1.2 密码学回顾</h4><ul>
+<li><p>加密四要素：密钥，算法，明文，密文</p>
+</li>
+<li><p>公钥密码体系：加密，鉴别</p>
+<ul>
+<li>数字签名（签名和校验两部分），安全属性：不可否认性，不可伪造性，可第三方仲裁</li>
+<li>密钥分配：<ul>
+<li>公钥证书：初始化阶段，颁发阶段，撤销阶段<ul>
+<li>安全属性：保密性，完整性，不可否认性</li>
+<li>基于CA的电子证书（包含公钥，申请者信息，证书有效期）</li>
+<li>创建过程：申请人创建公私钥；填充申请信息并发送（用CA公钥加密）；CA检验申请；CA创建证书并用自己私有密钥对其签名；发送/邮寄证书</li>
+<li>PKI：核心是CA</li>
+</ul>
+</li>
+<li>可逆公钥密码体制</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Hash函数：输入任意长度，输出固定长度；单向函数；容易计算</p>
+</li>
+</ul>
+<h4 id="1-3-逻辑学回顾"><a href="#1-3-逻辑学回顾" class="headerlink" title="1.3 逻辑学回顾"></a>1.3 逻辑学回顾</h4><ul>
+<li>命题逻辑<ul>
+<li>连接词将原子谓词组合为符合谓词：合取，析取，否定</li>
+</ul>
+</li>
+<li>谓词逻辑<ul>
+<li>原子公式与符合谓词公式</li>
+</ul>
+</li>
+</ul>
+<h3 id="第二章-安全协议"><a href="#第二章-安全协议" class="headerlink" title="第二章 安全协议"></a>第二章 安全协议</h3><h4 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h4><ul>
+<li>协议：<strong>一组语义和语法规则,决定功能部件在通信时如何进行工作；两个或两个以上的参与者采取一系列的步骤，以完成某项特定的任务</strong></li>
+<li>安全协议（背！）：<strong>基于密码体制，在分布式系统和通信网中，实现密钥分配、身份认证、信息保密、电子商务等服务</strong><ul>
+<li>准则：主体身份标识，签名，随机数，时戳——系统中各个主体承认的可靠分布式时钟<ul>
+<li><strong>随机数用于提供消息的新鲜性，每轮随机数不同，可防止重放攻击</strong></li>
+<li><strong>时戳依赖于系统承认的分布式时钟</strong></li>
+</ul>
+</li>
+<li>缺陷：陈旧消息（上一轮次消息），并行会话</li>
+</ul>
+</li>
+<li>消息重放对策：序列号，时戳，挑战应答<ul>
+<li><strong>挑战应答：客户端要求进行身份认证，服务器查询是否合法，合法则产生随机数，作为挑战发给客户端。客户端将ID和随机数哈希并发回。服务端对比，若相同则认证成功</strong></li>
+</ul>
+</li>
+<li>良好密钥标准：新鲜，来自可信第三方，仅为协议指定合法主体拥有</li>
+</ul>
+<h4 id="协议实例"><a href="#协议实例" class="headerlink" title="协议实例"></a>协议实例</h4><ul>
+<li><p>RPC 协议：利用已有的共享密钥建立新的会话密钥       <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201103185444.png" alt="image-20201013150520624"></p>
+<ul>
+<li><p>多重会话攻击：攻击者在不同会话中，先后扮演接收方B和发送方B，重放A的部分。最终A更新了会话密钥，实际的B没有更新</p>
+<p><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013150856843.png" alt="image-20201013150856843"></p>
+</li>
+<li><p>加固：在加密内容中添加接收方的身份标识</p>
+</li>
+</ul>
+</li>
+<li><p>NS 对称密钥协议：可信第三方参与，分配会话密钥    <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151033528.png" alt="image-20201013151033528"></p>
+<ul>
+<li>攻击：替换加密内容，使双方获得的会话密钥不相同    <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151143515.png" alt="image-20201013151143515"></li>
+</ul>
+</li>
+<li><p>Otway-Rees 协议：通过可信服务器分配共享密钥    <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151349786.png" alt="image-20201013151349786"></p>
+<ul>
+<li>攻击：攻击者伪装B，收到1）后重放，即 $Z(B)\rightarrow A:M,E(K_{as}:N_a,M,A,B)$</li>
+<li>加固：挑战应答，新鲜数+1</li>
+</ul>
+</li>
+<li><p>大嘴青蛙协议：一种对称密钥管理协议  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151855016.png" alt="image-20201013151855016"></p>
+<ul>
+<li>攻击：<img src="https://raw.githubusercontent.com/thomas-li-sjtu/cloudimg/master/img/20201103192232.png" alt="image-20201013152012692"></li>
+<li>加固：在发往S的消息中加入发送方的身份标识</li>
+</ul>
+</li>
+<li><p>NS 公钥协议：A和B通过可信第三方交换公钥      <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013152202433.png" alt="image-20201013152202433"></p>
+<ul>
+<li>攻击：攻击者可以是合法用户，在两个轮次内重放。    <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013152357602.png" alt="image-20201013152357602"><ul>
+<li>轮次1：A与攻击者握手交换key</li>
+<li>轮次2：攻击者假冒A与B通信，使B以为与A交换公钥，但A并不知情</li>
+</ul>
+</li>
+<li>加固：在6）中加入发送方和接收方的身份标识</li>
+</ul>
+</li>
+<li><p>Denning Sacco 密钥分配协议<br>​    <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013151223521.png" alt="image-20201013151223521"></p>
+<ul>
+<li>攻击：B可向C重放被A私钥加密的内容（用C的公钥封装），使C以为和A有会话密钥</li>
+</ul>
+</li>
+<li><p>加固：A私钥加密内容中，加入接收方的身份标识</p>
+</li>
+<li><p>协议设计原则：</p>
+<ul>
+<li>不引入额外的加密和消息字段</li>
+<li>Nonce 与时戳不可完全混用</li>
+<li>nonce 本身需要加密——基于随机数的挑战应答机制，需要有效保护随机数</li>
+<li>时戳使用前提是有可靠的分布式时钟机制</li>
+</ul>
+</li>
+</ul>
+<h2 id="第二部分-常见的安全协议"><a href="#第二部分-常见的安全协议" class="headerlink" title="第二部分 常见的安全协议"></a>第二部分 常见的安全协议</h2><h3 id="第三章-Kerberos"><a href="#第三章-Kerberos" class="headerlink" title="第三章 Kerberos"></a>第三章 Kerberos</h3><ul>
+<li><p>基本概念和过程</p>
+</li>
+<li><p><strong>单点登录机制：能够使用一组凭据登录一次，并访问有权访问的所有系统和联机资源</strong></p>
+<ul>
+<li>KDC 给予 ticket<del>tgt</del> ——认证</li>
+<li>TGT 可以用于获取其他的服务票据 ticket<del>v</del>  ——授权</li>
+</ul>
+</li>
+</ul>
+<h4 id="Kerberos-协议原理"><a href="#Kerberos-协议原理" class="headerlink" title="Kerberos 协议原理"></a>Kerberos 协议原理</h4><ul>
+<li><p>基于 NS 可信第三方协议和 Denning Sacco 协议</p>
+</li>
+<li><p>基本概念：</p>
+<ul>
+<li>Principal：被认证的安全个体<ul>
+<li>AS：认证用户（通过long-term key），给予用户tgt和short-term key</li>
+<li>tgs：通过tgt和short-term key认证用户，通过发放ticket对用户授权和访问控制</li>
+</ul>
+</li>
+<li>KDC：网络服务，提供ticket与临时会话密钥</li>
+<li>Ticket：一个记录，客户凭此向服务器证明身份。被服务器密钥加密</li>
+<li>Authenticator：一个特殊记录，包含最近产生的信息，被客户与服务器之间的共享密钥加密</li>
+<li>Credentials：一个ticket加上一个会话密钥</li>
+</ul>
+</li>
+<li><p>认证与授权逻辑分离</p>
+</li>
+<li><p>设定不同的票据生命周期</p>
+</li>
+<li><p>过程：第一轮与AS交互（返回tgs票据和与TGS的会话密钥，同时通过Kc认证C的身份），第二轮与TGS交互（发送tgs票据与认证头，告诉tgs用户已被AS认证，返回v票据以及临时会话密钥），第三轮与V交互（发送v票据与认证头，<strong>票据用于证明用户已被AS认证，认证头用于验证票据</strong>，返回一个应答）<br>  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013113528569.png" alt="image-20201013113528569"></p>
+</li>
+<li><p>v5过程：<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013114915578.png" alt="image-20201013114915578"></p>
+</li>
+</ul>
+<h4 id="Kerberos-v5"><a href="#Kerberos-v5" class="headerlink" title="Kerberos v5"></a>Kerberos v5</h4><ul>
+<li>改进：<ul>
+<li>扩展加密算法</li>
+<li>不限制票据生命周期</li>
+<li>跨域访问更为自然：获得本地 TGS 的访问权，请求一张远程TGS的票据许可票据，向远程TGS申请服务许可票据</li>
+<li>不再双重加密</li>
+<li>采用新鲜数防止消息重放；采用 subkey 机制，防止使用同一票据的使用同一会话密钥的多个client-server连接被重放攻击</li>
+</ul>
+</li>
+</ul>
+<h4 id="Kerberos-协议优缺点"><a href="#Kerberos-协议优缺点" class="headerlink" title="Kerberos 协议优缺点"></a>Kerberos 协议优缺点</h4><ul>
+<li>优点：<ul>
+<li>密码不在网上传输，猜测更困难</li>
+<li>单点登录机制，更加便捷，不用记忆多个口令</li>
+<li>存储上有性能优势</li>
+<li>票据与认证头结合，票据被盗后难以使用</li>
+</ul>
+</li>
+<li>缺点：<ul>
+<li>缺少撤销机制：tgt 无法撤销</li>
+<li>服务器可模拟任何人；可能是性能的瓶颈：所有人都要连接</li>
+<li>密钥管理</li>
+<li>使用了时戳，需要时钟同步</li>
+<li>跨域认证繁琐</li>
+<li>口令安全问题</li>
+</ul>
+</li>
+</ul>
+<h3 id="第四章-PGP-amp-CSP"><a href="#第四章-PGP-amp-CSP" class="headerlink" title="第四章 PGP&amp;CSP"></a>第四章 PGP&amp;CSP</h3><h4 id="PGP"><a href="#PGP" class="headerlink" title="PGP"></a>PGP</h4><ul>
+<li><p>公钥环，私钥环，PGP的处理流程</p>
+</li>
+<li><p>基础：</p>
+<ul>
+<li>主要解决身份鉴别和保密性问题：跳转节点不可控，服务器可能在境内或境外</li>
+<li>Email工作原理：电子邮件客户端——SMTP协议、发送方电子邮件服务器端口25——TCP连接，SMTP协议——接收方电子邮件服务端口25——pop3协议tcp连接端口110——电子邮件客户端</li>
+<li>PGP公钥分发：<ul>
+<li>每个人都可以做CA，将B的公钥签发给第三方，第三方自行决定是否信任——B信任A且获得A签名的C公钥，则B信任C公钥</li>
+<li>存在风险：A检查不当/A被贿赂——用不用在于B本身，同时可设定公钥（证书）的信任度<ul>
+<li>none，partial，complete</li>
+<li>个体的信任水平决定了签发的证书信任水平</li>
+</ul>
+</li>
+<li>可主动撤销公钥；证书颁发者可撤销证书；证书和密钥存在有效期</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>加密与认证过程（要求能够默写！）：</p>
+<ul>
+<li>压缩在签名之后进行：便于采用不同的压缩算法；验证方可以只存储原始内容和签名</li>
+<li>加密在压缩之后进行：加强加密强度，冗余减少，密码分析更为困难</li>
+<li>加密在签名后进行：如果不是，可能被替换签名</li>
+</ul>
+<p><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013123444314.png" alt="image-20201013123444314"></p>
+</li>
+<li><p>消息生成与接收：passphrase：口令，用户解密private key<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013123807139.png" alt="image-20201013123807139"></p>
+<ul>
+<li>生成：<ul>
+<li>用户id作为索引获取发送者的私钥，用户输入口令来解密私钥，创建签名（发送方私钥环）</li>
+<li>生成会话密钥加密，接收方ID作为索引获取接受方的公钥，创建消息（发送方公钥环）</li>
+</ul>
+</li>
+<li>接收：<ul>
+<li>消息内密钥ID字段作为索引获取加密私钥，用户输入口令解密私钥，获得会话密钥解密内容（接收方私钥环）</li>
+<li>签名密钥id作为索引获取公钥，恢复摘要，计算摘要并认证（接收方公钥环）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>密钥数据库</p>
+<ul>
+<li>公钥环 pubring：<strong>主要存储其他节点的公钥</strong>。时戳，key id，公钥，信任度，user id等</li>
+<li>私钥环 secring：<strong>存储节点生成的公私钥对，私钥加密处理</strong>。时戳，key id，公钥，加密私钥，user id</li>
+</ul>
+</li>
+<li><p>信任模型：</p>
+<ul>
+<li>web of trust信任模型</li>
+<li>无集中授权机构 </li>
+<li>计算公钥环内每个公钥的信任度，用户解释信任水平</li>
+<li>公钥信任水平决定于密钥的签名数目和每个签名的信任度，要不时计算</li>
+</ul>
+</li>
+</ul>
+<h4 id="CSP（不考）"><a href="#CSP（不考）" class="headerlink" title="CSP（不考）"></a>CSP（不考）</h4><ul>
+<li><p>TTP的作用，Asokan-Shoup-Waidner 协议， Abuse-Free 版本协议</p>
+</li>
+<li><p>要求公平交换：同时成功或同时失败</p>
+</li>
+<li><p>问题：</p>
+<ul>
+<li>若进程出错，则难以达成一致；网络存在时延</li>
+<li>异步提交协议存在 “脆弱性窗口（window of vulnerability）”，即单个进程的延迟会导致系统的等待</li>
+</ul>
+</li>
+<li><p>没有TTP则协议并不健壮：每一次消息发送均有TTP参与，或者TTP仅在被请求时候决断</p>
+<ul>
+<li>公平性：不允许欺骗对方（A没有B的签名，则B不能有A的签名——TTP的撤销功能）</li>
+<li>及时性：不必无限等待（TTP进行恰当的实时的终止）</li>
+</ul>
+</li>
+<li><p>Asokan-Shoup-Waidner 协议</p>
+<ul>
+<li>三种场景    <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013130941976.png" alt="image-20201013130941976"><ul>
+<li>成交子协议：没有收到m3或m4，在没有提出撤销的情况下，强制实行，否则撤销</li>
+<li>撤销子协议：没有收到m2，在没有成交的前提下，强制撤销。a1为 sig<del>M</del> (abort, m1)，否则成交</li>
+</ul>
+</li>
+<li>TTP职责：<ul>
+<li>AB同意下，T 强制达成协议</li>
+<li>T 发放撤销令牌，合同不成立</li>
+<li>T 基于first-come-first-serve 之上决定撤销还是签订，且T仅在A或者B请求下介入——乐观的协议</li>
+</ul>
+</li>
+<li>重放攻击：K在上一轮获得了M的两条消息，由此K在下一轮冒充M与Q签订合同</li>
+<li>改进：<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013132006596.png" alt="image-20201013132006596"></li>
+</ul>
+</li>
+<li><p>Abuse-Free</p>
+<ul>
+<li><p>Private Contract Signature：特殊的加密原语，防止abuse</p>
+<ul>
+<li>B 无法将来自A的消息拿来呈现给 C，仅B和T能验证签名有效性</li>
+<li>T 转换签名为公开的sigA，但不自用</li>
+</ul>
+</li>
+<li><p>TTP作用：</p>
+<ul>
+<li>将PCS转换为普通签名</li>
+<li>发布撤销令牌</li>
+<li>仅在被请求时候介入，先来先服务</li>
+</ul>
+</li>
+<li><p>三种场景：<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013133058590.png" alt="image-20201013133058590" style="zoom: 80%;"></p>
+</li>
+<li><p>攻击：攻击者率先申请撤销，之后B迟迟收不到第三个消息，向T申请成交，则T泄露了sig<del>B</del>（text）<br>  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013140540214.png" alt="image-20201013140540214"></p>
+<p>改进：如果T转换为传统签名，则T被追责  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201013135833727.png" alt="image-20201013135833727"></p>
+</li>
+<li><p>任何公平，乐观和及时的签订协议中, 若一方是乐观的, 则另一方拥有优势</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="第五章-SET"><a href="#第五章-SET" class="headerlink" title="第五章 SET"></a>第五章 SET</h3><ul>
+<li>电子支付基本流程，双重数字签名，SET流程</li>
+</ul>
+<h4 id="SET简介"><a href="#SET简介" class="headerlink" title="SET简介"></a>SET简介</h4><ul>
+<li>电子交易类型：<ul>
+<li>无安全措施支付模式：风险由商家承担，并掌握用户信用卡信息</li>
+<li>通过第三方代理人支付模式：电子邮件确认用户身份，支付由可信第三方完成</li>
+<li>数字现金支付模式：适用于小额交易，数字现金完成身份认证，数字现金发行负责用户与商家的资金转移</li>
+<li>简单加密支付系统模式：对称与非对称加密，数字签名确认真实性，业务服务器和服务软件支持</li>
+<li>安全电子交易SET支付模式：商家只看到订货信息，持卡人与商家相互认证</li>
+</ul>
+</li>
+<li>SET只关心支付问题；脱离于底层协议的安全性，安全来自SET本身</li>
+<li>要求独立于传输安全</li>
+</ul>
+<h4 id="双重数字签名"><a href="#双重数字签名" class="headerlink" title="双重数字签名"></a>双重数字签名</h4><ul>
+<li>数字签名：内容哈希，私钥签名摘要</li>
+<li>数字证书：<ul>
+<li>data with digital signature from CA；data：过期日期，证书颁发涉及的双方</li>
+<li>数字ID包括：公钥，名字，地址，过期日期，颁发CA</li>
+</ul>
+</li>
+<li>双重数字签名：<ul>
+<li>两个消息连接在一起，这两个消息面向的对象不同</li>
+<li>Order Information (OI):  客户给商家，订单信息</li>
+<li>Payment Information (PI):  客户给银行，消费信息</li>
+<li>A给商家OI+PI，商家看不到PI，商家发PI给S（银行）——确保信息不被非法使用<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015143841205.png" alt="image-20201015143841205"></li>
+</ul>
+</li>
+</ul>
+<h4 id="SET流程"><a href="#SET流程" class="headerlink" title="SET流程"></a>SET流程</h4><ul>
+<li><p>消息流：<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015144214229.png" alt="image-20201015144214229"></p>
+</li>
+<li><p>具体流程</p>
+<ul>
+<li>客户发送订单和支付信息</li>
+<li>商家向支付网关请求支付授权</li>
+<li>商家确认客户订单</li>
+<li>商家向客户提供商品</li>
+<li>商家向支付网关请求支付</li>
+</ul>
+</li>
+<li><p>InitReq/InitRes：下订单，支付初始化，明文</p>
+<ul>
+<li>InitReq：持卡人获得商家与支付网关的证书<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015145119308.png" alt="image-20201015145119308"></li>
+</ul>
+</li>
+<li><p>PReq/Pres：持卡人校验证书，生成OI/PI，下单</p>
+<ul>
+<li>PReq：SET核心<ul>
+<li>发送：<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015145422765.png" alt="image-20201015145422765"></li>
+<li>商家验证：存储PI并转发，校验持卡人证书，双重签名，从支付网关获取授权，发回响应确认订单（授权延迟，则发回“请稍后查询”）<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015150655248.png" alt="image-20201015150655248"></li>
+</ul>
+</li>
+<li>PRes：无加密，商家仅签名消息，其中完成代码（CompletionCode）代表交易状态   <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015165548517.png" alt="image-20201015165548517"></li>
+</ul>
+</li>
+<li><p>AuthReq&amp; AuthRes：认证，校验持卡人信用；商家签名并公钥加密AuthReq，根据AuthRes结果运输商品。H(Order)表明和PI的一致性，</p>
+<ul>
+<li>AuthReq：<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015165822110.png" alt="image-20201015165822110"><ul>
+<li>接收后的处理：解密Req，校验商家签名，解密PI，校验双重签名，PI抽取卡数据。<ul>
+<li>确保PI和AuthReq的一致性</li>
+<li>H(Order)，PI，AuthReq共同校验持卡人、商家对订购行为的一致性</li>
+<li>生成AuthRes与捕获令牌</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>AuthRes：<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015170239100.png" alt="image-20201015170239100"></li>
+</ul>
+</li>
+<li><p>CapReq&amp;CapRes（Cap：捕获）：完成已授权交易的支付</p>
+<ul>
+<li>通过捕获令牌Cap Token（金额证据）完成支付（可能在多次AuthRes的捕获令牌累积后完成，即CapReq中一次发送多个Cap Token）</li>
+<li>CapReq：${ { CapReq} sig_M } PK_A$；CapRes：${ { CapReq} sig_A } PK_M$</li>
+</ul>
+</li>
+<li><p>交易过程：</p>
+<ul>
+<li>验证电子证书9次</li>
+<li>传递证书7次</li>
+<li>验证数字签名6次</li>
+<li>进行签名5次</li>
+<li>对称加密和非对称加密4次</li>
+</ul>
+</li>
+<li><p>SET核心技术</p>
+<ul>
+<li>数字证书</li>
+<li>数字签名</li>
+<li>电子信封（会话密钥加密，公钥加密会话密钥）</li>
+<li>公钥加密</li>
+</ul>
+</li>
+<li><p>对比SSL：</p>
+<ul>
+<li>SET实现非常复杂，商家和银行都需要改造系统以实现互操作，需要CA支持</li>
+<li>SET是一个多方的报文协议，允许各方报文交换不是实时的；SSL面向连接，且只是在两方之间建立一条安全连接</li>
+<li>SET报文能够在银行内部网或者其他网络上传输，SSL之上的卡支付系统只能与Web浏览器捆绑</li>
+<li>SET安全性更高</li>
+</ul>
+</li>
+</ul>
+<h3 id="第六章-IPSEC"><a href="#第六章-IPSEC" class="headerlink" title="第六章 IPSEC"></a>第六章 IPSEC</h3><ul>
+<li>IPsec的基本概念：SA， SPD，AH，ESP， 隧道模式， 传输模式， Outbound &amp; Inbound 处理，两个阶段SA的区别</li>
+<li>IP安全<ul>
+<li>通信双方身份验证</li>
+<li>数据完整性与机密性保护</li>
+<li>IP地址欺骗</li>
+</ul>
+</li>
+</ul>
+<h4 id="IPsec概念"><a href="#IPsec概念" class="headerlink" title="IPsec概念"></a>IPsec概念</h4><ul>
+<li>IPsec：一组安全IP协议集，现代密码学方法支持机密性和认证性服务<ul>
+<li>认证包的发起者，防止传输中的拦截和篡改，提供访问控制、无连接完整性、数据源鉴别、载荷机密性和有限流量机密服务</li>
+<li>IPv4可选，IPv6必选</li>
+<li>机制：认证、信息机密性和密钥管理</li>
+<li>两个分离的层：IKE（互联网密钥交换）与 IP-Sec record sub-layer（流量封装与保护）<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015171707201.png" alt="image-20201015171707201"></li>
+</ul>
+</li>
+<li>SA（Security Association）<ul>
+<li>由SPI（Security Parameter Index，安全参数索引）和目标地址组成，它表示通信方如何使用安全服务进行安全通信</li>
+<li>单个IPsec连接至少需要2个SA</li>
+<li>参数：认证算法与模式，加密算法与模式，密钥及生命周期等</li>
+<li>SPI：两部VPN主机之间以随机数或手动指定的唯一值，其目的是要作为数据库的索引值</li>
+</ul>
+</li>
+<li>SAD（Security Association Data）<ul>
+<li>含有所有活跃的SA</li>
+<li>存放在 SAD 中的参数有 SPI 值、目的端IP、安全协议号（AH或ESP）、AH 验证算法等</li>
+</ul>
+</li>
+<li>SPD（Security Policy Data）<ul>
+<li>用户定义的策略：每个报文的安全服务及其水平</li>
+<li>用来存放 IPSec 的规则，这些规则用来定义哪些流量需要走 IPSec</li>
+</ul>
+</li>
+<li>AH（Authentication Header）<ul>
+<li>每一个数据包上添加一个身份验证报头，提供数据源认证、完整性保护和重放保护，无机密性保护</li>
+<li>AH校验包含源地址，与NAT冲突</li>
+<li>传输模式：AH被插在IP头之后、所有的传输层协议之前、其它IPSec协议头之前</li>
+<li>隧道模式：AH插在原始的IP头之前，并生成一个新的IP头放在AH之前<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015185725856.png" alt="image-20201015185725856"><ul>
+<li>输出：<ul>
+<li>SA查找</li>
+<li>生成序列号</li>
+<li>计算ICV校验值（完整性保护）</li>
+<li>填充，分段</li>
+</ul>
+</li>
+<li>接收：<ul>
+<li>重组</li>
+<li>SA查找</li>
+<li>序列号验证</li>
+<li>ICV验证</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ESP（Encapsulating Security Payload）<ul>
+<li>完整性，加密性，重放保护，无不可否认性，认证性取决加密算法</li>
+<li>IP包头部（含选项字段）不会被验证，不存在NAT模式冲突；原IP地址被当作有效载荷的一部分受到保护；可以隐藏数据包目的地址，以保护端对端隧道通信中数据的安全性；隧道模式可提供数据流加密服务</li>
+<li>传输模式：origin IP hdr + ESP hdr  + TCP + Data + ESP trlr + ESP auth；加密 TCP 到 ESP trlr，认证 ESP hdr 到 ESP trlr</li>
+<li>隧道模式：New IP hdr + ESP hdr + origin IP hdr + TCP + Data + ESP trlr + ESP auth；加密origin IP hdr 到ESP trlr，认证ESP hdr 到ESP trlr</li>
+<li>ESP 提供加密处理，AH无法提供；AH 提供抗抵赖性，ESP无法提供。组合使用时，先ESP后AH，因此ESP头可被AH保护</li>
+<li>输出：同上，生成序列号后对数据包加密</li>
+<li>接收：同上，ICV验证后对数据包解密</li>
+</ul>
+</li>
+<li>模式架构<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201015190358715.png" alt="image-20201015190358715"></li>
+<li>对称加密（DES），基于对称加密的单向哈希（MD5/SHA-1）</li>
+</ul>
+<h4 id="IPsec机理"><a href="#IPsec机理" class="headerlink" title="IPsec机理"></a>IPsec机理</h4><ul>
+<li>ISAKMP：SA协商与密钥管理协议</li>
+<li>Internet Key Exchange（IKE）用于<strong>配置 IPSEC，位于UDP之上，是后者的信令协议；通信双方协商加/解密算法及其密钥、密钥的生命期、验证算法，在 ISAKMP 规定的一个框架内运作</strong>；IKE不是在网络上直接传送密钥，而是通过一系列数据的交换，最终计算出双方共享的密钥<ul>
+<li><strong>IKE为IPsec协商建立SA，并把建立的参数及生成密钥交给IPsec；IPsec使用IKE建立的SA对IP报文加密或验证处理</strong></li>
+<li>阶段1：两个IKE对等体间<strong>创建一个认证过的安全通道</strong>（通过UDP端口500），即协商建立IKE SA<ul>
+<li>主模式：协商加密与hash算法，并用Diffie-Hellman交换密钥，校验身份（六个报文）<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016121144602.png" alt="image-20201016121144602"></li>
+<li>主动（快速）模式：所有协商、密钥交换等压缩成更少的包，更快但容易被嗅探（三个报文）<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016121208560.png" alt="image-20201016121208560"></li>
+<li>区别：<ul>
+<li>交互6个消息——交互3个消息</li>
+<li>只能基于IP确定预共享密钥——基于ID（主机名+IP）确定预共享密钥</li>
+<li>安全性较高，前四个消息明文传输，后两个消息加密，保护对端身份——安全性较低，前两个消息明文传输，后一个消息加密，不保护对端身份</li>
+<li>速度较慢——速度较快</li>
+<li>适用于公网IP固定，点对点环境——适合公网IP不定，且可能存在NAT设备</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>阶段2：<strong>协商 IPSec SA参数，建立 IPSec SA，周期性的重新协商IPSec SA</strong><br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201101111418188.png" alt="image-20201101111418188"></li>
+<li>主模式身份验证方式：<ul>
+<li>预共享密钥认证</li>
+<li>数字签名认证</li>
+<li>公钥加密认证</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>IPsec 执行：<ul>
+<li>可在主机或网关上使用：<ul>
+<li>主机：端到端安全服务，可用IPSec所有模式</li>
+<li>路由器：对进入专用网络的用户进行身份验证和授权，允许创建VPN</li>
+</ul>
+</li>
+<li>在OS或堆栈的bump上集成</li>
+</ul>
+</li>
+</ul>
+<h4 id="IPsec应用"><a href="#IPsec应用" class="headerlink" title="IPsec应用"></a>IPsec应用</h4><ul>
+<li>具体应用<ul>
+<li>加强电子商务安全</li>
+<li>IP级别加密和/或验证所有流量</li>
+<li>分布式防火墙</li>
+<li>虚拟专用网</li>
+</ul>
+</li>
+<li>应用流程：<ul>
+<li>主机A通知本机的IPSec驱动程序检查IP筛选器，查看数据包是否需要受保护以及需要受到何种保护</li>
+<li>驱动通知IKE开始安全协商</li>
+<li>主机A给B发送IKE请求安全协商通知，主机B上的IKE收到请求安全协商通知，并响应，A与B建立SA第一阶段协商，生成共享主密钥</li>
+<li>A与B建立SA第二阶段协商，生成SA对（入站SA和出站SA， SA包括密钥和SPI ）</li>
+<li>驱动程序用出站SA对数据包进行签名（完整性检查）和加密</li>
+<li>IP层发送与接收</li>
+<li>接收方驱动程序使用入站SA检查完整性签名与/或对数据包进行解密</li>
+<li>驱动程序将解密后的数据包提交上层TCP/IP驱动程序，再由TCP/IP驱动程序将数据包提交主机B的接收应用程序</li>
+</ul>
+</li>
+</ul>
+<h3 id="第七章-SSL"><a href="#第七章-SSL" class="headerlink" title="第七章 SSL"></a>第七章 SSL</h3><ul>
+<li>基本概念，协议过程</li>
+</ul>
+<h4 id="SSL概念"><a href="#SSL概念" class="headerlink" title="SSL概念"></a>SSL概念</h4><ul>
+<li><p>加固 http 层，使得TCP实现可靠、端对端的服务</p>
+</li>
+<li><p>TLS 向后兼容 SSLv3</p>
+<ul>
+<li>认证（公私钥+数字证书）</li>
+<li>保密性（会话密钥）</li>
+<li>完整性（查验Message Authentication Code，MAC）</li>
+<li>抗重放攻击（序列号与随机数）</li>
+</ul>
+</li>
+<li><p>子层：SSL Record Protocol (所有操作发生的位置)，SSL Management: (握手/密码更改/警报协议) </p>
+</li>
+<li><p>体系：  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016143101520.png" alt="image-20201016143101520"></p>
+</li>
+<li><p>核心为握手协议，完成<strong>传输数据前的加密算法协商，共享密钥建立，相互认证</strong></p>
+</li>
+</ul>
+<h4 id="基本过程"><a href="#基本过程" class="headerlink" title="基本过程"></a>基本过程</h4><ul>
+<li>握手过程流程图：<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016144005838.png" alt="image-20201016144005838"></li>
+<li>过程1：<strong>建立安全能力</strong><br>  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016150306151.png" alt="image-20201016150306151"><ul>
+<li>$r_A$：新鲜数，4字节时戳+28字节随机数</li>
+<li>$SessID$：新的会话则为0，否则为已有会话ID</li>
+<li>$CiphList$：客户机支持、按优先级递减的密钥交换和加密算法列表</li>
+<li>$Ciphchoice$：服务器选择的加密套件</li>
+<li>最后双方知道：<strong>（1）SSL版本（2）密钥交换、信息验证和加密算法（3）压缩方法（4）有关密钥生成的两个随机数。</strong></li>
+</ul>
+</li>
+<li>过程2：<strong>服务器认证与密钥交换</strong><br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016150802399.png" alt="image-20201016150802399"><ul>
+<li>服务器发送X.509证书及证书链（$K_G$为服务器私钥）</li>
+<li>服务器发送公钥（可选，有些情况不需要）</li>
+<li>服务器向客户端请求证书（ValidCertAuthorities 标识服务器将接受的权限）</li>
+<li>备注：仅当已发送的服务器证书消息包含的数据不足以允许客户端交换密钥时，服务器才会发送服务器预主密钥交换消息。</li>
+</ul>
+</li>
+<li>过程3：<strong>客户机认证与密钥交换</strong><br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016151506417.png" alt="image-20201016151506417"><ul>
+<li>客户验证并发送证书</li>
+<li>消息9用于认证</li>
+<li>$+K_G$：公钥，来自服务器证书</li>
+<li>$Message1to8$：前8条消息的串联</li>
+<li>$MS$：主密钥</li>
+<li>如果服务器请求证书，发送certificates；如果客户没有证书，则发送client key exchange消息。最后发一个verify，对第一条消息以来的所有握手消息的MAC值进行签名。</li>
+<li>备注：<ul>
+<li>主密钥master key：48字节，预主密钥转化为来</li>
+<li>预主密钥premaster key：两个伪随机流互斥混合在一起</li>
+<li><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016152727036.png" alt="image-20201016152727036"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>过程4：<strong>建立起一个安全的连接</strong><br>  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201016152949310.png" alt="image-20201016152949310"><ul>
+<li>客户机通知服务器更改密码（通过更改密码协议）</li>
+<li>服务器用自己更改的密码消息进行响应</li>
+<li>Finish Message为用加密套件和会话密钥加密的数据，用于验证正式传输数据之前对刚刚建立的加解密通道</li>
+<li><strong>ChangeCipherSpec</strong> 是一个独立的协议，用于告知服务端，客户端已经切换到之前协商好的加密套件（Cipher Suite）的状态，准备使用之前协商好的加密套件加密数据并传输了</li>
+</ul>
+</li>
+<li>证书校验：必须识别证书链中信任的CA（一个CA可以为另一个CA颁发证书）；必须验证证书是否已被撤销（CA发布证书撤销列表）</li>
+<li>加密密钥：<ul>
+<li>Master Secret：由双方分别生成的随机值和预共享密钥生成</li>
+<li>Key material：由master secret和双方共享的随机值生成</li>
+<li>Encryption key：从Key material中提取，是对称密钥</li>
+</ul>
+</li>
+<li>总结：<ul>
+<li>交换Hello消息，对于算法、交换随机值等协商一致</li>
+<li>交换必要的密码参数，以便双方得到统一的premaster secret</li>
+<li>交换证书和相应的密码信息，以便进行身份认证</li>
+<li>产生master secret</li>
+<li>把安全参数提供给SSL记录层</li>
+<li>检验双方是否已经获得同样的安全参数</li>
+</ul>
+</li>
+<li>SSL 告警协议：表明异常出现<ul>
+<li>2个字节的消息</li>
+<li>warning则第一个字节为1，fatal则第一个字节为2且第二个字节说明错误种类（握手失败，意外消息等）</li>
+</ul>
+</li>
+<li>SSL 记录协议：提供机密性（双方共有的密钥加密）与认证性（产生另一把共有密钥计算MAC）<ul>
+<li><strong>数据分段后压缩</strong></li>
+<li><strong>添加MAC（消息认证码）后加密</strong></li>
+<li><strong>添加Record Header</strong>（内容类型+内容长度+SSL版本）</li>
+</ul>
+</li>
+<li>间接问题：比TCP会话慢2-10倍<ul>
+<li>握手阶段的公私钥加密</li>
+<li>数据传输阶段的对称密钥加密</li>
+</ul>
+</li>
+<li>不提供UDP应用的安全保护，不能对抗通信流量分析，存在主密钥泄露和客户端假冒问题</li>
+</ul>
+<h2 id="第三部分-安全协议分析"><a href="#第三部分-安全协议分析" class="headerlink" title="第三部分 安全协议分析"></a>第三部分 安全协议分析</h2><h3 id="第八章-BAN"><a href="#第八章-BAN" class="headerlink" title="第八章 BAN"></a>第八章 BAN</h3><ul>
+<li>消息描述：形式化方式对协议消息进行描述</li>
+<li>初始假设：对协议外部特性假设，如对可信第三方的信任假设、对随机数新鲜性的假设，</li>
+<li>推理规则：逻辑方法的核心</li>
+<li>主体信念：逻辑分析方法的结果</li>
+</ul>
+<h4 id="BAN逻辑概念"><a href="#BAN逻辑概念" class="headerlink" title="BAN逻辑概念"></a>BAN逻辑概念</h4><ul>
+<li>符号：<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019221040569.png" alt="image-20201019221040569"></li>
+</ul>
+<h4 id="BAN逻辑框架"><a href="#BAN逻辑框架" class="headerlink" title="BAN逻辑框架"></a>BAN逻辑框架</h4><ul>
+<li><p>推理规则：</p>
+<ul>
+<li>消息意义规则：从加密消息所使用密钥和消息中的而秘密，推断发送者身份<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019222513232.png" alt="image-20201019222513232"></li>
+<li>随机数验证规则：P相信X新鲜，且P相信Q曾经发送过X，则P相信Q相信X $bel(P,fresh(X))\  and \ bel(P,said(Q,X)) =&gt; bel(P,bel(Q,X))$</li>
+<li>仲裁规则：扩展主体的信任<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223340498.png" alt="image-20201019223340498"></li>
+<li>信念规则：信念在消息级联与分割中的一致性，以及信仰在此类操作中的传递性<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223619292.png" alt="image-20201019223619292"></li>
+<li>接受规则：主体在协议运行中获取消息：P接收到消息，也就接收到消息的组成部分；收到加密消息后能读出消息原文的情况<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223823832.png" alt="image-20201019223823832"></li>
+<li>新鲜规则：消息的一部分是新鲜的，则整个消息也是新鲜的；随机数验证规则；<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019223723107.png" alt="image-20201019223723107"></li>
+<li>传递规则：P相信Q发送过整个消息，则P相信Q发送过消息的一部分  $bel(P, said(Q, (X,Y)) \ =&gt; bel(P, said(Q, X))$</li>
+</ul>
+</li>
+<li><p>若干假设：</p>
+<ul>
+<li>时间假设：区分此次协议开始的时间和过去的时间；某一观点在协议开始时成立，则当前轮次也成立；过去的观点不一定成立</li>
+<li>密钥假设：密钥不能从密文推出；无密钥则不能解密；<strong>主体能够知道是否它使用正确解密密钥</strong></li>
+<li>主体假设：参与协议的主体都是诚实的</li>
+<li>自身消息可识别假设：接收方能分辨消息是否是自己已发送过的</li>
+</ul>
+</li>
+<li><p>应用：</p>
+<ul>
+<li>协议理想化预处理</li>
+<li>给定初始状态和基于的假设</li>
+<li>形势化协议达成的安全目标</li>
+<li>由推理规则、会话事实与假设，推理</li>
+</ul>
+</li>
+</ul>
+<h4 id="案例分析"><a href="#案例分析" class="headerlink" title="案例分析"></a>案例分析</h4><ul>
+<li><p>NS协议漏洞分析</p>
+<ul>
+<li>假定：三个主体（S的权威性），两个长期共享密钥，一个临时会话密钥，两个随机数（新鲜性）；目标：完成协议后，A和B相信拥有一个仅它们和服务器知道的会话密钥</li>
+<li><strong>理想化协议</strong><br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019225151611.png" alt="image-20201019225151611"></li>
+<li>初始状态与假设<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019230230856.png" alt="image-20201019230230856"></li>
+<li>安全目标<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201019230209912.png" alt="image-20201019230209912"></li>
+<li>逻辑证明</li>
+</ul>
+</li>
+<li><p>BAN逻辑缺陷</p>
+<ul>
+<li>非标准的理想化协议过程，省略对推理主体信仰无用的部分——明文忽略问题</li>
+<li>理想化过分依赖于分享者的直觉，原始协议和理想化协议存在语义鸿沟</li>
+<li>不合理假设：主体诚实</li>
+</ul>
+</li>
+</ul>
+<h3 id="第九章-Commsp"><a href="#第九章-Commsp" class="headerlink" title="第九章 Commsp"></a>第九章 Commsp</h3><ul>
+<li>从反面寻找协议漏洞，如果找到攻击步骤，说明协议有缺陷</li>
+<li>CSP（communication Sequential Processes，通讯顺序进程）：一种用于描述通过传递消息进行通信的并行代理（parallel agents）系统的符号</li>
+</ul>
+<h4 id="CSP基础"><a href="#CSP基础" class="headerlink" title="CSP基础"></a>CSP基础</h4><ul>
+<li><p>基本术语：</p>
+<ul>
+<li>事件：通过执行的一系列事件描述协议</li>
+<li>信道：不同事件类型看作不同信道，并规定传递的数据类型</li>
+<li>进程：执行状态中的一个动作/事件以及动作结束后的状态</li>
+<li>常用进程：<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020111309276.png" alt="image-20201020111309276"></li>
+<li>进程间选择：<br><img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020112626105.png" alt="image-20201020112626105"></li>
+<li>并行进程：  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020112801696.png" alt="image-20201020112801696"></li>
+<li>重命名：  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020112858644.png" alt="image-20201020112858644"></li>
+<li>条件结构（if-then-else）： <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020113041176.png" alt="image-20201020113041176"></li>
+<li>迹与精炼：迹是一个事件序列。如果进程Q的迹为进程P迹的子集，称Q的迹精炼P的迹  <img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020113413379.png" alt="image-20201020113413379"></li>
+</ul>
+</li>
+<li><p>协议目标的CSP描述</p>
+<ul>
+<li>保密性：有保密性的m不能被通信以外的用户得到（或者m是一个对接收者不透明的量）</li>
+<li>认证性：身份认证目标表现为以下断言成立<img src="/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image-20201020113652271.png" alt="image-20201020113652271"><h4 id="案例分析-1"><a href="#案例分析-1" class="headerlink" title="案例分析"></a>案例分析</h4></li>
+</ul>
+</li>
+<li><p>协议规范和协议实现两个CSP作为输入，检查协议的实现是否精炼了规范</p>
+</li>
+<li><p>具体见PPT Yahalom协议</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\19\现代密码学课程项目\" rel="bookmark">现代密码学 mmtls</a></div>
+        <div class="popular-posts-excerpt"><p><h1 id="mmtls——微信安全通信协议分析"><a href="#mmtls——微信安全通信协议分析" class="headerlink" title="mmtls——微信安全通信协议分析"></a>mmtls——微信安全通信协议分析</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2020/11/03/Internet%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E6%9E%90_%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" title="Internet 安全协议基础">https://thomas-li-sjtu.github.io/2020/11/03/Internet安全协议与分析_笔记整理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag"><i class="fa fa-tag"></i> 协议</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/02/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF%E8%A7%A3%E6%9E%90%E4%B8%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5_%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" rel="prev" title="信息安全技术解析与开发实践">
+      <i class="fa fa-chevron-left"></i> 信息安全技术解析与开发实践
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/03/Python%E7%BC%96%E7%A8%8B%EF%BC%9A%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%AE%9E%E8%B7%B5%EF%BC%881%EF%BC%89%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="next" title="《Python编程：从入门到实践》 （1）基础知识">
+      《Python编程：从入门到实践》 （1）基础知识 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86-%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">第一部分 安全协议基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%AB%A0-%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">第一章 概述</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Internet%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%AE%89%E5%85%A8%E9%9C%80%E6%B1%82"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 Internet协议与安全需求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E5%AF%86%E7%A0%81%E5%AD%A6%E5%9B%9E%E9%A1%BE"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 密码学回顾</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-%E9%80%BB%E8%BE%91%E5%AD%A6%E5%9B%9E%E9%A1%BE"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.3 逻辑学回顾</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.2.</span> <span class="nav-text">第二章 安全协议</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="nav-number">1.2.1.</span> <span class="nav-text">基础概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.2.2.</span> <span class="nav-text">协议实例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86-%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.</span> <span class="nav-text">第二部分 常见的安全协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E7%AB%A0-Kerberos"><span class="nav-number">2.1.</span> <span class="nav-text">第三章 Kerberos</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Kerberos-%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86"><span class="nav-number">2.1.1.</span> <span class="nav-text">Kerberos 协议原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Kerberos-v5"><span class="nav-number">2.1.2.</span> <span class="nav-text">Kerberos v5</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Kerberos-%E5%8D%8F%E8%AE%AE%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">2.1.3.</span> <span class="nav-text">Kerberos 协议优缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0-PGP-amp-CSP"><span class="nav-number">2.2.</span> <span class="nav-text">第四章 PGP&amp;CSP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#PGP"><span class="nav-number">2.2.1.</span> <span class="nav-text">PGP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CSP%EF%BC%88%E4%B8%8D%E8%80%83%EF%BC%89"><span class="nav-number">2.2.2.</span> <span class="nav-text">CSP（不考）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E7%AB%A0-SET"><span class="nav-number">2.3.</span> <span class="nav-text">第五章 SET</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SET%E7%AE%80%E4%BB%8B"><span class="nav-number">2.3.1.</span> <span class="nav-text">SET简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8C%E9%87%8D%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="nav-number">2.3.2.</span> <span class="nav-text">双重数字签名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SET%E6%B5%81%E7%A8%8B"><span class="nav-number">2.3.3.</span> <span class="nav-text">SET流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E7%AB%A0-IPSEC"><span class="nav-number">2.4.</span> <span class="nav-text">第六章 IPSEC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#IPsec%E6%A6%82%E5%BF%B5"><span class="nav-number">2.4.1.</span> <span class="nav-text">IPsec概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPsec%E6%9C%BA%E7%90%86"><span class="nav-number">2.4.2.</span> <span class="nav-text">IPsec机理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPsec%E5%BA%94%E7%94%A8"><span class="nav-number">2.4.3.</span> <span class="nav-text">IPsec应用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%83%E7%AB%A0-SSL"><span class="nav-number">2.5.</span> <span class="nav-text">第七章 SSL</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SSL%E6%A6%82%E5%BF%B5"><span class="nav-number">2.5.1.</span> <span class="nav-text">SSL概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%BF%87%E7%A8%8B"><span class="nav-number">2.5.2.</span> <span class="nav-text">基本过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86-%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">第三部分 安全协议分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%85%AB%E7%AB%A0-BAN"><span class="nav-number">3.1.</span> <span class="nav-text">第八章 BAN</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#BAN%E9%80%BB%E8%BE%91%E6%A6%82%E5%BF%B5"><span class="nav-number">3.1.1.</span> <span class="nav-text">BAN逻辑概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BAN%E9%80%BB%E8%BE%91%E6%A1%86%E6%9E%B6"><span class="nav-number">3.1.2.</span> <span class="nav-text">BAN逻辑框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90"><span class="nav-number">3.1.3.</span> <span class="nav-text">案例分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B9%9D%E7%AB%A0-Commsp"><span class="nav-number">3.2.</span> <span class="nav-text">第九章 Commsp</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CSP%E5%9F%BA%E7%A1%80"><span class="nav-number">3.2.1.</span> <span class="nav-text">CSP基础</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">案例分析</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

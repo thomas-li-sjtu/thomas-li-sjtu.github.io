@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="现代密码学课程笔记（2）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="现代密码学（2）公钥密码">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="现代密码学课程笔记（2）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201227164248688.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-1.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212131622648.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212130317783.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212135533253.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212135427802.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212135015810.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201226134207709.png">
+<meta property="article:published_time" content="2020-12-09T02:51:52.000Z">
+<meta property="article:modified_time" content="2020-12-27T09:54:37.177Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201227164248688.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>现代密码学（2）公钥密码 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          现代密码学（2）公钥密码
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-09 10:51:52" itemprop="dateCreated datePublished" datetime="2020-12-09T10:51:52+08:00">2020-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">信息安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>现代密码学课程笔记（2）</p>
+<a id="more"></a>
+
+<h2 id="公钥密码学"><a href="#公钥密码学" class="headerlink" title="公钥密码学"></a>公钥密码学</h2><ul>
+<li><p>对称密码体制缺陷：</p>
+<ul>
+<li><strong>密钥分配问题</strong>：需要安全信道协商密钥</li>
+<li><strong>密钥管理问题</strong>：任意两个用户间都要有共享密钥，用户太多则密钥太多</li>
+<li><strong>无签名功能</strong>：无法向第三方证明来源</li>
+</ul>
+</li>
+<li><p>理论：</p>
+<ul>
+<li>私钥及其他密码信息容易计算公钥</li>
+<li>由公钥和算法描述难以计算私钥</li>
+</ul>
+</li>
+<li><p>安全性：</p>
+<ul>
+<li>穷搜索理论上能够破解公钥密码</li>
+<li>加密速度慢</li>
+</ul>
+</li>
+<li><p>公钥分配方案：</p>
+<ul>
+<li>不能交换任意消息，可以建立共享密钥</li>
+<li>安全性基于离散对数的困难性</li>
+</ul>
+</li>
+<li><p>D-H公钥分配：</p>
+<ul>
+<li>初始化<ul>
+<li>一个大素数p（200位）</li>
+<li>一个生成元a</li>
+<li>密钥$x_A &lt; p，x_B&lt;p$</li>
+<li>计算$y_A=a^{x_A}mod\ p,y_B=a^{x_B}mod\ p$</li>
+<li>双方分别公开$y_A,y_B$</li>
+</ul>
+</li>
+<li>计算共享密钥<ul>
+<li>$K_{AB} = (y_A)^{x_B} mod\ p =(y_B)^{x_A} mod\ p$</li>
+<li>前者为B的计算，后者为A的计算</li>
+</ul>
+</li>
+<li>D-H应用：<ul>
+<li>抵抗被动攻击,但不能抵抗主动攻击——中间人截获并生成新的私钥、伪造新的公钥，最终发送方接收方以为互相通信，实际上是与中间人通信</li>
+<li>主体每次可以选择新的私钥，计算及交换新的公钥</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="公钥加密算法"><a href="#公钥加密算法" class="headerlink" title="公钥加密算法"></a>公钥加密算法</h2><p>基于不同有限域的指数运算：RSA，ElGamal；其他问题的公钥体制大多被攻破</p>
+<h3 id="RSA"><a href="#RSA" class="headerlink" title="RSA"></a>RSA</h3><ul>
+<li><p>建立</p>
+<ul>
+<li>选择两个随机大素数p，q并计算乘积N、N的欧拉函数$\phi(N)=(p-1)(q-1)$</li>
+<li>选择随机数e，e与欧拉函数互素，e为加密密钥</li>
+<li>计算d，d满足$ed = 1\ mod\ \phi(N)$</li>
+<li>公钥为${e、N}$，私钥为${d、p、q}$</li>
+<li>明文M（$M&lt;N$），密文为$C=M^e mod\ N$</li>
+<li>解密：$M=C^dmod\ N$</li>
+</ul>
+</li>
+<li><p>e对所有用户可以相同，通常为65535</p>
+</li>
+<li><p>利用<strong>中国剩余定理CRT快速计算</strong></p>
+</li>
+<li><p>安全性：RSA破译难度不超过大素数分解</p>
+<ul>
+<li>共模攻击</li>
+<li>低加密指数攻击：e不能太小，短消息要随机数字填充</li>
+</ul>
+</li>
+<li><p>Rabin：对RSA的修正</p>
+<ul>
+<li><p><strong>基于二次剩余问题和模n平方根问题</strong></p>
+</li>
+<li><p>加密密钥e为2，<strong>安全性等价于对n的分解</strong>；解密更为困难</p>
+</li>
+<li><p><strong>不能抵抗选择密文攻击</strong></p>
+<ul>
+<li><p>定理：</p>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201227164248688.png" alt="image-20201227164248688"></p>
+</li>
+<li><p>攻击者随机选取一个整数，并计算$m=x^2mod\ n$，骗取签名者对$m$签名，则有0.5的概率从签名$s$和$x$中破解$n$的分解——签名者不知道$x$，则$s\neq \pm x\ mod\ n$，由上面定理可从$gcd(s+x,n)$得到$n$的素因子$p_1$或$p_2$</p>
+</li>
+</ul>
+</li>
+<li><p>一个密文对应四个解，其中一个为明文——若M是文字消息则易于识别；若M是随机数字流则无法确定真正的明文</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="EI-Gamal"><a href="#EI-Gamal" class="headerlink" title="EI Gamal"></a>EI Gamal</h3><ul>
+<li>D-H方案的变形，可用于交换密钥；<strong>基于离散对数</strong>，但<strong>增加了消息长度（2倍）</strong></li>
+<li>过程：<ul>
+<li>生成密钥<ul>
+<li>选取大素数p和本元g</li>
+<li>接收方有私钥$x_B$，公开$(y_B=g^{x_B}mod \ p,\ g,\ p)$</li>
+</ul>
+</li>
+<li>加密<ul>
+<li>明文为M</li>
+<li>发送者选取随机数$k$（永久保密）$0\leq k\leq p-1，K=y_B^k mod\ p$</li>
+<li>密文对$C={g^kmod\ p,KMmod\ p}$</li>
+</ul>
+</li>
+<li>解密<ul>
+<li>$K=C_1^{x_B}mod\ p,M=C_2K^{-1}mod\ p$</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="认证与哈希函数"><a href="#认证与哈希函数" class="headerlink" title="认证与哈希函数"></a>认证与哈希函数</h2><h3 id="认证函数"><a href="#认证函数" class="headerlink" title="认证函数"></a>认证函数</h3><ul>
+<li>认证目的：<ul>
+<li><strong>防止主动攻击</strong></li>
+<li>实体认证——发送者身份，消息认证——消息完整性</li>
+</ul>
+</li>
+<li>攻击：泄露+通信量分析（加密），伪装+内容篡改+序号篡改+计时篡改（消息认证），抵赖（数字签名）</li>
+<li>三类认证：消息加密，MAC，哈希函数</li>
+</ul>
+<h3 id="消息加密"><a href="#消息加密" class="headerlink" title="消息加密"></a>消息加密</h3><p>消息加密提供认证</p>
+<ul>
+<li>对称加密：提供保密与一定程度的认证——来自A且没有更改，不提供签名（发送者可否认）</li>
+<li>公钥加密：三种情况<ul>
+<li>接收方公钥（只保密无认证）</li>
+<li>发送方私钥（只认证和签名）</li>
+<li>接受方公钥+发送方私钥——数字信封</li>
+</ul>
+</li>
+</ul>
+<h3 id="MAC"><a href="#MAC" class="headerlink" title="MAC"></a>MAC</h3><p>对选定消息，使用一个密钥，产生一个短小的定长数据分组（认证码），附加在消息中提供认证功能</p>
+<ul>
+<li>方法<ul>
+<li>$M || C_k(M)$——认证</li>
+<li>$E_{k2}(M || C_{k1}(M)$——认证+加密</li>
+<li>$E_{k2}(M) || C_{k1}(E_{k2}(M))$——认证+加密</li>
+</ul>
+</li>
+<li>适用于消息广播、比加密解密的工作量小、认证与保密分离、延长消息的保护期限</li>
+<li><strong>不可逆，且不提供数字签名</strong></li>
+<li>性质：<ul>
+<li>有$M$和 $C_k(M)$，<strong>试图生成$M’$，使得$C_k(M’)= C_k(M)$计算上不可行</strong></li>
+<li><strong>能均匀分布</strong>——$C_k(M)= C_k(M’)$的概率为$2^{-n}$，n为认证码长度——<strong>抗选择明文攻击</strong></li>
+<li><strong>消息$M’$为$M$的某种已知代换，则$C_k(M)= C_k(M’)$的概率为$2^{-n}$</strong></li>
+</ul>
+</li>
+<li>基于DES的MAC</li>
+</ul>
+<h3 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h3><p>将任意长度消息映射成一个较短定长输出消息的函数，为文件、消息或其它的分组数据产生“数字指纹”</p>
+<ul>
+<li>鉴别方式：<ul>
+<li>$E_k(M || H(M) )$</li>
+<li>$M || E_k(H(M) )$</li>
+<li>$M || E_{KRa}(H(M) )$——鉴别与数字签名</li>
+<li>$E_k(M || E_{KRa}(H(M) ))$</li>
+<li>$M || H(M || S)$，S为双方共享的一个秘密</li>
+<li>$E_k(M || H(M || S))$</li>
+</ul>
+</li>
+<li>函数要求：<ul>
+<li><strong>消息长度任意，输出定长</strong></li>
+<li><strong>易于计算</strong></li>
+<li><strong>单向性</strong></li>
+<li><strong>任意给定分组x，寻求不等于x的y，使得H(y)= H(x)在计算上不可行——弱抗碰撞性</strong></li>
+<li><strong>寻求对任何的(x,y)对使得H(x)=H(y)在计算上不可行——强抗碰撞性</strong></li>
+</ul>
+</li>
+<li>用途<ul>
+<li>检查下载软件的完整性</li>
+<li>减少存储空间</li>
+<li>数字签名</li>
+<li>存储密码</li>
+</ul>
+</li>
+<li>攻击：野蛮攻击，生日攻击</li>
+</ul>
+<h4 id="简单的哈希算法"><a href="#简单的哈希算法" class="headerlink" title="简单的哈希算法"></a>简单的哈希算法</h4><p>每个n比特长度分组按比特异或，得到长度为n的哈希码</p>
+<ul>
+<li>改进：<ul>
+<li>先将n比特的哈希值设置为0</li>
+<li>当前的哈希值循环左移一位</li>
+<li>数据分组与哈希值异或形成新的哈希值</li>
+</ul>
+</li>
+<li><strong>Merkle-Damgard结构</strong>：<ul>
+<li>$M=(Y_0,…,Y_L)，CV_0=初始n比特值$</li>
+<li>$CV_i=f(CV_{i-1},Y_{i-1}),0&lt;i\leq L$，$f$为压缩函数；<strong>如果$f$抗碰撞，则哈希结果抗碰撞</strong></li>
+<li>$H(M)=CV_L$</li>
+</ul>
+</li>
+</ul>
+<h4 id="MD5"><a href="#MD5" class="headerlink" title="MD5"></a>MD5</h4><p>输入任意长度报文，<strong>输出128比特的摘要</strong>；<strong>输入分组长度为512比特</strong>；符合Merkle-Damgard结构</p>
+<img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-1.png" alt="img" style="zoom:67%;">
+
+<ul>
+<li><p>步骤</p>
+<ul>
+<li><p>填充消息，使消息长度为i*512+448比特（i大于0）</p>
+</li>
+<li><p>添加消息长度（64位）——消息表示为N个32位字</p>
+</li>
+<li><p>初始化128位MD缓存，存放杂凑中间与最后结果；低端字节存储——低位字节在高地址前</p>
+</li>
+<li><p>处理报文分组</p>
+<ul>
+<li><p>输入：当前512位分组$Y_q$与上一轮输出$CV_q$</p>
+</li>
+<li><p>压缩：<strong>包含4个循环</strong>，顺次记为F，G，H，I；借助列表T[1,…,64]，列表提供随机化的32位模板以消除输入的规律</p>
+<ul>
+<li><p><strong>每个循环包含16步操作</strong></p>
+</li>
+<li><p>每一步的基本操作：$b \leftarrow b + ((a + g(b, c, d) + X[k] + T[i]) &lt;&lt;&lt; s)$</p>
+<ul>
+<li><p>模$2^{32}$加</p>
+</li>
+<li><p>$a,b,c,d$：MD缓存中的4个字，一开始被初始化，之后每一步操作结果都会替换其中一个字</p>
+</li>
+<li><p>$&lt;&lt;&lt;s$：循环左移s位</p>
+</li>
+<li><p>$T[i]$：矩阵T中的第i个32比特字，i = 1,…,16</p>
+</li>
+<li><p>$g$：循环函数F、G、H、I</p>
+</li>
+<li><p>$X[k]$：当前分组中第k个字</p>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212131622648.png" alt="image-20201212131622648"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>输出：第四次循环输出加到$CV_q$，得$CV_{q+1}$——模$2^{32}$相加</p>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212130317783.png" alt="image-20201212130317783"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>应用</p>
+<ul>
+<li>生成消息摘要</li>
+<li>用于数字签名</li>
+</ul>
+</li>
+<li><p>逆向</p>
+</li>
+</ul>
+<h4 id="SHA1"><a href="#SHA1" class="headerlink" title="SHA1"></a>SHA1</h4><p><strong>输入最大长度为$2^{64}$位的消息，输出160比特，分组为512比特</strong></p>
+<ul>
+<li><p>步骤：</p>
+<ul>
+<li><p>添加填充位，一个1和若干0，使得长度同上</p>
+</li>
+<li><p>添加消息长度（同上）</p>
+</li>
+<li><p>初始化160位MD缓冲区，表示为5个字的寄存器；前四个字同MD5；高端字节存储</p>
+</li>
+<li><p>512位数据块为单位，<strong>四轮，一轮20步</strong>，每轮分别使用一个额外的常数$K_t$</p>
+<ul>
+<li><p>每一步：</p>
+<p>$A,B,C,D,E\leftarrow E+f_t(B,C,D)+S^5(A)+W_i+K_t),A,S^{30}(B),C,D$</p>
+<ul>
+<li>$f_t$：逻辑函数，每轮循环不同</li>
+<li>$S^i$：32位常数循环左移$i$位</li>
+<li>$W_i$：当前512位数据导出的一个32位字；共80个</li>
+<li>前16个直接来自当前分组的16个字<ul>
+<li>其余：$W_t=S^1(W_{t-16}\bigoplus W_{t-14}\bigoplus W_{t-8}\bigoplus W_{t-3})$</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212135533253.png" alt="image-20201212135533253"></p>
+</li>
+</ul>
+</li>
+<li><p>第四次循环输出加到$CV_q$，得160位$CV_{q+1}$——模$2^{32}$相加</p>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212135427802.png"></p>
+</li>
+</ul>
+</li>
+<li><p>对比</p>
+<ul>
+<li>SHA = MD4 ＋ 扩展变换 ＋ 外加一轮 ＋ 更好的雪崩（每一轮加上前一步的结果）</li>
+<li> MD5 = MD4 ＋ 改进的比特杂凑 ＋ 外加一轮 ＋ 更好的雪崩</li>
+</ul>
+<p><img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201212135015810.png" alt="image-20201212135015810"></p>
+<img src="/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/image-20201226134207709.png" alt="image-20201226134207709" style="zoom:67%;">
+
+</li>
+</ul>
+<h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>只对消息的哈希签名（否则交换信息长度增加一倍）</p>
+<h3 id="RSA-1"><a href="#RSA-1" class="headerlink" title="RSA"></a>RSA</h3><p>已知：${(e,N),(d,p,q)}$</p>
+<ul>
+<li>计算明文M的哈希h，$S=h^d(mod\ N)$，发送$(M,S)$</li>
+<li>接收方同样计算哈希h，$S^e mod\ N=h’mod\ N$，对比h和h’</li>
+<li>若先加密后签名，签名可能被替换</li>
+</ul>
+<h3 id="El-Gamal"><a href="#El-Gamal" class="headerlink" title="El Gamal"></a>El Gamal</h3><ul>
+<li>加密算法不可交换——需要专门的签名算法</li>
+<li><strong>安全性基于离散对数的计算困难性</strong></li>
+<li>公钥：$(y、g、p)$，私钥$(x)$</li>
+<li>签名方案<ul>
+<li>随机数k，与p-1互素</li>
+<li>$K=g^kmod\ p$</li>
+<li>$S=k^{-1}(M-Kx)\ mod(p-1)$</li>
+<li>发送$(M,K,S)$，销毁k</li>
+<li>验证$y^KK^Smod\ p=g^M mod\ p$</li>
+</ul>
+</li>
+<li><strong>签名长度为消息的两倍</strong></li>
+</ul>
+<h3 id="DSA"><a href="#DSA" class="headerlink" title="DSA"></a>DSA</h3><ul>
+<li>El Gamal的变形，<strong>生成320位签名</strong></li>
+<li><strong>安全性基于离散对数的计算困难性</strong></li>
+<li>密钥生成<ul>
+<li>公开参数$(p,q,g)$<ul>
+<li>p：大素数，$2^L$，L为512到1024位且为64的倍数</li>
+<li>q：160位（p-1）的素因子</li>
+<li>g：$h^{(p-1)/q},h&lt;p-1且h^{(p-1)/q}(mod\ p)&gt;1 $</li>
+</ul>
+</li>
+<li>选择私钥x，计算$y=g^xmod\ p$，公钥为$(p,q,g,y)$</li>
+</ul>
+</li>
+<li>签名生成（SHA：哈希函数）<ul>
+<li>$r = (g^k(mod\ p))mod\ q$</li>
+<li>$s = k^{-1}(SHA(M)+ xr (mod q) )$</li>
+<li>发送$(M,r,s)$</li>
+</ul>
+</li>
+<li>签名验证<ul>
+<li>$w = s^{-1}mod\ q $</li>
+<li>$u1= (SHA(M)w)mod\ q$</li>
+<li>$u2= rw\ mod\ q$</li>
+<li>$v = (g^{u1}y^{u2}(mod\ p))mod\ q$</li>
+<li>验证$v=r$</li>
+</ul>
+</li>
+</ul>
+<h3 id="HMAC"><a href="#HMAC" class="headerlink" title="HMAC"></a>HMAC</h3><ul>
+<li><p>以上为需要私钥的认证方案，计算量大</p>
+</li>
+<li><p>密钥与消息同时参加运算：</p>
+<p>$KeyedHash = Hash(Key|Message)$或$Hash(Key1|Hash(Key2|Message))$</p>
+</li>
+<li><p>HMAC：使用带密钥hash函数的结果</p>
+<ul>
+<li>$HMACK = Hash((K’ \bigoplus opad)||Hash((K’ \bigoplus ipad)||M)) $</li>
+<li>K’（也为K+）：经过填充的密钥</li>
+<li>opad、ipad：特殊的填充值</li>
+</ul>
+</li>
+<li><p><strong>安全性基于原始的hash</strong></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\28\Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service\" rel="bookmark">Empirical Analysis of Password Reuse and Modification across Online Service</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Empirical Analysis of Password Reuse and Modification across Online Service》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2020/12/09/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6-%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81/" title="现代密码学（2）公钥密码">https://thomas-li-sjtu.github.io/2020/12/09/现代密码学-公钥密码/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/24/Linux%E7%BB%88%E7%AB%AF%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" rel="prev" title="Linux终端常见问题与解决方法">
+      <i class="fa fa-chevron-left"></i> Linux终端常见问题与解决方法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/19/%E7%8E%B0%E4%BB%A3%E5%AF%86%E7%A0%81%E5%AD%A6%E8%AF%BE%E7%A8%8B%E9%A1%B9%E7%9B%AE/" rel="next" title="现代密码学 mmtls">
+      现代密码学 mmtls <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81%E5%AD%A6"><span class="nav-number">1.</span> <span class="nav-text">公钥密码学</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">公钥加密算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RSA"><span class="nav-number">2.1.</span> <span class="nav-text">RSA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EI-Gamal"><span class="nav-number">2.2.</span> <span class="nav-text">EI Gamal</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E4%B8%8E%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">认证与哈希函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">认证函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%8A%A0%E5%AF%86"><span class="nav-number">3.2.</span> <span class="nav-text">消息加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MAC"><span class="nav-number">3.3.</span> <span class="nav-text">MAC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-number">3.4.</span> <span class="nav-text">哈希函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95"><span class="nav-number">3.4.1.</span> <span class="nav-text">简单的哈希算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MD5"><span class="nav-number">3.4.2.</span> <span class="nav-text">MD5</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SHA1"><span class="nav-number">3.4.3.</span> <span class="nav-text">SHA1</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="nav-number">4.</span> <span class="nav-text">数字签名</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RSA-1"><span class="nav-number">4.1.</span> <span class="nav-text">RSA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#El-Gamal"><span class="nav-number">4.2.</span> <span class="nav-text">El Gamal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DSA"><span class="nav-number">4.3.</span> <span class="nav-text">DSA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HMAC"><span class="nav-number">4.4.</span> <span class="nav-text">HMAC</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

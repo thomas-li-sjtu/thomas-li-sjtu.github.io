@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《SeqGAN: Sequence Generative Adversarial Nets with Policy Gradient》论文阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《SeqGAN: Sequence Generative Adversarial Nets with Policy Gradient》论文阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329131533366.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329130203645.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329125641358.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329130044245.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329130148754.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329123454725.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329124313999.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329125231217.png">
+<meta property="article:published_time" content="2021-03-27T05:05:55.000Z">
+<meta property="article:modified_time" content="2021-05-25T01:54:54.009Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="GAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329131533366.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-27 13:05:55" itemprop="dateCreated datePublished" datetime="2021-03-27T13:05:55+08:00">2021-03-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《SeqGAN: Sequence Generative Adversarial Nets with Policy Gradient》论文阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li><p>作为一种训练生成模型的新方法，生成式对抗网络（GAN）利用判别模型指导生成式模型的训练，在生成连续值的数据方面取得了相当大的成功</p>
+</li>
+<li><p>当目标是生成离散 token 序列时，它有一定局限性：</p>
+<ul>
+<li>一个原因在于生成式模型的离散输出使得从判别模型到生成式模型的梯度更新很难实现</li>
+<li>判别模型只能评估完整的序列，因此对于部分生成的序列，平衡其当前分数和未来分数（整个完整序列）是非常重要的</li>
+</ul>
+</li>
+<li><p>本文提出了一个序列生成框架 SeqGAN 来解决这些问题</p>
+</li>
+<li><p>将生成器建模为强化学习（RL）中的随机策略，SeqGAN 通过执行策略梯度更新绕过了生成器差异化问题</p>
+</li>
+<li><p>RL 奖励信号来自按完整序列判断的 GAN 鉴别器，使用蒙特卡罗搜索传回中间状态-动作步骤</p>
+<blockquote>
+<p>pass back to the intermediate state-action steps using Monte Carlo search</p>
+</blockquote>
+</li>
+<li><p>对合成数据和现实世界任务的广泛实验表明，在强基线上有显著改进</p>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>生成模拟真实数据的序列合成数据是无监督学习中的一个重要问题</p>
+</li>
+<li><p>具有长短期记忆单元（LSTM）的递归神经网络（RNNs）（Hochriter和Schmidhuber  1997）显示了从自然语言生成到手写生成的优异性能（Wen等人，2015；Graves  2013）</p>
+</li>
+<li><p>训练 RNN 最常见的方法是在给定先前观察到的标记下，最大化训练序列中每个真实标记的对数预测似然性——但如（Bengio等人，2015）中所述，最大似然方法在推理阶段受到所谓的暴露偏差<code>exposure bias</code>的影响：模型迭代地生成序列，并根据其先前预测的序列——该序列可能没有出现在训练数据——来预测下一个令牌。训练和推理之间的差异随着序列累积产生，并随着长度的增加而更明显</p>
+<ul>
+<li>（Bengio等人，2015）提出计划抽样<code>scheduled sampling</code></li>
+<li>（Husz ar 2015）表明，<code>scheduled sampling</code>不能从根本上解决问题</li>
+<li>另一种可能的方案是在整个生成序列上而不是在每个转换上建立损失函数，但特定任务如 chatbot 和 poem generation 的损失可能不能直接用于对生成的序列进行准确评分</li>
+</ul>
+</li>
+<li><p>（Goodfellow, 2014）提出 GAN，但将 GAN 应用于生成序列有两个问题</p>
+<ul>
+<li>GAN 主要生成实值的连续数据，在直接生成离散标记序列（如文本）方面存在困难（Husz ar  2015）：在 GAN 中，生成器首先从随机采样开始，然后进行确定性转换。从 D 反向传播到 G 的损失梯度被用来引导 G 更新参数以使生成更真实。如果生成的数据是基于离散标记的，则来自鉴别网的“微小变化”指导意义不大，因为在有限的字典空间中，这种微小变化可能没有相应的标记（Goodfellow  2016）</li>
+<li>GAN 只能给出已经生成的整个序列的得分/损失；对于一个部分生成的序列来说，平衡整个序列的现在和将来的分数是非常重要的</li>
+</ul>
+</li>
+<li><p>本文为了解决上面的两个问题，沿用（Bachman and Precup 2015; Bahdanau et al. 2016）的方法，并将序列生成过程视为一个序列决策过程</p>
+<ul>
+<li><p>生成模型被视为强化学习</p>
+</li>
+<li><p>状态是到目前为止生成的 tokens，操作是下一个要生成的 token</p>
+</li>
+<li><p>需要特定任务的序列分数，如机器翻译中的 BLEU 给出奖励</p>
+</li>
+<li><p>使用鉴别器评估序列，反馈评估结果指导生成器的学习</p>
+</li>
+<li><p>将生成模型视为随机参数化策略，以解决梯度回传的问题</p>
+<blockquote>
+<p>regard the generative model as a stochastic parametrized policy</p>
+</blockquote>
+</li>
+<li><p>使用蒙特卡罗搜索来近似 state-action 值，通过策略梯度直接训练策略（生成模型），以避免传统算法中离散数据的区分问题</p>
+</li>
+</ul>
+</li>
+<li><p>在合成数据的测试中，SeqGAN 的性能明显优于最大似然法<code>maximum likelihood</code>、计划抽样<code>scheduled sampling</code>和 PG-BLEU；在三个现实任务诗歌生成、语音语言生成和音乐生成，SeqGAN 在包括人类专家判断在内的各种指标上显著优于 baseline</p>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>深度生成模型最近引起了极大的关注，对大型未标记数据的学习能力使得它们有更多的潜力和活力（Salakhutdinov，2009；Bengio等人，2013年）<ul>
+<li>（Hinton, Osindero, and Teh 2006）首次提出使用对比散度算法来训练深度信念网（DBN）</li>
+<li>（Bengio等人，2013）提出了去噪自动编码器（DAE），以监督学习的方式学习数据分布</li>
+<li>DBN 和 DAE 为每个数据实例学习低维表示（编码），从解码网络中生成</li>
+<li>结合深度学习和统计推理的变分自动编码器 VAE 旨在表示潜在隐藏空间中的数据实例（Kingma和Welling  2014），同时利用(深度)神经网络进行非线性映射。</li>
+</ul>
+</li>
+<li>以上生成模型都最大化训练数据似然性，但（Goodfellow等人，2014）认为，这种方法难以逼近棘手的概率计算。（Goodfellow等人，2014）提出了一种生成模型的替代训练方法 GAN，其训练过程是生成模型和判别模型之间的极小极大博弈，绕过了最大似然学习的困难，并在自然图像生成方面取得了显著的成功（Denton等人，2015）</li>
+<li>但 GAN 在序列离散数据生成上没有什么进展，因为生成网络被设计成能够适应连续输出，而不适合离散数据生成</li>
+<li>递归神经网络用于产生标记序列，如机器翻译（Sutskever、Vinyals、Le  2014；Bahdanau、Cho、Bengio 2014）<ul>
+<li>训练 RNN 最常见的方法是最大化训练数据中每个标记的可能性，而（Bengio等人，2015）指出训练和生成之间的差异使得最大似然估计不是最优，并提出了预定采样策略（SS）</li>
+<li>（Husz  ar  2015）理论上认为 SS 的目标函数不合适，并从理论上解释了 GAN 倾向于生成更为自然的样本的原因</li>
+<li>（Bachman  and Precup  2015）认为序列数据生成可以被表述为一个序列决策过程，使用强化学习，序列生成器建模为挑选下一个 token 的策略，如果有奖励函数，则可以使用策略梯度优化生成器。</li>
+<li>对于一些生成任务，奖励信号仅对整个序列有意义，这些情况下可以使用 state-action 评估方法，如蒙特卡罗（树）搜索（Browne et al. 2012）</li>
+</ul>
+</li>
+</ul>
+<h2 id="SeqGAN"><a href="#SeqGAN" class="headerlink" title="SeqGAN"></a>SeqGAN</h2><h3 id="SeqGAN-via-Policy-Gradient"><a href="#SeqGAN-via-Policy-Gradient" class="headerlink" title="SeqGAN via Policy Gradient"></a>SeqGAN via Policy Gradient</h3><ul>
+<li><p>序列生成问题的表述：给定真实世界结构化序列的数据集，训练 G 以生成一个序列 $Y_{1:T}$</p>
+</li>
+<li><p>基于强化学习的阐述：在时间步 $t$ 中，状态 $s$ 对应当前的令牌序列 $(y_1,…,y_{t-1})$，动作 $a$ 是下一个选取的令牌 $y_t$。因此策略模型中当下一个动作确定了，状态转移也确定了</p>
+</li>
+<li><p>此外还训练一个判别器，用于对 G 的改进给出指导，表示序列来自真实序列的可能性；D 通过提供正例和负例进行训练</p>
+</li>
+<li><p>G 通过对接收到的来自 D 的 expected end reward 应用策略梯度与蒙特卡洛搜索，进行更新；这个 reward 来自欺骗判别模型的可能性</p>
+<blockquote>
+<p>The generative model G is updated by employing a policy gradient and MC search on the basis of the expected end reward received from the discriminative model D.</p>
+</blockquote>
+</li>
+</ul>
+<img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329131533366.png" alt="image-20210329131533366" style="zoom:80%;">
+
+<p><img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329130203645.png" alt="image-20210329130203645"></p>
+<ul>
+<li>用最大似然估计 MLE 在训练集上对 $G_{\theta}$ 预训练，之后生成器、判别器交替训练</li>
+<li>为了保持平衡，为每个 d 步生成的反例数量与正例数量相同。为了减少估计的可变性，使用不同的负样本集与正样本集相结合</li>
+<li>具体的推导过程略</li>
+</ul>
+<h3 id="序列生成模型"><a href="#序列生成模型" class="headerlink" title="序列生成模型"></a>序列生成模型</h3><ul>
+<li><p>使用递归神经网络作为生成模型</p>
+</li>
+<li><p>softmax 输出层将隐藏状态映射到输出令牌分布</p>
+<p><img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329125641358.png" alt="image-20210329125641358"></p>
+</li>
+<li><p>为了处理时间序列反向传播的常见消失和爆炸梯度问题（Goodfellow, Bengio, and Courville 2016），使用 LSTM 神经元</p>
+</li>
+</ul>
+<h3 id="序列判别模型"><a href="#序列判别模型" class="headerlink" title="序列判别模型"></a>序列判别模型</h3><ul>
+<li><p>深度判别模型如深度神经网络、卷积神经网络和递归卷积神经网络，在复杂序列分类任务中表现出较高的性能</p>
+</li>
+<li><p>本文中，选择 CNN 作为鉴别器，因为CNN最近在文本（令牌序列）分类方面显示出了很好的效果（Zhang and LeCun 2015）</p>
+</li>
+<li><p>序列首先被表示为 k 维 embed 的结果</p>
+<p><img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329130044245.png" alt="image-20210329130044245"></p>
+</li>
+<li><p>之后输入一个卷积核，以得到新的特征图</p>
+<p><img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329130148754.png" alt="image-20210329130148754"></p>
+</li>
+<li><p>使用 sigmoid 激活的全连接层来输出输入序列是真实的概率。优化目标是最小化真实标签和预测概率之间的交叉熵</p>
+</li>
+</ul>
+<h2 id="合成数据实验"><a href="#合成数据实验" class="headerlink" title="合成数据实验"></a>合成数据实验</h2><p>使用随机初始化的 LSTM 作为真实模型，即 Oracle，来生成真实的数据分布 $p(x_t|x_1，…，x_{t-1})$ 进行下面的合成数据实验</p>
+<h3 id="评估指标"><a href="#评估指标" class="headerlink" title="评估指标"></a>评估指标</h3><ul>
+<li><p>oracle 提供了训练数据集，并且能够评估生成模型的确切性能，这在真实数据中是不可能的</p>
+<ul>
+<li>MLE 试图最小化真实数据分布 p和模型近似 q $-E_{x∼p}logq(x))$ 之间的交叉熵。但评估生成模型最准确的方法是从中提取一些样本，并让人类观察者根据先验知识进行审查。假设人类观察者已经知道自然分布的精确模型。为了通过图灵测试，实际上需要最小化的平均负对数似然$E_{x∼q}logp_{human}(x)$ （Husz  ar 2015）</li>
+</ul>
+</li>
+<li><p>将 Oracle 视为现实世界问题的人类观察者，因此评估指标是</p>
+<p><img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329123454725.png" alt="image-20210329123454725"></p>
+</li>
+<li><p>$G_{\theta}$ 生成100，000个序列样本，通过 $G_{oracle}$ 和平均分数计算每个样本的 $NLL_{oracle}$</p>
+</li>
+</ul>
+<h3 id="训练设置"><a href="#训练设置" class="headerlink" title="训练设置"></a>训练设置</h3><ul>
+<li>按正态分布 $N(0,1)$ 初始化 Oracle 的 LSTM 参数，生成 10000 个长度为 20 的序列作为训练集</li>
+<li>使用 Dropout 与 L2 正则化</li>
+<li>每个内核数目在 100 到 $200^4$ 之间</li>
+<li>对比四个其他模型<ul>
+<li>随机令牌生成</li>
+<li>MLE 训练的 LSTM $G_{\theta}$</li>
+<li><code>scheduled sampling</code></li>
+<li>PG-BLEU</li>
+</ul>
+</li>
+</ul>
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><ul>
+<li><p>SeqGAN 的表现明显优于其他 baseline</p>
+</li>
+<li><p>对 $NLL_{oracle}$ 进行显著性 T 检验（<code>significance T-test</code>）</p>
+</li>
+<li><p>学习曲线体现了 SeqGAN 的优势，在 150 个 epoch 后，SeqGAN 仍然可以继续优化</p>
+<p><img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329124313999.png" alt="image-20210329124313999"></p>
+</li>
+</ul>
+<h3 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h3><ul>
+<li>SeqGAN 的稳定性取决于训练方法</li>
+<li>算法中的 $g$ 步、$d$ 步、$k$ 参数影响极大</li>
+<li>在分析生成对抗网络的收敛性时，一个重要的假设是允许鉴别器在给定的条件下达到最优。只有鉴别器能够一致地区分真实数据和非自然数据，来自它的监督信号才能有意义，整个对抗训练过程才能稳定有效（Goodfellow and others 2014）</li>
+</ul>
+<h2 id="现实场景"><a href="#现实场景" class="headerlink" title="现实场景"></a>现实场景</h2><h3 id="文本生成"><a href="#文本生成" class="headerlink" title="文本生成"></a>文本生成</h3><ul>
+<li><p>SeqGAN 生成中文诗歌和奥巴马的政治演讲</p>
+</li>
+<li><p>使用 16394 首绝句，没有加入任何关于中国诗歌中特殊结构规则的先验知识，如音韵</p>
+</li>
+<li><p>使用一个语料库，内有 11092 段演讲</p>
+</li>
+<li><p>使用 BLEU 评分（Papineni等，2002）作为评估标准来衡量生成的文本和人工创建的文本之间的相似度</p>
+</li>
+<li><p>对于诗歌评价，将 n-gram 设置为 2；对演讲，将 n-gram  分别设置为 3 和 4</p>
+</li>
+<li><p>混合 20 首真正的诗歌和 20 首分别由 SeqGAN 和 MLE 生成的诗歌，邀请 70 位中国诗歌专家来判断这 60 首诗中的每一首是由人类还是机器创作</p>
+<p><img src="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/image-20210329125231217.png" alt="image-20210329125231217"></p>
+</li>
+</ul>
+<h3 id="音乐生成"><a href="#音乐生成" class="headerlink" title="音乐生成"></a>音乐生成</h3><ul>
+<li>Nottingham 数据集作为训练集</li>
+<li>使用 88 个数字来表示 88 个音高，对应于钢琴上的 88 个键</li>
+<li>对每 0.4s 的音高采样，将 midi 文件转换为长度为 32 的从 1 到 88 的数字序列</li>
+<li>为了测试离散钢琴键模式这一方法是否合适，使用 BLEU 进行评估</li>
+<li>使用均方误差评估连续音调数据模式是否合适</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>提出了一种序列生成方法 SeqGAN，通过策略梯度有效地训练生成对抗性网络生成结构化序列</li>
+<li>这是第一个扩展 GAN 以生成离散符号序列的工作</li>
+<li>在实验中，使用了 Oracle 评估机制来明确说明 SeqGAN 在合成数据上相对于 baseline 的优越性</li>
+<li>对于诗歌、语音语言和音乐生成这三个真实世界的场景，SeqGan 在生成创造性序列方面表现出了出色的表现</li>
+<li>还进行了一组实验来研究训练 SeqGAN 的稳健性和稳定性</li>
+<li>在未来的工作中，计划建立蒙特卡罗树搜索和值网络（Silver, 2016）以改善大规模数据的行动决策</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>Bachman, P ., and Precup, D. 2015. Data generation as sequential decision making. In NIPS, 3249–3257.</p>
+<p>Bahdanau, D.; Brakel, P .; Xu, K.; et al. 2016. An actor-critic algorithm for sequence prediction. arXiv:1607.07086.</p>
+<p>Bahdanau, D.; Cho, K.; and Bengio, Y . 2014. Neural machine translation by jointly learning to align and translate. arXiv:1409.0473.</p>
+<p>Bengio, Y .; Yao, L.; Alain, G.; and Vincent, P . 2013. Generalized denoising auto-encoders as generative models. In NIPS, 899–907.</p>
+<p>Bengio, S.; Vinyals, O.; Jaitly, N.; and Shazeer, N. 2015. Scheduled sampling for sequence prediction with recurrent neural networks. In NIPS, 1171–1179.</p>
+<p>Browne, C. B.; Powley, E.; Whitehouse, D.; Lucas, S. M.; et al. A survey of monte carlo tree search methods. IEEE TCIAIG 4(1):1–43.</p>
+<p>Cho, K.; V an Merri¨ enboer, B.; Gulcehre, C.; et al. 2014. Learning phrase representations using RNN encoder-decoder for statistical machine translation. EMNLP.</p>
+<p>Denton, E. L.; Chintala, S.; Fergus, R.; et al. 2015. Deep generative image models using a laplacian pyramid of adversarial networks. In NIPS, 1486–1494.</p>
+<p>Glynn, P . W. 1990. Likelihood ratio gradient estimation for stochastic systems. Communications of the ACM 33(10):75–84.</p>
+<p>Goodfellow, I., et al. 2014. Generative adversarial nets. In NIPS, 2672–2680. </p>
+<p>Goodfellow, I.; Bengio, Y .; and Courville, A. 2016. Deep learning. 2015. <a target="_blank" rel="noopener" href="http://deeplearning.net/tutorial/rnnrbm.html">http://deeplearning.net/tutorial/rnnrbm.html</a></p>
+<p>Goodfellow, I. 2016. Generative adversarial networks for text. <a target="_blank" rel="noopener" href="http://goo.gl/Wg9DR7">http://goo.gl/Wg9DR7</a>.</p>
+<p>Graves, A. 2013. Generating sequences with recurrent neural networks. arXiv:1308.0850.</p>
+<p>He, J.; Zhou, M.; and Jiang, L. 2012. Generating chinese classical poems with statistical machine translation models. In AAAI.</p>
+<p>Hingston, P . 2009. A turing test for computer game bots. IEEE TCIAIG 1(3):169–186.</p>
+<p>Hinton, G. E.; Osindero, S.; and Teh, Y .-W. 2006. A fast learning algorithm for deep belief nets. Neural computation 18(7):1527–1554.</p>
+<p>Hochreiter, S., and Schmidhuber, J. 1997. Long short-term memory. Neural computation 9(8):1735–1780.</p>
+<p>Husz´ ar, F. 2015. How (not) to train your generative model: Scheduled sampling, likelihood, adversary? arXiv:1511.05101.</p>
+<p>Kim, Y . 2014. Convolutional neural networks for sentence classification. arXiv:1408.5882.</p>
+<p>Kingma, D. P ., and Welling, M. 2014. Auto-encoding variational bayes. ICLR.</p>
+<p>Lai, S.; Xu, L.; Liu, K.; and Zhao, J. 2015. Recurrent convolutional neural networks for text classification. In AAAI, 2267–2273.</p>
+<p>Manaris, B.; Roos, P .; Machado, P .; et al. 2007. A corpus-based hybrid approach to music analysis and composition. In NCAI, volume 22, 839.</p>
+<p>Papineni, K.; Roukos, S.; Ward, T.; and Zhu, W.-J. 2002. Bleu: a method for automatic evaluation of machine translation. In ACL, 311–318.</p>
+<p>Quinlan, J. R. 1996. Bagging, boosting, and c4. 5. In AAAI/IAAI, V ol. 1, 725–730.</p>
+<p>Salakhutdinov, R. 2009. Learning deep generative models. Ph.D. Dissertation, University of Toronto.</p>
+<p>Silver, D.; Huang, A.; Maddison, C. J.; Guez, A.; Sifre, L.; et al. Mastering the game of go with deep neural networks and tree search. Nature 529(7587):484–489.</p>
+<p>Srivastava, N.; Hinton, G. E.; Krizhevsky, A.; Sutskever, I.; and Salakhutdinov, R. 2014. Dropout: a simple way to prevent neural networks from overfitting. JMLR 15(1):1929–1958. </p>
+<p>Srivastava, R. K.; Greff, K.; and Schmidhuber, J. 2015. Highway networks. arXiv:1505.00387.</p>
+<p>Sutskever, I.; Vinyals, O.; and Le, Q. V . 2014. Sequence to sequence learning with neural networks. In NIPS, 3104–3112. </p>
+<p>Sutton, R. S.; McAllester, D. A.; Singh, S. P .; Mansour, Y .; et al. Policy gradient methods for reinforcement learning with function approximation. In NIPS, 1057–1063.</p>
+<p>V esel` y, K.; Ghoshal, A.; Burget, L.; and Povey, D. 2013. Sequence discriminative training of deep neural networks. In INTERSPEECH, 2345–2349.</p>
+<p>Wen, T.-H.; Gasic, M.; Mrksic, N.; Su, P .-H.; V andyke, D.; and Young, S. 2015. Semantically conditioned LSTM-based natural language generation for spoken dialogue systems. arXiv:1508.01745.</p>
+<p>Williams, R. J. 1992. Simple statistical gradient-following algorithms for connectionist reinforcement learning. Machine learning 8(3-4):229–256.</p>
+<p>Yi, X.; Li, R.; and Sun, M. 2016. Generating chinese classical poems with RNN encoder-decoder. arXiv:1604.01537.</p>
+<p>Zhang, X., and Lapata, M. 2014. Chinese poetry generation with recurrent neural networks. In EMNLP, 670–680.</p>
+<p>Zhang, X., and LeCun, Y . 2015. Text understanding from scratch. arXiv:1502.01710.</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\03\28\Generative-Adversarial-Nets\" rel="bookmark">Generative Adversarial Nets</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Generative Adversarial Nets》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\08\Hands-on-ML-8\" rel="bookmark">Hands-on Machine Learning（8）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（8）GAN</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\03\19\Improved-training-of-wasserstein-gans\" rel="bookmark">Improved training of wasserstein gans</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Improved training of wasserstein gans》论文阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/" title="SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient">https://thomas-li-sjtu.github.io/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GAN/" rel="tag"><i class="fa fa-tag"></i> GAN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/19/Improved-training-of-wasserstein-gans/" rel="prev" title="Improved training of wasserstein gans">
+      <i class="fa fa-chevron-left"></i> Improved training of wasserstein gans
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/28/Generative-Adversarial-Nets/" rel="next" title="Generative Adversarial Nets">
+      Generative Adversarial Nets <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SeqGAN"><span class="nav-number">4.</span> <span class="nav-text">SeqGAN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SeqGAN-via-Policy-Gradient"><span class="nav-number">4.1.</span> <span class="nav-text">SeqGAN via Policy Gradient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E7%94%9F%E6%88%90%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.2.</span> <span class="nav-text">序列生成模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E5%88%A4%E5%88%AB%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.3.</span> <span class="nav-text">序列判别模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE%E5%AE%9E%E9%AA%8C"><span class="nav-number">5.</span> <span class="nav-text">合成数据实验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87"><span class="nav-number">5.1.</span> <span class="nav-text">评估指标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E8%AE%BE%E7%BD%AE"><span class="nav-number">5.2.</span> <span class="nav-text">训练设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">5.3.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">5.4.</span> <span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%B0%E5%AE%9E%E5%9C%BA%E6%99%AF"><span class="nav-number">6.</span> <span class="nav-text">现实场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E6%9C%AC%E7%94%9F%E6%88%90"><span class="nav-number">6.1.</span> <span class="nav-text">文本生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9F%B3%E4%B9%90%E7%94%9F%E6%88%90"><span class="nav-number">6.2.</span> <span class="nav-text">音乐生成</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Pretrained Language Models for Text Generation: Survey》（IJCAI 2021）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pretrained Language Models for Text Generation：A Survey">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Pretrained Language Models for Text Generation: Survey》（IJCAI 2021）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/image-20211216152316006.png">
+<meta property="article:published_time" content="2021-12-16T05:16:02.000Z">
+<meta property="article:modified_time" content="2021-12-16T10:49:04.761Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Transformer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/image-20211216152316006.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Pretrained Language Models for Text Generation：A Survey | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Pretrained Language Models for Text Generation：A Survey
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-12-16 13:16:02" itemprop="dateCreated datePublished" datetime="2021-12-16T13:16:02+08:00">2021-12-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Pretrained Language Models for Text Generation: Survey》（IJCAI 2021）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>本文概述PLM（预训练语言模型）在文本生成的主要进展</li>
+<li>给出通用任务定义，简要描述用于文本生成的PLMs的主流体系结构</li>
+<li>讨论如何调整现有的PLM建模不同的输入数据，并满足生成文本中的特殊属性</li>
+<li>进一步总结几个重要的文本生成微调策略</li>
+</ul>
+<h2 id="任务和典型应用"><a href="#任务和典型应用" class="headerlink" title="任务和典型应用"></a>任务和典型应用</h2><ul>
+<li><p>生成离散token序列$\gamma=(y_1,…,y_n)$，每个token来自字典$V$</p>
+</li>
+<li><p>生成任务通常受到输入$X$的约束（<code>conditioned on input data</code>），即$P(\gamma|X)=P(y_1,…,y_n|X)$</p>
+</li>
+<li><p>若不提供输入$X$，或只提供随机噪声向量$z$，则退化为语言建模或无条件生成任务[Radford, 2019]，用于生成没有任何约束的文本</p>
+</li>
+<li><p>若$X$为一组离散的属性，如关键词、情感标签，则任务为基于主题的文本生成</p>
+</li>
+<li><p>若$X$为结构化的知识图、表，则任务视为从KG（<code>knowledge graph</code>）到文本的生成（<code>data-to-text</code>）</p>
+</li>
+<li><p>若$X$为多媒体输入，则任务视为图像字幕或语音识别</p>
+</li>
+<li><p>若$X$为文本序列——这是最常见的形式——主要应用为机器翻译、摘要、对话系统</p>
+<p><img src="/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/image-20211216152316006.png" alt="image-20211216152316006"></p>
+</li>
+</ul>
+<h2 id="文本生成的标准架构"><a href="#文本生成的标准架构" class="headerlink" title="文本生成的标准架构"></a>文本生成的标准架构</h2><ul>
+<li>几乎所有PLM都采用Transformer作为主干，主要分为两个方法</li>
+<li>Encoder-decoder Transformer：<ul>
+<li>MASS [Songet 等人，2019]</li>
+<li>T5 [Raffelet 等人，2020]</li>
+<li>BART [Lewiset 等人，2020]</li>
+</ul>
+</li>
+<li>Decoder-only Transformer：<ul>
+<li>GPT [2019]</li>
+<li>CTRL [2019]</li>
+<li>通常用于语言建模，应用单向自注意力屏蔽，每个token只能看到以前的token</li>
+<li>一些模型利用仅解码器的结构来生成基于输入文本的文本，但没有独立的模块来编码输入序列——它们将输入和输出序列用一个特殊的标记（例如“[SEP]”）连接，采用了一种新的seq2seq屏蔽（UniLM），即输入句子中的每个token可以相互关注，生成的token可以关注所有输入token和之前生成的token</li>
+<li>seq2seq屏蔽是纯解码器PLMs解决条件生成任务的一种方式，类似于编码器-解码器架构</li>
+</ul>
+</li>
+</ul>
+<h2 id="从输入建模不同数据类型"><a href="#从输入建模不同数据类型" class="headerlink" title="从输入建模不同数据类型"></a>从输入建模不同数据类型</h2><ul>
+<li>讨论如何在PLM中对以下三种输入进行建模</li>
+</ul>
+<h3 id="非结构化输入"><a href="#非结构化输入" class="headerlink" title="非结构化输入"></a>非结构化输入</h3><ul>
+<li>《Text summarization with pretrained encoders》[2019]和《Sentence centrality revisited for unsupervised summarization》[2019]采用PLMs（例如BERT）作为文本编码器，将文本压缩成低维向量，同时保留其大部分含义</li>
+<li>在某些情况下，输入文本可能是由几个句子和段落组成的长文档——在句子或短段落上训练的PLM不太能够准确地建模文档中的长期依赖关系<ul>
+<li>《HIBERT: document level pre-training of hierarchical bidirectional transformers for document summarization》[2019]和《Unsupervised extractive summarization by pre-training hierarchical transformers》[2020]提出分层BERT来学习句子之间的交互，用于文档编码</li>
+<li>为了捕捉句子间的关系，《Discourse-aware neural extractive text summarization》[2020]在BERT的基础上使用堆叠图卷积网络（GCN）来建模结构性话语图</li>
+</ul>
+</li>
+<li>许多多语言生成任务（如机器翻译）涉及多种语言，某些语言资源不足，因此，《Cross-lingual language model pretraining》[2019]提出学习跨语言的语言模型（XLMs）来进行多语言语言理解</li>
+</ul>
+<h3 id="结构化输入"><a href="#结构化输入" class="headerlink" title="结构化输入"></a>结构化输入</h3><ul>
+<li>现实场景中，很难用真实文本收集大量带标签的结构化数据进行训练</li>
+<li>《Few-shot NLG with pre-trained language model》[2020]和《Few-shot table-to-text generation with table structure reconstruction and content matching》[2020]将PLM用于Few-shot环境中，实现数据到文本的生成</li>
+<li>将PLM用于结构化数据时，需要考虑如何将结构化数据送到PLM中——需要适应PLMs的序列特性<ul>
+<li>《Investigating pretrained language models for graph-to-text<br>generation》[2020]和《Gpt-too: A language-model-first approach for amr-to-text generation》[2020]将用于输入的知识图（KG）和抽象含义表示（AMR）图线性化为三元组序列，</li>
+<li>《Few-shot knowledge graph-to-text generation with pretrained language models》[2021]引入一个额外的图形编码器来编码输入KG</li>
+</ul>
+</li>
+</ul>
+<h3 id="多媒体输入"><a href="#多媒体输入" class="headerlink" title="多媒体输入"></a>多媒体输入</h3><ul>
+<li>CBT《Contrastive bidirectional transformer for temporal representation learning》[2019]和《Videobert: A joint model for video and language representation learning》[2019]对视频字幕任务进行预训练，只使用基于BERT的编码器，学习视觉和语言标记序列上的双向联合分布——需要训练一个独立的视频到文本的解码器</li>
+<li>《Unified vision-language pre-training for image captioning and VQA》[2020]使用共享的多层Transformer网络进行编码和解码——在两个MLM任务上对模型进行预训练（例如为seq2seq LM设计的完形填空任务）</li>
+<li>受GPT生成性预训练目标的启发，《XGPT: cross-modal generative pre-training for image captioning》[2020]提出了一种跨模态预训练模型（XGPT），该模型以图像为输入，将图像字幕（<code>image caption</code>）任务作为预训练阶段的基本生成任务</li>
+<li>语音识别上，《Unsupervised pre-training for sequence to sequence speech recognition》[2019]提出了一种无监督的方法来预训练不成对语音和转录本（<code>unpaired speech and transcripts</code>）的encoder-decoder模型。两个预训练阶段用于从语音和文本中提取声学和语言学信息</li>
+</ul>
+<h2 id="满足输出文本的特殊要求"><a href="#满足输出文本的特殊要求" class="headerlink" title="满足输出文本的特殊要求"></a>满足输出文本的特殊要求</h2><ul>
+<li>不同的文本生成任务中，生成的文本需要满足几个关键属性</li>
+</ul>
+<h3 id="相关性"><a href="#相关性" class="headerlink" title="相关性"></a>相关性</h3><ul>
+<li>对话系统的任务要求生成的响应与输入的对话存在历史相关性</li>
+<li>除了对话历史外，对应于响应类型的条件也可以被提供作为外部输入，例如响应的主题和说话人的角色</li>
+<li>《Transfertransfo: A transfer learning approach for neural network based conversational agents》[2019]和《DIALOGPT : Large-scale generative pre-training for conversational response generation》[2020年]能够产生比基于RNN的模型更相关、与对话背景一致的响应</li>
+</ul>
+<h3 id="Faithfulness"><a href="#Faithfulness" class="headerlink" title="Faithfulness"></a>Faithfulness</h3><ul>
+<li>生成文本中的内容不应与输入文本中的事实相矛盾——例如，文本摘要任务</li>
+<li>《Leveraging pre-trained checkpoints for sequence generation tasks》[2020]用BERT、GPT和RoBERTa来初始化encoder和decoder，测试不同setting下的结果</li>
+<li>为了提高摘要的忠实度，《Improving abstraction in text summarization》[2018]提出将解码器分解为一个检索源文档相关部分的上下文网络，和一个包含语言生成先验知识的PLM</li>
+<li>《TED: A pretrained unsupervised summarization model with theme modeling and denoising》[2020]通过主题建模损失（<code>theme modeling loss</code>）来微调目标域上的PLMs。主题建模模块的作用是使生成的摘要在语义上接近原文章</li>
+</ul>
+<h3 id="保序性"><a href="#保序性" class="headerlink" title="保序性"></a>保序性</h3><ul>
+<li>在自然语言处理领域，顺序保持表示语义单位（词、短语等）的顺序在输入和输出文本上都是一致的——例如机器翻译任务</li>
+<li>提出《CSP: code-switching pre-training for neural machine translation》，从源语言和目标语言中提取词对对齐信息，应用提取的对齐信息来增强保序性</li>
+<li>为了有效地增强任何语言对的保序性，提出《Pretraining multilingual neural machine translation by leveraging alignment information》，一种预训练通用多语言机器翻译模型的方法。mRASP的关键是随机对齐替换技术，它强制多个语言中相似含义的单词和短语在表示空间中被对齐</li>
+</ul>
+<h2 id="文本生成的微调策略"><a href="#文本生成的微调策略" class="headerlink" title="文本生成的微调策略"></a>文本生成的微调策略</h2><h3 id="数据角度"><a href="#数据角度" class="headerlink" title="数据角度"></a>数据角度</h3><ul>
+<li>Few-shot Learning<ul>
+<li>许多文本生成中没有足够的带注释数据</li>
+<li>常见的方法是用预先获得的参数来填充现有的模块，然后用几个、一个甚至不用例子来微调</li>
+<li>例如，在多语言翻译中，一些低资源语言缺乏足够的平行语料库，XLM提出学习跨语言模型，将在高资源语言中学到的知识转化为低资源语言</li>
+<li>上一节中的Few-shot learning也可以应用于数据到文本的任务</li>
+</ul>
+</li>
+<li>Domain Transfer<ul>
+<li>PLMs不能直接适应于同预训练域分布差异较大的新域</li>
+<li>一个有效的解决方案是，在对PLM进行微调之前，继续针对特定数据和预训练目标训练PLM——预训练目标通常为MLM</li>
+<li>在域转移中，有多种mask的方法。《Generalized conditioned dialogue generation based on pre-trained language model》[2020]提出基于TF-IDF的掩码，以选择更多条件相关的token进行掩码，从而专注于相应领域的特征</li>
+</ul>
+</li>
+</ul>
+<h3 id="任务角度"><a href="#任务角度" class="headerlink" title="任务角度"></a>任务角度</h3><ul>
+<li>提高一致性<ul>
+<li>通过对比学习进行微调的模型能够很好地区分一对句子是否相似，此时PLM被迫理解两个句子之间的位置或语义关系</li>
+<li>NSP是一种常用的判断两个输入句子是否为连续片段的方法，可应用于摘要和对话系统</li>
+<li>CBT在跨模态训练中提出了噪声对比度估计（NCE），以鼓励模型识别正确的视频-文本对</li>
+<li>去噪自编码（DAE）以损坏的文本为输入，目的是恢复原始文本。TED  利用DAE提炼基本语义信息进行抽象摘要。XGPT尝试使用图像条件去噪自编码（IDA）对底层文本对齐进行建模，迫使模型重构整个句子</li>
+</ul>
+</li>
+<li>Preserving Fidelity</li>
+</ul>
+<h3 id="模型角度"><a href="#模型角度" class="headerlink" title="模型角度"></a>模型角度</h3><ul>
+<li>当对有限的数据进行微调时，很可能会出现过拟合</li>
+<li>《A tailored pre-training model for task-oriented dialog generation》[2020]使用一个固定的GPT来保存在另一个微调GPT中编码的知识</li>
+<li>《Distilling knowledge learned in BERT for text generation》[2020a]提出利用BERT模型（教师）作为监督，指导Seq2Seq模型（学生）以获得更好的生成</li>
+<li> 《Text summarization with pretrained encoders》[2019]利用两个优化器分别更新PLM和初始模块的参数，以解决两个模块之间的差异</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\13\A-Survey-Organizing-Contextualized-Encoders\" rel="bookmark">A Survey Organizing Contextualized Encoders</a></div>
+        <div class="popular-posts-excerpt"><p><p>​    综述《Which *BERT? A Survey Organizing Contextualized Encoders》（EMNLP 2020）</p>
+<p>​</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\15\ALBERT\" rel="bookmark">ALBERT A Lite BERT For Self-supervised Learning Of Language Representations</a></div>
+        <div class="popular-posts-excerpt"><p><p>《ALBERT: A LITE BERT FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS》（ALBERT ICLR 2020）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\23\BART\" rel="bookmark">BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension》（BART）论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\16\BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding\" rel="bookmark">BERT Pre-training of Deep Bidirectional Transformers for Language Understanding</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\24\Bert-over-Bert\" rel="bookmark">BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data</a></div>
+        <div class="popular-posts-excerpt"><p><p>《BoB: BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data》（BoB）2021ACL</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/" title="Pretrained Language Models for Text Generation：A Survey">https://thomas-li-sjtu.github.io/2021/12/16/Pretrained-Language-Models-for-Text-Generation-A-Survey/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Transformer/" rel="tag"><i class="fa fa-tag"></i> Transformer</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/15/Understanding-Password-Choices/" rel="prev" title="Understanding Password Choices：How Frequently Entered Passwords are Re-used Across Websites">
+      <i class="fa fa-chevron-left"></i> Understanding Password Choices：How Frequently Entered Passwords are Re-used Across Websites
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/30/Non-Autoregressive-Text-Generation-with-Pre-trained-Language-Models/" rel="next" title="Non-Autoregressive Text Generation with Pre-trained Language Models">
+      Non-Autoregressive Text Generation with Pre-trained Language Models <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E5%92%8C%E5%85%B8%E5%9E%8B%E5%BA%94%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">任务和典型应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E6%9C%AC%E7%94%9F%E6%88%90%E7%9A%84%E6%A0%87%E5%87%86%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">文本生成的标准架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E8%BE%93%E5%85%A5%E5%BB%BA%E6%A8%A1%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">从输入建模不同数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%85%A5"><span class="nav-number">4.1.</span> <span class="nav-text">非结构化输入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%85%A5"><span class="nav-number">4.2.</span> <span class="nav-text">结构化输入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E5%AA%92%E4%BD%93%E8%BE%93%E5%85%A5"><span class="nav-number">4.3.</span> <span class="nav-text">多媒体输入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BB%A1%E8%B6%B3%E8%BE%93%E5%87%BA%E6%96%87%E6%9C%AC%E7%9A%84%E7%89%B9%E6%AE%8A%E8%A6%81%E6%B1%82"><span class="nav-number">5.</span> <span class="nav-text">满足输出文本的特殊要求</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E6%80%A7"><span class="nav-number">5.1.</span> <span class="nav-text">相关性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Faithfulness"><span class="nav-number">5.2.</span> <span class="nav-text">Faithfulness</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%9D%E5%BA%8F%E6%80%A7"><span class="nav-number">5.3.</span> <span class="nav-text">保序性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E6%9C%AC%E7%94%9F%E6%88%90%E7%9A%84%E5%BE%AE%E8%B0%83%E7%AD%96%E7%95%A5"><span class="nav-number">6.</span> <span class="nav-text">文本生成的微调策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%A7%92%E5%BA%A6"><span class="nav-number">6.1.</span> <span class="nav-text">数据角度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E8%A7%92%E5%BA%A6"><span class="nav-number">6.2.</span> <span class="nav-text">任务角度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%A7%92%E5%BA%A6"><span class="nav-number">6.3.</span> <span class="nav-text">模型角度</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

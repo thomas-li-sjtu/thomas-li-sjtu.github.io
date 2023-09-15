@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《密码协议》课程笔记（3） 身份认证协议">
+<meta property="og:type" content="article">
+<meta property="og:title" content="密码协议(3) 身份认证协议">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《密码协议》课程笔记（3） 身份认证协议">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134124354.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134621223.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134843379.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134858188.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329135509184.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329152214319.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329164844545.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329164954334.png">
+<meta property="article:published_time" content="2022-03-28T12:24:00.000Z">
+<meta property="article:modified_time" content="2022-04-30T05:22:42.070Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134124354.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>密码协议(3) 身份认证协议 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          密码协议(3) 身份认证协议
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-28 20:24:00" itemprop="dateCreated datePublished" datetime="2022-03-28T20:24:00+08:00">2022-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">信息安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《密码协议》课程笔记（3） 身份认证协议</p>
+<a id="more"></a>
+
+<h2 id="身份认证协议"><a href="#身份认证协议" class="headerlink" title="身份认证协议"></a>身份认证协议</h2><p>认证是一个通信过程，一个实体（验证者）B验证了另一个实体（声称者/原告）A声称的某种属性。若认证是验证消息的某种声称属性，则称为数据源认证或消息认证；若认证是验证原告声称的身份，则称为实体认证——实体认证是指通过一个通信过程或协议， 一个实体B和另一个实体A建立一种真实通信，使得B能够验证A是要与之通信的实体。</p>
+<p>也可以将A的身份当作一条消息来处理。</p>
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><ul>
+<li><p>一些差别：</p>
+<ul>
+<li>与消息验证相比，没有消息的新鲜性</li>
+<li>与数字签名相比，没有不可否认性</li>
+<li>与经过身份验证的密钥交换相比，不需要实际地建立安全密钥</li>
+</ul>
+</li>
+<li><p>好的身份鉴别协议要满足：</p>
+<ul>
+<li>可靠性</li>
+<li>不可转让性</li>
+<li>不可冒充性</li>
+</ul>
+</li>
+<li><p>鉴别方案包括两类协议：登记/注册（registration）、身份鉴别（identification）</p>
+</li>
+<li><p>对称身份鉴别方案：注册过程以双方共享一个密钥结束，双方都要存储该密钥</p>
+</li>
+<li><p>非对称身份鉴别方案：注册过程以双方共享一对公钥结束，证明者才知道私钥——证明者可以和多个验证者共享公钥对</p>
+</li>
+<li><p>攻击方法（假设注册过程是安全的）：</p>
+<ul>
+<li><p>impersonation attack：鉴别协议最基本的安全要求是能抵御伪装攻击，即攻击者无法让自己被鉴别为任意参与者</p>
+<ul>
+<li>被动：窃听证明者和验证者的通信，或者在非对称方案中从公钥分析出私钥</li>
+<li>主动<ul>
+<li>猜测攻击：攻击者冒充证明者，希望在不知道密钥或私钥时做出正确猜测</li>
+<li>cheating verifier attack：攻击者冒充验证者，希望通过违反协议过程，从证明者的反馈中提取有效信息</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>中间人攻击</p>
+</li>
+<li><p>grandmaster chess attack：业余选手与两位大师比赛象棋，一场为白棋另一场为黑棋，只需将所有动作从一位大师复制到另一位大师即可——无论如何，都可以获得一些信息</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ul>
+<li><p>基于密码的鉴别方案：对称的身份鉴别方案，但无法抵御窃听攻击（注册后，证明者获得唯一的用户id，鉴别时，证明者向验证者发送用户id和密码）</p>
+</li>
+<li><p>Hash chain（用于解决窃听攻击）</p>
+<ul>
+<li>长为n的序列，满足：$x_{i+1}=H(x_i)$，其中哈希函数将0/1比特映射为长为k的比特串</li>
+<li>注册阶段：<ul>
+<li>证明者选择$x_0\in{0,1}^k$，计算$x_n=H^n(x_0)$，发给验证者</li>
+<li>证明者和验证者均初始化一个计数器$i=1$</li>
+<li>证明者存储$x_0$，验证者存储$v=x_n$</li>
+</ul>
+</li>
+<li>验证阶段：<ul>
+<li>证明者计算$x_{n-i}=H^{n-i}(x_0)$并发送给验证者，证明者的计数器加一</li>
+<li>验证者测试$H(x_{n-i})=v$<ul>
+<li>若验证成功，则验证者计数器加一，并且$v=x_{n-i}$</li>
+<li>若验证失败，则认为证明者身份非法</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>可以视为对称方案；猜测攻击不可行，而窃听攻击无法做下一步的验证</li>
+</ul>
+</li>
+<li><p>基本的挑战响应协议</p>
+<ul>
+<li><p>验证者发送一个随机的挑战，证明者应答，验证者确认应答</p>
+</li>
+<li><p>四种挑战响应方案</p>
+<img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134124354.png" alt="image-20220329134124354" style="zoom:67%;">
+
+<ul>
+<li><p>方案1：为了抵御窃听攻击，加密方案必须抵御已知的明文攻击；为了抵御欺骗验证器攻击，加密方案必须抵抗自适应选择明文攻击</p>
+  <img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134621223.png" alt="image-20220329134621223" style="zoom:67%;">
+</li>
+<li><p>方案2：H表示一个哈希函数；能够抵御窃听攻击和欺骗验证者攻击</p>
+<p><img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134843379.png" alt="image-20220329134843379"></p>
+</li>
+<li><p>方案3：双方共享一个公钥，证明者有私钥；加密方案必须能抵御窃听攻击与欺骗验证者攻击</p>
+<p><img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329134858188.png" alt="image-20220329134858188"></p>
+</li>
+<li><p>方案4：双方共享一个公钥，证明者持有私钥，使用私钥做签名，验证者通过公钥验证签名；签名方案必须能抵御窃听攻击与欺骗验证者攻击</p>
+<p><img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329135509184.png" alt="image-20220329135509184"></p>
+</li>
+</ul>
+</li>
+<li><p>以上方案是安全的，当且仅当加密或验证方案是安全的——加密和签名的开销大</p>
+</li>
+</ul>
+</li>
+<li><p><strong>零知识验证方案</strong>（Schnorr’s Zero-knowledge Protocol）</p>
+<ul>
+<li><p>无论验证者怎么作弊，都无法从诚实的证明者获取有用信息，但诚实验证者可以确信证明者知道私钥——验证者通过与证明者交互得到的信息，也可由验证者模拟产生</p>
+</li>
+<li><p>举例：<strong>Schnorr’s protocal</strong></p>
+<img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329152214319.png" alt="image-20220329152214319" style="zoom:67%;">
+
+<ul>
+<li><p>G是阶为n的群，生成元为g，n为大素数，$x\in Z_n$是证明者的私钥，$h=g^x$为证明者的公钥，在注册阶段，验证者获得公钥</p>
+</li>
+<li><p>上图为身份验证的一次迭代，双方会进行k轮迭代，k是一个安全参数</p>
+</li>
+<li><p><strong>第一个消息a称为承诺（commitment），第二个消息c称为挑战（challenge），第三个消息r称为回应（response）</strong></p>
+</li>
+<li><p>向验证者表明，证明者知道私钥$x=log_gh$（soundness property）：</p>
+<ul>
+<li>如果证明者不知道x，则证明者最多能准备一个a，用于c=0和c=1的场景。当c=0时，作弊的证明者设置$a=g^u$，发送$r=u$；当c=1时，作弊的证明者设置$a=g^u/h$并发送$r=u$，此时能满足验证者的要求$g^r=ah$，但证明者无法准备好这样的a——假设能够满足以上两个情况，则证明者能够产生两个不同的$r$，即有$g^{r_0}=a,g^{r_1}=ah$，即$h=g^{r_1-r_0}$，但因为$x=r_1-r_0\ mod\ n$，表明证明者知道x</li>
+<li>每一轮，作弊的证明者有50%的可能不被发现，因此经过k轮，不被发现的概率只有$2^{-k}$</li>
+</ul>
+</li>
+<li><p>为什么是零知识？</p>
+<ul>
+<li><p>作弊的验证者可以多次参与协议，每次迭代中都获得一组(a,c,r)，但实际上验证者完全可以自己生成(a,c,r)而不需要交互——模拟产生(a,c,r)和诚实证明者、诚实验证者交互输出的(a,c,r)，概率分布相同</p>
+<p><img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329164844545.png" alt="image-20220329164844545"></p>
+</li>
+</ul>
+</li>
+<li><p><strong>无论作弊的验证器采用什么算法提取信息，都可以使用相同的算法生成相同分布的信息，而无需证明者的参与</strong>（真实的输出是使用私钥x作为输入生成，而模拟的输出仅使用公钥h作为输入生成）</p>
+</li>
+</ul>
+</li>
+<li><p>进一步改进：c的选择范围更大——此时仍然soundness，但不是零知识（Schnorr’s protocol is sound and honest-verifier zero-knowledge. Although it cannot be proved zero-knowledge, no attacks are known for this protocol）</p>
+<img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/image-20220329164954334.png" alt="image-20220329164954334" style="zoom:67%;">
+
+
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\28\Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service\" rel="bookmark">Empirical Analysis of Password Reuse and Modification across Online Service</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Empirical Analysis of Password Reuse and Modification across Online Service》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/" title="密码协议(3) 身份认证协议">https://thomas-li-sjtu.github.io/2022/03/28/密码协议-3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/" rel="prev" title="密码协议(2) 比特承诺协议">
+      <i class="fa fa-chevron-left"></i> 密码协议(2) 比特承诺协议
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/29/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-4/" rel="next" title="密码协议(4) 零知识证明协议">
+      密码协议(4) 零知识证明协议 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.</span> <span class="nav-text">身份认证协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.2.</span> <span class="nav-text">实例</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

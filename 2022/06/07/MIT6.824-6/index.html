@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MIT-6.824 分布式系统学习笔记（6）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT-6.824 (6)">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/06/07/MIT6.824-6/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="MIT-6.824 分布式系统学习笔记（6）">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-07T12:11:28.000Z">
+<meta property="article:modified_time" content="2022-06-07T10:31:18.002Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/06/07/MIT6.824-6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIT-6.824 (6) | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/06/07/MIT6.824-6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIT-6.824 (6)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-07 20:11:28" itemprop="dateCreated datePublished" datetime="2022-06-07T20:11:28+08:00">2022-06-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MIT/" itemprop="url" rel="index"><span itemprop="name">MIT</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>MIT-6.824 分布式系统学习笔记（6） </p>
+<a id="more"></a>
+
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/chaozh/MIT-6.824">chaozh/MIT-6.824: Basic Sources for MIT 6.824 Distributed Systems Class (github.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://mit-public-courses-cn-translatio.gitbook.io/mit6-824/">MIT6.824 (gitbook.io)</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1R7411t71W?p=1">2020 MIT 6.824 分布式系统_bilibili</a></li>
+</ul>
+<h2 id="Lecture-11-Cache-Consistency-Frangipani"><a href="#Lecture-11-Cache-Consistency-Frangipani" class="headerlink" title="Lecture 11 Cache Consistency: Frangipani"></a>Lecture 11 Cache Consistency: Frangipani</h2><h3 id="初探"><a href="#初探" class="headerlink" title="初探"></a>初探</h3><ul>
+<li>Frangipani论文讨论：<ul>
+<li>缓存一致性（Cache Coherence）：缓存中有数据，新的请求修改了实际数据但是此时没有考虑缓存中的数据，此时需要一些额外的工作，保证缓存和实际数据保持一致</li>
+<li>分布式事务（Distributed Transaction）</li>
+<li>分布式故障恢复（Distributed Crash Recovery）</li>
+</ul>
+</li>
+<li>Frangipani是一个网络文件系统（NFS，Network File System），与已有的应用程序一起工作<ul>
+<li>工作站运行一个Frangipani服务，应用程序执行文件系统调用时，系统内核中的Frangipani模块实现了文件系统</li>
+<li>文件系统的数据结构——文件内容、inode、目录、目录的文件列表、inode和块的空闲状态——存储在共享虚拟磁盘服务中（称为Petal）<ul>
+<li>Petal运行在一些不同的服务器上，而非上述的工作站</li>
+<li>Petal会复制数据，使得即使一个Petal服务器故障也能取回数据</li>
+<li>Frangipani读写文件时向Petal服务器发送RPC，此时Petal是一个被所有Frangipani使用、基于网络的共享磁盘</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>论文期望使用Frangipani来支持使用共享的基础设施，如果一个用户编辑了一个文件，其他用户可以读到刚刚编辑的文件（听起看来像是腾讯共享文档一样）<ul>
+<li>虽然数据存储在共享磁盘中，但本地（工作站，或者Frangipani服务器）仍有一些缓存，以提高性能</li>
+<li>Frangipani支持Write-Back缓存：修改、创建、删除一个文件时，会先只更新在本地缓存，这些修改要过一会才写回到Petal——文件系统的逻辑需要存在于每个工作站的Frangipani模块，而Petal只是一个存储系统，因此这是一个去中心化的设计</li>
+</ul>
+</li>
+<li>综上，有一个系统，在工作站里有大量的缓存，文件的修改在本地缓存完成</li>
+</ul>
+<h3 id="Frangipani的挑战"><a href="#Frangipani的挑战" class="headerlink" title="Frangipani的挑战"></a>Frangipani的挑战</h3><ul>
+<li>两个挑战：缓存，去中心化架构使得大量逻辑放在客户端</li>
+<li>缓存一致性挑战：<ul>
+<li>工作站上的一些修改需要被其他工作站看到</li>
+<li>例如工作站W1在本地缓存中创建一个文件/A，工作站W2的用户要获取/目录下的文件列表时，需要看到新创建的文件A——这种一致性称为缓存一致性（Cache Coherence）</li>
+<li>如果我缓存了一个数据，而其他人在他的缓存中修改了这个数据，我的缓存需要自动的应用相关修改</li>
+</ul>
+</li>
+<li>原子性挑战：两个工作站可能在同一时间修改同一目录，因此期望类似于创建、删除的操作能即时生效，不会与相同时间其他工作站的操作相互干扰，即，具有原子性（Atomicity）</li>
+<li>单个服务器的故障恢复：一个工作站的崩溃不会影响其他使用同一个共享系统的工作站，即使这些工作站正在查看崩溃工作站的文件或目录</li>
+</ul>
+<h3 id="Frangipani的锁服务"><a href="#Frangipani的锁服务" class="headerlink" title="Frangipani的锁服务"></a>Frangipani的锁服务</h3><ul>
+<li><p>线性一致性使用户总能看到最新数据，而缓存能带来性能的提升</p>
+</li>
+<li><p>Frangipani的缓存一致性核心由锁保证，用锁来使工作站相信，当它们缓存了数据时，它们缓存的是最新的数据</p>
+</li>
+<li><p>锁服务器：</p>
+<ul>
+<li>Frangipani系统中有三种服务器：Frangipani服务器（工作站）、Petal存储服务器、锁服务器</li>
+<li>逻辑上锁服务器是独立的服务器，实际上它与Petal服务器一起运行</li>
+<li>锁服务器有一个locks表单，锁以文件名来命名，每个文件（以及对应的锁）可能会被某个工作站持有——Frangipani的锁要么允许一个写入者持有，要么允许多个读取者持有</li>
+<li>锁服务器会记住每个文件的锁被谁持有</li>
+</ul>
+</li>
+<li><p>工作站的Frangipani模块也有一个lock表单，记录文件名、对应的锁的状态和文件的缓存内容</p>
+<ul>
+<li>当一个Frangipani服务器决定要读取文件，它会向一个锁服务器请求文件对应的锁，之后才会向Petal服务器请求文件或者目录的数据</li>
+<li>收到数据之后，工作站会记住，本地有一个文件X的拷贝，对应的锁的状态，和相应的文件内容</li>
+<li>在工作站完成创建、读取等操作时，会随着相应的系统调用（如write，create，read）释放锁（在做操作期间，锁的状态是Busy）</li>
+<li>但从锁服务器的角度来看，工作站仍然持有锁，即使工作站内部会标明此时锁是Idle状态，不再使用这个锁</li>
+</ul>
+</li>
+<li><p>Frangipani应用了很多的规则，使得没有工作站会使用缓存中的旧数据——规则、锁、缓存数据需要配合使用，实现缓存一致性</p>
+<ul>
+<li>工作站不允许持有缓存的数据，除非同时也持有了与数据相关的锁——意味着一个工作站使用一个数据之前，首先要从锁服务器获取数据的锁，持有锁后才从Petal读取数据</li>
+<li>如果在释放锁之前修改了锁保护的数据，必须将修改了的数据写回到Petal，而只有Petal确认收到了数据，才可以释放锁</li>
+<li>释放锁之后再从工作站的lock表单中，删除文件的锁的记录和缓存的数据</li>
+</ul>
+</li>
+</ul>
+<h3 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h3><ul>
+<li>缓存一致性挑战</li>
+<li>工作站和锁服务器之间的缓存一致协议包含4种不同的消息（可以认为是单向的网络消息）<ul>
+<li>Request消息：从工作站发给锁服务器，申请锁</li>
+<li>Grant消息：锁服务器的lock表单显示锁已经被其他人持有，此时锁服务器不能交出锁，而一旦锁被释放，锁服务器回复Grant消息给工作站</li>
+<li>Revoke消息：如前所述，当工作站使用完锁不会立刻向锁服务器释放锁，因此如果锁服务器收到Request消息，发现Request的锁被另一个工作站持有，锁服务器会发送一个Revoke消息给当前持有锁的工作站，请求其释放锁</li>
+<li>Release消息：<ul>
+<li>工作站收到Revoke请求、锁在Idle状态、缓存数据被修改，会先将缓存写回Petal存储服务器，再发送Release消息</li>
+<li>工作站收到Revoke请求时如果还在使用锁，则会先忽略Revoke请求，状态转为Idle后再注意到Revoke请求</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>锁可以是为写入提供的排他锁（Exclusive Lock），也可以是为只读提供的共享锁（Shared Lock）</li>
+<li>Frangipani可以理解锁与某个文件相关联——Frangipani使用Unix风格的inode号，作为lock表单的key</li>
+<li>优化：<ul>
+<li>每个工作站用完锁之后，不立即向锁服务器释放锁，先锁的状态标记为Idle</li>
+<li>Frangipani有共享的读锁（Shared Read Lock）和排他的写锁（Exclusive Write Lock）——大量的工作站读取文件时，同时持有对这个文件的读锁。如果某个工作站需要修改这个文件，它需要Revoke所有工作站的读锁</li>
+</ul>
+</li>
+</ul>
+<h3 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h3><ul>
+<li><p>原子性挑战</p>
+</li>
+<li><p>其他的工作站要么发现文件不存在，要么文件完全存在——多个步骤的操作要具备原子性</p>
+</li>
+<li><p>Frangipani在内部实现了一个数据库风格、以锁为核心的分布式事务系统</p>
+<ul>
+<li>工作站要获取所有需要读写的数据的锁，将所有修改的数据写回Petal之后，工作站才释放所有的锁</li>
+<li>有了锁服务器和缓存一致性协议，只需要确保在整个操作的过程中持有所有的锁，就可以实现不可分割原子事务</li>
+</ul>
+</li>
+</ul>
+<h3 id="Fangipani-Log"><a href="#Fangipani-Log" class="headerlink" title="Fangipani Log"></a>Fangipani Log</h3><ul>
+<li><p>故障恢复挑战：一个工作站持有锁，向Petal回写数据时一部分数据写入Petal，一部分还没写入，此时工作站崩溃并且锁没有释放</p>
+</li>
+<li><p>Frangipani需要通过预写式日志（Write-Ahead Log，WAL，见10.2）实现故障可恢复的事务（Crash Recoverable Transaction）——一个工作站向Petal写入数据前，会在Petal中自己的Log列表中追加一个Log条目，描述整个需要完成的操作，之后才向Petal发送数据</p>
+</li>
+<li><p>Frangipani在实现WAL时，有一些不同的地方：</p>
+<ul>
+<li>大部分的事务系统中只有一个Log，系统的所有事务都保存在这个Log。但Frangipani对每个工作站都保存了一份独立的Log</li>
+<li>几乎在所有使用了Log的系统中，Log与运行了事务的计算机紧紧关联在一起，但工作站的Log存储在Petal，而不是本地磁盘，如果工作站崩溃，其他工作站可以从Petal中获取它的Log</li>
+</ul>
+</li>
+<li><p>Log条目的内容：每个工作站以一种环形的方式使用它在Petal上的Log空间——Log从存储的起始位置开始写，到达结尾时，工作站会重用最开始的Log空间</p>
+<ul>
+<li>每个Log条目包含Log序列号（自增）。如果工作站崩溃，Frangipani会扫描位于Petal的Log直到Log结尾，因为最后一个Log必然是拥有最高序列号的Log</li>
+<li>每个Log条目有一个描述一个特定操作涉及到的所有数据修改的数组，数组每一个元素有一个Petal中的块号（Block Number）、一个版本号、写入的数据。之所以是数组，因为如此可以描述涉及修改多份数据的操作</li>
+<li>Log只包含对元数据的修改（如文件系统的目录、inode、bitmap的分配），不包含需要写入文件的数据——只包含了故障之后，可以用来恢复文件系统结构的必要信息</li>
+</ul>
+</li>
+<li><p>最初，工作站的Log只保存在工作站的内存中，尽可能晚地写到Petal，因为向Petal写数据需要花费较长时间</p>
+</li>
+<li><p>完整的过程（工作站收到Revoke消息，要释放某个锁）：</p>
+<ul>
+<li>工作站将内存中还没有写入到Petal的Log条目写入Petal</li>
+<li>将被Revoke的Lock保护的数据，写入到Petal</li>
+<li>向锁服务器发送Release消息</li>
+</ul>
+</li>
+</ul>
+<h3 id="故障恢复"><a href="#故障恢复" class="headerlink" title="故障恢复"></a>故障恢复</h3><ul>
+<li><p>场景：工作站需要重命名文件或创建一个文件，获得锁，修改自身的缓存，向Petal写入数据时故障</p>
+<ul>
+<li>要么工作站正在向Petal写入Log</li>
+<li>要么工作站正在向Petal写入修改的文件</li>
+</ul>
+</li>
+<li><p>当持有锁的工作站崩溃后，锁服务器向工作站发送的Revoke消息得不到响应，然后触发故障恢复——没有人需要用到崩溃工作站持有的锁，则没有人会注意到工作站崩溃</p>
+</li>
+<li><p>Frangipani对锁使用租约，租约到期锁服务器会认定工作站已经崩溃，会初始化恢复过程：会通知另一个活着的工作站，让它读取崩溃工作站的Log，重新执行它最近的操作并确保这些操作完成，完成之后通知锁服务器，最后锁服务器释放锁</p>
+</li>
+<li><p>第一种故障中，除非在Petal中找到完整的Log条目，否则执行恢复的工作站是不会执行这条Log条目</p>
+</li>
+</ul>
+<ul>
+<li>第二种故障中，尽管部分修改已经写入了Petal，执行恢复的工作站会重新执行所有修改</li>
+</ul>
+<ul>
+<li>第三种故障：在释放锁的过程中崩溃，进而导致崩溃的工作站不是最后修改特定数据的工作站，例如一个工作站WS1执行了删除文件的操作，另一个工作站WS2，以相同的名字创建了文件，在创建完成之后，工作站WS1崩溃，此时按以上逻辑需要基于WS1的Log执行恢复（WS3来执行）<ul>
+<li>此时按上述故障恢复，WS3会删除WS2创建的一个完全不同的文件，因此不能盲目地重新执行Log条目</li>
+<li>Frangipani对每一份存储在Petal文件系统数据（每一个元数据，每一个inode，每一个目录下的内容）增加一个版本号，将版本号与Log描述的更新关联起来<ul>
+<li>工作站修改Petal中的元数据时，向从Petal中读取元数据并查看当前的版本号，创建Log条目来描述更新时，它会将当前版本号+1，填入在Log条目中的版本号，将新的增加了的版本号写回Petal</li>
+<li>因此，元数据的版本号会大于等于Log条目的版本号，如果其他的工作站之后修改同一份元数据，版本号会更高</li>
+</ul>
+</li>
+<li>WS3重新执行WS1的Log时，首先检查Log条目中的版本号和Petal存储的版本号，如果Petal存储的版本号大于等于Log条目中的版本号，WS3会忽略Log条目的修改</li>
+</ul>
+</li>
+</ul>
+<h2 id="Lecture-12-Distributed-Transaction"><a href="#Lecture-12-Distributed-Transaction" class="headerlink" title="Lecture 12 Distributed Transaction"></a>Lecture 12 Distributed Transaction</h2><h3 id="初探-1"><a href="#初探-1" class="headerlink" title="初探"></a>初探</h3><ul>
+<li><p>分布式事务由两部分组成：并发控制（Concurrency Control）、原子提交（Atomic Commit）</p>
+</li>
+<li><p>一些操作会要求从多个服务器上修改或者读取数据</p>
+</li>
+<li><p>通常将并发控制和原子提交放在一起，当做事务</p>
+</li>
+<li><p>数据库在存在并发和设备崩溃的前提下，仍然处理事务得到正确结果。正确性的定义为：ACID</p>
+<ul>
+<li>Atomic：原子性</li>
+<li>Consistent：一致性</li>
+<li>Isolated：隔离性，两个同时运行的事务，在事务结束前，不能看到彼此的中间状态，只能看到完成的事务结果。通常来说，隔离性（Isolated）意味着可序列化（Serializable）——并行执行一些事务得到的结果，与按照某种串行的顺序来执行这些事务，可以得到相同的结果</li>
+<li>Durable：持久化的，在客户端提交事务并从数据库得到确认时，在数据库中的修改是持久化的</li>
+</ul>
+</li>
+<li><p>并发控制（Concurrency Control）是实现可序列化的主要工具，通过与其他尝试使用相同数据的并发事务进行隔离，可以实现可序列化</p>
+</li>
+<li><p>原子提交（Atomic Commit）帮助处理下述场景：事务T1在执行过程中修改了X的值，此时事务涉及的一台服务器出现错误。此时需要能从这种场景恢复</p>
+</li>
+</ul>
+<h3 id="并发控制"><a href="#并发控制" class="headerlink" title="并发控制"></a>并发控制</h3><ul>
+<li>两种策略：悲观并发控制和乐观并发控制<ul>
+<li>悲观并发控制（Pessimistic Concurrency Control）<ul>
+<li>在事务使用任何数据之前，需要获得数据的锁</li>
+<li>如果有锁冲突，如其他事务持有锁，会造成延时等待——为正确性牺牲性能</li>
+</ul>
+</li>
+<li>乐观并发控制（Optimistic Concurrency Control）<ul>
+<li>不用担心其他的事务是否正在读写你要使用的数据，直接继续执行读写操作</li>
+<li>在事务最后的时候，再检查是否存在冲突，如果有则必须Abort当前事务，并重试</li>
+<li>完全避免了锁带来的性能损耗</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>本章只讨论了悲观并发控制——锁是两阶段锁（Two-Phase Locking）<ul>
+<li>当事务使用一些数据记录时，在执行任何数据的读写之前先获取锁</li>
+<li>事务必须持有任何已经获得的锁，直到事务提交或者Abort，不允许在事务的中间过程释放锁</li>
+<li>第一个阶段获取锁，第二个阶段在事务结束前一直持有锁</li>
+<li>非常容易产生死锁：例如有两个事务，T1读取记录X，之后再读取记录Y，T2读取记录Y，之后再读取记录X。如果同时运行则存在死锁<ul>
+<li>策略：使用判断循环、超时等方式，判断是否产生死锁，如果是，则数据库Abort其中一个事务，撤回它所有的操作，如同这个事务从来没有发生</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>以上使用两阶段锁的并发控制，在一个单主机的数据库中是这样，在一个分布式数据库也是这样</li>
+</ul>
+<h3 id="两阶段提交（Two-Phase-Commit）"><a href="#两阶段提交（Two-Phase-Commit）" class="headerlink" title="两阶段提交（Two-Phase Commit）"></a>两阶段提交（Two-Phase Commit）</h3><ul>
+<li><p>在一个分布式环境中，数据分割在多台机器上，如何构建数据库或存储系统以支持事务——如何构建分布式事务（Distributed Transaction），同时确保出现错误时，数据库仍然具有可序列化和某种程度的原子性（原子性指事务的每一个部分都执行，或者任何一个部分都不执行）</p>
+</li>
+<li><p>需要执行的任务以某种方式分包给多个服务器，每个服务器完成任务的不同部分</p>
+<ul>
+<li>一个计算机会用来管理事务，称为事务协调者（Transaction Coordinator）</li>
+<li>事务协调者以某种形式运行事务的代码（Put、Get、Add），向持有不同数据的其他计算机发送消息，其他计算机再执行事务的不同部分，称为参与者（Participants）</li>
+<li>事务协调者向服务器S1发消息，对X加1，向服务器S2发消息，对Y减1。之后有更多消息来确认，要么两个服务器都执行了操作，要么两个服务器都没有执行操作。以上是两阶段提交的实现框架</li>
+</ul>
+</li>
+<li><p>需要知道消息对应的是哪个事务，为此持有数据的服务器会维护一个锁的表单，用来记录锁被哪个事务所持有，并且对于事务有事务ID（Transaction ID）</p>
+</li>
+<li><p>一个简单的过程：事务协调者（TC），持有数据的两个不同的服务器作为参与者（A，B），一个外部的客户端C</p>
+<ul>
+<li>C向TC发请求，运行一个事务，等待回复</li>
+<li>TC运行整个事务，向A，B发送Put和Get，读取X，Y的数值，对X加1等。因此在事务的最开始，TC向参与者A发送Get请求并得到回复，之后再向参与者B发送一个Put请求并得到回复</li>
+<li>TC完成了事务并想要提交事务，此时释放所有的锁，让事务的结果对于外部可见，向客户端回复</li>
+<li>在开始执行事务时，TC需要确保所有的事务参与者能够完成它们在事务中的那部分工作，为此TC向所有的参与者发送Prepare消息，等待每个参与者的Yes/No投票</li>
+<li>A或者B收到Prepare消息时，它们知道事务要执行但是还没执行的内容，查看自身的状态并判断能否完成相应工作，向TC回复Yes或者No<ul>
+<li>如果所有的参与者都回复Yes，事务可以提交，不会发生错误，TC会给每一个参与者发出一个Commit消息，事务参与者回复ACK</li>
+<li>如果任何一个参与者回复了No，TC不会发送commit消息，而是发送一轮Abort消息给所有的参与者，撤回这个事务</li>
+</ul>
+</li>
+<li>事务Commit之后:<ul>
+<li>TC向客户端发送代表事务输出的内容，表明事务结束并且被持久化保存</li>
+<li>TC释放锁（不论Commit还是Abort）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="故障恢复-1"><a href="#故障恢复-1" class="headerlink" title="故障恢复"></a>故障恢复</h3><ul>
+<li>事务参与者故障<ul>
+<li>参与者B回复TC的Prepare消息之前崩溃：<ul>
+<li>TC角度看，B没有回复Yes，TC不能Commit</li>
+<li>B角度看，B被授权可以单方面的Abort事务，因为B知道自己不能发送Yes</li>
+</ul>
+</li>
+<li>B在回复Yes给Prepare消息后崩溃：<ul>
+<li>要确保B在故障恢复之后，仍然能完成分包给它的那一部分工作，因此故障重启时，B不能丢失对于事务的状态记录</li>
+<li>B回复Prepare之前，当前事务的中间状态、要做的修改、事务持有的锁必须在磁盘上持久化存储（以Log的形式在磁盘上存储）——B回复前，首先将相应的Log写入磁盘</li>
+<li>它重启恢复时，查看自己的Log可以发现之前正在一个事务的中间，而通过读取Log就知道如何完成它在事务中的那部分工作</li>
+</ul>
+</li>
+<li>B在收到Commit之后崩溃：完成了修改，数据持久化存储在磁盘上，无需任何处理。而TC没有收到ACK，TC会再次发送Commit消息时，此时B会完全忘记已经在磁盘上持久化存储的事务的信息，因此B会直接ACK这条消息</li>
+</ul>
+</li>
+<li>TC故障<ul>
+<li>TC在发送Commit消息之前崩溃：无所谓，没有一个参与者会Commit事务，直接Abort这个事务</li>
+<li>TC发送完一个或者多个Commit消息之后崩溃：<ul>
+<li>TC发送任何Commit消息前，先将事务的信息（结果和事务ID）写入到自己的Log，并持久化存储</li>
+<li>恢复时，查看Log可以发现哪些事务执行了一半，哪些事务已经Commit了，哪些事务已经Abort了。对于执行了一半的事务，TC向所有的参与者重发Commit/Abort消息</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果消息在网络传输的时候丢失了：<ul>
+<li>TC发送Prepare消息，没有收到所有的Yes/No消息：<ul>
+<li>选择一：TC重新发送一轮Prepare消息（费时，可能有个参与者永久关机了）</li>
+<li>选择二：TC单方面的Abort事务，并发送一轮Abort消息，此时如果一个崩溃的参与者重启并询问被Abort的事务，TC会发现没有该事务的记录，因此会恢复Abort消息</li>
+</ul>
+</li>
+<li>参与者等待Prepare消息超时：可以决定Abort事务</li>
+<li>假设B收到了Prepare消息，并回复了Yes，但参与者没有收到Commit消息：<ul>
+<li>这段等待commit的时间里，B一直持有事务涉及到数据的锁</li>
+<li><strong>不能单方面Abort事务或Commit事务，并释放锁</strong>，必须等待TC上线——称为Block，在特定的故障中，会很容易的陷入到一个需要等待很长时间的场景</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/06/07/MIT6.824-6/" title="MIT-6.824 (6)">https://thomas-li-sjtu.github.io/2022/06/07/MIT6.824-6/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/06/MIT6.824-5/" rel="prev" title="MIT-6.824 (5)">
+      <i class="fa fa-chevron-left"></i> MIT-6.824 (5)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/08/ShardCtrler-Lab4A%E6%80%BB%E7%BB%93/" rel="next" title="ShardCtrler Lab4A总结">
+      ShardCtrler Lab4A总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lecture-11-Cache-Consistency-Frangipani"><span class="nav-number">1.</span> <span class="nav-text">Lecture 11 Cache Consistency: Frangipani</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E6%8E%A2"><span class="nav-number">1.1.</span> <span class="nav-text">初探</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Frangipani%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">1.2.</span> <span class="nav-text">Frangipani的挑战</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Frangipani%E7%9A%84%E9%94%81%E6%9C%8D%E5%8A%A1"><span class="nav-number">1.3.</span> <span class="nav-text">Frangipani的锁服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.4.</span> <span class="nav-text">缓存一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%80%A7"><span class="nav-number">1.5.</span> <span class="nav-text">原子性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fangipani-Log"><span class="nav-number">1.6.</span> <span class="nav-text">Fangipani Log</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D"><span class="nav-number">1.7.</span> <span class="nav-text">故障恢复</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lecture-12-Distributed-Transaction"><span class="nav-number">2.</span> <span class="nav-text">Lecture 12 Distributed Transaction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E6%8E%A2-1"><span class="nav-number">2.1.</span> <span class="nav-text">初探</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="nav-number">2.2.</span> <span class="nav-text">并发控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%EF%BC%88Two-Phase-Commit%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">两阶段提交（Two-Phase Commit）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D-1"><span class="nav-number">2.4.</span> <span class="nav-text">故障恢复</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

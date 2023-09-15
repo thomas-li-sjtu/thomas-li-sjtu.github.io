@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《ProphetNet: Predicting Future N-gram for Sequence-to-Sequence Pre-training》（ProphetNet，2020，EMNLP Findings），partially referred to Fairseq-0.9.0 and MASS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Predicting Future N-gram for Sequence-to-Sequence Pre-training">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《ProphetNet: Predicting Future N-gram for Sequence-to-Sequence Pre-training》（ProphetNet，2020，EMNLP Findings），partially referred to Fairseq-0.9.0 and MASS">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220515132916847.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220515140856223.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220515145726517.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220515150429178.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220515151035309.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220514195623318.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220514195640302.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220514195823845.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220514195559535.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220514195917756.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220514195532995.png">
+<meta property="article:published_time" content="2022-05-14T10:52:49.000Z">
+<meta property="article:modified_time" content="2022-05-17T11:29:37.414Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="自然语言处理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/image-20220515132916847.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Predicting Future N-gram for Sequence-to-Sequence Pre-training | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Predicting Future N-gram for Sequence-to-Sequence Pre-training
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-14 18:52:49" itemprop="dateCreated datePublished" datetime="2022-05-14T18:52:49+08:00">2022-05-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> 《ProphetNet: Predicting Future N-gram for Sequence-to-Sequence Pre-training》（ProphetNet，2020，EMNLP Findings），partially referred to Fairseq-0.9.0 and MASS</p>
+<a id="more"></a>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/microsoft/ProphetNet">microsoft/ProphetNet: Code for EMNLP20 paper: “ProphetNet: Predicting Future N-gram for Sequence-to-Sequence Pre-training” (github.com)</a></p>
+<p>transformers也有相应实现</p>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>一个新的自监督训练目标：future n-gram prediction以及n-stream自监督机制</li>
+<li>以往seq2seq模型使用one-step-ahead prediction，ProphetNet实现n-step-ahead，防止因为local correlation过拟合</li>
+<li>分别基于16G和160G的语料库，预训练ProphetNet，在CNN/DailyMail、Gigaword、SQuAD1.1上测试摘要和问题生成任务，ProphetNet达到SOTA（compared to the models using the same scale pre-training corpus.）</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>AR：给定文本$x=(x_1,…,x_T)$，将似然分解为$p(x)=\prod_{t=1}^Tp(x_t|x_{&lt;t})$，训练方式为teacher forcing，</p>
+<blockquote>
+<p>optimized to predict the next token given all previous context tokens at each time step</p>
+</blockquote>
+<ul>
+<li>倾向于关注最近的token，因为local correlation如n-gram的关系通常比长期依赖更强，并且相应的teacher forcing关注one-step-prediction，对更远的token没有准确的偏置（bias）</li>
+<li>因此AR的语言模型存在“偏”的问题——overfit local token combination，underfit global coherence，这在decode种使用greedy search时更为明显</li>
+</ul>
+</li>
+<li><p>ProphetNet：</p>
+<ul>
+<li>自监督目标：future n-gram prediction</li>
+<li>两个目的：<ul>
+<li>训练阶段，模型应当能在一个time step同时预测future n-gram</li>
+<li>在fine-tune和推理阶段，模型能够被转换为只预测下一个token（和原始的seq2seq类似）</li>
+</ul>
+</li>
+<li>将xlnet的two-stream自监督，扩展为n-steam自监督<ul>
+<li>一个main stream自监督，和原始的Transformer的自监督机制相同</li>
+<li>n个额外的自监督stream，分别用于n-gram prediction中的n个token。即，预训练时第i个预测stream关注main stream里的hidden states，以预测第i个future token</li>
+<li>而main stream被所有的预测steam共享，因此推理时可以关闭预测stream，每个time step只预测接下来的一个token</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>实验中，future n-gram prediction和基于mask的自编码器降噪任务（参见MASS和BART）一起用于预训练</p>
+</li>
+<li><p>16G的语料和Bert的语料相同，160G的语料和BART的语料相同——后者达到SOTA，并且只用了1/3的BART预训练epoch，以及1/5的T5（PEGASUS）语料</p>
+</li>
+</ul>
+<h2 id="ProphetNet"><a href="#ProphetNet" class="headerlink" title="ProphetNet"></a>ProphetNet</h2><ul>
+<li>基于Transformer结构</li>
+</ul>
+<h3 id="seq2seq-learning"><a href="#seq2seq-learning" class="headerlink" title="seq2seq learning"></a>seq2seq learning</h3><ul>
+<li>给定文本对$(x,y)=(x_1,…,x_M,y_1,…,y_T)$</li>
+<li>建模条件似然$p(y|x)=\prod_{t=1}^Tp(y_t|y_{&lt;t},x)$——encoder编码x，decoder建模条件似然</li>
+</ul>
+<h3 id="Future-N-gram-Prediction"><a href="#Future-N-gram-Prediction" class="headerlink" title="Future N-gram Prediction"></a>Future N-gram Prediction</h3><img src="/2022/05/14/ProphetNet/image-20220515132916847.png" alt="image-20220515132916847" style="zoom:80%;">
+
+<ul>
+<li><p>将条件似然中$p(y_t|y_{&lt;t},x)$改为：$p(y_{t:t+n-1}|y_{&lt;t},x)$</p>
+</li>
+<li><p>给定x，ProphetNet将x编码（和原始的Transformer encoder一样）：$H_{enc}=Encoder(x_1,…,x_M)$，$H_{enc}$为句子表征</p>
+</li>
+<li><p>decoder在每个time step输出n个概率，即$p(y_t|y_{&lt;t},x),…,p(y_{t+n-1}|y_{&lt;t},x)=Decoder(y_{&lt;t},H_{enc})$</p>
+</li>
+<li><p>future n-gram prediction目标可以形式化为：</p>
+<img src="/2022/05/14/ProphetNet/image-20220515140856223.png" alt="image-20220515140856223" style="zoom:67%;">
+
+<ul>
+<li>分为两个部分：<ul>
+<li>条件的LM损失（同原始损失的一致）</li>
+<li>n-1个future token的预测损失，其中$\alpha_j$用于平衡权重，本文设置$\alpha_j=\frac{\gamma^j}{\sum_{i=0}^{n-1}\gamma^i}$，其中$\gamma$为衰减系数（attenuation coefficient）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="N-Stream-Self-Attention"><a href="#N-Stream-Self-Attention" class="headerlink" title="N-Stream Self-Attention"></a>N-Stream Self-Attention</h3><ul>
+<li><p>除了原始transformer decoder中的掩码多头自注意力（main stream），还加入了n-stream自注意力机制，第i个预测流负责建模概率$p(y_{t+i-1}|y_{&lt;t},x)$</p>
+<img src="/2022/05/14/ProphetNet/image-20220515145726517.png" alt="image-20220515145726517" style="zoom:80%;">
+</li>
+<li><p>上图h stream为main stream，g stream和s steam分别用于预测第一个、第二个token</p>
+</li>
+<li><p>main stream和传统的transformer decoder的掩码多头自注意力相同，使用一个三角矩阵控制每个位置只能注意前面的token：$H^{(k+1)}=MultiHead(H^{(k)},H^{(k)},H^{(k)})$，其中$H^{(k)}=(h_0^{(k)},…,h_T^{(k)})$表示main stream中第k个层的隐藏状态</p>
+</li>
+<li><p>上图b，显示1-st预测流和其隐藏状态可以计算为：</p>
+<img src="/2022/05/14/ProphetNet/image-20220515150429178.png" alt="image-20220515150429178" style="zoom:80%;">
+
+<ul>
+<li>其中，$g_{t-1}^{(k+1)}$表示时间步t-1时，1-st预测流的第k+1层的隐藏状态</li>
+<li>$g_{t-1}^{(k)}$作为注意力的query，而value和key为main stream的当前时间步前的隐藏状态</li>
+<li>为了使$g_{t-1}^{(k+1)}$position-aware，还取$g_{t-1}^{(k)}$作为注意力的value和key</li>
+</ul>
+</li>
+<li><p>类似地，2-nd预测流为：</p>
+<img src="/2022/05/14/ProphetNet/image-20220515151035309.png" alt="image-20220515151035309" style="zoom:80%;">
+</li>
+<li><p>二者的初始化token、绝对位置的嵌入、相对位置的计算是不同的（预测流通过特殊的token初始化，而非previous tokens）</p>
+</li>
+<li><p>在训练中，共享每个预测流和main stream的参数，因此可以简单地将ProphetNet decoder转化为transformer decoder</p>
+</li>
+<li><p>为了增强decoder的位置信息，将绝对位置嵌入和T5提出的bucket relative positional calculation结合起来</p>
+</li>
+</ul>
+<h3 id="Denoising-Task"><a href="#Denoising-Task" class="headerlink" title="Denoising Task"></a>Denoising Task</h3><ul>
+<li>使用和MASS相同的token span masking作为降噪任务（见第一个图）</li>
+<li>ProphetNet要在每个时间步内恢复masked token span中的future n tokens（MASS每个时间步只会恢复下一个token）</li>
+</ul>
+<h2 id="实验和结果"><a href="#实验和结果" class="headerlink" title="实验和结果"></a>实验和结果</h2><h3 id="预训练"><a href="#预训练" class="headerlink" title="预训练"></a>预训练</h3><ul>
+<li>模型参数：<ul>
+<li>12层encoder+12层decoder</li>
+<li>embedding size（hidden size）：1024</li>
+<li>feed forward size：4096</li>
+<li>batch size：1024，steps：500K</li>
+<li>adam优化，lr：3*10e-4</li>
+<li>设置n为2</li>
+</ul>
+</li>
+<li>预训练数据集：<ul>
+<li>同BERT：BookCorpus+English Wikipedia</li>
+<li>类似BART，但BART的数据集CC-News未公开，使用 similar public news corpus REALNEWS</li>
+</ul>
+</li>
+<li>预训练设置：<ul>
+<li>输入长度为512，随机覆盖</li>
+<li>每64个token就随机mask一个span，80%的token由[mask]替换，10%被随机tokens替代，10%不变</li>
+<li>衰减系数为1.0</li>
+<li>屏蔽长度为token总数的15%</li>
+</ul>
+</li>
+</ul>
+<h3 id="微调"><a href="#微调" class="headerlink" title="微调"></a>微调</h3><p>CNN/DailyMail、Gigaword——summarization</p>
+<p>SQuAD 1.1——Fine-tuning on Question Generation</p>
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><img src="/2022/05/14/ProphetNet/image-20220514195623318.png" alt="image-20220514195623318" style="zoom: 80%;">
+
+<img src="/2022/05/14/ProphetNet/image-20220514195640302.png" alt="image-20220514195640302" style="zoom: 80%;">
+
+<img src="/2022/05/14/ProphetNet/image-20220514195823845.png" alt="image-20220514195823845" style="zoom:80%;">
+
+<img src="/2022/05/14/ProphetNet/image-20220514195559535.png" alt="image-20220514195559535" style="zoom: 80%;">
+
+<img src="/2022/05/14/ProphetNet/image-20220514195917756.png" alt="image-20220514195917756" style="zoom:80%;">
+
+<img src="/2022/05/14/ProphetNet/image-20220514195532995.png" alt="image-20220514195532995" style="zoom: 80%;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\13\A-Survey-Organizing-Contextualized-Encoders\" rel="bookmark">A Survey Organizing Contextualized Encoders</a></div>
+        <div class="popular-posts-excerpt"><p><p>​    综述《Which *BERT? A Survey Organizing Contextualized Encoders》（EMNLP 2020）</p>
+<p>​</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\15\ALBERT\" rel="bookmark">ALBERT A Lite BERT For Self-supervised Learning Of Language Representations</a></div>
+        <div class="popular-posts-excerpt"><p><p>《ALBERT: A LITE BERT FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS》（ALBERT ICLR 2020）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\23\BART\" rel="bookmark">BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension》（BART）论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\16\BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding\" rel="bookmark">BERT Pre-training of Deep Bidirectional Transformers for Language Understanding</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\24\Bert-over-Bert\" rel="bookmark">BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data</a></div>
+        <div class="popular-posts-excerpt"><p><p>《BoB: BERT Over BERT for Training Persona-based Dialogue Models from Limited Personalized Data》（BoB）2021ACL</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/" title="Predicting Future N-gram for Sequence-to-Sequence Pre-training">https://thomas-li-sjtu.github.io/2022/05/14/ProphetNet/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Transformer/" rel="tag"><i class="fa fa-tag"></i> Transformer</a>
+              <a href="/tags/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" rel="tag"><i class="fa fa-tag"></i> 自然语言处理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/04/A-Systematic-Survey-of-Prompting-Methods-in-Natural-Language-Processing/" rel="prev" title="A Systematic Survey of Prompting Methods in Natural Language Processing">
+      <i class="fa fa-chevron-left"></i> A Systematic Survey of Prompting Methods in Natural Language Processing
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/15/SimCLS/" rel="next" title="A Simple Framework for Contrastive Learning of Abstractive Summarization">
+      A Simple Framework for Contrastive Learning of Abstractive Summarization <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ProphetNet"><span class="nav-number">3.</span> <span class="nav-text">ProphetNet</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#seq2seq-learning"><span class="nav-number">3.1.</span> <span class="nav-text">seq2seq learning</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Future-N-gram-Prediction"><span class="nav-number">3.2.</span> <span class="nav-text">Future N-gram Prediction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#N-Stream-Self-Attention"><span class="nav-number">3.3.</span> <span class="nav-text">N-Stream Self-Attention</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Denoising-Task"><span class="nav-number">3.4.</span> <span class="nav-text">Denoising Task</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%92%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">4.</span> <span class="nav-text">实验和结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="nav-number">4.1.</span> <span class="nav-text">预训练</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AE%E8%B0%83"><span class="nav-number">4.2.</span> <span class="nav-text">微调</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">4.3.</span> <span class="nav-text">结果</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

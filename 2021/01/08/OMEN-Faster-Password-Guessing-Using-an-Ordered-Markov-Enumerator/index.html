@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《OMEN: Faster Password Guessing Using an Ordered Markov Enumerator》论文阅读记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Faster Password Guessing Using an Ordered Markov Enumerator">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《OMEN: Faster Password Guessing Using an Ordered Markov Enumerator》论文阅读记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109210300991.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109193605696.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109193631327.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109193020546.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109191945907.png">
+<meta property="article:published_time" content="2021-01-08T10:42:21.000Z">
+<meta property="article:modified_time" content="2022-06-08T15:31:39.401Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109210300991.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Faster Password Guessing Using an Ordered Markov Enumerator | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Faster Password Guessing Using an Ordered Markov Enumerator
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-08 18:42:21" itemprop="dateCreated datePublished" datetime="2021-01-08T18:42:21+08:00">2021-01-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《OMEN: Faster Password Guessing Using an Ordered Markov Enumerator》论文阅读记录</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>人工生成的密码随机性非常差，这使得它们容易受到猜测攻击</li>
+<li>了解对手猜测攻击的能力是评估其影响和提出建议、对策的基本必要条件</li>
+<li>介绍了一种新的基于马尔可夫模型的密码破解工具 OMEN，它根据密码候选项的出现概率来生成密码候选项，即首先输出最有可能的密码</li>
+<li>OMEN 显著提高了猜测速度，在100亿次猜测中正确猜测了80%以上的密码，同比较的所有概率密码破解方法都多</li>
+<li>OMEN 的性能与 JTR 的马尔可夫模式进行了比较，后者实现了过去的马尔可夫模型功能——最初的9000万次猜测中，OMEN正确猜测了40%以上的密码，后者需要至少8倍的猜测次数才能获得一致的效果</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>现状：密码有很高的可移植性，对外行人来说易于理解，对操作员来说易于实施；其他身份验证可以在特定情况下取代密码，但迄今为止，它们还不能大规模取代密码[3]</li>
+<li>专注于离线猜测攻击——攻击者只能在愿意投入的时间和资源范围内进行多次猜测</li>
+<li>JtR 通过对现有的单词字典应用规则进行修改，从现有的数据语料库中生成新的猜测</li>
+<li>【24】用 PCFG 从泄露密码库自动提取规则</li>
+<li>本文提出了 OMEN，一种新的基于马尔可夫模型的密码破解工具，根据候选密码的出现概率生成候选密码，即首先输出最可能的密码</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>密码以散列形式在服务器存储；破解工作主要由散列函数的计算来完成，因此根据尝试正确猜测密码的次数来评估所有密码破解方法</li>
+<li>JTR：【17】提出了不同的方法来生成密码。字典模式下，提供一个密码字典作为输入，用户可指定各种规则。对于相对较少的猜测（少于10^8$），字典模式下的 JTR 产生最好的结果。在模式 JtR-inc 中，JTR 基于3元马尔可夫模型尝试破解密码</li>
+<li>马尔可夫模型：<ul>
+<li>【14】对比了不同形式的概率密码模型，并得出结论，马尔可夫模型比概率上下文无关语法更适合估计密码概率——但【14】只是估计了密码的相似性，而没有提出一个具体的密码猜测工具</li>
+<li>基本思想：密码中的相邻字母不是独立选择的，而是遵循一定的规律<ul>
+<li>n元马尔可夫模型中，根据长度为 n-1 的前缀对字符串中下一个字符的概率进行建模</li>
+<li>$P(c_1, . . . , c_m) ≈ P(c_1, . . . , c_{n−1}) ·\prod_{i=n}^mP(c_i|c_{i−n+1}, . . . , c_{i−1})$</li>
+<li>模型学习初始概率和转移概率，按照估计的递减概率顺序枚举密码</li>
+<li>数据的稀疏性、枚举的最佳顺序是需要考虑的问题</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>PCFG：【24】认为密码具有一定的结构，不同结构的概率从实际的密码中提取，并用于生成猜测密码</li>
+<li>密码强度估计：通常，主动密码检查器用于排除弱密码【[22，11，1，18，4】，但大多数主动的密码强度检查工具使用相对简单的规则集来确定口令强度，其效果被证明非常差【23，12，5】。【10】研究了密码策略对密码强度的影响，【2】提出了测量密码强度的新方法。【21】通过限制密码数据库中密码出现的次数来对密码强度进行分类。【5】证明马尔可夫模型可用于安全地衡量密码强度。</li>
+</ul>
+<h2 id="OMEN"><a href="#OMEN" class="headerlink" title="OMEN"></a>OMEN</h2><h3 id="改进的枚举算法"><a href="#改进的枚举算法" class="headerlink" title="改进的枚举算法"></a>改进的枚举算法</h3><ul>
+<li><p>将所有概率离散成不同的层次，按照递减的顺序遍历。对每一个层次，找与其关联的所有匹配密码</p>
+</li>
+<li><p>首先获得所有n-gram概率，然后根据$lvl_i= round (log(c_1· prob_i+ c_2))$（$c_1、c_2$使得最频繁的 n-gram 分到0级，而训练中没有出现的 n-gram 也能分到小的概率）将 log 函数处理后的概率离散到不同层次。这里级别是一个参数，可以取值为 0、-1、-2、-3…</p>
+</li>
+<li><p>给定级别$\eta$和特定长度$l$（假如为3元）</p>
+<ul>
+<li><p>计算所有向量$a=(a_2,…,a_l)$，其中元素为$[0,\eta-1]$之间的整数，且元素之和为$\eta$</p>
+</li>
+<li><p>$P(password) = P(pa)P(s|pa)P(s|as)P(w|ss)P(o|sw)P(r|wo)P(d|or)$</p>
+</li>
+<li><p>对每一个这样的向量，选择所有二元组$x1x2$，其概率在级别$a_2$中，然后迭代</p>
+<p><img src="/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109210300991.png" alt="image-20210109210300991"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="OMEN算法"><a href="#OMEN算法" class="headerlink" title="OMEN算法"></a>OMEN算法</h3><ul>
+<li>对考虑的所有长度值，执行上面的枚举算法（参数为0，长度值），并计算对应的成功概率</li>
+<li>按成功概率降序排列三元组（概率、级别、长度）</li>
+<li>删除最高概率的三元组，并执行上面的枚举算法（参数为最高三元组级别-1，最高三元组组长度），获得新的三元组和猜测密码</li>
+<li>同样地进行降序排列。重复上面步骤，直到所有三元组都被遍历，或者达到猜测总数</li>
+</ul>
+<h3 id="参数选择"><a href="#参数选择" class="headerlink" title="参数选择"></a>参数选择</h3><ul>
+<li>grams：通常 n 越大效果更好，因为更大的 n 能提供更精确的密码分布估计，但运行时间、内存、空间需求更高。本文对比了 n 为2-5的情况，n=5 的提升比 n=4 的提升小</li>
+<li>字符表大小：字符表越大，需要预估越多参数，字符表小则不能生成所有的密码。经过测试，字母表大小为72时，在 Rockyou 测试集上的效果最好</li>
+<li>级别：枚举密码候选项的级别数。级别越高，准确率越高。本文结果显示，级别从5增加到10能显著提高准确性，20和30时没有显著提升</li>
+<li>4元，字母表为72，10级</li>
+</ul>
+<h2 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li>Rockyou 数据集：<ul>
+<li>3260万</li>
+<li>大数目能有效训练马尔可夫模型</li>
+<li>通过 SQL 注入攻击获得，因此获得了所有的用户，代表性强</li>
+<li>分作训练集（RY-t）和测试集（RY-e）</li>
+</ul>
+</li>
+<li>MySpace（MS）<ul>
+<li>50000</li>
+<li>来自 2006 年的网络钓鱼攻击</li>
+</ul>
+</li>
+<li>Facebook（FB）<ul>
+<li>2011 年发布</li>
+<li>尚不清楚如何获取的</li>
+</ul>
+</li>
+<li>道德审查：<ul>
+<li>数据集已经被用过</li>
+<li>数据集公开</li>
+<li>本文只发布几乎不透露实际密码信息的汇总结果</li>
+</ul>
+</li>
+</ul>
+<h3 id="OMEN-与-JTR（马尔可夫模式）"><a href="#OMEN-与-JTR（马尔可夫模式）" class="headerlink" title="OMEN 与 JTR（马尔可夫模式）"></a>OMEN 与 JTR（马尔可夫模式）</h3><ul>
+<li><p>固定猜测次数，并测试覆盖率（OMEN 为4元，JTR-Markov为2元）</p>
+</li>
+<li><p>曲线显示了破解速度的显著提高，但 JTR-Markov 没有以特定的顺序输出猜测，说明密码可能会在猜测的后期随机出现，因此曲线近似线性</p>
+</li>
+<li><p>猜测次数更多，JTR-Markov 也不会超过 OMEN。本文对比了猜测次数分别为1和10亿的情况，JTR-Markov的曲线变得更加平缓</p>
+</li>
+<li><p>在前一千万次，OMEN 的破解效果更好</p>
+</li>
+<li><p>设置 OMEN 也为2元后进一步对比，JTR-Markov 仍然为近似为线性</p>
+</li>
+<li><p>结果</p>
+<p><img src="/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109193605696.png" alt="image-20210109193605696"></p>
+</li>
+</ul>
+<img src="/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109193631327.png" alt="image-20210109193631327" style="zoom:80%;">
+
+<h3 id="OMEN-与-PCFG"><a href="#OMEN-与-PCFG" class="headerlink" title="OMEN 与 PCFG"></a>OMEN 与 PCFG</h3><ul>
+<li><p>利用【19】的代码：使用RY-t提取语法，使用字典dict-0294 【25】生成候选密码</p>
+</li>
+<li><p>经过2亿次猜测后，对于 RY-e 和 FB 数据集，OMEN 破解的密码比 PCFG 多20%，ms 多10%——原因可能是 PCFG 的语法是在 MS 的子集上训练的</p>
+<p><img src="/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109193020546.png" alt="image-20210109193020546"></p>
+</li>
+</ul>
+<h3 id="OMEN-与-JtR-inc-模式"><a href="#OMEN-与-JtR-inc-模式" class="headerlink" title="OMEN 与  JtR-inc 模式"></a>OMEN 与  JtR-inc 模式</h3><ul>
+<li><p>同样在 Rockyou 的三千万条密码上训练，在 RY-e、MS、FB 上测试</p>
+</li>
+<li><p>结果如下</p>
+<p><img src="/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/image-20210109191945907.png" alt="image-20210109191945907"></p>
+</li>
+</ul>
+<h2 id="讨论和结论"><a href="#讨论和结论" class="headerlink" title="讨论和结论"></a>讨论和结论</h2><ul>
+<li>OMEN 性能优于所有公开的口令猜测工具</li>
+<li>100亿次猜测可以猜出80%以上的密码</li>
+<li>过去的马尔可夫模型只能按照算法内部规定的顺序输出相应的猜测，与它们的实际频率几乎无关；OMEN 可以近似地按照频率递减顺序输出猜测，从而显著提高现实世界的猜测速度</li>
+<li>评估了不同参数对算法精度的影响，并找到了最优参数</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>M. Bishop and D. V. Klein. Improving system security via proactive password checking. Computers &amp; Security, 14(3):233–249, 1995.</li>
+<li>J. Bonneau. The science of guessing: analyzing an anonymized corpus of 70 million passwords. In Proc. IEEE Symposium on Security and Privacy. IEEE, 2012.</li>
+<li>J. Bonneau, C. Herley, P. C. van Oorschot, and F. Stajano. The quest to replace passwords: A framework for comparative evaluation of web authentication schemes. In Proc. IEEE Symposium on Security and Privacy. IEEE, 2012.</li>
+<li>W. E. Burr, D. F. Dodson, and W. T. Polk. Electronic authentication guideline: NIST special publication 800-63, 2006.</li>
+<li>C. Castelluccia, M. Dürmuth, and D. Perito. Adaptive password-strength meters from Markov models. In Proc. Network and Distributed Systems Security Symposium (NDSS). The Internet Society, 2012.</li>
+<li>M. Dell’Amico, P. Michiardi, and Y. Roudier. Password strength: an empirical analysis. In Proc. 29th conference on Information communications, INFOCOM’10, pages 983–991, Piscataway, NJ, USA, 2010. IEEE Press.</li>
+<li>S. Egelman, J. Bonneau, S. Chiasson, D. Dittrich, and S. Schechter. It’s not stealing if you need it: A panel on the ethics of performing research using public data of illicit origin. In Financial Cryptography and Data Security. Springer Berlin Heidelberg, 2012.</li>
+<li>HashCat. OCL HashCat-Plus, 2012. <a target="_blank" rel="noopener" href="http://hashcat.net/oclhashcat-plus/">http://hashcat.net/oclhashcat-plus/</a>.</li>
+<li>G. Kedem and Y. Ishihara. Brute force attack on unix passwords with SIMD computer. In Proc. 8th conference on USENIX Security Symposium - Volume 8, SSYM’99. USENIX Association, 1999.</li>
+<li>P. G. Kelley, S. Komanduri, M. L. Mazurek, R. Shay, T. Vidas, L. Bauer, N. Christin, L. F. Cranor, and J. Lopez. Guess again (and again and again): Measuring password strength by simulating password-cracking algorithms. In Proc. IEEE Symposium on Security and Privacy. IEEE, 2012.</li>
+<li>D. V. Klein. Foiling the cracker: A survey of, and improvements to, password security. In Proc. USENIX UNIX Security Workshop, 1990.</li>
+<li>S. Komanduri, R. Shay, P. G. Kelley, M. L. Mazurek, L. Bauer, N. Christin, L. F. Cranor, and S. Egelman. Of passwords and people: Measuring the effect of password-composition policies. In CHI 2011: Conference on Human Factors in Computing Systems, 2011.</li>
+<li>Z. Li, W. Han, and W. Xu. A large-scale empirical analysis of chinese web passwords. In Proc. 23rd USENIX Security Symposium (USENIX Security), Aug. 2014.</li>
+<li>J. Ma, W. Yang, M. Luo, and N. Li. A study of probabilistic password models. In Proc. IEEE Symposium on Security and Privacy. IEEE Computer Society, 2014.</li>
+<li>R. Morris and K. Thompson. Password security: a case history. Communications. ACM, 22(11):594 – 597, 1979.</li>
+<li>A. Narayanan and V. Shmatikov. Fast dictionary attacks on passwords using time space tradeoff. In Proc. 12th ACM conference on Computer and communications security (CCS), pages 364–372. ACM, 2005.</li>
+<li>OpenWall. John the Ripper, 2012. <a target="_blank" rel="noopener" href="http://www.openwall.com/john">http://www.openwall.com/john</a>.</li>
+<li>The password meter. Online at <a target="_blank" rel="noopener" href="http://www.passwordmeter.com/">http://www.passwordmeter.com/</a>.</li>
+<li>PCFG Password Cracker implementation.  Matt Weir, 2012. <a target="_blank" rel="noopener" href="https://sites.google.com/site/reusablesec/Home/password-cracking-tools/probablistic_cracker.13">https://sites.google.com/site/reusablesec/Home/password-cracking-tools/probablistic_cracker.13</a></li>
+<li>N. Provos and D. Mazières. A future-adaptive password scheme. In Proc. Annual conference on USENIX Annual Technical Conference, ATEC ’99. USENIX Association, 1999.</li>
+<li>S. Schechter, C. Herley, and M. Mitzenmacher. Popularity is everything: a new approach to protecting passwords from statistical-guessing attacks. In Proc. 5th USENIX conference on Hot topics in security, pages 1–8. USENIX Association, 2010.</li>
+<li>E. H. Spafford. Observing reusable password choices. In Proc. 3rd Security Symposium, pages 299–312. USENIX, 1992.</li>
+<li>M. Weir, S. Aggarwal, M. Collins, and H. Stern. Testing metrics for password creation policies by attacking large sets of revealed passwords. In Proc. 17th ACM conference on Computer and communications security (CCS 2010), pages 162–175. ACM, 2010.</li>
+<li>M. Weir, S. Aggarwal, B. de Medeiros, and B. Glodek. Password cracking using probabilistic context-free grammars. In Proc. IEEE Symposium on Security and Privacy, pages 391–405. IEEE Computer Society, 2009.</li>
+<li>Word list Collection, 2012. <a target="_blank" rel="noopener" href="http://www.outpost9.com/files/WordLists.html">http://www.outpost9.com/files/WordLists.html</a>.</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\22\Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks\" rel="bookmark">Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/" title="Faster Password Guessing Using an Ordered Markov Enumerator">https://thomas-li-sjtu.github.io/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/" rel="prev" title="统计学习方法">
+      <i class="fa fa-chevron-left"></i> 统计学习方法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/11/Password-Cracking-Using-Probabilistic-Context-Free-Grammars/" rel="next" title="Password Cracking Using Probabilistic Context-Free Grammars">
+      Password Cracking Using Probabilistic Context-Free Grammars <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OMEN"><span class="nav-number">4.</span> <span class="nav-text">OMEN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B9%E8%BF%9B%E7%9A%84%E6%9E%9A%E4%B8%BE%E7%AE%97%E6%B3%95"><span class="nav-number">4.1.</span> <span class="nav-text">改进的枚举算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OMEN%E7%AE%97%E6%B3%95"><span class="nav-number">4.2.</span> <span class="nav-text">OMEN算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E9%80%89%E6%8B%A9"><span class="nav-number">4.3.</span> <span class="nav-text">参数选择</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0"><span class="nav-number">5.</span> <span class="nav-text">评估</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OMEN-%E4%B8%8E-JTR%EF%BC%88%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">OMEN 与 JTR（马尔可夫模式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OMEN-%E4%B8%8E-PCFG"><span class="nav-number">5.3.</span> <span class="nav-text">OMEN 与 PCFG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OMEN-%E4%B8%8E-JtR-inc-%E6%A8%A1%E5%BC%8F"><span class="nav-number">5.4.</span> <span class="nav-text">OMEN 与  JtR-inc 模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA%E5%92%8C%E7%BB%93%E8%AE%BA"><span class="nav-number">6.</span> <span class="nav-text">讨论和结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

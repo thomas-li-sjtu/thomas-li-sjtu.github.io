@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="数据库索引BTree和B+Tree">
+<meta property="og:type" content="article">
+<meta property="og:title" content="B树，B+树">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="数据库索引BTree和B+Tree">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621150506198.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621153756488.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621154319407.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621161225497.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621161842479.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621162734903.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621163325461.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621163325461.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621163443195.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621163559279.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621193914691.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621193951107.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621170620816.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621171740365.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621180358087.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621180519757.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621170325480.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621180824413.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621181044025.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621181225717.png">
+<meta property="article:published_time" content="2022-06-25T06:52:46.000Z">
+<meta property="article:modified_time" content="2022-06-21T12:54:11.775Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/image-20220621150506198.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>B树，B+树 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          B树，B+树
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-25 14:52:46" itemprop="dateCreated datePublished" datetime="2022-06-25T14:52:46+08:00">2022-06-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index"><span itemprop="name">计算机基础</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> 数据库索引BTree和B+Tree</p>
+<a id="more"></a>
+
+<h2 id="BTree"><a href="#BTree" class="headerlink" title="BTree"></a>BTree</h2><ul>
+<li>大多平衡查找树（Self-balancing search trees）如AVL树、红黑树，都假设数据放在内存。B树的使用是为了减少以块的形式读取磁盘数据时，访问磁盘的I/O次数<ul>
+<li>平衡树的操作（增删改查、最大最小值）需要$O(h)$次访问，$h$ 是树高，一般是$logn$，$n$为结点数</li>
+<li>B树的高度，可以通过调整树结点包含的键（或者说数据库中的索引，一个位置信息）的数目控制。一般B树结点的键的数目和磁盘块大小一样</li>
+</ul>
+</li>
+</ul>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621150506198.png" alt="image-20220621150506198" style="zoom:50%;">
+
+<h3 id="特性："><a href="#特性：" class="headerlink" title="特性："></a>特性：</h3><p>（可以参考上图，其中的字母就是Key）</p>
+<ol>
+<li><p>所有叶子结点出现在同一层，不带信息，可以视为外部结点，指向这些结点的指针为空</p>
+</li>
+<li><p>每个结点包含的Key数目，由B树的最小度数$t$确定上界和下界，$t$取决于磁盘块的大小</p>
+<ul>
+<li><p>根结点至少有一个Key</p>
+</li>
+<li><p>根结点以外的每个结点至少有$t-1$个key（有$t$个孩子），至多有$2t-1$个key</p>
+</li>
+<li><p>有时的表述为$m$阶，则<code>[m/2]-1 &lt;= n &lt;= m-1</code></p>
+</li>
+</ul>
+</li>
+<li><p>包含$x$个key的结点有$x+1$个孩子</p>
+</li>
+<li><p>结点的key升序排列，两个key（$k_1,k_2$）之间的孩子结点的key在$(k_1,k_2)$之内</p>
+</li>
+<li><p>B树的搜索从根结点开始，根据结点的孩子树做多路分支选择，每次判断进行一次磁盘I/O操作</p>
+</li>
+<li><p>B树查找、插入和删除操作的时间复杂度为$O(logn)$</p>
+</li>
+</ol>
+<h3 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h3><ul>
+<li><p>二叉查找树类似，只是B树每个结点包含多个关键字</p>
+</li>
+<li><p>若待查找的Key为<code>k</code>：（参考上图）</p>
+<ul>
+<li>从根结点开始递归向下查找</li>
+<li>如果结点包含键 <code>k</code> ，则返回结点指针</li>
+<li>如果不包含，则查找该结点的合适子结点，子结点Key均要小于等于 <code>k</code> </li>
+<li>抵达叶子结点且没有找到 <code>k</code>，返回null</li>
+</ul>
+</li>
+<li><p>B树节点的属性：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *keys;  <span class="comment">// 存储Key的数组</span></span><br><span class="line"><span class="keyword">int</span> t;  <span class="comment">// 最小度 (定义一个结点包含Key的个数 t-1 &lt;= num &lt;= 2t -1) </span></span><br><span class="line">BTreeNode **C;  <span class="comment">// 存储子结点指针的数组</span></span><br><span class="line"><span class="keyword">int</span> n;  <span class="comment">// 当前结点包含的关键字的个数</span></span><br><span class="line"><span class="keyword">bool</span> leaf;  <span class="comment">// 是否为叶子结点</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="中序遍历"><a href="#中序遍历" class="headerlink" title="中序遍历"></a>中序遍历</h3><p>和二叉树中序遍历相似，先递归遍历左边子结点，在遍历当前结点内容，最后遍历最右边子结点</p>
+<h3 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h3><ul>
+<li><p>插入Key <code>k</code> ，需要从根结点开始向下遍历直到叶子结点，判断插入<code>k</code>后是否超出结点本身最大可容纳的Key个数</p>
+</li>
+<li><p>如果超出，则拆分一个结点的孩子，例如<code>x</code>结点的孩子结点被拆开，Key<code>I</code>上移，以它对结点 <code>y</code>拆分，拆成包含Key <code>[G、H]</code> 的结点 <code>y</code> 和包含Key <code>[J、K]</code> 的结点 <code>z</code> .</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621153756488.png" alt="image-20220621153756488" style="zoom:50%;">
+</li>
+<li><p>具体插入关键字<code>k</code>的过程：</p>
+<ol>
+<li>初始化 <code>x</code> 为根结点</li>
+<li>当 <code>x</code> 不是叶子结点：<ul>
+<li>找 <code>x</code> 下一个要访问的子结点 <code>y</code></li>
+<li> <code>y</code> 没有满，则结点 <code>y</code> 是新的 <code>x</code></li>
+<li><code>y</code> 满了，拆分 <code>y</code>：<ul>
+<li> <code>x</code> 的指针指向结点 <code>y</code> 的两部分，第二部分拷贝<code>t-1</code>个<code>y</code>的Key</li>
+<li>如果 <code>k</code> 小于 <code>y</code> 中间的key， 将 <code>y</code> 的第一部分作为新的 <code>x</code> ，否则将 <code>y</code> 的第二部分作为新的 <code>x</code> </li>
+<li>将 <code>y</code> 的一个关键字上移到父结点 <code>x</code> 中</li>
+</ul>
+</li>
+</ul>
+</li>
+<li> <code>x</code> 是叶结点时，由于已经提前查分所有结点，<code>x</code> 必定至少有一个额外的Key空间，进行简单的插入</li>
+</ol>
+</li>
+<li><p>为了避免回溯（可能父结点也满了，回溯会增加I/O次数），在插入新的Key前会将已满的结点提前拆分，但这可能带来很多不必要的拆分操作</p>
+</li>
+<li><p>下图所示，插入<code>I</code>时，原来的<code>CGL</code>满了，拆分；又发现<code>L</code>的第一个左子结点满了，又要进一步拆分</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621154319407.png" alt="image-20220621154319407" style="zoom:50%;">
+
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 结点y已满，分裂结点y </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">BTreeNode::splitChild</span><span class="params">(<span class="keyword">int</span> i, BTreeNode *y)</span> </span>&#123; </span><br><span class="line">    <span class="comment">// 创建一个新的结点存储 t - 1 个关键字</span></span><br><span class="line">    BTreeNode *z = <span class="keyword">new</span> BTreeNode(y-&gt;t, y-&gt;leaf); </span><br><span class="line">    z-&gt;n = t - <span class="number">1</span>; </span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将结点 y 的后 t -1 个关键字拷贝到 z 中</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; t<span class="number">-1</span>; j++) </span><br><span class="line">		z-&gt;keys[j] = y-&gt;keys[j+t]; </span><br><span class="line"></span><br><span class="line">	<span class="comment">// 如果 y 不是叶子结点，拷贝 y 的后 t 个孩子结点到 z中</span></span><br><span class="line">	<span class="keyword">if</span> (y-&gt;leaf == <span class="literal">false</span>) &#123; </span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; t; j++) </span><br><span class="line">			z-&gt;C[j] = y-&gt;C[j+t];  </span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 将 y 所包含的关键字的个数设置为 t -1——y 中包含的关键字变为 2t-1 - (t-1) -1 </span></span><br><span class="line">    y-&gt;n = t - <span class="number">1</span>; </span><br><span class="line"></span><br><span class="line">	<span class="comment">// 给当前结点的指针分配新的空间，父结点将多一个孩子</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> j = n; j &gt;= i+<span class="number">1</span>; j--) </span><br><span class="line">		C[j+<span class="number">1</span>] = C[j]; </span><br><span class="line"></span><br><span class="line">	<span class="comment">// 当前结点的下一个孩子设置为z </span></span><br><span class="line">	C[i+<span class="number">1</span>] = z; </span><br><span class="line"></span><br><span class="line">	<span class="comment">// 将所有父结点中比上移的关键字大的关键字后移，找到上移结点的关键字的位置</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> j = n<span class="number">-1</span>; j &gt;= i; j--) </span><br><span class="line">		keys[j+<span class="number">1</span>] = keys[j]; </span><br><span class="line"></span><br><span class="line">	<span class="comment">// 拷贝 y 的中间关键字到其父结点</span></span><br><span class="line">    keys[i] = y-&gt;keys[t<span class="number">-1</span>]; </span><br><span class="line"></span><br><span class="line">	<span class="comment">// 当前结点包含的关键字个数加 1 </span></span><br><span class="line">    n = n + <span class="number">1</span>; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><ul>
+<li><p>如果删除内部结点的Key，需要对结点的子结点重新排列</p>
+</li>
+<li><p>Key<code>k</code>在叶结点<code>x</code>，删除即可</p>
+</li>
+<li><p>Key<code>k</code>在内部结点<code>x</code>中：</p>
+<ol>
+<li><p><code>x</code>中<code>k</code>之前的第一个子结点<code>y</code>至少有<code>t</code>个Key，则子结点y中找到k的前驱结点<code>k_0</code>，递归删除<code>k_0</code>，将<code>x</code>中的<code>k</code>替换为<code>k_0</code>（例如，删除<code>G</code>，此时删除<code>F</code>并把<code>G</code>替换为<code>F</code>）</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621161225497.png" alt="image-20220621161225497" style="zoom: 50%;">
+</li>
+<li><p><code>x</code>中<code>k</code>之前的第一个子结点<code>y</code>的Key少于<code>t</code> ，则检查结点<code>x</code>中<code>k</code>的后一个子结点``z<code> 的Key数目，如果</code>z<code>至少有</code>t<code>个Key，则找</code>k<code>的直接后继</code>k_0<code>并删除，</code>k<code>替换为</code>k_0<code>（例如，删除 </code>C<code>， </code>y<code>只有2个Key，而度为3，</code>C<code> 的后一个子结点</code>z<code>包含</code>[D、E、F]<code> ，其直接后继为</code>D<code>，删除</code>D<code> 并将</code>C<code>替换为</code>D`）</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621161842479.png" alt="image-20220621161842479" style="zoom:50%;">
+</li>
+<li><p><code>y</code>和<code>z</code>都只有<code>t -1</code>个Key，合并<code>k</code>和所有<code>z</code>的Key到<code>y</code>，<code>x</code>将失去<code>k</code>和子结点<code>z</code>，<code>y</code>此时包含<code>2t -1</code>个Key，释放<code>z</code>的空间并从<code>y</code>中递归地删除关键字<code>k</code></p>
+</li>
+</ol>
+</li>
+<li><p>以上都假设结点富有，即结点删除这个key时，能根据自己所在的子树进行rebalance，不需要兄弟结点的帮助</p>
+</li>
+<li><p>如果结点不富有：</p>
+<ul>
+<li><p>兄弟结点“富有”，从父节点要一个Key，兄弟结点补一个Key给父节点（例如，删除180，父节点的230下移，右兄弟结点<code>[240,250,260]</code>的240上移）</p>
+<p><img src="/2022/06/25/BTree-B-Tree/image-20220621162734903.png" alt="image-20220621162734903" style="zoom:67%;"><img src="/2022/06/25/BTree-B-Tree/image-20220621163325461.png" alt="image-20220621163325461"></p>
+<p><img src="/2022/06/25/BTree-B-Tree/image-20220621163325461.png" alt="image-20220621163325461"></p>
+</li>
+<li><p>兄弟结点不富有：</p>
+<ul>
+<li><p>父节点不富有：先从父节点要一个key，让父节点找“叔叔结点”、“爷爷结点”（例如，上图继续删除50，要下来父节点的40，兄弟合并）</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621163443195.png" alt="image-20220621163443195" style="zoom:67%;">
+</li>
+<li><p>父节点富有：从父节点要一个下来，然后兄弟合并（例如，继续删除140）</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621163559279.png" alt="image-20220621163559279" style="zoom: 50%;">
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="B-Tree"><a href="#B-Tree" class="headerlink" title="B+Tree"></a>B+Tree</h2><ul>
+<li><p>B树所有中间结点均存储数据指针（即指向了包含相应Value的磁盘文件块），B+树仅在叶子结点存储数据指针，因此所有数据地址必须要到叶子结点才能获取，每次数据查询的磁盘IO次数都一样</p>
+</li>
+<li><p>特征：</p>
+<ul>
+<li><p>内部结点有k个Key，就会有k+1个子结点（下方第一个图为内部结点，第二个图为叶结点）</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621193914691.png" alt="image-20220621193914691" style="zoom:50%;">
+
+<p><img src="/2022/06/25/BTree-B-Tree/image-20220621193951107.png" alt="image-20220621193951107"></p>
+</li>
+<li><p>每个元素不保存数据，只用来索引，所有数据都保存在叶结点</p>
+</li>
+<li><p>所有的叶结点包含全部元素的信息，及指向含这些元素记录的指针，叶结点依Key升序链接</p>
+</li>
+<li><p>所有中间结点元素同时存在于叶结点，在子结点元素中是最大（或最小）元素</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621170620816.png" alt="image-20220621170620816" style="zoom:67%;">
+</li>
+<li><p>数据库的聚集索引（Clustered Index）中，叶结点包含卫星数据。非聚集索引（NonClustered Index）中，叶结点带有指向卫星数据的指针。卫星数据指索引元素所指向的数据记录，如数据库某一行</p>
+</li>
+</ul>
+</li>
+<li><p>单行查询：例如查找元素3，自顶向下查询，第一次IO为<code>[258]</code>，第二次IO为<code>35</code></p>
+</li>
+<li><p>范围查询：例如查找3到11的范围数据。B树会自顶向下查询，查找到下限3，中序遍历到6，到8，到9，到11；B+树找到下限3时，直接通过链表指针遍历</p>
+</li>
+</ul>
+<h3 id="插入-1"><a href="#插入-1" class="headerlink" title="插入"></a>插入</h3><ul>
+<li>插入全部在叶结点上进行，不能破坏Key的相对顺序</li>
+<li>结点中Key个数超过阶数，需要将结点 “分裂”</li>
+<li>（下图B+树的阶数<code>M=3</code>，<code>⌈M/2⌉=2</code>、<code>⌊M/2⌋=1</code>）</li>
+</ul>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621171740365.png" alt="image-20220621171740365" style="zoom:67%;">
+
+<ul>
+<li><p>3种情况：</p>
+<p>1、被插入Key所在的结点，Key数目小于阶数，则直接插入（例如插入<code>12</code> ，结点<code>[10，15]</code>有2个Key）</p>
+<p>2、被插入Key所在的结点，Key数目等于阶数，则将结点分裂为两个结点，分别包含<code>⌊M/2⌋</code>和<code>⌈M/2⌉</code>个Key，将<code>⌈M/2⌉</code>的Key关键字上移到双亲结点</p>
+<ul>
+<li><p>如果双亲结点的Key少于阶数，则插入操作完成（例如插入<code>95</code>，结点<code>[85、91、97]</code>的Key数目等于阶数，分裂为<code>[85、91]</code>和<code>[97]</code>，<code>95</code>插入<code>[95、97]</code> ，<code>91</code>上移至其双亲结点）</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621180358087.png" alt="image-20220621180358087" style="zoom:67%;">
+</li>
+<li><p>如果双亲结点的Key等于阶数，则继续分裂双亲结点（例如插入<code>40</code>，<code>37</code>上移到父结点，父结点<code>[15、37、44、59]</code>的Key多于<code>M</code>，分裂父结点<code>[15、37、44、59]</code>为<code>[15、37]</code>和<code>[44、59]</code>，<code>37</code>上移到爷爷结点<code>[37、59、97]</code>）</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621180519757.png" alt="image-20220621180519757" style="zoom:67%;">
+
+</li>
+</ul>
+<p>3、被插入Key比当前结点的最大值还大，需要及时修正，再做其他操作（例如插入<code>100</code>，插入后根结点到该结点经过的所有结点的最后的值，都由<code>97</code>改为<code>100</code>，然后分裂）</p>
+</li>
+</ul>
+<h3 id="删除-1"><a href="#删除-1" class="headerlink" title="删除"></a>删除</h3><p> B+树中做删除Key的操作，采取如下的步骤：</p>
+<ol>
+<li>删除该Key，如果不破坏 B+树本身的性质，直接完成删除操作（情况 1）</li>
+<li>如果删除操作导致其该结点中最大（或最小）值改变，则相应改动其父结点中的索引值（情况 2）</li>
+<li>在删除Key后，如果导致其结点中Key个数不足，可以向兄弟结点借，或者同兄弟结点合并（情况 3、4 和 5）</li>
+</ol>
+<h3 id="B-树在磁盘里的样子"><a href="#B-树在磁盘里的样子" class="headerlink" title="B+树在磁盘里的样子"></a>B+树在磁盘里的样子</h3><ul>
+<li><p>user table：id为主键，每行数据为record，磁盘中被分为不同的数据页</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621170325480.png" alt="image-20220621170325480" style="zoom:40%;">
+
+</li>
+</ul>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621180824413.png" alt="image-20220621180824413" style="zoom:50%;">
+
+<ul>
+<li><p>此时可以生成一个页目录，从而通过二分查找找到相应的页，再取出来判断record是否是客户端请求的record</p>
+</li>
+<li><p>为了加速搜索，每个页选出id最小的record，组成一个新的页（这个页的record中，只有主键id，以及所在页的页号），于是页之间有了层级关系，下图是两层B+树的结构</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621181044025.png" alt="image-20220621181044025" style="zoom:50%;">
+</li>
+<li><p>三层结构查找id为5的record：从顶层页的record入手，其中record包含主键id和页号（页地址）。此时向左最小id为1，向右最小id为7，id=5的数据如果存在必定在左子结点，于是继续判断id=5&gt;4，在右边的数据页里，加载105号数据页，从中找到id=5的实际record</p>
+<img src="/2022/06/25/BTree-B-Tree/image-20220621181225717.png" alt="image-20220621181225717" style="zoom:50%;">
+
+</li>
+</ul>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/146252512">图解：什么是B树？（心中有 B 树，做人要虚心）一文读懂B-树</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/24350783">数据结构: B-Tree 的删除)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/149287061">B+树看这一篇就够了（B+树查找、插入、删除全上）</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/jiang_wang01/article/details/113739230">什么是B+树？（详细图解）</a></p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\20\MongoDB_1\" rel="bookmark">MongoDB(1)</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\13\Simple-DB-Lab1\" rel="bookmark">Simple-DB Lab1</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab1 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\17\Simple-DB-Lab2\" rel="bookmark">Simple-DB Lab2</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab2 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\19\Simple-DB-Lab3\" rel="bookmark">Simple-DB Lab3</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab3 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\20\Simple-DB-Lab4\" rel="bookmark">Simple-DB Lab4</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab4 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/" title="B树，B+树">https://thomas-li-sjtu.github.io/2022/06/25/BTree-B-Tree/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"><i class="fa fa-tag"></i> 数据库</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/24/Simple-DB-Lab6/" rel="prev" title="Simple-DB Lab6">
+      <i class="fa fa-chevron-left"></i> Simple-DB Lab6
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/" rel="next" title="HDFS">
+      HDFS <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#BTree"><span class="nav-number">1.</span> <span class="nav-text">BTree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E6%80%A7%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">特性：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE"><span class="nav-number">1.2.</span> <span class="nav-text">查找</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86"><span class="nav-number">1.3.</span> <span class="nav-text">中序遍历</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%85%A5"><span class="nav-number">1.4.</span> <span class="nav-text">插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4"><span class="nav-number">1.5.</span> <span class="nav-text">删除</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Tree"><span class="nav-number">2.</span> <span class="nav-text">B+Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%85%A5-1"><span class="nav-number">2.1.</span> <span class="nav-text">插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4-1"><span class="nav-number">2.2.</span> <span class="nav-text">删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%A0%91%E5%9C%A8%E7%A3%81%E7%9B%98%E9%87%8C%E7%9A%84%E6%A0%B7%E5%AD%90"><span class="nav-number">2.3.</span> <span class="nav-text">B+树在磁盘里的样子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

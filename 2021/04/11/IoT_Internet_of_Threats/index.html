@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices》论文阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices》论文阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/image-20210413150516123.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/image-20210415122400486.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/image-20210415140338116.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/image-20210415224635175.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/image-20210416110440927.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/image-20210416112533318.png">
+<meta property="article:published_time" content="2021-04-11T04:05:32.000Z">
+<meta property="article:modified_time" content="2021-04-16T03:44:17.549Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="IoT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/image-20210413150516123.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-11 12:05:32" itemprop="dateCreated datePublished" datetime="2021-04-11T12:05:32+08:00">2021-04-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices》论文阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>物联网覆盖多个不同的领域，包括个人医疗保健、环境监控、家庭自动化、智能移动和工业4.0，越来越多的物联网设备被部署在各种公共和私人环境中，逐渐成为日常生活中的常见对象</li>
+<li>许多低端物联网商业产品通常不支持强大的安全机制，因此可能成为许多安全攻击的目标，甚至是手段</li>
+<li>本文提供物联网领域安全风险的广泛概述，并讨论一些可能的应对措施<ul>
+<li>对物联网领域的安全性进行了一般性介绍</li>
+<li>讨论最流行的物联网通信协议所采用的具体安全机制</li>
+<li>报告并分析文献中针对真实物联网设备的一些攻击，指出当前商业物联网解决方案的安全弱点，指出物联网系统安全性的重要性</li>
+<li>对所考虑的物联网技术进行比较——完整性、匿名性、保密性、隐私性、访问控制、认证、授权、弹性、自组织性</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>物联网是一种新兴的通信范式，旨在将不同种类的对象连接到互联网，以便采集传感器生成的数据，远程控制电器和机器，监控环境、车辆和建筑物等【1】</li>
+<li>物联网设备的数量和种类迅速增长，正在迅速普及到所有环境</li>
+<li>许多此类智能服务要求用户有意透露一些个人信息，以换取更高级和更个性化的服务——因此安全和隐私在物联网技术和服务的设计中应该是最重要的。但许多产品的安全机制不充分、不完整或设计不良</li>
+<li>人们越来越关注在能够访问敏感信息或关键控制的服务中使用简单物联网设备的相关风险【3、4】，并且针对物联网设备的一些安全攻击出现在大众媒体上，提高了公众对物联网世界相关安全威胁的认识</li>
+<li>物联网设备的广泛异构性阻碍了物联网成熟的安全性设计方法的发展【6、7】；设备在能源、通信、计算和存储能力存在严重限制——难以采用在传统的互联网设备中的标准安全机制【8】</li>
+<li>有必要在物联网利益相关方（尤其是制造商和最终用户）之间发展网络安全文化。许多制造商在网络安全方面没有扎实的专业知识，没有意识到将他们的设备连接到全球网络所带来的安全风险；最终用户在安全实践方面也没有受到太多的教育，常常不能使用最基本的程序来保护他们的设备，例如在首次使用时更改设备的预装密码</li>
+<li>本文的目的是提供当前物联网网络安全场景的最新愿景，帮助提高对物联网设备可能带来的威胁的认识<ul>
+<li>将讨论这种威胁的来源和可能的对策</li>
+<li>重点放在物联网领域的具体问题</li>
+<li>考虑商用物联网设备中最常用的四种通信协议，即 ZigBee、蓝牙低能耗（BLE）、6LoWPAN 和LoRaWAN，分析可能的攻击方向</li>
+<li>报告一系列针对流行商业物联网设备的真实攻击，作为与设计不佳的安全机制相关的风险示例。</li>
+<li>描述一些商用物联网设备中使用的处理单元、通信协议以及加密硬件和软件，以显示目前市场上的解决方案</li>
+<li>揭示了文献中的一些空白，需要进一步调查和实验</li>
+</ul>
+</li>
+</ul>
+<h2 id="IOT-的安全挑战"><a href="#IOT-的安全挑战" class="headerlink" title="IOT 的安全挑战"></a>IOT 的安全挑战</h2><h3 id="安全需求"><a href="#安全需求" class="headerlink" title="安全需求"></a>安全需求</h3><p>针对不同的操作级别（信息、访问和功能），对物联网系统的安全需求分类</p>
+<ul>
+<li>信息级别<ul>
+<li>完整性：接收到的数据在传输过程中不被更改</li>
+<li>匿名：数据源的身份对第三方隐藏</li>
+<li>保密性：数据不被第三方读取</li>
+<li>隐私：在数据交换过程中，不得泄露客户的隐私信息——窃听第三方很难推断出可识别的信息</li>
+</ul>
+</li>
+<li>访问级别：控制对网络的访问<ul>
+<li>访问控制：保证只有合法用户才能访问设备和网络，执行管理任务（如远程编程或控制物联网设备和网络）</li>
+<li>认证：检查设备是否有权访问网络，网络是否有权连接设备；设备必须提供强身份验证过程，否则如果同一制造商生产的所有物联网设备都配置了相同的认证证书，对一个设备的黑客攻击可能会危及其他所有涉笔</li>
+<li>授权：确保只有授权的设备和用户才能访问网络服务或资源</li>
+</ul>
+</li>
+<li>功能级别<ul>
+<li>弹性：指网络容量，即使在攻击和故障的情况下也能确保设备的安全性</li>
+<li>自组织：物联网系统自我调整的能力，以便在某些部分在意外故障或恶意攻击下也能保持运行</li>
+</ul>
+</li>
+</ul>
+<h3 id="安全攻击的分类"><a href="#安全攻击的分类" class="headerlink" title="安全攻击的分类"></a>安全攻击的分类</h3><ul>
+<li>物联网系统的通信架构可以大致分为边缘层、接入层和应用层（Edge, Access, and Application）【20】<ul>
+<li>边缘层为本地通信提供 PHY 和 MAC 功能</li>
+<li>接入层通过网关设备和中间件层（物联网和标准互联网之间的中介）实现与其他设备的连接</li>
+<li>应用层负责服务级别的数据通信</li>
+</ul>
+</li>
+<li>根据通信架构的分类：<ul>
+<li>边缘层的主要威胁：<ul>
+<li>侧通道攻击【21】<ul>
+<li>在节点执行加密过程的同时，从侧边信号的分析中获得信息（如功耗、电磁辐射和通信时序）</li>
+<li>设备的功耗被广泛用于猜测和恢复加密密钥。对每一次加密操作，都可以捕捉到一条电压曲线——根据与电源串联的电阻两端的电压差计算</li>
+<li>简单的功率分析攻击：直接解读与少量加密轮次相关的功率痕迹。差分功率分析：能够提取额外的加密信息，但需要对更多的曲线进行统计分析【22】</li>
+</ul>
+</li>
+<li>硬件木马和 DoS 攻击<ul>
+<li>使合法用户无法获得资源（如强制设备退出睡眠/低功耗模式，以耗尽电池；干扰无线电通信）</li>
+</ul>
+</li>
+<li>篡改设备包<ul>
+<li>如提取设备的密码、将恶意节点伪装成遗留节点、逆向工程以找出专有通信协议的细节和可能的保留信息</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>访问/中间件层的主要威胁：<ul>
+<li>窃听（嗅探）</li>
+<li>注入欺诈数据包</li>
+<li>未经授权对话</li>
+<li>路由攻击——攻击者使用这种攻击来欺骗、重定向、误导或丢弃数据包</li>
+</ul>
+</li>
+<li>应用层<ul>
+<li>直接针对设备上运行的软件，而不是通信技术</li>
+<li>破坏算法完整性，如操纵学习算法的训练过程以引发不良行为</li>
+<li>对登录和身份验证阶段进行攻击</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>根据攻击方式（攻击者如何利用物联网设备达到恶意目的）分类<ul>
+<li>忽略功能<ul>
+<li>忽略物联网设备特定功能，仅利用其连接到局域网或互联网的能力</li>
+<li>例如：利用物联网设备创建机器人网络（完全由攻击者控制的网络）、穿透家庭网络并感染计算机</li>
+</ul>
+</li>
+<li>减少功能<ul>
+<li>攻击者试图停止或限制设备的功能，以骚扰受害者或在更广泛的系统中造成故障</li>
+<li>例如，攻击智能电视或智能冰箱等设备，破坏功能实现勒索</li>
+</ul>
+</li>
+<li>滥用功能<ul>
+<li>设备的正常功能被用来给其所有者带来问题</li>
+<li>例如，篡改空调的加热、通风控制单元、针对智能照明系统远程控制房间或建筑中的灯光</li>
+</ul>
+</li>
+<li>扩展功能<ul>
+<li>设备用于实现完全不同的功能</li>
+<li>例如，将报警系统的存在传感器用于跟踪受害者在其生活环境中的位置，即使关闭报警系统</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="IOT-服务的主要安全机制"><a href="#IOT-服务的主要安全机制" class="headerlink" title="IOT 服务的主要安全机制"></a>IOT 服务的主要安全机制</h2><ul>
+<li><p>加密</p>
+<ul>
+<li>保证通信过程中的保密性，窃听者只能访问密文，但不能解释消息的内容</li>
+<li>使用散列函数将明文转换成密文，散列函数只需知道密钥就可还原</li>
+<li>加密机制：<ul>
+<li>对称加密：加密和解密使用相同密钥，发送方和接收方都必须知道</li>
+<li>非对称加密：每个端点需要拥有自己的一对公私密钥</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>标准加密机制</p>
+<ul>
+<li><p>加密过程：通过流密码，逐位或逐字节加密明文；通过分组密码，将一个明文块作为一个整体处理，生成一个长度相等的密文块【25】</p>
+</li>
+<li><p>分组密码</p>
+<ul>
+<li><p>操作模式：电子码本（ECB）、密码块链接（CBC）、密码反馈（CFB）、输出反馈（OFB）、计数器【26】</p>
+</li>
+<li><p>AES【27】：对称加密最常用的分组密码之一，通过级联三个基本分组密码（替换密码、换位密码和线性密码）的 N 个连续系列获得，根据密钥的位数分为 AES-128、AES-192、AES-256</p>
+<p><img src="/2021/04/11/IoT_Internet_of_Threats/image-20210413150516123.png" alt="image-20210413150516123"></p>
+</li>
+</ul>
+</li>
+<li><p>非对称密码系统：Rivest  Shamir Adleman（RSA）【28】、McEliece【29】、Elgamal【30】</p>
+</li>
+<li><p>通过消息认证码（对称机制）、数字签名（非对称机制）、散列函数提供认证和完整性保护</p>
+<ul>
+<li>对于消息认证码和数字签名，传输的消息是明文+私钥计算结果（标签）。接收端使用私钥或公钥计算标签，并与传输的标签比较</li>
+<li>如果不需要机密性，往往以明文发送消息，附上发送者的标签，消息真实性的验证由一个指定的可信接收方执行，所有其他节点直接读取消息避免浪费时间和资源【25】</li>
+<li>标签计算机制：AES、CBC-MAC【31】、数字签名算法（DSA）、散列函数</li>
+</ul>
+</li>
+<li><p>对于物联网应用，由 IETF 在 RFC  7252【35】中定义的受限应用协议（CoAP）建议将 AES 计数器与 CBC-MAC 共同使用，即 AES-CCM，使用 128 位密钥生成 8 位认证标签，用 ECDHE 建立密钥，用 ECDSA 认证</p>
+</li>
+</ul>
+</li>
+<li><p>轻量级加密</p>
+<ul>
+<li>需要为资源和能量受限的设备设计特定的安全算法——轻量级密码学</li>
+<li>国际标准化组织 ISO 和国际电工委员会 IEC 发布了 ISO/IEC  29192 标准【36】<ul>
+<li>提出轻量级加密机制 PRESENT【17】、CLEIFA【18】（二者属于分组密码）</li>
+</ul>
+</li>
+<li>PRINCE【37】 也是一种轻量级分组密码；Beaulieu等人提出【28】Simon 和 Speck 轻量级分组密码</li>
+<li>ISO/IEC  29192 标准提出轻量级散列函数 PHOTON【39】、SPONGENT【40】</li>
+</ul>
+</li>
+<li><p>随机数生成器</p>
+<ul>
+<li><p>安全性的一个重要方面是随机性</p>
+</li>
+<li><p>常见目的：认证阶段创建随机数，避免重放攻击；生成非对称密钥【42】</p>
+</li>
+<li><p>当随机数发生器产生一个序列时，序列是密码安全的——没有算法能够在多项式时间内，从先前的比特预测序列的下一个比特</p>
+<blockquote>
+<p>A random number generator is cryptographically secure when it produces a sequence for which no algorithm can predict in polynomial time the next bit of the sequence from the previous bits, with a probability significantly greater than (1/2).</p>
+</blockquote>
+</li>
+<li><p>k 位伪随机序列的熵必须尽可能接近 k</p>
+</li>
+<li><p>随机数发生器类型</p>
+<ul>
+<li>利用物理噪声源的真随机数发生器（TRNG）</li>
+<li>使用确定性算法，将相对较短的密钥扩展成看似随机的长位序列——伪随机数发生器（PRNG），用于实际的设备和技术<ul>
+<li>采用的算法是已知的，伪随机发生器的种子是随机性的唯一来源：通常利用不同的物理现象，如用户进程的定时、无线电接收机测量的热噪声【43】——由于带宽限制、温度偏差和其他不可避免的因素，比特流可能显示出一定程度的相关性</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>但笔记本电脑和台式电脑中，可用的大多数随机性来源在低端嵌入式系统中不可用，【44-46】提出了这一挑战</p>
+</li>
+</ul>
+</li>
+<li><p>安全硬件</p>
+<ul>
+<li><p>大多数设备可能部署在保护级别较低的物理地区，攻击者可以执行侧通道攻击</p>
+</li>
+<li><p>可以利用硬件和软件解决方案来消除或至少随机化这类攻击所利用的信号足迹（如，采用物理上不可克隆的功能（PUF）提高硬件安全性【47】）</p>
+</li>
+<li><p>PUF：利用芯片制造过程中引入的微小差异，生成每个器件的唯一特征</p>
+<ul>
+<li>PUF 电路提供对给定输入挑战的响应，由于固有的硬件差异，不同芯片的响应不同</li>
+<li>强 PUF：支持挑战比特数呈指数增长的挑战-响应对；通常用于每次操作都需要新配对的身份验证协议。例如，Arbiter PUF</li>
+<li>弱 PUF：支持少量的挑战-响应对；用于生成密钥，避免了在设备上存储安全密钥的需要。例如，环形振荡器（ring-oscillator）【51】</li>
+</ul>
+</li>
+<li><p>防止侧通道攻击的其他硬件解决方案：</p>
+<ul>
+<li><p>【21】SIMON 算法的硬件实现</p>
+</li>
+<li><p>随机化指令执行周期【52】</p>
+</li>
+<li><p>一种软件对策【53】，基于 RSA 签名中使用参数的随机化</p>
+<blockquote>
+<p>based on the randomization of a parameter used in RSA signature.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>缺点：器件功耗的增加、芯片面积的增加；物联网边缘设备的资源有限，很难找到有效方案</p>
+</li>
+</ul>
+</li>
+<li><p>入侵检测系统</p>
+<ul>
+<li>除了防止攻击之外，能够检测正在进行的攻击也很重要，但由于资源和能源的限制，复杂的防病毒软件和流量分析器不能用于物联网设备</li>
+<li>轻量级入侵检测方法在过去几年中已经出现【54】<ul>
+<li>系统参数的异常（CPU 使用、内存消耗和网络吞吐量）可能反映攻击正在进行【55】</li>
+<li>【56】分析能量分布以检测功耗异常，此异常与攻击类型有关</li>
+<li>【57】中，各种攻击的特征来自相关特征，如数据包丢弃/发送速率与信号强度——比较流量的相应特征可以很好地检测到攻击</li>
+<li>机器学习用于入侵检测。【58】基于一些选定的特征，使用随机森林分类算法将流多分类，当流表现出非标准模式时，认为出现攻击</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="主流-IOT-通信技术的安全性"><a href="#主流-IOT-通信技术的安全性" class="headerlink" title="主流 IOT 通信技术的安全性"></a>主流 IOT 通信技术的安全性</h2><p>物联网设备在计算、电源和通信能力方面存在限制，标准互联网中使用的大多数传统安全协议不能应用于物联网场景【59】</p>
+<p>介绍物联网中最流行的传输安全机制，回顾这些技术的安全漏洞，报告文献中发现的不同攻击载体</p>
+<p>前三者主要用于家庭或小型办公室的短程通信。第四个用于远程场景，如全市范围的监控应用</p>
+<p>ZigBee 和 BLE 是全栈技术，6LoWPAN 和 LoRaWAN 仅覆盖协议栈的某些层，具有多样化应用的潜力</p>
+<h3 id="ZigBee"><a href="#ZigBee" class="headerlink" title="ZigBee"></a>ZigBee</h3><h4 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h4><ul>
+<li><p>ZigBee【60】是双向无线通信标准，低成本低功耗，是连接物联网设备最常用的技术之一</p>
+</li>
+<li><p>规定了应用层和网络层（NWK），链路层和物理层为 IEEE  802.15.4 标准【61】</p>
+<p><img src="/2021/04/11/IoT_Internet_of_Threats/image-20210415122400486.png" alt="image-20210415122400486"></p>
+<ul>
+<li>应用层（APL）提供数据传输和安全服务，允许设备绑定同一网络上的两个或多个应用实体</li>
+<li>网络层（NWK）提供路由、安全和新设备配置等功能，管理新连接的建立、加入和离开过程以及寻址和邻居发现服务<ul>
+<li>通信、保密和认证服务由消息加密和认证提供<ul>
+<li>在 CBC-MAC（CCM）模式的计数器使用 AES</li>
+<li>128位消息完整性代码（MIC）和一个 4 位计数器</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>ZigBee 包括一个信任中心——所有其他节点信任的设备，通常对应于网络协调器</p>
+<ul>
+<li>认证要求加入网络的设备</li>
+<li>决定接受还是拒绝加入请求</li>
+<li>维护和分发网络密钥</li>
+<li>实现设备之间的端到端安全性</li>
+</ul>
+</li>
+<li><p>ZigBee 拓扑</p>
+<ul>
+<li>星形拓扑：终端设备直接连接协调器</li>
+<li>树形拓扑：中间路由器进行互连——也可为网状拓扑</li>
+</ul>
+</li>
+<li><p>ZigBee 的加密：使用两个 128 位密钥，链接密钥和网络密钥</p>
+<ul>
+<li>链路密钥：保护 APL 实体之间的单播通信。每个单播通信使用不同的链路密钥</li>
+<li>网络密钥：用于广播通信，同一网络中的所有设备共享</li>
+<li>密钥获取方式<ul>
+<li>预安装：密钥在制造过程中安装在设备中</li>
+<li>密钥传输：密钥在信任中心生成，传输到设备</li>
+<li>密钥建立：不能用于生成网络密钥；基于在制造过程中预先安装的可信信息（主密钥）的交换</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="攻击"><a href="#攻击" class="headerlink" title="攻击"></a>攻击</h4><ul>
+<li><p>分析用于保护通信的密钥，如分析已知、固定的消息（例如标准中定义的控制信息）的加密结果，恢复密钥——需要定期更改网络密钥</p>
+</li>
+<li><p>sinkhole 攻击【65】</p>
+<ul>
+<li>通过一个恶意实体执行，实体合法地加入网络，随后假装拥有一个通往协调器的高效路由路径，以吸引更多流量，从而修改或丢弃传入的数据包</li>
+<li>如果恶意实体直接连接到互联网，所有的 ZigBee 网络都暴露在互联网攻击之下</li>
+<li>sinkhole 要求恶意节点连接到网络并与其他节点通信</li>
+</ul>
+</li>
+<li><p>ghost attack【66】</p>
+<ul>
+<li>不需要任何通信密钥知识</li>
+<li>目的是消耗 ZigBee 节点能量，增加 DoS 攻击的成功概率；将带有递增帧计数器的假消息注入网络，模拟一个合法节点，如果假消息计数器大于接收端为发送节点存储的计数器，计数器被更新，消息被接受和处理。即使消息在完整性检查期间被丢弃，节点也会为处理消耗能量</li>
+<li>攻击使接收方的帧计数器增长，可能会导致与合法来源的计数器不一致，其消息可能会被误解为重复，然后被忽略</li>
+</ul>
+</li>
+<li><p>KillerBee 工具【67】</p>
+<ul>
+<li>在紫蜂网络中嗅探和注入流量、解码和操纵数据包</li>
+<li>【68】介绍利用此工具的攻击，如重放攻击</li>
+</ul>
+</li>
+<li><p>ZLL （ZigBee Light Link）设施特有的攻击：</p>
+<ul>
+<li><p>许多智能照明系统只实现了基本安全机制【64】，在照明系统中实施许多安全预防措施似乎是不必要的，因为不涉及机密信息的传输，在无网络情况下可以手动操作。但是，攻击者可能使用这些设备将攻击中继到家庭或公司网络的其他部分</p>
+</li>
+<li><p>主动设备扫描：通过不同的通道发送扫描请求。监听相应的扫描响应，攻击者可以获得连接到网络的设备的完整概述</p>
+</li>
+<li><p>闪烁攻击（Blink attack）：在设备扫描后通过向受害设备发送跨盘命令识别请求来激活，设备开始闪烁一段默认时间（原本功能是允许用户可视地识别哪个设备具有特定的网络地址）</p>
+</li>
+<li><p>重置攻击：攻击者执行设备扫描，通过发送内部 PAN 命令重置，将所有设备重置为出厂状态</p>
+</li>
+<li><p>DoS 攻击和劫持攻击：最终用户会失去对受害设备的控制</p>
+<ul>
+<li>DoS攻击：<ul>
+<li>迫使设备改变传输信道，发送包括新信道的网络更新请求跨 PAN 命令</li>
+<li>使设备加入一个不存在的网络，用任意字节改变其网络密钥</li>
+</ul>
+</li>
+<li>劫持攻击：迫使设备加入攻击者选择的现有网络</li>
+<li>用户可以重新获得对被攻击设备的控制</li>
+</ul>
+</li>
+<li><p>网络密钥提取攻击：通过窃听设备在触摸链接调试过程中交换的消息，以找到当前网络密钥。需要进行初步的 DoS 攻击断开设备与网络的连接。之后，受害设备启动默认程序以重新接入网络。攻击者从网络加入终端设备请求中提取网络密钥</p>
+</li>
+<li><p>注入命令攻击：向设备发送命令以控制其动作。需要当前网络密钥的先验知识</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="蓝牙低能耗-Bluetooth-Low-Energy"><a href="#蓝牙低能耗-Bluetooth-Low-Energy" class="headerlink" title="蓝牙低能耗 Bluetooth Low Energy"></a>蓝牙低能耗 Bluetooth Low Energy</h3><h4 id="描述-1"><a href="#描述-1" class="headerlink" title="描述"></a>描述</h4><ul>
+<li><p>蓝牙的低能耗和物联网定制版本——BLE</p>
+</li>
+<li><p>BLE网络由主设备和从设备组成；主设备在通信建立期间充当启动器，从设备与它们相关联【70】；实体以星形拓扑连接，其中每个从设备与单个主设备相关联示</p>
+<p><img src="/2021/04/11/IoT_Internet_of_Threats/image-20210415140338116.png" alt="image-20210415140338116"></p>
+</li>
+<li><p>BLE 物理层数据速率为 1  Mb/s，覆盖范围通常超过几十米；BLE 的 Mac 层分为广告和数据通信（advertising and data communication）</p>
+</li>
+<li><p>BLE 使用 40 个信道，间距为2兆赫兹。37 个可用信道在数据传输期间使用，其余 3 个由未连接的实体用来广播设备信息和建立连接【71】</p>
+</li>
+<li><p>在数据通信阶段，数据通常以突发形式发送，以节省能量，从机可以长时间保持睡眠模式，定期醒来监听信道是否有来自主机的消息</p>
+</li>
+<li><p>时分多址、累积确认</p>
+</li>
+<li><p>除了物理层和媒体访问控制层之外，堆栈还需要其他协议，例如逻辑链路控制和适配协议（L2CAP）和低能量属性协议（TT）</p>
+</li>
+<li><p>加密和认证过程基于 128 位密钥的 AES-CCM；主从链路对称密钥在配对过程中生成</p>
+<ul>
+<li>设备之间交换认证能力和要求，此过程不加密</li>
+<li>生成或交换临时密钥（TK），同时交换一些信息以确认 TK 在双方是相同的；从 TK 中生成短期密钥（STK）用于加密数据流</li>
+</ul>
+</li>
+<li><p>绑定阶段可以遵循配对过程：设备交换并存储公共链接密钥。配对方式如下</p>
+<ul>
+<li>Just Work：TK 设置为 0——不提供任何级别的安全性</li>
+<li>Out of Band：TK 在带外交换，例如，使用近场通信——安全级别与用于交换密钥的带外方法一样高，但会给用户带来不便</li>
+<li>Passkey：TK 是用户在设备之间传递的六位数（例如，一个设备生成 TK 并显示在屏幕，用户向另一个设备输入相同的数）——安全级别很高，但设备需要配备用户界面，以便能够读取和键入 TK，对小型化的物联网设备不适用</li>
+</ul>
+</li>
+<li><p>新的配对程序使用椭圆曲线密码</p>
+<ul>
+<li>每个设备生成一个椭圆曲线 Diffie  Hellman  （ECDH）公钥-私钥对；相互交换公钥，私钥和对方的公钥导出一个 DHKey 密钥</li>
+<li>设备使用一种配对方法（下文）确认两者的密钥相同，生成用于对称加密数据流的长期密钥（LTK）</li>
+</ul>
+</li>
+<li><p>新的配对方法（具体见论文）</p>
+<ul>
+<li>Just Work</li>
+<li>Numeric Comparison</li>
+<li>Out of Band</li>
+<li>Passkey</li>
+</ul>
+</li>
+</ul>
+<h4 id="攻击-1"><a href="#攻击-1" class="headerlink" title="攻击"></a>攻击</h4><ul>
+<li>在 BLE 4.0 和 4.1中，除了 Out of Band 配对方法，其他方法在配对阶段没有针对窃听和中间人攻击的保护<ul>
+<li>Just Work 中密钥已知</li>
+<li>Passkey 中，密钥容易被暴力破解</li>
+<li>在某些情况下，甚至不需要暴力[73]–[77]。</li>
+<li>BLE 4.2 也有类似的问题（主要是 Passkey）</li>
+</ul>
+</li>
+<li>另一个问题与 BLE 设备的 advertise 模式有关<ul>
+<li>【71】发现健身跟踪器几乎总是处于广告模式，因为主设备经常为保存能量断开跟踪器的连接</li>
+<li>大多数设备总是暴露相同的MAC 地址——可以捕获交换的消息，并在很长一段时间内关联一对设备之间的 BLE 流量</li>
+<li>BLE 允许设备使用随机的 Mac 地址并经常更改它们</li>
+<li>在大多数情况下，健身跟踪应用程序通过互联网传输每个记录的事件——攻击者可以对交换的数据量进行数据分析</li>
+</ul>
+</li>
+<li>还有其他的一些例子，这里略</li>
+</ul>
+<h3 id="6LoWPAN-and-CoAP"><a href="#6LoWPAN-and-CoAP" class="headerlink" title="6LoWPAN and CoAP"></a>6LoWPAN and CoAP</h3><h4 id="描述-2"><a href="#描述-2" class="headerlink" title="描述"></a>描述</h4><ul>
+<li><p>6LoWPAN 和 CoAP 可以在物联网设备中实现，以简化它们与标准的基于 IP 的系统的交互</p>
+</li>
+<li><p>6LowPAN 是一种 IPv6 适配协议，用于通过低功率通信的资源受限设备、有损链路</p>
+</li>
+<li><p>6LowPAN 压缩、分段 IP 数据包，删除大部分冗余字段；CoAP 是应用层的 RESTful 协议（UDP 之上，避免复杂的 TCP 连接），通过代理映射到超文本传输协议，以支持重传、休眠设备和资源发现，需要考虑无序的消息传递和数据包丢失</p>
+</li>
+<li><p>PHY 层和 Mac 层通常采用 IEEE  802.15.4 家族的协议</p>
+</li>
+<li><p>物联网网络内路由通常基于 RFC 6550 【90】中低功耗有损网络（RPL）路由协议</p>
+<ul>
+<li><p>RPL 主要设计用于多点到点通信（如无线传感器网络中的通信），也支持点到多点（接收器广播）和点到点通信</p>
+</li>
+<li><p>RPL 基于一个低功耗有损边界路由器（LBR）的根节点构建有向无环图（DAG），根节点通常是负责管理一组节点的设备，代表两个网络之间的边界</p>
+<p><img src="/2021/04/11/IoT_Internet_of_Threats/image-20210415224635175.png" alt="image-20210415224635175"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="攻击-2"><a href="#攻击-2" class="headerlink" title="攻击"></a>攻击</h4><ul>
+<li>针对 RPL 的攻击    <ul>
+<li>针对 6LoWPAN 的许多攻击集中在重定向流量和扰乱路由树上【91-93】<ul>
+<li>克隆 ID 和 Sibyl 攻击：<ul>
+<li>克隆 ID 攻击中，恶意节点克隆另一个节点的身份；Sibyl 攻击中，攻击者同时使用多个实体的身份，恶意实体可以访问并重定向大量网络流量</li>
+<li>通过跟踪每个身份的实例数量或监控设备的地理位置，可以检测到这些类型的攻击</li>
+</ul>
+</li>
+<li>Sinkhole攻击：与 ZigBee 中描述的一致，恶意节点向 Sink 声明通往其他节点的非常有效的路由路径，从而控制一部分流量</li>
+<li>选择性转发和黑洞攻击：<ul>
+<li>网络的某个节点丢弃通过它的部分流量（选择性转发）或所有流量（黑洞）</li>
+<li>可以在 DAG 内创建不相交或动态路径</li>
+</ul>
+</li>
+<li>HELLO 洪泛攻击：<ul>
+<li>6LoWPAN 网络中的节点用 HELLO 消息告知自己的存在。节点接收到 Hello 消息，则假定发送方节点在其附近，可以直接到达</li>
+<li>攻击者使用大于允许的传输功率广播 Hello 消息，利用此机制攻击。相当多节点将攻击者视为邻居，但如果尝试使用新链路时，发送的分组将丢失，因为传统的发射功率水平不足以保证良好的通信</li>
+<li>对策：使用链路层确认来检查消息接收</li>
+</ul>
+</li>
+<li>以下攻击依赖于对 RPL 服务消息的攻击<ul>
+<li>本地修复攻击：恶意节点持续发送本地修复消息，强制重复更新网络拓扑，即使没有连通性问题，导致服务降级和电池供电设备耗尽能量</li>
+<li>版本号攻击：版本号是 DIO 消息的一个字段，每次重建 DODAG 时会递增。恶意传输版本号较高的 DIO 消息可能会强制不必要地重建整个 DODAG，导致服务质量下降和能源耗尽</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>来自互联网端的攻击：<ul>
+<li>6LoWPAN 和 CoAP 不提供保密性、认证性和完整性保护，没有附加安全措施的情况下设备完全可以从Internet访问</li>
+<li>CoAP 标准建议使用数据报 TLS（DTLS）来提供保密、身份验证和完整性保护【35、95】，IPsec【96】用于 IP 级别提供认证和加密</li>
+<li>不使用加密和身份验证机制，攻击者可以获得对物联网网络的访问权限，窃听数据流中的敏感信息，获得传感器节点的控制权创建僵尸网络【97】对其他目标发起 Dos 攻击</li>
+</ul>
+</li>
+<li>适配层攻击：<ul>
+<li>在边界路由器上实现公网和 6LoWPAN 网络之间的报文转发。执行适配的设备缺乏身份验证和有限的计算资源，这使得该机制容易受到攻击。</li>
+<li>两种攻击：片段复制和缓冲区保留【99】<ul>
+<li>片段复制攻击：点不能在 6LoWPAN 层验证所接收的片段是否属于先前的相同 IPv6 分组，如果恶意节点注入具有合法 6LoWPAN 数据包相同报头的片段，则目标节点无法区分它们和合法的片段，不能决定在分组重组过程中使用哪些片段，导致重建损坏的 IPv6 数据包并丢弃该数据包</li>
+<li>缓冲区预留攻击：利用网络节点的有限内存。6LoWPAN 网络中接收节点必须预留缓冲空间来重组属于同一 IPv6 分组的片段。重组缓冲器被分配给一个 IPv6 分组时，其他 IPv6 分组的接收片段被丢弃。缓冲区空间保留时间为60秒，如果攻击者向目标节点发送任意碎片，目标节点在接下来的一分钟内无法接收更多碎片数据包——连续重复此攻击会对目标设备造成长期 DoS</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="LoRaWAN"><a href="#LoRaWAN" class="headerlink" title="LoRaWAN"></a>LoRaWAN</h3><h4 id="描述-3"><a href="#描述-3" class="headerlink" title="描述"></a>描述</h4><ul>
+<li><p>LoRaWAN 一种位于 LoRA 物理层之上的链路层协议。协议栈如图12所示。对于之前的协议</p>
+<p><img src="/2021/04/11/IoT_Internet_of_Threats/image-20210416110440927.png" alt="image-20210416110440927"></p>
+<ul>
+<li>对电池供电的终端设备进行了优化</li>
+<li>具有星型拓扑，包括终端设备、网关和网络服务器，终端设备通过单跳链路与一个或多个网关通信，网关通过传统 IP 技术连接单个网络服务器</li>
+</ul>
+</li>
+<li><p>双向通信，始终由终端设备发起。使用 ALOHA 协议，每次上行链路传输后，终端设备在不同的子带中打开两个下行链路窗口，以接收来自网络服务器的数据</p>
+</li>
+<li><p>设备加入 LoRaWAN 的调试过程称为空中激活（OTAA），利用了存储在设备上的一些信息：终端设备标识符（DevEUI）、应用程序标识符（AppEUI）和应用程序密钥（AppKey）</p>
+<ul>
+<li>前两个分别是终端设备和应用提供商的唯一全局标识符</li>
+<li>AppKey 是应用程序所有者分配的 AES-128 密钥，不同终端设备不同，避免流量窃听</li>
+<li>加入过程由终端设备发送包括 DevEUI 和 AppEUI 的加入请求来发起，如果允许加入网络，网络服务器用加入接受消息进行回复——包括网络标识符（NetID）、应用随机数（AppNonce）和终端设备地址（DevAddr）<ul>
+<li>NetID 和 DevAddr 长 32，前者唯一标识网络，后者标识网络中的终端设备</li>
+<li>AppNonce 由终端设备导出特定于每个终端设备的网络会话密钥（NwkSKey）和应用会话密钥（AppSKey），设备和网络服务器使用会话密钥加密和解密消息的有效载荷<ul>
+<li>NwkSKey 用于 MAC 命令</li>
+<li>AppSKey 用于特定于应用的消息</li>
+<li>密钥还用于验证 MIC，保证数据完整性</li>
+<li>终端设备加入 LoRaWAN 网络，所有消息都将使用 NwkSKey 和 AppSKey 的组合进行加密</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>使用 AES-128 执行有效负载加密，步骤略</li>
+</ul>
+</li>
+</ul>
+<h4 id="攻击-3"><a href="#攻击-3" class="headerlink" title="攻击"></a>攻击</h4><ul>
+<li>第一个弱点与密钥管理【103】有关。AppKey、NwkSKey 和 AppSKey都存储在终端设备中，使用侧信道分析攻击可以利用在加密期间来自收发机的功耗或电磁发射的变化来恢复密钥</li>
+<li>如果节点需要支持组播消息，则节点必须共享 NwkSKey 和 AppSKey。此时仅从一个节点获得密钥，就可以访问所有其他通信——节点需要能够区分组播通信和单播通信，对单播通信应该优先使用唯一的 NwkSKeys 和 AppSKeys，如果攻击者获得了组播密钥，则只有组播消息不安全</li>
+<li>攻击者可能攻击网关和网络服务器之间的链路</li>
+</ul>
+<h2 id="商业设备的方案"><a href="#商业设备的方案" class="headerlink" title="商业设备的方案"></a>商业设备的方案</h2><p>对以上给定技术的物理实现，和附加的一些风险。略</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li><p>物联网在传感器网络、域名和医疗应用中广泛应用，在物联网网络中提供安全通信至关重要</p>
+<ul>
+<li>如果没有窃听保护，物联网无线网络可能会暴露敏感的个人信息</li>
+<li>没有身份验证，恶意攻击者可以伪装成合法设备，扰乱物联网网络运营</li>
+<li>此外，计算能力的降低和对低能耗的需求限制了可以应用在物联网设备的加密功能</li>
+</ul>
+</li>
+<li><p>对 ZigBee 和 BLE，易用性优先于强大的安全性，因为它们通常支持所谓的非关键应用，低估了利用这些技术进入更关键系统的风险</p>
+</li>
+<li><p>6LoWPAN 和 LoRaWAN 采用两种互补的安全策略</p>
+<ul>
+<li>LoRaWAN 可以用于非常简单的应用，无需任何传输层和应用层，因此在设计时考虑到了强大的安全性和强制性的分组加密和身份验证</li>
+<li>6LoWPAN 和 CoAP 将安全方面委托给其他层，只加强与协议操作严格相关的方面（如路由和分组）</li>
+<li>这允许在 LoRaWAN 上使用 CoAP，而不会带来多级加密和密钥交换的成本</li>
+</ul>
+</li>
+<li><p>文献已经提出对现有标准的附加安全扩展，但尚未被标准化实体和商业设备采用</p>
+</li>
+</ul>
+<h2 id="开放的挑战"><a href="#开放的挑战" class="headerlink" title="开放的挑战"></a>开放的挑战</h2><ul>
+<li><p>物联网网络安全领域仍然存在一些开放的研究挑战，具体见下表</p>
+<p><img src="/2021/04/11/IoT_Internet_of_Threats/image-20210416112533318.png" alt="image-20210416112533318"></p>
+<ul>
+<li>表 III 报告不同技术为满足信息、访问和功能级别的安全目标所指定的要求而实施的安全机制，并总结文献中发现的漏洞</li>
+<li>表 IV 中，将本文描述的攻击分五个相关类别，针对每个类别突出显示了易受该类型攻击的技术。空白单元格意味着没有文献研究该技术对特定类别攻击的脆弱性</li>
+<li>ZigBee 和 6LoWPAN ：<ul>
+<li>受到针对网络通信协议的攻击，因为数据包中的路由信息通常不经过身份验证</li>
+<li>受到能量或资源耗尽的攻击，迫使节点处理大量伪造的数据包——完整的报头和控制分组身份验证将阻止此类攻击，提高网络的功能级别健壮性</li>
+<li>全面认证程序的部署存在问题：<ul>
+<li>缺乏广泛接受的轻量级加密算法，该算法应当可以在硬件中实现，或由嵌入式设备最常用的加密库支持</li>
+<li>根据认证要求需要添加补充信息到分组，这将增加短有效载荷消息的开销，需要使用分组中少量附加空间的强认证机制，或者需要使用替代类型的信息</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>共享密钥的管理是不同协议的共同弱点。调试和配置过程通常需要网络中所有节点之间的共享密钥，并且密钥更新需要在整个网络上安全和及时地分发。此外，需要额外的开销保证设备之间共享密钥的一致性——共享密钥更容易被攻击者破解，需要频繁轮换密钥——需要一种机制允许设备独立地创建和更新共享密钥，如使用所有设备可用但攻击者未知的信息</li>
+<li>给定技术的物理实现与其理论设计一样重要</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\07\A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications\" rel="bookmark">A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Survey on Internet of Things: Architecture, Enabling Technologies, Security and Privacy, and Applications》阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\03\17\A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things\" rel="bookmark">A Survey on Security and Privacy Issues in Internet-of-Things</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Survey on Security and Privacy Issues in Internet-of-Things》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\21\Evaluating_Critical_Security_Issues_of_the_IoT_World_Present_and_Future_Challenges\" rel="bookmark">Evaluating Critical Security Issues of the IoT World Present and Future Challenges</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Evaluating Critical Security Issues of the IoT World Present and Future Challenges》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\04\22\IoT_Cybersecurity_Research_A_Review_of_Current_Research_Topics\" rel="bookmark">Internet of Things (IoT) Cybersecurity Research：A Review of Current Research Topics</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Internet of Things (IoT) Cybersecurity Research: A Review of Current Research Topics》论文阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/" title="IoT：Internet of Threats? A Survey of Practical Security Vulnerabilities in Real IoT Devices">https://thomas-li-sjtu.github.io/2021/04/11/IoT_Internet_of_Threats/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/IoT/" rel="tag"><i class="fa fa-tag"></i> IoT</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/" rel="prev" title="A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications">
+      <i class="fa fa-chevron-left"></i> A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/21/Evaluating_Critical_Security_Issues_of_the_IoT_World_Present_and_Future_Challenges/" rel="next" title="Evaluating Critical Security Issues of the IoT World Present and Future Challenges">
+      Evaluating Critical Security Issues of the IoT World Present and Future Challenges <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IOT-%E7%9A%84%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98"><span class="nav-number">3.</span> <span class="nav-text">IOT 的安全挑战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E9%9C%80%E6%B1%82"><span class="nav-number">3.1.</span> <span class="nav-text">安全需求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E6%94%BB%E5%87%BB%E7%9A%84%E5%88%86%E7%B1%BB"><span class="nav-number">3.2.</span> <span class="nav-text">安全攻击的分类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IOT-%E6%9C%8D%E5%8A%A1%E7%9A%84%E4%B8%BB%E8%A6%81%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6"><span class="nav-number">4.</span> <span class="nav-text">IOT 服务的主要安全机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E6%B5%81-IOT-%E9%80%9A%E4%BF%A1%E6%8A%80%E6%9C%AF%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7"><span class="nav-number">5.</span> <span class="nav-text">主流 IOT 通信技术的安全性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ZigBee"><span class="nav-number">5.1.</span> <span class="nav-text">ZigBee</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%8F%E8%BF%B0"><span class="nav-number">5.1.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%BB%E5%87%BB"><span class="nav-number">5.1.2.</span> <span class="nav-text">攻击</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%93%9D%E7%89%99%E4%BD%8E%E8%83%BD%E8%80%97-Bluetooth-Low-Energy"><span class="nav-number">5.2.</span> <span class="nav-text">蓝牙低能耗 Bluetooth Low Energy</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%8F%E8%BF%B0-1"><span class="nav-number">5.2.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%BB%E5%87%BB-1"><span class="nav-number">5.2.2.</span> <span class="nav-text">攻击</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6LoWPAN-and-CoAP"><span class="nav-number">5.3.</span> <span class="nav-text">6LoWPAN and CoAP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%8F%E8%BF%B0-2"><span class="nav-number">5.3.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%BB%E5%87%BB-2"><span class="nav-number">5.3.2.</span> <span class="nav-text">攻击</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LoRaWAN"><span class="nav-number">5.4.</span> <span class="nav-text">LoRaWAN</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%8F%E8%BF%B0-3"><span class="nav-number">5.4.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%BB%E5%87%BB-3"><span class="nav-number">5.4.2.</span> <span class="nav-text">攻击</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%95%86%E4%B8%9A%E8%AE%BE%E5%A4%87%E7%9A%84%E6%96%B9%E6%A1%88"><span class="nav-number">6.</span> <span class="nav-text">商业设备的方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E6%94%BE%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">8.</span> <span class="nav-text">开放的挑战</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

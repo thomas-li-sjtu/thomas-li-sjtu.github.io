@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Improving Password Guessing via Representation Learning》论文阅读记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Improving Password Guessing via Representation Learning">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Improving Password Guessing via Representation Learning》论文阅读记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105202001024.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105211348525.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105221136674.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105223854336.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105231316946.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106095205727.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106102651616.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106103821530.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106110326303.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106111658123.png">
+<meta property="article:published_time" content="2021-01-03T13:30:16.000Z">
+<meta property="article:modified_time" content="2021-01-16T08:31:03.286Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta property="article:tag" content="AE">
+<meta property="article:tag" content="GAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105202001024.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Improving Password Guessing via Representation Learning | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Improving Password Guessing via Representation Learning
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-03 21:30:16" itemprop="dateCreated datePublished" datetime="2021-01-03T21:30:16+08:00">2021-01-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>12 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Improving Password Guessing via Representation Learning》论文阅读记录</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>介绍了一种用于密码猜测的深度生成模型表示学习方法</li>
+<li>展示了一种抽象的密码表示形式，能提供通用的属性</li>
+<li>提出<ul>
+<li>条件密码猜测的一般框架，可以生成带有任意偏差的密码</li>
+<li>期望最大化启发的框架，动态调整估计的密码分布，以匹配被攻击的密码数据集的分布</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>现代的密码猜测攻击建立在这样的观察基础上：人类选择的密码并不是均匀分布在密码空间中，而是自然倾向于选择容易记住的密码</li>
+<li>攻击者可以估计真实密码在密码空间的密集区域【58】</li>
+<li>【42，27，56】在不同的假设下，试图直接估计一组密码背后的概率分布，以生成合适的猜测</li>
+<li>表示学习从大量的非结构化数据中学习有用的和解释性的表示【18】</li>
+<li>对 GAN【30】实例和 WAEs【51】实例的潜在空间中对密码的表示进行建模，由于其平滑性【18】，这种表示形式在高维密码空间中强制了语义组织，使得生成器的潜在空间中，与语义相关的密码的表示更为接近，潜在空间中的几何关系直接转换为数据空间中的语义关系</li>
+<li>本文表征了两个主要属性：密码强局部性和密码弱局部性，分别对应条件密码猜测和动态密码猜测</li>
+<li>贡献：<ul>
+<li>第一个证明，在密码猜测领域中使用完全无监督学习的表示学习具有可行性</li>
+<li>提出一种概率性的，完全不受监督的基于模板的密码生成方式CPG</li>
+<li>提出DPG：从与被攻击密码集的交互反馈，动态地调整猜测策略，攻击者可以利用在攻击中成功猜出的密码不断调整攻击模型</li>
+</ul>
+</li>
+</ul>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><h3 id="深度生成模型"><a href="#深度生成模型" class="headerlink" title="深度生成模型"></a>深度生成模型</h3><ul>
+<li><p>深度生成模型是潜变量模型。网络被隐含地引导去学习一组潜在变量</p>
+</li>
+<li><p>训练过程中，<strong>对学习到的潜在变量进行先验分布，这种先验，在本文中称为先验潜伏分布或$\dot{p}(z)$**——一种易于抽样、无信息和因子分解的先验，</strong>往往是标准正态分布或0-1均匀分布**【29】</p>
+</li>
+<li><p>生成网络是潜在空间$Z$和数据空间$X$之间确定性的映射函数：$p(X)=p(X|z;\theta)\dot{p}(z)$</p>
+</li>
+<li><p>本文引入了一般的潜在空间概率密度函数$p(z)$，而且生成器的平滑度迫使在学习的潜在空间中形成几何组织，类似特征嵌入</p>
+</li>
+<li><p>GAN 通过对抗性训练绕过了定义一个明确的似然函数，能够估计一个尖锐分布【29】</p>
+</li>
+<li><p>AE 没有用对抗性进行训练，而是使用最大似然方法，一旦训练好，解码器就可以充当数据生成器。但训练期间必须强制潜在空间和先验潜在分布一致</p>
+</li>
+</ul>
+<h3 id="生成模型在密码猜测的应用"><a href="#生成模型在密码猜测的应用" class="headerlink" title="生成模型在密码猜测的应用"></a>生成模型在密码猜测的应用</h3><ul>
+<li>上一部分证明了深层生成模型具有其固有的新颖、有价值的特性，在表示学习的角度下抽象底层模型，这些特性可以用来设计独特的猜测技术，这是任何现有方法都做不到的</li>
+</ul>
+<h4 id="GAN"><a href="#GAN" class="headerlink" title="GAN"></a>GAN</h4><ul>
+<li><p>PassGAN【35】将 GAN 生成器训练为 an implicit estimator of password distributions</p>
+<ul>
+<li>在残差网络的架构上【34】利用了具有梯度代价的 WGAN【33】</li>
+<li>假定了一个具有标准正态分布的潜在空间</li>
+<li>PassGAN 与其他方法相比，如果要获得相同数量的匹配密码，最多需要十倍的猜测次数</li>
+<li>模型无法将固定的概率分配给产生的猜测，因此无法根据密码使用人数对其排序</li>
+<li>存在训练不稳定性（因此生成器和判别器不能执行足够数量的迭代次数，下面为原因）<ul>
+<li>离散数据对生成器难以重现，因为 softmax 层会导致低质量的梯度（<code>low-quality gradient</code>）</li>
+<li>生成器无法完全模拟离散特性，因此判别器更容易区分真假，这样就没有给生成器留下提高的空间（特别是训练的最后阶段）</li>
+</ul>
+</li>
+<li>每一个字符串表示为一个二进制矩阵，通过独热码串联而成</li>
+</ul>
+</li>
+<li><p>对策：</p>
+<ul>
+<li>对训练集的字符串表示，增加了随机平滑机制——<strong>在每个字符的独热码上加入小幅度的加性噪声</strong></li>
+<li>噪声幅度的上限作为超参数，设置为0.01</li>
+<li><strong>加入噪声后对每个字符分布重新归一化</strong>（<em>这里我没想明白归一化的含义？是一个独热码[1,0,0,0]+[0.005,0.005,0.005,0.005]之后，内部归一化吗，而且噪声服从什么分布？</em>）</li>
+<li><strong>保持梯度惩罚框架 WGAN</strong>【33】 不变</li>
+<li>用更深的 residual bottleneck blocks【34】替代了 residual blocks，但数量保持一致</li>
+<li>生成器中**使用 batch normalization **对增加层数极为重要</li>
+<li>以上对策提高了训练迭代次数，而不会出现崩溃【21】</li>
+</ul>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105202001024.png" alt="image-20210105202001024"></p>
+</li>
+<li><p>根据密码最大长度（10、16、22）不同，训练三个生成器</p>
+</li>
+</ul>
+<h4 id="AE"><a href="#AE" class="headerlink" title="AE"></a>AE</h4><ul>
+<li>第二种生成密码猜测模型基于 WAE【51】</li>
+<li>WAE 规范化了潜在空间，使其与选定的潜在分布保持一致</li>
+<li>WAE 与 GAN 部分特点相似，但 WAE 提供了准确的逆映射（编码），使得在一些情况下比 GAN 要好</li>
+<li>将<strong>模型训练为 CAE</strong>【47】<ul>
+<li>每次接收输入密码的噪声版本（以一定概率$p=\frac{\varepsilon}{|x|}$去除密码中的任意字符，其中分母为密码长度，分子为设置为5的超参数）</li>
+<li>输入处理后的密码，再现完整的密码——必须从上下文估计丢失的字符</li>
+<li>使用 GAN 生成器架构，但层数更深</li>
+<li>使用和 GAN 相同的先验潜在分布（$N(0,1)$，128维）</li>
+</ul>
+</li>
+</ul>
+<h2 id="条件密码猜测-CPG-和密码的强局域性"><a href="#条件密码猜测-CPG-和密码的强局域性" class="headerlink" title="条件密码猜测(CPG)和密码的强局域性"></a>条件密码猜测(CPG)和密码的强局域性</h2><p>介绍密码的局部性概念以及可能的应用</p>
+<h3 id="密码强局部性和本地化抽样"><a href="#密码强局部性和本地化抽样" class="headerlink" title="密码强局部性和本地化抽样"></a>密码强局部性和本地化抽样</h3><ul>
+<li><p>在训练过程中加入注意力机制/感应偏置（<code>inductive bias</code>）</p>
+</li>
+<li><p>在本文中，<strong>密码潜在表示的相似性取决于一些关键因素，例如密码结构、常见子字符串的出现以及字符类别</strong>（具体因素在论文的附录中）</p>
+</li>
+<li><p>这里用三个密码——“jimmy91”, “abc123abc”, and “123456”——举了一个例子（<em>个人认为这里的图是后期手动生成的，以说明潜在的分布具有意义</em>），每个密码的周围密码存在一定的相似性</p>
+</li>
+<li><p><strong>将这种共享同一细粒度特征的密码聚集起来</strong>，这样的特征体现了密码的强局部性</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105211348525.png" alt="image-20210105211348525"></p>
+</li>
+<li><p>由于这样的密码被限制在密码空间的特定区域，因此可以通过在此区域采样来诱导网络生成时的样本倾向，即产生 bias——需要考虑如何表达这种 bias /定位这一空间</p>
+<ul>
+<li><p><strong>提取原型密码 x 的潜在表示 z（之后称为枢轴，在上图就是深红色的密码） 周围的潜在点，以生成与原型 x 相关的密码</strong></p>
+</li>
+<li><p><strong>通过之前的 AE 网络从 x 推断潜在表示 z</strong>（作者认为，这个过程可以推广，也可以使用其他的深度生成模型如【25，36，40】）</p>
+</li>
+<li><p><strong>获得 z 之后可以将生成器的采样限制在 z 的周围，以生成相似的密码</strong></p>
+<ul>
+<li><p><strong>为了与先前的潜在分布保持一致，并避免采样分布不匹配，选择高斯分布$N(z,\sigma I)$</strong></p>
+</li>
+<li><p>认为潜在点和 z 的语义关系强度，和二者的空间距离成正比，因此<strong>高斯分布的标准差提供了语义相关强度限制手段</strong>。下面这个是不同标准差下，潜在点采样结果</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105221136674.png" alt="image-20210105221136674"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="基于密码模板倒置的局部空间密码生成"><a href="#基于密码模板倒置的局部空间密码生成" class="headerlink" title="基于密码模板倒置的局部空间密码生成"></a>基于密码模板倒置的局部空间密码生成</h3><ul>
+<li><p>上面用编码器、密码在密码空间的位置属性生成相关类别的密码，但还可以进一步通过“模板”定义这些类别，从而更精准定位密码空间位置</p>
+</li>
+<li><p><strong>编码器通过在字母表中引入占位符，强制定义特定的密码</strong>，例如 Jimmy** 表示字符串 Jimmy 长度为8（加结束符）、前缀为 Jimmy 的密码，且<strong>占位符的独热向量为空</strong></p>
+</li>
+<li><p>在<strong>生成过程的过程中，占位符被高概率的字符替换</strong></p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105223854336.png" alt="image-20210105223854336"></p>
+</li>
+</ul>
+<h3 id="CPG"><a href="#CPG" class="headerlink" title="CPG"></a>CPG</h3><ul>
+<li><p>适用场景：</p>
+<ul>
+<li>攻击者需要生成任意数量的具有特定结构/公共子串的猜测</li>
+<li>攻击者可以恢复不完整的密码</li>
+<li>合法用户用于恢复遗忘了部分字符的密码</li>
+</ul>
+</li>
+<li><p>过去的方法（如FLA）无法“条件生成密码”</p>
+<ul>
+<li>不能为丢失字符指定概率</li>
+<li><strong>丢失了前向性，即忽略了占位符出现在密码开头的可能性</strong></li>
+<li>如果占位符过多，过去的方法也不适用（但它们能处理特殊情况的模板，如前缀完全已知，而且占位符数目不多）</li>
+<li>过去的方法，为了生成任意的模板，往往根据截至频率来枚举密码<ul>
+<li>需要大空间存储，枚举次数极多</li>
+<li>难以生成低概率的猜测——如果选择的 bias 使该类密码的分布概率较低，那么这类密码在枚举过程中不容易出现</li>
+<li><strong>基于枚举的方法不能生成密码猜测攻击需要的有效猜测量</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>相反的，基于表示学习的方法和其位置属性，能够实现条件密码生成</p>
+<ul>
+<li><p><strong>局部性原则使得相似的密码分布在潜在空间的有限区域</strong></p>
+</li>
+<li><p>模板反转能定位这些区域</p>
+</li>
+<li><p>可以有条件地为每个有意义的 bias 产生猜测</p>
+</li>
+<li><p>算法如下</p>
+<ul>
+<li><p>选择一个模板$t$</p>
+</li>
+<li><p>用编码网络$E$得到潜在分布$z$</p>
+</li>
+<li><p>以$z$为中心抽取潜在点，尺度为$\sigma$</p>
+</li>
+<li><p>过滤与 $t$相同的猜测结果</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210105231316946.png" alt="image-20210105231316946"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h3><p><em>我认为这里的评估，是为了证明本文的方法在某些场景下的生成效果，会远好于已有的方法，而没有考虑具体的密码破解能力（覆盖率），也就是说CPG的方法只能作为密码破解的一个子方案；其意义在于表明强关联性是具有意义的</em></p>
+<ul>
+<li><p>创建带 bias 的测试集</p>
+<ul>
+<li><p>一个带偏差的$t_i$是一个模板，一个字符串$t_i$由字符表中的字符（210个）和占位符组成</p>
+</li>
+<li><p>每个模板都是从密码验证集$X_v$随机抽取，这里用 LinkedIn，密码长度最大为16，有$6 \times 10^7$个不重复密码——是训练集 Rockyou 的5倍</p>
+<ul>
+<li>对从验证集抽取的一条密码，<strong>每个字符都有一定概率（概率为0.5）被替换为占位符</strong>（<em>个人认为服从二项分布</em>）</li>
+<li><strong>只选择包含至少 4 个可观察字符和至少 5 个占位符的模板</strong>，以限制暴力破解的可能性</li>
+</ul>
+</li>
+<li><p>获得足够大的模板集合后，创建一组有偏差的测试集</p>
+<ul>
+<li><p>查找与各个模板匹配的所有密码</p>
+</li>
+<li><p>基于匹配的密码数目，将模板分为四类（每一类都至少有30个不同的模板，具体模板在论文附录）</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106095205727.png" alt="image-20210106095205727"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>测试结果</p>
+<ul>
+<li>使用 CWAE（此场景下，AE 要好于 GAN）根据训练集密码最大长度训练三个模型（10，16，22），三者的结果基本一致<code>no consistently different results have been obtained with models trained on password lengths 10 and 22</code></li>
+</ul>
+</li>
+<li><p><strong>设置高斯分布标准差为0.8，为每个模板生成$10^7$个密码，计算相应模板下实际密码的覆盖率</strong></p>
+</li>
+<li><p>对比模型（每个对比方法经过训练后生成$10^{10}$个密码）</p>
+<p><em>疑问：这里 CWAE 是需要用rockyou获得对应模板密码后，再根据这些模板密码训练，然后在linkedin上不同模板下的密码集测试的吗？还是 CWAE 只需要保证输入和输出相同就行（我感觉应该是后者）？对比模型则是用rockyou统一训练后，生成这么多密码，再分别查看模板的覆盖率吗？</em></p>
+<ul>
+<li><p>OMEN：相同的训练数据集 Rockyou（0.8-0.2）</p>
+<ul>
+<li>FLA：使用【42】中最大的模型，即3个LSTM组成，一个LSTM有1000个cell</li>
+<li>PCFG：相同的训练数据集 Rockyou（0.8-0.2）</li>
+<li>HashCat：数据来源相同，但按照频率排序，密码唯一，使用 PasswordsPro【6】作为规则集</li>
+<li>CMU-PGS：密码根据最小自动配置【53】猜测的，其中组合了多种工具，通过 web 界面查询猜测次数并只考虑次数少于$10^{10}$的密码，<code>Recommended tools setup and “1class1” have been used</code></li>
+</ul>
+</li>
+<li><p>结果如下</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106102651616.png" alt="image-20210106102651616"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="动态密码猜测（DPG）和密码弱局部性"><a href="#动态密码猜测（DPG）和密码弱局部性" class="headerlink" title="动态密码猜测（DPG）和密码弱局部性"></a>动态密码猜测（DPG）和密码弱局部性</h2><h3 id="密码弱局部性"><a href="#密码弱局部性" class="headerlink" title="密码弱局部性"></a>密码弱局部性</h3><ul>
+<li><p>密码的表示可以通过嵌入性质实现相似密码的映射——强局部性；密码的一般特征，如平均密码长度、字符分布可以作为弱局部性</p>
+</li>
+<li><p>这里论文举了一个例子，将 MySpace、Hotmail、phpbb 由生成器学习的潜在空间表示出来，与整个密码空间做了一个对比（<em>没想明白这个图是怎么画出来的，文章说通过降维获得，但怎么做到降维成2D的？</em>）</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106103821530.png" alt="image-20210106103821530"></p>
+</li>
+</ul>
+<h3 id="DPG"><a href="#DPG" class="headerlink" title="DPG"></a>DPG</h3><p><em>我觉得，这个算法的重点在于：1.需要生成器生成密码  2.根据猜测结果对生成器再次微调</em></p>
+<ul>
+<li><p>以往的概率密码猜测工具都<strong>显式/隐式地捕捉训练集密码背后的概率分布，它隐含了训练集的分布满足一般性的假设</strong></p>
+</li>
+<li><p>训练集和测试集分布上的差异是一个广泛的问题，称为<code>covariate shift reduction</code>【49】</p>
+</li>
+<li><p>但如果破解了第一个密码，则可以开始观察、模拟测试集的分布</p>
+<ul>
+<li>过去的方法，如 FLA，其分布受网络参数决定$p(x)=p(x;\theta)$，因此如果通过破解结果反向作用网络参数，<strong>需要考虑破解结果的代表性问题</strong>——几百个破解结果和百万级的训练数据之间的权重——微调网络的成本很高</li>
+<li>但<strong>生成模型模拟的分布，是潜在分布 z 的联合概率分布$P(x)=P(x,z)=P(x|z;\theta)P(z)$，后者可以进行调整——后者独立于生成器</strong><ul>
+<li>在均匀分布的情况下（例如myspace），可以缩小密集区域周围的空间，避免探索整个潜在空间</li>
+<li>对于远离生成器模型分布的密码集（训练集和测试集的分布差异较大时），可以将重点放在潜在空间的区域上</li>
+<li>当改变 z 的分布来为某一猜测到的密码 x 分配更多概率密度时，其实也<strong>增加了密码空间中其相邻密码的概率——由于弱局部性属性，这些密码具有相似的特征</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>以下为具体算法：</p>
+<ul>
+<li><p>$O$为目标密码集，$Z$为生成器生成的密码</p>
+</li>
+<li><p>$p_{latent}$代表采样潜伏点的分布（<em>我觉得是指生成器输入的采样分布，但初始化时的分布时什么？标准正态分布吗？</em>）</p>
+</li>
+<li><p>$makeLatentDistribution$函数从猜中的口令集合得出新的潜在分布（<em>是更新生成器吗，还是更新DPG输入的分布？我觉得是后者</em>）</p>
+<ul>
+<li>每个新猜到的密码都会引入一个以$z_j$为中心的新高斯分布，超参数$\sigma$为每个新高斯的标准差，表明希望从观察到的密码集中采样距离，越大则可以探索更广的距离</li>
+<li>新高斯函数为$N(z_j,\sigma)$</li>
+<li>如果 $x_i$ 的概率已知，则可以对相应 $z_i$ 的高斯函数加权。否则认为高斯分布均匀</li>
+</ul>
+</li>
+<li><p>$G(z)$表示根据$z$生成一个候选密码</p>
+</li>
+<li><p>$\alpha$为启动超参数，表明猜测到预定数目的密码后，开始使用条件潜伏分布</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106110326303.png" alt="image-20210106110326303"></p>
+</li>
+</ul>
+</li>
+<li><p>GAN 在 DPG 的表现上好于 CWAE</p>
+</li>
+<li><p>和 PassGAN 对比，DPG 在三个数据集上（和下面三个不同）都比 PassGAN 好，覆盖率分别为25+、35+、30+</p>
+</li>
+<li><p>与其他方法的对比——如果没有明显的协变量转换，动态攻击不能直接与最先进的解决方案的性能相匹配，但能够猜测到测试集中特殊的密码</p>
+<p><img src="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/image-20210106111658123.png" alt="image-20210106111658123"></p>
+</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>基于字典的攻击是最早的猜测技术<ul>
+<li>基于规则的密码扩展【44】——JTR【7】，Hashcat【3】</li>
+<li>基于概率：<ul>
+<li>马尔可夫模型【45】</li>
+<li>提出 OMEN【27】作为前者的扩展，其中引入改进的枚举猜测算法</li>
+<li>PCFG【56】，从密码推断语法，以生成猜测密码</li>
+</ul>
+</li>
+<li>基于神经网络<ul>
+<li>【22】首次引入网络</li>
+<li>【42】提出用递归神经网络估计密码分布（FLA），此方法放宽了潜在的n元马尔可夫假设，通过树遍历算法在密码空间中枚举</li>
+<li>根据已知的其他网站泄露密码，“调整”密码以猜测其他账户密码<ul>
+<li>【46】方法的基础为密码相似性——用户经常使用一对密码，则这对密码是相似的</li>
+<li>【46】的攻击技术基于概率神经模型，为攻击产生微调的密码变体</li>
+<li>构建一个嵌入空间<code>embedding space</code>以估计所选密码之间的相似性，并构建密码强度计，用于查看用户创建密码时是否微调密码。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>证明局部性原则和深度生成模型的结合具有实践和理论的可能性</li>
+<li>提出 CPG 和 DPG<ul>
+<li>前者支持条件生成任意偏置密码——从经验上证明了其优势</li>
+<li>后者证明，从猜测到的密码中获得的新知识可以进一步推广，以模拟目标密码分布，能生成被攻击的密码集特有的密码（这一点其他猜测方法做不到）</li>
+</ul>
+</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] “Chinese Video Service Giant Y ouku Hacked; 100M Accounts Sold on Dark Web”. <a target="_blank" rel="noopener" href="https://tinyurl.com/yb78uxnh">https://tinyurl.com/yb78uxnh</a>.<br>        [2] “Cracking Passwords 101”. <a target="_blank" rel="noopener" href="https://tinyurl.com/y268xahe">https://tinyurl.com/y268xahe</a>.<br>        [3] “hashcat”. <a target="_blank" rel="noopener" href="https://tinyurl.com/y636jsz9">https://tinyurl.com/y636jsz9</a>.<br>        [4] “Hotmail Password Leak”. <a target="_blank" rel="noopener" href="https://tinyurl.com/yyr2je4m">https://tinyurl.com/yyr2je4m</a>.<br>        [5] “Improving Password Guessing via Representation Learning”. <a target="_blank" rel="noopener" href="https://github.com/pasquini-dario/PLR">https://github.com/pasquini-dario/PLR</a>.<br>        [6] “InsidePro-PasswordsPro Rules”. <a target="_blank" rel="noopener" href="https://tinyurl.com/vd9jzaz">https://tinyurl.com/vd9jzaz</a>.<br>        [7] “John the Ripper”. <a target="_blank" rel="noopener" href="https://tinyurl.com/j91l">https://tinyurl.com/j91l</a>.<br>        [8] “Leak Youku”. <a target="_blank" rel="noopener" href="https://tinyurl.com/y9f2xez6">https://tinyurl.com/y9f2xez6</a>.<br>        [9] “LinkedIn Password Leak”. <a target="_blank" rel="noopener" href="https://tinyurl.com/yxf7f5gv">https://tinyurl.com/yxf7f5gv</a>.<br>        [10] “MySpace Password Leak”. <a target="_blank" rel="noopener" href="https://tinyurl.com/y433aaah">https://tinyurl.com/y433aaah</a>.<br>        [11] “phpbb Password Leak”. <a target="_blank" rel="noopener" href="https://tinyurl.com/yxonf7um">https://tinyurl.com/yxonf7um</a>.<br>        [12] “RockYou Password Leak”. <a target="_blank" rel="noopener" href="https://tinyurl.com/af858jc">https://tinyurl.com/af858jc</a>.<br>        [13] “The Carnegie Mellon University Password Research Group’s Password Guessability Service”. <a target="_blank" rel="noopener" href="https://tinyurl.com/y9362h6z">https://tinyurl.com/y9362h6z</a>.<br>        [14] “Zomato hacked: Security breach results in 17 million user data stolen”. <a target="_blank" rel="noopener" href="https://tinyurl.com/y8xec7sr">https://tinyurl.com/y8xec7sr</a>.<br>        [15] “Zomato Password Leak”. <a target="_blank" rel="noopener" href="https://tinyurl.com/ya3sthdp">https://tinyurl.com/ya3sthdp</a>.<br>        [16] Kamran Ali, Alex X Liu, Wei Wang, and Muhammad Shahzad. Keystroke Recognition Using WiFi Signals. In ACM MobiCom, pages 90–102, 2015.<br>        [17] Davide Balzarotti, Marco Cova, and Giovanni Vigna. Clearshot: Eaves-dropping on Keyboard Input from Video. In IEEE S&amp;P, pages 170–183, 2008.<br>        [18] Y oshua Bengio, Aaron Courville, and Pascal Vincent. Representation Learning: A Review and New Perspectives. IEEE Transactions on Pattern Analysis and Machine Intelligence, 35(8):1798–1828, 2013.<br>        [19] Hossein Bidgoli. Handbook of Information Security, Information Warfare, Social, Legal, and International Issues and Security Foundations, volume 2. John Wiley &amp; Sons, 2006.<br>        [20] Samuel R. Bowman, Luke Vilnis, Oriol Vinyals, Andrew Dai, Rafal Jozefowicz, and Samy Bengio. Generating sentences from a continuous space. In Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning, pages 10–21, Berlin, Germany, August 2016. Association for Computational Linguistics.<br>        [21] Andrew Brock, Jeff Donahue, and Karen Simonyan. Large Scale GAN Training for High Fidelity Natural Image Synthesis. arXiv preprint arXiv:1809.11096, 2018.<br>        [22] Angelo Ciaramella, Paolo D’Arco, Alfredo De Santis, Clemente Galdi, and Roberto Tagliaferri.  Neural Network Techniques for Proactive Password Checking. IEEE Transactions on Dependable and Secure Computing, 3(4):327–339, 2006.<br>        [23] Anupam Das, Joseph Bonneau, Matthew Caesar, Nikita Borisov, and XiaoFeng Wang. The Tangled Web of Password Reuse. In NDSS Symposium, pages 1–15, 2014.<br>        [24] Peter J Diggle and Richard J Gratton. Monte Carlo Methods of Inference for Implicit Statistical Models. Journal of the Royal Statistical Society: Series B (Methodological), 46(2):193–212, 1984.<br>        [25] Jeff Donahue, Philipp Krähenbühl, and Trevor Darrell. Adversarial Feature Learning. arXiv preprint arXiv:1605.09782, 2016.<br>        [26] Vincent Dumoulin, Ishmael Belghazi, Ben Poole, Olivier Mastropietro, Alex Lamb, Martin Arjovsky, and Aaron Courville.  Adversarially Learned Inference. arXiv preprint arXiv:1606.00704, 2016.<br>        [27] Markus Dürmuth, Fabian Angelstorf, Claude Castelluccia, Daniele Perito, and Abdelberi Chaabane. OMEN: Faster Password Guessing using an Ordered Markov Enumerator. In ESSoS, pages 119–132, 2015.<br>        [28] Maximilian Golla and Markus Dürmuth. On the Accuracy of Password Strength Meters. In ACM CCS, pages 1567–1582, 2018.<br>        [29] Ian Goodfellow. NIPS 2016 Tutorial: Generative Adversarial Networks. arXiv preprint arXiv:1701.00160, 2016.<br>        [30] Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and Y oshua Bengio. Generative Adversarial Nets. In NIPS, pages 2672–2680, 2014.<br>        [31] Palash Goyal and Emilio Ferrara.  Graph Embedding Techniques, Applications, and Performance: A Survey. Elsevier Knowledge-Based Systems, 151:78–94, 2018.<br>        [32] Alex Graves. Generating Sequences with Recurrent Neural Networks. arXiv preprint arXiv:1308.0850, 2013.<br>        [33] Ishaan Gulrajani, Faruk Ahmed, Martin Arjovsky, Vincent Dumoulin, and Aaron C Courville. Improved Training of Wasserstein GANs. In NIPS, pages 5767–5777, 2017.<br>        [34] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.  Deep Residual Learning for Image Recognition. In CVPR, pages 770–778, 2016.<br>        [35] Briland Hitaj, Paolo Gasti, Giuseppe Ateniese, and Fernando Perez-Cruz. PassGAN: A Deep Learning Approach for Password Guessing. In ACNS, pages 217–237, 2019.<br>        [36] Diederik P Kingma and Max Welling. Auto-encoding V ariational Bayes. arXiv preprint arXiv:1312.6114, 2013.<br>        [37] Yang Li and Tao Yang. Word Embedding for Understanding Natural Language: A Survey. In Springer Guide to Big Data Applications, pages 83–104. 2018.<br>        [38] Junyu Luo, Y ong Xu, Chenwei Tang, and Jiancheng Lv. Learning Inverse Mapping by Autoencoder based Generative Adversarial Nets. In International Conference on Neural Information Processing, pages 207–216. Springer, 2017.<br>        [39] Laurens van der Maaten and Geoffrey Hinton. Visualizing Data using t-SNE. Journal of Machine Learning Research, 9:2579–2605, 2008.<br>        [40] Alireza Makhzani, Jonathon Shlens, Navdeep Jaitly, Ian Goodfellow, and Brendan Frey. Adversarial Auto-Encoders. arXiv preprint arXiv:1511.05644, 2015.<br>        [41] Philip Marquardt, Arunabh V erma, Henry Carter, and Patrick Traynor. (sp)iPhone: Decoding Vibrations From Nearby Keyboards Using Mobile Phone Accelerometers. In ACM CCS, pages 551–562, 2011.<br>        [42] William Melicher, Blase Ur, Sean M Segreti, Saranga Komanduri, Lujo Bauer, Nicolas Christin, and Lorrie Faith Cranor.  Fast, Lean, and Accurate: Modeling Password Guessability using Neural Networks. In USENIX Security Symposium, pages 175–191, 2016. GitHub Repo: <a target="_blank" rel="noopener" href="https://tinyurl.com/y9o7jdd8">https://tinyurl.com/y9o7jdd8</a>.<br>        [43] Shakir Mohamed and Balaji Lakshminarayanan. Learning in Implicit Generative Models. arXiv preprint arXiv:1610.03483, 2016.<br>        [44] Robert Morris and Ken Thompson. Password Security: A Case History. Communications of the ACM, 22(11):594–597, 1979.<br>        [45] Arvind Narayanan and Vitaly Shmatikov. Fast Dictionary Attacks on Passwords using Time-space Tradeoff. In ACM CCS, pages 364–372, 2005.<br>        [46] Bijeeta Pal, Tal Daniel, Rahul Chatterjee, and Thomas Ristenpart. Beyond Credential Stuffing: Password Similarity Models using Neural Networks. In IEEE S&amp;P, pages 1–18, 2019.<br>        [47] Deepak Pathak, Philipp Krahenbuhl, Jeff Donahue, Trevor Darrell, and Alexei A Efros. Context Encoders: Feature Learning by Inpainting. In IEEE CVPR, pages 2536–2544, 2016.<br>        [48] Alec Radford, Luke Metz, and Soumith Chintala. Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks. arXiv preprint arXiv:1511.06434, 2015.<br>        [49] Masashi Sugiyama, Matthias Krauledat, and Klaus-Robert M˜Aˇ zller. Covariate Shift Adaptation by Importance Weighted Cross V alidation. Journal of Machine Learning Research, 8(May):985–1005, 2007.<br>        [50] Ilya Sutskever, James Martens, and Geoffrey E Hinton. Generating Text with Recurrent Neural Networks. In ICML, pages 1017–1024, 2011.<br>        [51] Ilya Tolstikhin, Olivier Bousquet, Sylvain Gelly, and Bernhard Schoelkopf.  Wasserstein  Auto-Encoders. arXiv  preprint arXiv:1711.01558, 2017.<br>        [52] Blase Ur, Fumiko Noma, Jonathan Bees, Sean M Segreti, Richard Shay, Lujo Bauer, Nicolas Christin, and Lorrie Faith Cranor. I Added ‘!’at the End to Make It Secure: Observing Password Creation in the Lab. In SOUPS, pages 123–140, 2015.<br>        [53] Blase Ur, Sean M Segreti, Lujo Bauer, Nicolas Christin, Lorrie Faith Cranor, Saranga Komanduri, Darya Kurilova, Michelle L Mazurek, William Melicher, and Richard Shay. Measuring Real-world Accuracies and Biases in Modeling Password Guessability. In USENIX Security Symposium, pages 463–481, 2015.<br>        [54] Martin Vuagnoux and Sylvain Pasini. Compromising Electromagnetic Emanations of Wired and Wireless Keyboards. In USENIX Security Symposium, pages 1–16, 2009.<br>        [55] Ding Wang, Zijian Zhang, Ping Wang, Jeff Yan, and Xinyi Huang. Targeted Online Password Guessing: An Underestimated Threat. In ACM CCS, pages 1242–1254, 2016.<br>        [56] Matt Weir, Sudhir Aggarwal, Breno De Medeiros, and Bill Glodek. Password Cracking using Probabilistic Context-free Grammars. In IEEE S&amp;P, pages 391–405, 2009.<br>        [57] Tom White.  Sampling Generative Networks. arXiv preprint arXiv:1609.04468, 2016.<br>        [58] Roman V Yampolskiy. Analyzing User Password Selection Behavior for Reduction of Password Space. In ICCST, pages 109–115, 2006.</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\13\Interpretable_Probabilistic_Password_Strength_Meters_via_Deep_Learning\" rel="bookmark">Interpretable Probabilistic Password Strength Meters via Deep Learning</a></div>
+        <div class="popular-posts-excerpt"><p><p>基于深度学习的可解释概率密码强度表 论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\PassGAN-A-Deep-Learning-Approach-for-Password-Guessing\" rel="bookmark">PassGAN:A Deep Learning Approach for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《PassGAN：A Deep Learning Approach for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/" title="Improving Password Guessing via Representation Learning">https://thomas-li-sjtu.github.io/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+              <a href="/tags/AE/" rel="tag"><i class="fa fa-tag"></i> AE</a>
+              <a href="/tags/GAN/" rel="tag"><i class="fa fa-tag"></i> GAN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/03/FlaskWeb%E5%BC%80%E5%8F%91-2/" rel="prev" title="FlaskWeb开发（2）Flask实例">
+      <i class="fa fa-chevron-left"></i> FlaskWeb开发（2）Flask实例
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/05/%E4%BA%A7%E5%93%81%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86%E5%8E%9F%E7%90%86%E4%B8%8E%E5%BA%94%E7%94%A8/" rel="next" title="产品数据管理原理与应用">
+      产品数据管理原理与应用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">3.</span> <span class="nav-text">背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B1%E5%BA%A6%E7%94%9F%E6%88%90%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.1.</span> <span class="nav-text">深度生成模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E6%A8%A1%E5%9E%8B%E5%9C%A8%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">3.2.</span> <span class="nav-text">生成模型在密码猜测的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#GAN"><span class="nav-number">3.2.1.</span> <span class="nav-text">GAN</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">AE</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B-CPG-%E5%92%8C%E5%AF%86%E7%A0%81%E7%9A%84%E5%BC%BA%E5%B1%80%E5%9F%9F%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">条件密码猜测(CPG)和密码的强局域性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%BC%BA%E5%B1%80%E9%83%A8%E6%80%A7%E5%92%8C%E6%9C%AC%E5%9C%B0%E5%8C%96%E6%8A%BD%E6%A0%B7"><span class="nav-number">4.1.</span> <span class="nav-text">密码强局部性和本地化抽样</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E5%AF%86%E7%A0%81%E6%A8%A1%E6%9D%BF%E5%80%92%E7%BD%AE%E7%9A%84%E5%B1%80%E9%83%A8%E7%A9%BA%E9%97%B4%E5%AF%86%E7%A0%81%E7%94%9F%E6%88%90"><span class="nav-number">4.2.</span> <span class="nav-text">基于密码模板倒置的局部空间密码生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CPG"><span class="nav-number">4.3.</span> <span class="nav-text">CPG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0"><span class="nav-number">4.4.</span> <span class="nav-text">评估</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B%EF%BC%88DPG%EF%BC%89%E5%92%8C%E5%AF%86%E7%A0%81%E5%BC%B1%E5%B1%80%E9%83%A8%E6%80%A7"><span class="nav-number">5.</span> <span class="nav-text">动态密码猜测（DPG）和密码弱局部性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%BC%B1%E5%B1%80%E9%83%A8%E6%80%A7"><span class="nav-number">5.1.</span> <span class="nav-text">密码弱局部性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DPG"><span class="nav-number">5.2.</span> <span class="nav-text">DPG</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">6.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

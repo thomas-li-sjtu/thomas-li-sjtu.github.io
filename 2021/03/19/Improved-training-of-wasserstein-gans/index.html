@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Improved training of wasserstein gans》论文阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Improved training of wasserstein gans">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Improved training of wasserstein gans》论文阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323100132297.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323102341999.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323104532340.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323133045188.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323133106090.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323140710029.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323130558424.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323144417597.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323151110156.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323152057681.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323152731029.png">
+<meta property="article:published_time" content="2021-03-19T09:11:58.000Z">
+<meta property="article:modified_time" content="2021-05-25T01:54:46.636Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="GAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323100132297.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Improved training of wasserstein gans | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Improved training of wasserstein gans
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-19 17:11:58" itemprop="dateCreated datePublished" datetime="2021-03-19T17:11:58+08:00">2021-03-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Improved training of wasserstein gans》论文阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li><p>GAN 是强大的生成模型，但存在训练不稳定性的问题</p>
+</li>
+<li><p>最近提出的（WGAN）在遗传神经网络的稳定训练方面取得了进展，但有时仍然只能产生较差的样本或无法收敛</p>
+</li>
+<li><p>这些问题通常是由于在 WGAN 中使用权重剪裁来对判别器实施 Lipschitz  约束</p>
+</li>
+<li><p>提出了一种权重裁剪的替代方法：惩罚判别器关于其输入的梯度范数 </p>
+<blockquote>
+<p>penalize the norm of gradient of the critic with respect to its input.</p>
+</blockquote>
+<ul>
+<li>比标准的 WGAN 性能更好</li>
+<li>能够在几乎没有超参数调整的情况下稳定地训练各种 GAN 体系结构——包括 101 层 ResNets 和具有连续生成器的语言模型</li>
+</ul>
+</li>
+<li><p>在 CIFAR-10 和 LSUN bedrooms 上实现高质量的生成</p>
+</li>
+<li><p>代码已开源</p>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>生成对抗网络【9】是一类强大的生成模型，它将生成建模视为两个网络之间的对抗：生成器网络在给定一些噪声源的情况下生成合成数据，鉴别器网络区分生成器的输出和真实数据</li>
+<li>许多工作【22，18，2，20】致力于寻找稳定训练的方法</li>
+<li>【1】提供了由 GANs 优化的值函数的收敛特性分析<ul>
+<li>方案命名为 Wasserstein GAN  (WGAN)  【2】</li>
+<li>利用 Wasserstein 距离产生一个值函数，该值函数具有比原来更好的理论属性</li>
+<li>WGAN 要求鉴别器必须位于 1-Lipschitz 函数的空间内，作者通过权重剪辑来实现这一点</li>
+</ul>
+</li>
+<li>本文贡献<ul>
+<li>在数据集 toy 上，演示了判别器权重剪辑如何导致不良行为</li>
+<li>提出梯度惩罚</li>
+<li>演示各种 GAN 体系结构的稳定训练、相对于权重裁剪的性能改进、高质量的图像生成以及无需任何离散采样的字符级 GAN 语言模型</li>
+</ul>
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="GAN"><a href="#GAN" class="headerlink" title="GAN"></a>GAN</h3><ul>
+<li><p>GAN 训练策略是定义两个竞争网络之间的博弈</p>
+<ul>
+<li>生成器网络将噪声源映射到输入空间</li>
+<li>鉴别器网络接收生成的样本或真实数据样本，并且必须区分两者</li>
+</ul>
+</li>
+<li><p>在形式上，生成器 g 和鉴别器 d 之间的博弈是极小极大问题</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323100132297.png" alt="image-20210323100132297"></p>
+<ul>
+<li>$P_r$是数据分布</li>
+<li>$P_g$是由 $\widetilde{x}=G(z),z\sim p(z)$ 隐式定义的模型分布，$z$ 是生成器的输入，从一些简单的噪音分布中采样获得（均匀分布或球形高斯分布）</li>
+</ul>
+</li>
+<li><p>如果鉴别器在每次生成器参数更新之前被训练为最优，最小化值函数等于最小化 $P_g$、$P_r$ 之间的 Jensen-Shannon 散度【9】——-容易导致随着鉴别器饱和，梯度消失</p>
+<ul>
+<li>【9】主张训练生成器以最大化$E_{\widetilde{x} \sim P_g}[log(D(\widetilde{x}))]$，在某种程度上规避了这一问题</li>
+<li>但即使是这种修正的损失函数，在一个好的鉴别器存在的情况下也会表现不良【1】</li>
+</ul>
+</li>
+</ul>
+<h3 id="WGAN"><a href="#WGAN" class="headerlink" title="WGAN"></a>WGAN</h3><ul>
+<li><p>【2】认为相对于生成器参数而言，GANs 通常最小化的误差函数可能不是连续的，从而导致训练困难</p>
+<ul>
+<li><p>建议改为使用 Wasserstein-1 距离 $W(q,p)$ ——非正式地定义为运输质量的最小损失，以便将分布 q 转换为分布 p （其中损失是质量乘以运输距离）</p>
+<blockquote>
+<p>which is informally defined as the minimum cost of transporting mass in order to transform the distribution q into the distribution p (where the cost is mass times transport distance). </p>
+</blockquote>
+</li>
+<li><p>Wasserstein-1 距离处处连续，几乎处处可微</p>
+</li>
+</ul>
+</li>
+<li><p>WGAN 值函数使用 Kantorovich-Rubinstein 对偶【24】构造</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323102341999.png" alt="image-20210323102341999"></p>
+<ul>
+<li>$D$ 是 1-Lipschitz 函数集</li>
+<li>$P_g$同上</li>
+<li>在最佳判别器下，最小化与生成器参数相关的值函数，相当于最小化 $W(P_r,P_g)$</li>
+<li>WGAN 值函数产生一个判别器函数，判别器与其输入的梯度比其对应的 GAN 表现得更好，使得生成器的优化变得更容易</li>
+<li>WGAN 具有值函数与样本质量相关的理想属性，而 GANS 并非如此</li>
+</ul>
+</li>
+<li><p>为了对判别器实施 Lipschitz 约束，【2】建议将判别器的权重限制在一个紧凑的空间内 $[-c,c]$ </p>
+<ul>
+<li>满足这一约束的函数集是 k-Lipschitz 函数的子集，k 的具体值依赖于 c 和判别器结构</li>
+</ul>
+</li>
+</ul>
+<h3 id="最优-WGAN-判别器的性质"><a href="#最优-WGAN-判别器的性质" class="headerlink" title="最优 WGAN 判别器的性质"></a>最优 WGAN 判别器的性质</h3><p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323104532340.png" alt="image-20210323104532340"></p>
+<h2 id="权重约束的问题"><a href="#权重约束的问题" class="headerlink" title="权重约束的问题"></a>权重约束的问题</h2><ul>
+<li>WGAN 中的权重裁剪会导致优化困难，并且即使优化成功，所得到的判别器也会有一个病态的值表面（pathological value surface）</li>
+<li>实验中尝试了多种权重约束，结果显示他们有相似的问题</li>
+<li>可通过判别器的批正则化缓解，但深度 WGAN 难以收敛</li>
+</ul>
+<h3 id="Capacity-underuse"><a href="#Capacity-underuse" class="headerlink" title="Capacity underuse"></a>Capacity underuse</h3><ul>
+<li><p>通过权重裁剪实现 k-Lipshitz 约束会使判别器倾向于更简单的函数</p>
+</li>
+<li><p>使用权重剪裁训练判别器，使其在数个简单分布达到最优，生成器的输入为单位方差高斯噪声。下图为判别器的值表面</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323133045188.png" alt="image-20210323133045188"></p>
+</li>
+<li><p>经过权重裁剪训练的判别器忽略数据分布的高阶矩，只对最优函数进行非常简单的近似建模</p>
+</li>
+</ul>
+<h3 id="梯度爆炸和梯度消失"><a href="#梯度爆炸和梯度消失" class="headerlink" title="梯度爆炸和梯度消失"></a>梯度爆炸和梯度消失</h3><ul>
+<li>权重约束和损失函数之间的相互作用会导致梯度消失或爆炸，没有仔细调整剪辑阈值 c</li>
+<li>证明：在 Swiss Roll  toy 数据集上训练 WGAN，改变限幅阈值 c 为 $[10^{-1}、10^{-2}、10^{-3}]$，绘制临界损失梯度相对于连续激活层的范数<ul>
+<li>生成器和判别器是 12 层 ReLU  MLPs，无批处理规范化</li>
+</ul>
+</li>
+<li>下图显示，对于这些值中的每一个，当在网络中向后移动得更远时，梯度要么呈指数增长，要么呈指数衰减</li>
+</ul>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323133106090.png" alt="image-20210323133106090"></p>
+<h2 id="梯度惩罚"><a href="#梯度惩罚" class="headerlink" title="梯度惩罚"></a>梯度惩罚</h2><ul>
+<li><p>提出一种替代方法来实施 Lipschitz 约束</p>
+</li>
+<li><p>可微函数是 1-Lipschtiz，当且仅当它在任何地方都具有范数至多为 1 的梯度；因此考虑直接约束判别器的输出相对于其输入的梯度范数</p>
+</li>
+<li><p>对随机样本的梯度范数增加一个软约束</p>
+</li>
+<li><p>具体如下：</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323140710029.png" alt="image-20210323140710029"></p>
+<ul>
+<li>采样分布<ul>
+<li>隐含地定义 $P_{\hat{x}}$ 是沿着数据分布 $P_r$ 和生成器分布 $P_g$ 采样的点，两个点之间的直线均匀地进行采样</li>
+<li>因为最优的判别器，会包含梯度范数为 1 的直线，而此直线会连接 $P_r$ 与 $P_g$ 之间的点对</li>
+<li>考虑到在任何地方实施单位梯度范数约束都很困难，仅沿这些直线实施似乎就足够了</li>
+</ul>
+</li>
+<li>惩罚系数 $\lambda=10$，为实验的结果</li>
+<li>判别器不需要批正则化<ul>
+<li>批正则化将鉴别器问题的形式从将单个输入映射到单个输出，改变为从整批输入映射到一批输出【22】，而本文目标在此情况下不再有效</li>
+<li>针对每个输入单独惩罚判别器的梯度</li>
+<li>推荐使用层正则化【3】作为批正则化的替代</li>
+</ul>
+</li>
+<li>双向惩罚</li>
+</ul>
+</li>
+<li><p>算法实现</p>
+</li>
+</ul>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323130558424.png" alt="image-20210323130558424"></p>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="训练随机体系结构"><a href="#训练随机体系结构" class="headerlink" title="训练随机体系结构"></a>训练随机体系结构</h3><ul>
+<li><p>从 DCGAN 体系结构开始，定义了一组体系结构变体，并进行评估</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323144417597.png" alt="image-20210323144417597"></p>
+</li>
+<li><p>抽取了 200 个架构样本，并在 ImageNet 上对每个架构进行训练，既有 WGAN-GP 对象，也有标准的 GAN 对象—— WGAN-GP 成功地训练了许多无法用标准 GAN 对象训练的体系结构</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323151110156.png" alt="image-20210323151110156"></p>
+</li>
+</ul>
+<h3 id="对不同的体系结构进行-LSUN-bedrooms-的训练"><a href="#对不同的体系结构进行-LSUN-bedrooms-的训练" class="headerlink" title="对不同的体系结构进行 LSUN bedrooms 的训练"></a>对不同的体系结构进行 LSUN bedrooms 的训练</h3><ul>
+<li>在 LSUN bedrooms 数据集【30】上训练六个不同的GAN架构<ul>
+<li>baseline：DCGAN体系结构</li>
+<li>生成器中没有 BN 和固定数量的 filters，如【2】</li>
+<li>4 层 512 维 RELU  MLP 生成器，如【2】</li>
+<li>鉴别器或生成器中没有归一化</li>
+<li>门控乘法非线性（gated<br>multiplicative nonlinearities），如【23】</li>
+<li>tanh 非线性</li>
+<li>101 层 ResNet 生成器</li>
+</ul>
+</li>
+<li>对于每个体系结构，使用四种不同的GAN方法训练模型：WGAN-GP、加权裁剪WGAN、DCGAN【21】和最小二乘GAN【17】<ul>
+<li>对于每个对象，使用了该工作中推荐的默认优化器超参数集</li>
+<li>本文的方法，用层正则化替换鉴别器中的任何批正则化</li>
+</ul>
+</li>
+<li>对每个模型进行了 200K 迭代训练</li>
+<li>结果：第一次在 GaN 环境下成功地训练非常深的残差网络</li>
+</ul>
+<h3 id="相对于权重剪裁的性能"><a href="#相对于权重剪裁的性能" class="headerlink" title="相对于权重剪裁的性能"></a>相对于权重剪裁的性能</h3><ul>
+<li><p>与权重裁剪相比，本文方法的一个优点是提高了训练速度和样本质量</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323152057681.png" alt="image-20210323152057681"></p>
+</li>
+</ul>
+<h3 id="用连续生成器生成离散数据"><a href="#用连续生成器生成离散数据" class="headerlink" title="用连续生成器生成离散数据"></a>用连续生成器生成离散数据</h3><ul>
+<li>为了证明本文的方法对退化分布建模的能力，考虑用具有定义在连续空间上生成器的 GAN 对复杂离散分布建模的问题——在谷歌十亿字数据集【6】上训练了一个字符级的GAN语言模型</li>
+<li>生成器是一个简单的 1D  CNN ，通过 1D 卷积确定性地将一个潜在向量转换成 32 个独热字符向量的序列。在输出端应用 softmax，但不采样，即在训练期间，softmax 的输出直接传递到判别器；解码样本时，只取每个输出向量的 argmax</li>
+<li>模型经常出现拼写错误（可能是因为它必须独立输出每个字符），但还是设法学习了很多关于语言统计的知识。虽然我们并不认为这样做是不可能的，但本文无法产生与标准的 GAN 对象相当的结果</li>
+<li>WGAN 和其他 GAN 之间的性能差异可以解释（具体解释见原文）</li>
+<li>用 GANs 语言建模的其他尝试【31，14，29，5，15，10】通常使用离散模型和梯度估计器【27，12，16】；本文的方法实现起来更简单，尽管不知道它是否能扩展到更复杂的语言模型</li>
+</ul>
+<h3 id="损失曲线和过拟合检测"><a href="#损失曲线和过拟合检测" class="headerlink" title="损失曲线和过拟合检测"></a>损失曲线和过拟合检测</h3><ul>
+<li><p>损失与生成质量相关，并且收敛到最小</p>
+</li>
+<li><p>为了证明本文的方法保留了这一属性，在 LSUN bedrooms 上训练了一个WGAN-GP，并绘制了判别器损失的图像（如下图左边）；当生成器最小化$W(P_r，P_g)$时，损失收敛</p>
+<p><img src="/2021/03/19/Improved-training-of-wasserstein-gans/image-20210323152731029.png" alt="image-20210323152731029"></p>
+</li>
+<li><p>过拟合：WGAN 和 WGAN-GP 的损失结果不同，这表明判别器过度拟合并提供了一个不准确的 $W(P_r，P_g)$ 估计，但是在 WGAN-GP 中即使验证损失下降，训练损失也会逐渐增加</p>
+</li>
+<li><p>【28】通过估计生成器的对数似然率来衡量 GANs 中的过度拟合。本文的方法检测判别器（而不是生成器）中的过度拟合，并针对网络最小化的损失来衡量过度拟合</p>
+</li>
+</ul>
+<h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>演示了 WGAN 中的权重裁剪问题，并以判别器损失的惩罚项的形式引入了一个替代方案</li>
+<li>展示了跨各种体系结构的强大建模性能和稳定性</li>
+<li>希望此工作为在大规模图像数据集和语言上更强的建模性能开辟道路</li>
+<li>一个有趣的方向是使本文的惩罚项适应标准的遗传神经网络目标函数，在那里它可以通过鼓励鉴别器学习更平滑的决策边界来稳定训练</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] M. Arjovsky and L. Bottou. Towards principled methods for training generative adversarial networks. 2017.</p>
+<p>[2] M. Arjovsky, S. Chintala, and L. Bottou. Wasserstein gan. arXiv preprint arXiv:1701.07875, 2017.</p>
+<p>[3] J. L. Ba, J. R. Kiros, and G. E. Hinton. Layer normalization. arXiv preprint arXiv:1607.06450, 2016.</p>
+<p>[4] D. Berthelot, T. Schumm, and L. Metz. Began: Boundary equilibrium generative adversarial networks. arXiv preprint arXiv:1703.10717, 2017.</p>
+<p>[5] T. Che, Y . Li, R. Zhang, R. D. Hjelm, W. Li, Y . Song, and Y . Bengio. Maximum-likelihood augmented discrete generative adversarial networks. arXiv preprint arXiv:1702.07983, 2017.</p>
+<p>[6] C. Chelba, T. Mikolov, M. Schuster, Q. Ge, T. Brants, P . Koehn, and T. Robinson. One billion word benchmark for measuring progress in statistical language modeling. arXiv preprint arXiv:1312.3005, 2013.</p>
+<p>[7] Z. Dai, A. Almahairi, P . Bachman, E. Hovy, and A. Courville. Calibrating energy-based generative adversarial networks. arXiv preprint arXiv:1702.01691, 2017.</p>
+<p>[8] V . Dumoulin, M. I. D. Belghazi, B. Poole, A. Lamb, M. Arjovsky, O. Mastropietro, and A. Courville. Adversarially learned inference. 2017.</p>
+<p>[9] I. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair, A. Courville, and Y . Bengio. Generative adversarial nets. In Advances in neural information processing systems, pages 2672–2680, 2014.</p>
+<p>[10] R. D. Hjelm, A. P . Jacob, T. Che, K. Cho, and Y . Bengio. Boundary-seeking generative adversarial networks. arXiv preprint arXiv:1702.08431, 2017.</p>
+<p>[11] X. Huang, Y . Li, O. Poursaeed, J. Hopcroft, and S. Belongie. Stacked generative adversarial networks. arXiv preprint arXiv:1612.04357, 2016.</p>
+<p>[12] E. Jang, S. Gu, and B. Poole. Categorical reparameterization with gumbel-softmax. arXiv preprint arXiv:1611.01144, 2016.</p>
+<p>[13] A. Krizhevsky. Learning multiple layers of features from tiny images. 2009. </p>
+<p>[14] J. Li, W. Monroe, T. Shi, A. Ritter, and D. Jurafsky. Adversarial learning for neural dialogue generation. arXiv preprint arXiv:1701.06547, 2017.</p>
+<p>[15] X. Liang, Z. Hu, H. Zhang, C. Gan, and E. P . Xing. Recurrent topic-transition gan for visual paragraph generation. arXiv preprint arXiv:1703.07022, 2017.</p>
+<p>[16] C. J. Maddison, A. Mnih, and Y . W. Teh. The concrete distribution: A continuous relaxation of discrete random variables. arXiv preprint arXiv:1611.00712, 2016.</p>
+<p>[17] X. Mao, Q. Li, H. Xie, R. Y . Lau, and Z. Wang. Least squares generative adversarial networks. arXiv preprint arXiv:1611.04076, 2016.</p>
+<p>[18] L. Metz, B. Poole, D. Pfau, and J. Sohl-Dickstein. Unrolled generative adversarial networks. arXiv preprint arXiv:1611.02163, 2016.</p>
+<p>[19] A. Odena, C. Olah, and J. Shlens. Conditional image synthesis with auxiliary classifier gans. arXiv preprint arXiv:1610.09585, 2016.</p>
+<p>[20] B. Poole, A. A. Alemi, J. Sohl-Dickstein, and A. Angelova. Improved generator objectives for gans. arXiv preprint arXiv:1612.02780, 2016.</p>
+<p>[21] A. Radford, L. Metz, and S. Chintala. Unsupervised representation learning with deep convolutional generative adversarial networks. arXiv preprint arXiv:1511.06434, 2015.</p>
+<p>[22] T. Salimans, I. Goodfellow, W. Zaremba, V . Cheung, A. Radford, and X. Chen. Improved techniques for training gans. In Advances in Neural Information Processing Systems, pages 2226–2234, 2016.</p>
+<p>[23] A. van den Oord, N. Kalchbrenner, L. Espeholt, O. Vinyals, A. Graves, et al. Conditional image generation with pixelcnn decoders. In Advances in Neural Information Processing Systems, pages 4790–4798, 2016.</p>
+<p>[24] C. Villani. Optimal transport: old and new, volume 338. Springer Science &amp; Business Media, 2008.</p>
+<p>[25] D. Wang and Q. Liu. Learning to draw samples: With application to amortized mle for generative adversarial learning. arXiv preprint arXiv:1611.01722, 2016.</p>
+<p>[26] D. Warde-Farley and Y . Bengio. Improving generative adversarial networks with denoising feature matching. 2017.</p>
+<p>[27] R. J. Williams. Simple statistical gradient-following algorithms for connectionist reinforcement learning. Machine learning, 8(3-4):229–256, 1992.</p>
+<p>[28] Y . Wu, Y . Burda, R. Salakhutdinov, and R. Grosse. On the quantitative analysis of decoder-based generative models. arXiv preprint arXiv:1611.04273, 2016.</p>
+<p>[29] Z. Yang, W. Chen, F. Wang, and B. Xu. Improving neural machine translation with conditional sequence generative adversarial nets. arXiv preprint arXiv:1703.04887, 2017.</p>
+<p>[30] F. Y u, A. Seff, Y . Zhang, S. Song, T. Funkhouser, and J. Xiao. Lsun: Construction of a large-scale image dataset using deep learning with humans in the loop. arXiv preprint arXiv:1506.03365, 2015.</p>
+<p>[31] L. Y u, W. Zhang, J. Wang, and Y . Y u. Seqgan: sequence generative adversarial nets with policy gradient. arXiv preprint arXiv:1609.05473, 2016.</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\03\28\Generative-Adversarial-Nets\" rel="bookmark">Generative Adversarial Nets</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Generative Adversarial Nets》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\08\Hands-on-ML-8\" rel="bookmark">Hands-on Machine Learning（8）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（8）GAN</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\03\Improving-Password-Guessing-via-Representation-Learning\" rel="bookmark">Improving Password Guessing via Representation Learning</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Improving Password Guessing via Representation Learning》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/" title="Improved training of wasserstein gans">https://thomas-li-sjtu.github.io/2021/03/19/Improved-training-of-wasserstein-gans/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GAN/" rel="tag"><i class="fa fa-tag"></i> GAN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/17/A-Survey-on-Security-and-Privacy-Issues-in-Internet-of-Things/" rel="prev" title="A Survey on Security and Privacy Issues in Internet-of-Things">
+      <i class="fa fa-chevron-left"></i> A Survey on Security and Privacy Issues in Internet-of-Things
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/" rel="next" title="SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient">
+      SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GAN"><span class="nav-number">3.1.</span> <span class="nav-text">GAN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WGAN"><span class="nav-number">3.2.</span> <span class="nav-text">WGAN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E4%BC%98-WGAN-%E5%88%A4%E5%88%AB%E5%99%A8%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="nav-number">3.3.</span> <span class="nav-text">最优 WGAN 判别器的性质</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%83%E9%87%8D%E7%BA%A6%E6%9D%9F%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">权重约束的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Capacity-underuse"><span class="nav-number">4.1.</span> <span class="nav-text">Capacity underuse</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8%E5%92%8C%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1"><span class="nav-number">4.2.</span> <span class="nav-text">梯度爆炸和梯度消失</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A2%AF%E5%BA%A6%E6%83%A9%E7%BD%9A"><span class="nav-number">5.</span> <span class="nav-text">梯度惩罚</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">6.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E9%9A%8F%E6%9C%BA%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="nav-number">6.1.</span> <span class="nav-text">训练随机体系结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E4%B8%8D%E5%90%8C%E7%9A%84%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E8%BF%9B%E8%A1%8C-LSUN-bedrooms-%E7%9A%84%E8%AE%AD%E7%BB%83"><span class="nav-number">6.2.</span> <span class="nav-text">对不同的体系结构进行 LSUN bedrooms 的训练</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%AF%B9%E4%BA%8E%E6%9D%83%E9%87%8D%E5%89%AA%E8%A3%81%E7%9A%84%E6%80%A7%E8%83%BD"><span class="nav-number">6.3.</span> <span class="nav-text">相对于权重剪裁的性能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E8%BF%9E%E7%BB%AD%E7%94%9F%E6%88%90%E5%99%A8%E7%94%9F%E6%88%90%E7%A6%BB%E6%95%A3%E6%95%B0%E6%8D%AE"><span class="nav-number">6.4.</span> <span class="nav-text">用连续生成器生成离散数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8D%9F%E5%A4%B1%E6%9B%B2%E7%BA%BF%E5%92%8C%E8%BF%87%E6%8B%9F%E5%90%88%E6%A3%80%E6%B5%8B"><span class="nav-number">6.5.</span> <span class="nav-text">损失曲线和过拟合检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

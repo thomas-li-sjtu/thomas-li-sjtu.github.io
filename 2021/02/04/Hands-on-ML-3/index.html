@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Hands-on Machine Learning》第二部分阅读笔记（3）数据接口与 CNN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hands-on Machine Learning（3）">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Hands-on Machine Learning》第二部分阅读笔记（3）数据接口与 CNN">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204130307646.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204130654015.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204161439907.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204161622862.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204161931398.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204162732640.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204163420916.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204164058641.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204164804560.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204165341558.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204170751523.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204172436730.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204172452988.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204172511954.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204174545999.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204174604136.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204181620732.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204182215253.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204182246441.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204182303590.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204182549349.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204184140062.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204184402271.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204190328157.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204190607527.png">
+<meta property="article:published_time" content="2021-02-04T03:26:24.000Z">
+<meta property="article:modified_time" content="2022-09-04T09:16:00.753Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="TensorFlow">
+<meta property="article:tag" content="CNN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/image-20210204130307646.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Hands-on Machine Learning（3） | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hands-on Machine Learning（3）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-04 11:26:24" itemprop="dateCreated datePublished" datetime="2021-02-04T11:26:24+08:00">2021-02-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>17k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>16 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Hands-on Machine Learning》第二部分阅读笔记（3）数据接口与 CNN</p>
+<a id="more"></a>
+
+<h2 id="TF-加载和预处理数据"><a href="#TF-加载和预处理数据" class="headerlink" title="TF 加载和预处理数据"></a>TF 加载和预处理数据</h2><h3 id="Data-API"><a href="#Data-API" class="headerlink" title="Data API"></a>Data API</h3><ul>
+<li><p><code>from_tensor_slices(X)</code>创建一个元素都是 X 的切片（沿第一维）的 tf.data.Dataset</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">X = tf.<span class="built_in">range</span>(<span class="number">10</span>)  <span class="comment"># any data tensor</span></span><br><span class="line">dataset = tf.data.Dataset.from_tensor_slices(X)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="链接转换"><a href="#链接转换" class="headerlink" title="链接转换"></a>链接转换</h4><ul>
+<li><p>一旦有了数据集，就可以通过调用转换方法对它做各种转换</p>
+</li>
+<li><p><code>dataset = dataset.repeat(3).batch(7)</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tf.Tensor([<span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span>], shape=(<span class="number">7</span>,), dtype=int32)</span><br><span class="line">tf.Tensor([<span class="number">7</span> <span class="number">8</span> <span class="number">9</span> <span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>], shape=(<span class="number">7</span>,), dtype=int32)</span><br><span class="line">tf.Tensor([<span class="number">4</span> <span class="number">5</span> <span class="number">6</span> <span class="number">7</span> <span class="number">8</span> <span class="number">9</span> <span class="number">0</span>], shape=(<span class="number">7</span>,), dtype=int32)</span><br><span class="line">tf.Tensor([<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span> <span class="number">7</span>], shape=(<span class="number">7</span>,), dtype=int32)</span><br><span class="line">tf.Tensor([<span class="number">8</span> <span class="number">9</span>], shape=(<span class="number">2</span>,), dtype=int32)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>为了让所有 batch 都具有完全相同的大小，需要丢弃最后一个 batch，设置参数<code>drop_remainder=True</code></li>
+</ul>
+</li>
+<li><p>通过<code>map()</code>将任何转换应用到 item</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dataset = dataset.<span class="built_in">map</span>(<span class="keyword">lambda</span> x: x * <span class="number">2</span>) </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过<code>apply()</code>将任何转换应用到数据集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dataset = dataset.apply(tf.data.experimental.unbatch())</span><br><span class="line"><span class="comment"># 新数据集中的每一项都将是单个整数张量，而不是一批7个整数</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过<code>filter()</code>过滤</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dataset = dataset.<span class="built_in">filter</span>(<span class="keyword">lambda</span> x: x &lt; <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>仅查看数据集中的几个项目：<code>dataset.take(3)</code></p>
+</li>
+</ul>
+<h4 id="打乱数据"><a href="#打乱数据" class="headerlink" title="打乱数据"></a>打乱数据</h4><ul>
+<li><p>当训练集中的实例独立同分布，梯度下降法效果最好——需要 shuffle data</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>dataset = tf.data.Dataset.<span class="built_in">range</span>(<span class="number">10</span>).repeat(<span class="number">3</span>) <span class="comment"># 0 to 9, three times</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>dataset = dataset.shuffle(buffer_size=<span class="number">5</span>, seed=<span class="number">42</span>).batch(<span class="number">7</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>设置随机数种子</li>
+</ul>
+</li>
+<li><p>将源数据分成多个文件，然后在训练过程中以随机顺序读取</p>
+</li>
+<li><p>可以随机选择多个文件，并同时读取，交错它们的行</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">filepath_dataset = tf.data.Dataset.list_files(train_filepaths, seed=<span class="number">42</span>)</span><br><span class="line"></span><br><span class="line">n_readers = <span class="number">5</span></span><br><span class="line">dataset = filepath_dataset.interleave(</span><br><span class="line">    <span class="keyword">lambda</span> filepath: tf.data.TextLineDataset(filepath).skip(<span class="number">1</span>),</span><br><span class="line">    cycle_length=n_readers)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>train_filepaths</code>是一个列表，里面为源文件的路径</li>
+<li><code>list_files()</code>返回一个打乱文件路径的数据集</li>
+<li><code>interleave()</code>一次读取 5 个文件——提取 5 个文件路径，对于每个路径，调用传入的函数；在这 5 个数据集之间循环，每次读取一行，直到所有数据集都用完为止</li>
+<li><code>skip()</code>跳过第一行</li>
+<li>将<code>num_parallel_calls</code>参数设置为想要的线程数，实现并行</li>
+</ul>
+</li>
+</ul>
+<h4 id="预处理数据"><a href="#预处理数据" class="headerlink" title="预处理数据"></a>预处理数据</h4><ul>
+<li><p>举例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">X_mean, X_std = [...] <span class="comment"># mean and scale of each feature in the training set</span></span><br><span class="line">n_inputs = <span class="number">8</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">preprocess</span>(<span class="params">line</span>):</span></span><br><span class="line">  defs = [<span class="number">0.</span>] * n_inputs + [tf.constant([], dtype=tf.float32)]</span><br><span class="line">  fields = tf.io.decode_csv(line, record_defaults=defs)</span><br><span class="line">  x = tf.stack(fields[:<span class="number">-1</span>])</span><br><span class="line">  y = tf.stack(fields[<span class="number">-1</span>:])</span><br><span class="line">  <span class="keyword">return</span> (x - X_mean) / X_std, y</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>假设预先计算了训练集中每个特征的均值和标准差</li>
+<li>取一个CSV行，使用<code>tf.io.decode_csv()</code>解析，其中第二个参数为文件中每列默认值数组</li>
+<li><code>decode_csv()</code>返回一个标量张量列表，需要调用<code>tf.stack()</code>把标量张量堆叠成一个一维张量</li>
+<li>缩放输入特征</li>
+</ul>
+</li>
+</ul>
+<h4 id="合并以上过程"><a href="#合并以上过程" class="headerlink" title="合并以上过程"></a>合并以上过程</h4><ul>
+<li>创建并返回一个数据集，该数据集从多个 CSV 文件中加载数据，shuffle、预处理并 batch</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">csv_reader_dataset</span>(<span class="params">filepaths, repeat=<span class="literal">None</span>, n_readers=<span class="number">5</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">                       n_read_threads=<span class="literal">None</span>, shuffle_buffer_size=<span class="number">10000</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">                       n_parse_threads=<span class="number">5</span>, batch_size=<span class="number">32</span></span>):</span></span><br><span class="line">    dataset = tf.data.Dataset.list_files(filepaths).repeat(repeat)</span><br><span class="line">    dataset = dataset.interleave(</span><br><span class="line">        <span class="keyword">lambda</span> filepath: tf.data.TextLineDataset(filepath).skip(<span class="number">1</span>),</span><br><span class="line">        cycle_length=n_readers, num_parallel_calls=n_read_threads)</span><br><span class="line">    dataset = dataset.shuffle(shuffle_buffer_size)</span><br><span class="line">    dataset = dataset.<span class="built_in">map</span>(preprocess, num_parallel_calls=n_parse_threads)</span><br><span class="line">    dataset = dataset.batch(batch_size)</span><br><span class="line">    <span class="keyword">return</span> dataset.prefetch(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">train_set = csv_reader_dataset(train_filepaths, repeat=<span class="literal">None</span>)</span><br><span class="line">valid_set = csv_reader_dataset(valid_filepaths)</span><br><span class="line">test_set = csv_reader_dataset(test_filepaths)</span><br><span class="line"></span><br><span class="line">model = keras.models.Sequential([...])</span><br><span class="line">model.<span class="built_in">compile</span>([...])</span><br><span class="line">model.fit(train_set, steps_per_epoch=<span class="built_in">len</span>(X_train),  // batch_size, epochs=<span class="number">10</span>,</span><br><span class="line">          validation_data=valid_set, </span><br><span class="line">          validation_steps=<span class="built_in">len</span>(X_valid) // batch_size)</span><br></pre></td></tr></table></figure>
+
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204130307646.png" alt="image-20210204130307646" style="zoom:80%;">
+
+<h4 id="预取数据"><a href="#预取数据" class="headerlink" title="预取数据"></a>预取数据</h4><ul>
+<li><p><code>prefetch</code>：当训练算法处理一批数据时，数据集已经在并行处理下一批数据</p>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204130654015.png" alt="image-20210204130654015" style="zoom:80%;">
+
+</li>
+</ul>
+<h3 id="TFRecord-格式"><a href="#TFRecord-格式" class="headerlink" title="TFRecord 格式"></a>TFRecord 格式</h3><ul>
+<li><p>TFRecord 格式是 TensorFlow 存储大量数据并高效读取数据的首选格式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 写</span></span><br><span class="line"><span class="keyword">with</span> tf.io.TFRecordWriter(<span class="string">&quot;my_data.tfrecord&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.write(<span class="string">b&quot;This is the first record&quot;</span>)</span><br><span class="line">    f.write(<span class="string">b&quot;And this is the second record&quot;</span>)</span><br><span class="line"><span class="comment"># 读取</span></span><br><span class="line">filepaths = [<span class="string">&quot;my_data.tfrecord&quot;</span>]</span><br><span class="line">dataset = tf.data.TFRecordDataset(filepaths)</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> dataset:</span><br><span class="line">    print(item)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h4><ul>
+<li><p>设置参数即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">options = tf.io.TFRecordOptions(compression_type=<span class="string">&quot;GZIP&quot;</span>)</span><br><span class="line"><span class="keyword">with</span> tf.io.TFRecordWriter(<span class="string">&quot;my_compressed.tfrecord&quot;</span>, options) <span class="keyword">as</span> f:</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>读取时也要说明压缩类型</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dataset = tf.data.TFRecordDataset([<span class="string">&quot;my_compressed.tfrecord&quot;</span>],</span><br><span class="line">                                  compression_type=<span class="string">&quot;GZIP&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="协议缓冲区"><a href="#协议缓冲区" class="headerlink" title="协议缓冲区"></a>协议缓冲区</h4><ul>
+<li><p>记录文件通常包含序列化的协议缓冲区——可移植、可扩展且高效的二进制格式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">&quot;proto3&quot;</span>;</span><br><span class="line">message Person &#123;</span><br><span class="line">  string name = <span class="number">1</span>;</span><br><span class="line">  int32 <span class="built_in">id</span> = <span class="number">2</span>;</span><br><span class="line">  repeated string email = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用 protobuf 格式版本3</li>
+<li>对象 person 有一个字符串的名称，一个类型 int32 的 id，以及零个或多个电子邮件字段</li>
+<li>数字1、2和3是字段标识符</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> person_pb2 <span class="keyword">import</span> Person  <span class="comment"># import the generated access class</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person = Person(name=<span class="string">&quot;Al&quot;</span>, <span class="built_in">id</span>=<span class="number">123</span>, email=[<span class="string">&quot;a@b.com&quot;</span>])  <span class="comment"># create a Person</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(person)  <span class="comment"># display the Person</span></span><br><span class="line">name: <span class="string">&quot;Al&quot;</span></span><br><span class="line"><span class="built_in">id</span>: <span class="number">123</span></span><br><span class="line">email: <span class="string">&quot;a@b.com&quot;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person.email.append(<span class="string">&quot;c@d.com&quot;</span>)  <span class="comment"># add an email address</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>s = person.SerializeToString()  <span class="comment"># serialize the object to a byte string</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>s</span><br><span class="line"><span class="string">b&#x27;\n\x05Alice\x10&#123;\x1a\x07a@b.com\x1a\x07c@d.com&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person2 = Person()  <span class="comment"># create a new Person</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person2.ParseFromString(s)  <span class="comment"># parse the byte string (27 bytes long)</span></span><br><span class="line"><span class="number">27</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>person == person2  <span class="comment"># now they are equal</span></span><br><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="TensorFlow-的协议缓冲区"><a href="#TensorFlow-的协议缓冲区" class="headerlink" title="TensorFlow 的协议缓冲区"></a>TensorFlow 的协议缓冲区</h4><p>略</p>
+<h4 id="加载和解析示例"><a href="#加载和解析示例" class="headerlink" title="加载和解析示例"></a>加载和解析示例</h4><p>略</p>
+<h4 id="Handling-Lists-of-Lists-Using-the-SequenceExample-Protobuf"><a href="#Handling-Lists-of-Lists-Using-the-SequenceExample-Protobuf" class="headerlink" title="Handling Lists of Lists Using the SequenceExample Protobuf"></a>Handling Lists of Lists Using the SequenceExample Protobuf</h4><p>略</p>
+<h3 id="Features-API"><a href="#Features-API" class="headerlink" title="Features API"></a>Features API</h3><ul>
+<li><p>处理数据的特征</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">housing_median_age = tf.feature_column.numeric_column(</span><br><span class="line">    <span class="string">&quot;housing_median_age&quot;</span>, normalizer_fn=<span class="keyword">lambda</span> x: (x - age_mean) / age_std)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>参数<code>normalizer_fn</code>用于指定一个正则化函数，前一个参数是对应数据的一个特征名</li>
+</ul>
+</li>
+<li><p>对数据分块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">median_income = tf.feature_column.numeric_column(<span class="string">&quot;median_income&quot;</span>)</span><br><span class="line">bucketized_income = tf.feature_column.bucketized_column(</span><br><span class="line">    median_income, boundaries=[<span class="number">1.5</span>, <span class="number">3.</span>, <span class="number">4.5</span>, <span class="number">6.</span>])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="分类特征"><a href="#分类特征" class="headerlink" title="分类特征"></a>分类特征</h4><ul>
+<li><p>如果一个特征已经表示为一个类别标识，则使用<code>categorical_column_with_identity() </code>，否则</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ocean_prox_vocab = [<span class="string">&#x27;&lt;1H OCEAN&#x27;</span>, <span class="string">&#x27;INLAND&#x27;</span>, <span class="string">&#x27;ISLAND&#x27;</span>, <span class="string">&#x27;NEAR BAY&#x27;</span>, <span class="string">&#x27;NEAR OCEAN&#x27;</span>]</span><br><span class="line">ocean_proximity = tf.feature_column.categorical_column_with_vocabulary_list(</span><br><span class="line">    <span class="string">&quot;ocean_proximity&quot;</span>, ocean_prox_vocab)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>从文件加载：<code>categorical_column_with_vocabulary_file()</code></p>
+</li>
+<li><p>以上两个函数将每个类别映射到它在词汇表中的索引</p>
+</li>
+<li><p>对于具有大量词汇的分类列，可以使用<code>categorical_column_with_hash_bucket()</code>编码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">city_hash = tf.feature_column.categorical_column_with_hash_bucket(</span><br><span class="line">    <span class="string">&quot;city&quot;</span>, hash_bucket_size=<span class="number">1000</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="交叉分类特征"><a href="#交叉分类特征" class="headerlink" title="交叉分类特征"></a>交叉分类特征</h4><ul>
+<li><p>可能两个（或更多）分类特征在联合使用时更有意义</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bucketized_age = tf.feature_column.bucketized_column(</span><br><span class="line">    housing_median_age, boundaries=[<span class="number">-1.</span>, <span class="number">-0.5</span>, <span class="number">0.</span>, <span class="number">0.5</span>, <span class="number">1.</span>]) <span class="comment"># age was scaled</span></span><br><span class="line">age_and_ocean_proximity = tf.feature_column.crossed_column(</span><br><span class="line">    [bucketized_age, ocean_proximity], hash_bucket_size=<span class="number">100</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将纬度和经度交叉到一个分类要素中</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">latitude = tf.feature_column.numeric_column(<span class="string">&quot;latitude&quot;</span>)</span><br><span class="line">longitude = tf.feature_column.numeric_column(<span class="string">&quot;longitude&quot;</span>)</span><br><span class="line">bucketized_latitude = tf.feature_column.bucketized_column(</span><br><span class="line">    latitude, boundaries=<span class="built_in">list</span>(np.linspace(<span class="number">32.</span>, <span class="number">42.</span>, <span class="number">20</span> - <span class="number">1</span>)))</span><br><span class="line">bucketized_longitude = tf.feature_column.bucketized_column(</span><br><span class="line">    longitude, boundaries=<span class="built_in">list</span>(np.linspace(<span class="number">-125.</span>, <span class="number">-114.</span>, <span class="number">20</span> - <span class="number">1</span>)))</span><br><span class="line">location = tf.feature_column.crossed_column(</span><br><span class="line">    [bucketized_latitude, bucketized_longitude], hash_bucket_size=<span class="number">1000</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="独热编码分类特征"><a href="#独热编码分类特征" class="headerlink" title="独热编码分类特征"></a>独热编码分类特征</h4><ul>
+<li><p>必须先对特征进行编码，然后才能将其输入神经网络</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ocean_proximity_one_hot = tf.feature_column.indicator_column(ocean_proximity)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>一个独热向量有字典长度的大小</p>
+</li>
+</ul>
+<h4 id="Embedding-编码分类特征"><a href="#Embedding-编码分类特征" class="headerlink" title="Embedding 编码分类特征"></a>Embedding 编码分类特征</h4><ul>
+<li><p>Embedding：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ocean_proximity_embed = tf.feature_column.embedding_column(ocean_proximity,</span><br><span class="line">                                                           dimension=<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>每个类别编码为二维张量，得到一个 5*2 的矩阵</p>
+</li>
+<li><p>嵌入结果是可学习的</p>
+</li>
+</ul>
+<h4 id="使用特征列进行分析"><a href="#使用特征列进行分析" class="headerlink" title="使用特征列进行分析"></a>使用特征列进行分析</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">columns = [bucketized_age, ....., median_house_value] <span class="comment"># all features + target</span></span><br><span class="line">feature_descriptions = tf.feature_column.make_parse_example_spec(columns)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>make_parse_example_spec()</code>生成特性描述</p>
+</li>
+<li><p>使用这些特性描述来解析序列化的示例，并将目标列与输入特性分开</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_examples</span>(<span class="params">serialized_examples</span>):</span></span><br><span class="line">    examples = tf.io.parse_example(serialized_examples, feature_descriptions)</span><br><span class="line">    targets = examples.pop(<span class="string">&quot;median_house_value&quot;</span>) <span class="comment"># separate the targets</span></span><br><span class="line">    <span class="keyword">return</span> examples, targets</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建一个 TFRecordDataset，读取成批的序列化示例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">batch_size = <span class="number">32</span></span><br><span class="line">dataset = tf.data.TFRecordDataset([<span class="string">&quot;my_data_with_features.tfrecords&quot;</span>])</span><br><span class="line">dataset = dataset.repeat().shuffle(<span class="number">10000</span>).batch(batch_size).<span class="built_in">map</span>(parse_examples)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="在模型中使用特征列"><a href="#在模型中使用特征列" class="headerlink" title="在模型中使用特征列"></a>在模型中使用特征列</h4><ul>
+<li><p>特征列也可以直接在模型中使用，将所有输入特征转换成神经网络可以处理的单一密集向量</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">columns_without_target = columns[:<span class="number">-1</span>]</span><br><span class="line">model = keras.models.Sequential([</span><br><span class="line">    keras.layers.DenseFeatures(feature_columns=columns_without_target),</span><br><span class="line">    keras.layers.Dense(<span class="number">1</span>)</span><br><span class="line">])</span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;mse&quot;</span>, optimizer=<span class="string">&quot;sgd&quot;</span>, metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br><span class="line">steps_per_epoch = <span class="built_in">len</span>(X_train) // batch_size</span><br><span class="line">history = model.fit(dataset, steps_per_epoch=steps_per_epoch, epochs=<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>DenseFeatures 层将负责将每个输入要素转换为密集表示</p>
+</li>
+</ul>
+<h2 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h2><h3 id="视觉皮层的结构"><a href="#视觉皮层的结构" class="headerlink" title="视觉皮层的结构"></a>视觉皮层的结构</h3><ul>
+<li>视觉皮层中的许多神经元有一个小的局部感受野，这意味着它们只对位于视野有限区域的视觉刺激作出反应</li>
+<li>一些神经元只对水平线的图像做出反应，而其他神经元只对不同方向的线做出反应</li>
+<li>高级神经元基于相邻低级神经元的输出——每个神经元只与前一层的几个神经元相连</li>
+</ul>
+<h3 id="卷积层"><a href="#卷积层" class="headerlink" title="卷积层"></a>卷积层</h3><h4 id="Filter（卷积核）"><a href="#Filter（卷积核）" class="headerlink" title="Filter（卷积核）"></a>Filter（卷积核）</h4><ul>
+<li>神经元的权重可以用感受野大小的小图像来表示；神经元将忽略其感受野中除中央垂直线以外的所有东西；第二个卷积核是一个黑色正方形，中间有一条水平白线。再一次，使用这些权重的神经元会忽略它们感受野里除了中央水平线以外的一切</li>
+<li>训练期间，卷积层将自动学习对其任务最有用的过滤器</li>
+<li>上面的层将学习将它们组合成更复杂的模式</li>
+</ul>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204161439907.png" alt="image-20210204161439907" style="zoom:67%;">
+
+<h4 id="堆叠多个特征图"><a href="#堆叠多个特征图" class="headerlink" title="堆叠多个特征图"></a>堆叠多个特征图</h4><ul>
+<li><p>一个卷积层有多个滤波器，每个滤波器输出一个特征图</p>
+</li>
+<li><p>在每个特征图中每个像素有一个神经元，并且给定特征图中的所有神经元共享相同的参数——权重和 bias</p>
+</li>
+<li><p>卷积层同时对其输入应用多个可训练滤波器，使其能够检测输入中任何地方的多个特征</p>
+</li>
+<li><p>输入图像也由多个子层组成——每个颜色通道一个子层</p>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204161622862.png" alt="image-20210204161622862" style="zoom:67%;">
+</li>
+<li><p>位于给定卷积层l中特征图 k 的第 I 行第 j 列的神经元，连接到所有特征图（层 l–1）中位于第$i × s_h$至I×sh+FH–1行和第$j ×  s_w$至$j×S_W+f_w–1$列的前一层神经元的输出</p>
+</li>
+<li><p>计算神经元的输出：</p>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204161931398.png" alt="image-20210204161931398"></p>
+</li>
+</ul>
+<h4 id="TensorFlow-的实现"><a href="#TensorFlow-的实现" class="headerlink" title="TensorFlow 的实现"></a>TensorFlow 的实现</h4><ul>
+<li><p>图像表示为 [height, width, channels]（[mini-batch size, height, width, channels]）</p>
+</li>
+<li><p>权重被表示为形状的 4D 张量$[f_h，f_w，f_{n’}，f_n]$，卷积层的偏置项简单地表示为形状的 1D 张量$[f_n]$。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_sample_image</span><br><span class="line"><span class="comment"># Load sample images</span></span><br><span class="line">china = load_sample_image(<span class="string">&quot;china.jpg&quot;</span>) / <span class="number">255</span></span><br><span class="line">flower = load_sample_image(<span class="string">&quot;flower.jpg&quot;</span>) / <span class="number">255</span></span><br><span class="line">images = np.array([china, flower])</span><br><span class="line">batch_size, height, width, channels = images.shape</span><br><span class="line"><span class="comment"># Create 2 filters</span></span><br><span class="line">filters = np.zeros(shape=(<span class="number">7</span>, <span class="number">7</span>, channels, <span class="number">2</span>), dtype=np.float32)</span><br><span class="line">filters[:, <span class="number">3</span>, :, <span class="number">0</span>] = <span class="number">1</span>  <span class="comment"># vertical line</span></span><br><span class="line">filters[<span class="number">3</span>, :, :, <span class="number">1</span>] = <span class="number">1</span>  <span class="comment"># horizontal line</span></span><br><span class="line">outputs = tf.nn.conv2d(images, filters, strides=<span class="number">1</span>, padding=<span class="string">&quot;SAME&quot;</span>)</span><br><span class="line">plt.imshow(outputs[<span class="number">0</span>, :, :, <span class="number">1</span>], cmap=<span class="string">&quot;gray&quot;</span>) <span class="comment"># plot 1st image&#x27;s 2nd feature map</span></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>加载了两个示例图像</p>
+</li>
+<li><p>像素强度（对于每个颜色通道）表示为一个从 0 到 255 的字节——缩放</p>
+</li>
+<li><p>创建两个$7 × 7$的过滤器</p>
+</li>
+<li><p>使用<code>tf.nn.conv2d()</code>，使用零填充<code>padding=&quot;SAME&quot;</code>和步幅 2</p>
+<ul>
+<li><p>images 是输入 batch，4D 张量</p>
+</li>
+<li><p>filters 过滤器，4D 张量</p>
+</li>
+<li><p>strides 步幅，默认为 1，1D 张量四个元素，两个中心元素是垂直和水平步幅，第一个和第四个元素为 1，指定批处理步距（跳过一些实例）和通道步距(跳过前一层的一些特征图或通道)</p>
+</li>
+<li><p>padding 填充，卷积层在必要时使用零填充，或者不填充，前者使得输出神经元的数量等于输入神经元的数量除以步幅，向上舍入</p>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204162732640.png" alt="image-20210204162732640" style="zoom:67%;">
+</li>
+</ul>
+</li>
+<li><p>等价于</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conv = keras.layers.Conv2D(filters=<span class="number">32</span>, kernel_size=<span class="number">3</span>, strides=<span class="number">1</span>,</span><br><span class="line">                           padding=<span class="string">&quot;SAME&quot;</span>, activation=<span class="string">&quot;relu&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="内存需求"><a href="#内存需求" class="headerlink" title="内存需求"></a>内存需求</h4><ul>
+<li>卷积层需要大量的内存——在训练期间，在正向传递期间计算的所有内容都需要为反向传递保留</li>
+<li>预测过程中，一层占用的内存可以在计算完下一层后立即释放，因此只需要两个连续层所需的内存</li>
+</ul>
+<h3 id="池化层"><a href="#池化层" class="headerlink" title="池化层"></a>池化层</h3><ul>
+<li><p>池化层中的每个神经元都连接到前一层中有限数量的神经元的输出</p>
+</li>
+<li><p>池化神经元没有权重；它只是使用一个聚合函数（如最大值或平均值）来聚合输入——只有每个感受野的最大输入（平均）值才能到达下一层，而其他输入被丢弃（下面这个图没有设置 padding）</p>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204163420916.png" alt="image-20210204163420916"></p>
+</li>
+<li><p>最大池层对小的转换引入了一定程度的不变性——平移不变性、少量的旋转不变性和轻微的比例不变性——这种不变性（即使它是有限的）在预测不应该依赖于这些细节的情况下是有用的</p>
+</li>
+<li><p>最大池化破坏性很大，有时任务需要输入的微小变化导致输出相应产生微小变化</p>
+</li>
+</ul>
+<h4 id="TensorFlow-的实现-1"><a href="#TensorFlow-的实现-1" class="headerlink" title="TensorFlow 的实现"></a>TensorFlow 的实现</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">max_pool = keras.layers.MaxPool2D(pool_size=<span class="number">2</span>)</span><br><span class="line">avg_pool = keras.layers.AvgPool2D(pool_size=<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>最大池化比平均池化的效果往往更好</p>
+</li>
+<li><p>最大池化和平均池化可以沿着深度维度而不是空间维度执行，并且深度方向的最大池化层将确保输出是相同的</p>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204164058641.png" alt="image-20210204164058641" style="zoom:67%;">
+</li>
+<li><p>Keras 不包括深度方向的 max pool 层；<code>tf.nn.max_pool()</code>可以设置内核大小和步长为 4 元组，前三个值应该是 1——表示内核大小和沿着批次、高度和宽度尺寸的步幅应该是 1——最后一个值应该是想要的沿着深度维度的任何内核大小和步长，但必须是输入深度的除数，例如，如果前一层输出20 个特征图，就不能设置为 3</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">output = tf.nn.max_pool(images,</span><br><span class="line">                        ksize=(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">3</span>),</span><br><span class="line">                        strides=(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">3</span>),</span><br><span class="line">                        padding=<span class="string">&quot;VALID&quot;</span>)</span><br><span class="line"><span class="comment"># 作为一个层包含在Keras中，则只需用 lambda 层封装</span></span><br><span class="line">depth_pool = keras.layers.Lambda(</span><br><span class="line">    <span class="keyword">lambda</span> X: tf.nn.max_pool(X, ksize=(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">3</span>), strides=(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">3</span>),</span><br><span class="line">                             padding=<span class="string">&quot;VALID&quot;</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>全局平均池层（global average pooling layer）：计算每个完整特征图的平均值，即使用一个与输入具有相同空间维度的池化内核，适合作为输出层</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">global_avg_pool = keras.layers.GlobalAvgPool2D()</span><br><span class="line"><span class="comment"># 等价于</span></span><br><span class="line">global_avg_pool = keras.layers.Lambda(<span class="keyword">lambda</span> X: tf.reduce_mean(X, axis=[<span class="number">1</span>, <span class="number">2</span>]))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="CNN-结构"><a href="#CNN-结构" class="headerlink" title="CNN 结构"></a>CNN 结构</h3><ul>
+<li><p>典型的 CNN 架构堆叠几个卷积层，然后是另一个池化层，并随着网络越来越深，图越来越小，但特征图越来越多；最后跟着一个 MLP，以及最后输出预测的层</p>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204164804560.png" alt="image-20210204164804560"></p>
+</li>
+<li><p>简单的例子</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> partial</span><br><span class="line">DefaultConv2D = partial(keras.layers.Conv2D,</span><br><span class="line">                        kernel_size=<span class="number">3</span>, activation=<span class="string">&#x27;relu&#x27;</span>, padding=<span class="string">&quot;SAME&quot;</span>)</span><br><span class="line">model = keras.models.Sequential([</span><br><span class="line">    DefaultConv2D(filters=<span class="number">64</span>, kernel_size=<span class="number">7</span>, input_shape=[<span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>]),</span><br><span class="line">    keras.layers.MaxPooling2D(pool_size=<span class="number">2</span>),</span><br><span class="line">    DefaultConv2D(filters=<span class="number">128</span>),</span><br><span class="line">    DefaultConv2D(filters=<span class="number">128</span>),</span><br><span class="line">    keras.layers.MaxPooling2D(pool_size=<span class="number">2</span>),</span><br><span class="line">    DefaultConv2D(filters=<span class="number">256</span>),</span><br><span class="line">    DefaultConv2D(filters=<span class="number">256</span>),</span><br><span class="line">    keras.layers.MaxPooling2D(pool_size=<span class="number">2</span>),</span><br><span class="line">    keras.layers.Flatten(),</span><br><span class="line">    keras.layers.Dense(units=<span class="number">128</span>, activation=<span class="string">&#x27;relu&#x27;</span>),</span><br><span class="line">    keras.layers.Dropout(<span class="number">0.5</span>),</span><br><span class="line">    keras.layers.Dense(units=<span class="number">64</span>, activation=<span class="string">&#x27;relu&#x27;</span>),</span><br><span class="line">    keras.layers.Dropout(<span class="number">0.5</span>),</span><br><span class="line">    keras.layers.Dense(units=<span class="number">10</span>, activation=<span class="string">&#x27;softmax&#x27;</span>),</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="LeNet-5"><a href="#LeNet-5" class="headerlink" title="LeNet-5"></a>LeNet-5</h4><p><img src="/2021/02/04/Hands-on-ML-3/image-20210204165341558.png" alt="image-20210204165341558"></p>
+<ul>
+<li>池化层：每个神经元计算其输入的平均值，然后将结果乘以一个可学习系数并加上一个可学习的偏差项，最后应用激活函数（每个图一个系数）</li>
+<li>C3 大多数神经元只与三四个 S2 中的神经元相连</li>
+</ul>
+<h4 id="AlexNet"><a href="#AlexNet" class="headerlink" title="AlexNet"></a>AlexNet</h4><p><img src="/2021/02/04/Hands-on-ML-3/image-20210204170751523.png" alt="image-20210204170751523"></p>
+<ul>
+<li><p>两种正则化</p>
+<ul>
+<li>F9 和 F8 应用 50% 的 Dropout</li>
+<li>将训练图像移动各种偏移量、水平翻转并改变光照条件来执行数据增强</li>
+</ul>
+</li>
+<li><p>C1 层和 C3 层的 ReLU 之后立即使用竞争归一化步骤——最强激活的神经元抑制位于相邻特征图中相同位置的其他神经元</p>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204172436730.png" alt="image-20210204172436730"></p>
+</li>
+</ul>
+<h4 id="GoogleNet"><a href="#GoogleNet" class="headerlink" title="GoogleNet"></a>GoogleNet</h4><ul>
+<li>使用 inception module</li>
+</ul>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204172452988.png" alt="image-20210204172452988"></p>
+<ul>
+<li>$3 × 3 + 1(S)$：卷积核为$3 × 3$，步幅为1，padding 为 same</li>
+<li>输入信号被复制并送到四个不同的层，所有卷积层都使用 ReLU 激活函数</li>
+<li>第二组卷积层使用不同的内核大小，以不同的比例捕获模式，输出都具有与输入相同的高度和宽度，因此可以在最终的深度连接层（<code>tf.concat()</code>且<code>axis=3</code>）中沿着深度维度连接所有输出</li>
+<li>具体结构：</li>
+</ul>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204172511954.png" alt="image-20210204172511954"></p>
+<ul>
+<li>包括九个 inception module，6 个数字代表模块中每个卷积层输出的特征图的数量</li>
+<li>所有卷积层都使用 ReLU 激活函数</li>
+<li>前两层将图像的高度和宽度除以 4，减少计算量</li>
+<li>第一层使用大的卷积核，因此大部分信息仍然被保留</li>
+<li>后面的 1*1 卷积层充当瓶颈层</li>
+<li>池化层加快计算</li>
+<li>inception module 的堆叠，与几个最大池层交错，以减少维度并加快网络速度</li>
+<li>全局平均汇集图层只是输出每个特征图的平均值</li>
+</ul>
+<h4 id="VGGNet"><a href="#VGGNet" class="headerlink" title="VGGNet"></a>VGGNet</h4><ul>
+<li>2 或 3 个卷积层，一个池化层，然后是 2 或 3 个卷积层，一个池化层</li>
+<li>最终的密集网络，有2个隐藏层和输出层</li>
+<li>只用$ 3 × 3 $的过滤器</li>
+</ul>
+<h4 id="ResNet"><a href="#ResNet" class="headerlink" title="ResNet"></a>ResNet</h4><ul>
+<li>添加了一个跳过连接——强制模型$f(x)= h(x)–x$而不是$h(x)$</li>
+<li>首先对恒等式函数建模。如果目标函数相当接近于恒等式函数，将大大加快训练速度</li>
+<li>如果添加了许多跳过连接，即使几个层还没有开始学习，网络也可以开始学习信息</li>
+<li>深度残差网络可以看作是残差单元的堆叠，每个残差单元都是一个具有跳跃连接的小神经网络</li>
+</ul>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204174545999.png" alt="image-20210204174545999"></p>
+<ul>
+<li>中间只是一个非常深的简单残差单元的堆叠，每个残差单元由两个卷积层组成</li>
+</ul>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204174604136.png" alt="image-20210204174604136"></p>
+<ul>
+<li><p>为保证输出特征图的形状和深度匹配，需要增加一个卷积层</p>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204181620732.png" alt="image-20210204181620732"></p>
+</li>
+</ul>
+<h4 id="Xception"><a href="#Xception" class="headerlink" title="Xception"></a>Xception</h4><ul>
+<li><p>深度可分离卷积</p>
+</li>
+<li><p>常规卷积层使用的滤波器，试图同时捕捉空间模式（如椭圆形）和跨通道模式（如嘴+鼻子+眼睛=脸），可分离卷积层则认为空间模式和跨通道模式可以分别建模——由两部分组成：第一部分对每个输入特征图应用单个空间滤波器，第二部分专门寻找跨信道模式（只是一个带有$1 × 1$卷积核的卷积层）</p>
+</li>
+<li><p>应该避免在通道太少的层的后面使用可分离的卷积层</p>
+<p><img src="/2021/02/04/Hands-on-ML-3/image-20210204182215253.png" alt="image-20210204182215253" style="zoom:67%;"><img src="/2021/02/04/Hands-on-ML-3/image-20210204182246441.png" alt="image-20210204182246441"></p>
+</li>
+</ul>
+<h4 id="SENet"><a href="#SENet" class="headerlink" title="SENet"></a>SENet</h4><img src="/2021/02/04/Hands-on-ML-3/image-20210204182303590.png" alt="image-20210204182303590" style="zoom:67%;">
+
+<ul>
+<li><p>SE 块分析它所连接单元的输出，关注深度维度而不关注任何空间模式，并使用这些信息来重新校准特征图</p>
+</li>
+<li><p>SE 块可能知道嘴、鼻子和眼睛通常一起出现在照片中，因此如果看到嘴和鼻子，也应该看到眼睛。因此，如果 SE 块在嘴和鼻子特征图中看到强激活，但在眼睛特征图中只看到轻度激活，那么它将增强眼睛特征图</p>
+</li>
+<li><p>SE 块仅由 3 层组成：一个全局平均池层、一个使用 ReLU 激活函数的隐藏密集层和一个使用 sigmoid 激活函数的密集输出层</p>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204182549349.png" alt="image-20210204182549349" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="Keras-实现-ResNet-34-CNN"><a href="#Keras-实现-ResNet-34-CNN" class="headerlink" title="Keras 实现 ResNet-34 CNN"></a>Keras 实现 ResNet-34 CNN</h3><ul>
+<li><p>创建残差块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">DefaultConv2D = partial(keras.layers.Conv2D, kernel_size=<span class="number">3</span>, strides=<span class="number">1</span>,</span><br><span class="line">                        padding=<span class="string">&quot;SAME&quot;</span>, use_bias=<span class="literal">False</span>)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ResidualUnit</span>(<span class="params">keras.layers.Layer</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, filters, strides=<span class="number">1</span>, activation=<span class="string">&quot;relu&quot;</span>, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__(**kwargs)</span><br><span class="line">        self.activation = keras.activations.get(activation)</span><br><span class="line">        self.main_layers = [</span><br><span class="line">            DefaultConv2D(filters, strides=strides),</span><br><span class="line">            keras.layers.BatchNormalization(),</span><br><span class="line">            self.activation,</span><br><span class="line">            DefaultConv2D(filters),</span><br><span class="line">            keras.layers.BatchNormalization()]</span><br><span class="line">        self.skip_layers = []</span><br><span class="line">        <span class="keyword">if</span> strides &gt; <span class="number">1</span>:</span><br><span class="line">            self.skip_layers = [</span><br><span class="line">                DefaultConv2D(filters, kernel_size=<span class="number">1</span>, strides=strides),</span><br><span class="line">                keras.layers.BatchNormalization()]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">call</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        Z = inputs</span><br><span class="line">        <span class="keyword">for</span> layer <span class="keyword">in</span> self.main_layers:</span><br><span class="line">            Z = layer(Z)</span><br><span class="line">        skip_Z = inputs</span><br><span class="line">        <span class="keyword">for</span> layer <span class="keyword">in</span> self.skip_layers:</span><br><span class="line">            skip_Z = layer(skip_Z)</span><br><span class="line">        <span class="keyword">return</span> self.activation(Z + skip_Z)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用顺序模型构建 ResNet-34</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">model = keras.models.Sequential()</span><br><span class="line">model.add(DefaultConv2D(<span class="number">64</span>, kernel_size=<span class="number">7</span>, strides=<span class="number">2</span>,</span><br><span class="line">                        input_shape=[<span class="number">224</span>, <span class="number">224</span>, <span class="number">3</span>]))</span><br><span class="line">model.add(keras.layers.BatchNormalization())</span><br><span class="line">model.add(keras.layers.Activation(<span class="string">&quot;relu&quot;</span>))</span><br><span class="line">model.add(keras.layers.MaxPool2D(pool_size=<span class="number">3</span>, strides=<span class="number">2</span>, padding=<span class="string">&quot;SAME&quot;</span>))</span><br><span class="line">prev_filters = <span class="number">64</span></span><br><span class="line"><span class="keyword">for</span> filters <span class="keyword">in</span> [<span class="number">64</span>] * <span class="number">3</span> + [<span class="number">128</span>] * <span class="number">4</span> + [<span class="number">256</span>] * <span class="number">6</span> + [<span class="number">512</span>] * <span class="number">3</span>:</span><br><span class="line">    strides = <span class="number">1</span> <span class="keyword">if</span> filters == prev_filters <span class="keyword">else</span> <span class="number">2</span></span><br><span class="line">    model.add(ResidualUnit(filters, strides=strides))</span><br><span class="line">    prev_filters = filters</span><br><span class="line">model.add(keras.layers.GlobalAvgPool2D())</span><br><span class="line">model.add(keras.layers.Flatten())</span><br><span class="line">model.add(keras.layers.Dense(<span class="number">10</span>, activation=<span class="string">&quot;softmax&quot;</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将残差层添加到模型中的循环</p>
+</li>
+</ul>
+<h3 id="使用-Keras-中预训练网络"><a href="#使用-Keras-中预训练网络" class="headerlink" title="使用 Keras 中预训练网络"></a>使用 Keras 中预训练网络</h3><ul>
+<li><p>获得预训练的网络：ResNet-50 模型，并下载在 ImageNet 数据集上的权重</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model = keras.applications.resnet50.ResNet50(weights=<span class="string">&quot;imagenet&quot;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>需要确保之后的输入图像具有正确的大小：224*224，可通过<code>tf.image.resize()</code>调整</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">images_resized = tf.image.resize(images, [<span class="number">224</span>, <span class="number">224</span>])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>每个模型都提供一个<code>prepare_input()</code>函数对图像进行预处理</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">inputs = keras.applications.resnet50.preprocess_input(images_resized * <span class="number">255</span>)</span><br><span class="line">Y_proba = model.predict(inputs)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>显示前 K 个预测，包括类名和每个预测类的估计概率：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">top_K = keras.applications.resnet50.decode_predictions(Y_proba, top=<span class="number">3</span>)</span><br><span class="line"><span class="keyword">for</span> image_index <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(images)):</span><br><span class="line">    print(<span class="string">&quot;Image #&#123;&#125;&quot;</span>.<span class="built_in">format</span>(image_index))</span><br><span class="line">    <span class="keyword">for</span> class_id, name, y_proba <span class="keyword">in</span> top_K[image_index]:</span><br><span class="line">        print(<span class="string">&quot;  &#123;&#125; - &#123;:12s&#125; &#123;:.2f&#125;%&quot;</span>.<span class="built_in">format</span>(class_id, name, y_proba * <span class="number">100</span>))</span><br><span class="line">    print()</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="迁移学习的预训练模型"><a href="#迁移学习的预训练模型" class="headerlink" title="迁移学习的预训练模型"></a>迁移学习的预训练模型</h3><ul>
+<li><p>重用一个预训练模型的较低层</p>
+</li>
+<li><p>准备自己的数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow_datasets <span class="keyword">as</span> tfds</span><br><span class="line">dataset, info = tfds.load(<span class="string">&quot;tf_flowers&quot;</span>, as_supervised=<span class="literal">True</span>, with_info=<span class="literal">True</span>)</span><br><span class="line">dataset_size = info.splits[<span class="string">&quot;train&quot;</span>].num_examples <span class="comment"># 3670</span></span><br><span class="line">class_names = info.features[<span class="string">&quot;label&quot;</span>].names <span class="comment"># [&quot;dandelion&quot;, &quot;daisy&quot;, ...]</span></span><br><span class="line">n_classes = info.features[<span class="string">&quot;label&quot;</span>].num_classes <span class="comment"># 5</span></span><br><span class="line"></span><br><span class="line">test_split, valid_split, train_split = tfds.Split.TRAIN.subsplit([<span class="number">10</span>, <span class="number">15</span>, <span class="number">75</span>])</span><br><span class="line">test_set = tfds.load(<span class="string">&quot;tf_flowers&quot;</span>, split=test_split, as_supervised=<span class="literal">True</span>)</span><br><span class="line">valid_set = tfds.load(<span class="string">&quot;tf_flowers&quot;</span>, split=valid_split, as_supervised=<span class="literal">True</span>)</span><br><span class="line">train_set = tfds.load(<span class="string">&quot;tf_flowers&quot;</span>, split=train_split, as_supervised=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">preprocess</span>(<span class="params">image, label</span>):</span></span><br><span class="line">    resized_image = tf.image.resize(image, [<span class="number">224</span>, <span class="number">224</span>])</span><br><span class="line">    final_image = keras.applications.xception.preprocess_input(resized_image)</span><br><span class="line">    <span class="keyword">return</span> final_image, label</span><br><span class="line"></span><br><span class="line">batch_size = <span class="number">32</span></span><br><span class="line">train_set = train_set.shuffle(<span class="number">1000</span>).repeat()</span><br><span class="line">train_set = train_set.<span class="built_in">map</span>(preprocess).batch(batch_size).prefetch(<span class="number">1</span>)</span><br><span class="line">valid_set = valid_set.<span class="built_in">map</span>(preprocess).batch(batch_size).prefetch(<span class="number">1</span>)</span><br><span class="line">test_set = test_set.<span class="built_in">map</span>(preprocess).batch(batch_size).prefetch(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>加载预训练模型，添加自己的层，并训练</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">base_model = keras.applications.xception.Xception(weights=<span class="string">&quot;imagenet&quot;</span>,</span><br><span class="line">                                                  include_top=<span class="literal">False</span>)</span><br><span class="line">avg = keras.layers.GlobalAveragePooling2D()(base_model.output)</span><br><span class="line">output = keras.layers.Dense(n_classes, activation=<span class="string">&quot;softmax&quot;</span>)(avg)</span><br><span class="line">model = keras.models.Model(inputs=base_model.<span class="built_in">input</span>, outputs=output)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> layer <span class="keyword">in</span> base_model.layers:</span><br><span class="line">    layer.trainable = <span class="literal">False</span></span><br><span class="line">    </span><br><span class="line">optimizer = keras.optimizers.SGD(lr=<span class="number">0.2</span>, momentum=<span class="number">0.9</span>, decay=<span class="number">0.01</span>)</span><br><span class="line">model.<span class="built_in">compile</span>(loss=<span class="string">&quot;sparse_categorical_crossentropy&quot;</span>, optimizer=optimizer,</span><br><span class="line">              metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br><span class="line">history = model.fit(train_set,</span><br><span class="line">                    steps_per_epoch=<span class="built_in">int</span>(<span class="number">0.75</span> * dataset_size / batch_size),</span><br><span class="line">                    validation_data=valid_set,</span><br><span class="line">                    validation_steps=<span class="built_in">int</span>(<span class="number">0.15</span> * dataset_size / batch_size),</span><br><span class="line">                    epochs=<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>微调</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> layer <span class="keyword">in</span> base_model.layers:</span><br><span class="line">    layer.trainable = <span class="literal">True</span></span><br><span class="line">optimizer = keras.optimizers.SGD(lr=<span class="number">0.01</span>, momentum=<span class="number">0.9</span>, decay=<span class="number">0.001</span>)</span><br><span class="line">model.<span class="built_in">compile</span>(...)</span><br><span class="line">history = model.fit(...)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="分类与定位"><a href="#分类与定位" class="headerlink" title="分类与定位"></a>分类与定位</h3><ul>
+<li><p>定位图片中的对象可以表示为回归任务，常见的方法是预测对象中心的水平和垂直坐标，以及它的高度和宽度</p>
+</li>
+<li><p>模型加载与编译</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">base_model = keras.applications.xception.Xception(weights=<span class="string">&quot;imagenet&quot;</span>,</span><br><span class="line">                                                  include_top=<span class="literal">False</span>)</span><br><span class="line">avg = keras.layers.GlobalAveragePooling2D()(base_model.output)</span><br><span class="line">class_output = keras.layers.Dense(n_classes, activation=<span class="string">&quot;softmax&quot;</span>)(avg)</span><br><span class="line">loc_output = keras.layers.Dense(<span class="number">4</span>)(avg)</span><br><span class="line">model = keras.models.Model(inputs=base_model.<span class="built_in">input</span>,</span><br><span class="line">                           outputs=[class_output, loc_output])</span><br><span class="line">model.<span class="built_in">compile</span>(loss=[<span class="string">&quot;sparse_categorical_crossentropy&quot;</span>, <span class="string">&quot;mse&quot;</span>],</span><br><span class="line">              loss_weights=[<span class="number">0.8</span>, <span class="number">0.2</span>], <span class="comment"># depends on what you care most about</span></span><br><span class="line">              optimizer=optimizer, metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对数据集的目标添加边界框，即获取标签，之后得到元组 （图像，（类标签，边界框））</p>
+</li>
+<li><p>指标不应该是 mse，此任务的最常见的指标是联合交集（IoU）：预测边界框和目标边界框之间的重叠区域除以它们的联合区域</p>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204184140062.png" alt="image-20210204184140062" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="目标检测"><a href="#目标检测" class="headerlink" title="目标检测"></a>目标检测</h3><h4 id="Fully-Convolutional-Networks-FCNs"><a href="#Fully-Convolutional-Networks-FCNs" class="headerlink" title="Fully Convolutional Networks (FCNs)"></a>Fully Convolutional Networks (FCNs)</h4><img src="/2021/02/04/Hands-on-ML-3/image-20210204184402271.png" alt="image-20210204184402271" style="zoom:67%;">
+
+<ul>
+<li>用于语义分割（根据对象所属的类别对图像中的每个像素进行分类的任务）</li>
+<li>用卷积层代替 CNN 顶部的密集层</li>
+<li>密集层需要特定的输入大小，而卷积层可以处理任何大小的图像，所以 FCN 只包含卷积层，可以在任何大小的图像上训练和执行</li>
+</ul>
+<h4 id="You-Only-Look-Once-YOLO"><a href="#You-Only-Look-Once-YOLO" class="headerlink" title="You Only Look Once (YOLO)"></a>You Only Look Once (YOLO)</h4><ul>
+<li>github 上有几个使用 TF 构建的 YOLO 实现</li>
+<li>略</li>
+</ul>
+<h3 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h3><ul>
+<li>每个像素根据其所属对象的类别（例如，道路、汽车、行人、建筑物等）进行分类</li>
+</ul>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204190328157.png" alt="image-20210204190328157" style="zoom:80%;">
+
+<ul>
+<li><p>将预训练的 CNN 变为 FCN</p>
+</li>
+<li><p>CNN 对整个输入图像应用总共 32 的步幅，最后一层输出比输入图像小 32 倍的特征图</p>
+</li>
+<li><p>FCN 增加了一个上采样层，将分辨率提高 32 倍——转置卷积层</p>
+<img src="/2021/02/04/Hands-on-ML-3/image-20210204190607527.png" alt="image-20210204190607527" style="zoom:67%;">
+</li>
+<li><p>还增加了较低层的跳过连接，恢复了早期池化层中丢失的一些空间分辨率</p>
+</li>
+<li><p>许多 github 库提供了语义分割的 TF 实现</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\03\Hands-on-ML-2\" rel="bookmark">Hands-on Machine Learning（2）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（2）用 tf 自定义模型训练网络</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\06\Hands-on-ML-4\" rel="bookmark">Hands-on Machine Learning（4）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（4）RNN 和 1D CNN 处理序列</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\06\Hands-on-ML-5\" rel="bookmark">Hands-on Machine Learning（5）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（5）字符级RNN、单词级RNN、基于RNN的编码-解码器</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\07\Hands-on-ML-6\" rel="bookmark">Hands-on Machine Learning（6）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（6）RNN 的注意力机制（Transformer 架构）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\08\Hands-on-ML-7\" rel="bookmark">Hands-on Machine Learning（7）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（7）自动编码器</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/" title="Hands-on Machine Learning（3）">https://thomas-li-sjtu.github.io/2021/02/04/Hands-on-ML-3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/TensorFlow/" rel="tag"><i class="fa fa-tag"></i> TensorFlow</a>
+              <a href="/tags/CNN/" rel="tag"><i class="fa fa-tag"></i> CNN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/03/Hands-on-ML-2/" rel="prev" title="Hands-on Machine Learning（2）">
+      <i class="fa fa-chevron-left"></i> Hands-on Machine Learning（2）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/04/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8D%B7I-3/" rel="next" title="Java核心技术卷I （3）泛型、集合、并发">
+      Java核心技术卷I （3）泛型、集合、并发 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TF-%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">1.</span> <span class="nav-text">TF 加载和预处理数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Data-API"><span class="nav-number">1.1.</span> <span class="nav-text">Data API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E8%BD%AC%E6%8D%A2"><span class="nav-number">1.1.1.</span> <span class="nav-text">链接转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%93%E4%B9%B1%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.2.</span> <span class="nav-text">打乱数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A2%84%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.3.</span> <span class="nav-text">预处理数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E4%BB%A5%E4%B8%8A%E8%BF%87%E7%A8%8B"><span class="nav-number">1.1.4.</span> <span class="nav-text">合并以上过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A2%84%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.5.</span> <span class="nav-text">预取数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TFRecord-%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text">TFRecord 格式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9"><span class="nav-number">1.2.1.</span> <span class="nav-text">压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">1.2.2.</span> <span class="nav-text">协议缓冲区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorFlow-%E7%9A%84%E5%8D%8F%E8%AE%AE%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">1.2.3.</span> <span class="nav-text">TensorFlow 的协议缓冲区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E5%92%8C%E8%A7%A3%E6%9E%90%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.2.4.</span> <span class="nav-text">加载和解析示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Handling-Lists-of-Lists-Using-the-SequenceExample-Protobuf"><span class="nav-number">1.2.5.</span> <span class="nav-text">Handling Lists of Lists Using the SequenceExample Protobuf</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Features-API"><span class="nav-number">1.3.</span> <span class="nav-text">Features API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.1.</span> <span class="nav-text">分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A4%E5%8F%89%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.2.</span> <span class="nav-text">交叉分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%8B%AC%E7%83%AD%E7%BC%96%E7%A0%81%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.3.</span> <span class="nav-text">独热编码分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Embedding-%E7%BC%96%E7%A0%81%E5%88%86%E7%B1%BB%E7%89%B9%E5%BE%81"><span class="nav-number">1.3.4.</span> <span class="nav-text">Embedding 编码分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%89%B9%E5%BE%81%E5%88%97%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90"><span class="nav-number">1.3.5.</span> <span class="nav-text">使用特征列进行分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%A8%E6%A8%A1%E5%9E%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%89%B9%E5%BE%81%E5%88%97"><span class="nav-number">1.3.6.</span> <span class="nav-text">在模型中使用特征列</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CNN"><span class="nav-number">2.</span> <span class="nav-text">CNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%86%E8%A7%89%E7%9A%AE%E5%B1%82%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text">视觉皮层的结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B7%E7%A7%AF%E5%B1%82"><span class="nav-number">2.2.</span> <span class="nav-text">卷积层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Filter%EF%BC%88%E5%8D%B7%E7%A7%AF%E6%A0%B8%EF%BC%89"><span class="nav-number">2.2.1.</span> <span class="nav-text">Filter（卷积核）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A0%86%E5%8F%A0%E5%A4%9A%E4%B8%AA%E7%89%B9%E5%BE%81%E5%9B%BE"><span class="nav-number">2.2.2.</span> <span class="nav-text">堆叠多个特征图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorFlow-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.3.</span> <span class="nav-text">TensorFlow 的实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E9%9C%80%E6%B1%82"><span class="nav-number">2.2.4.</span> <span class="nav-text">内存需求</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B1%A0%E5%8C%96%E5%B1%82"><span class="nav-number">2.3.</span> <span class="nav-text">池化层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorFlow-%E7%9A%84%E5%AE%9E%E7%8E%B0-1"><span class="nav-number">2.3.1.</span> <span class="nav-text">TensorFlow 的实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CNN-%E7%BB%93%E6%9E%84"><span class="nav-number">2.4.</span> <span class="nav-text">CNN 结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#LeNet-5"><span class="nav-number">2.4.1.</span> <span class="nav-text">LeNet-5</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AlexNet"><span class="nav-number">2.4.2.</span> <span class="nav-text">AlexNet</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GoogleNet"><span class="nav-number">2.4.3.</span> <span class="nav-text">GoogleNet</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#VGGNet"><span class="nav-number">2.4.4.</span> <span class="nav-text">VGGNet</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ResNet"><span class="nav-number">2.4.5.</span> <span class="nav-text">ResNet</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Xception"><span class="nav-number">2.4.6.</span> <span class="nav-text">Xception</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SENet"><span class="nav-number">2.4.7.</span> <span class="nav-text">SENet</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Keras-%E5%AE%9E%E7%8E%B0-ResNet-34-CNN"><span class="nav-number">2.5.</span> <span class="nav-text">Keras 实现 ResNet-34 CNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-Keras-%E4%B8%AD%E9%A2%84%E8%AE%AD%E7%BB%83%E7%BD%91%E7%BB%9C"><span class="nav-number">2.6.</span> <span class="nav-text">使用 Keras 中预训练网络</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0%E7%9A%84%E9%A2%84%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.7.</span> <span class="nav-text">迁移学习的预训练模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E7%B1%BB%E4%B8%8E%E5%AE%9A%E4%BD%8D"><span class="nav-number">2.8.</span> <span class="nav-text">分类与定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B"><span class="nav-number">2.9.</span> <span class="nav-text">目标检测</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Fully-Convolutional-Networks-FCNs"><span class="nav-number">2.9.1.</span> <span class="nav-text">Fully Convolutional Networks (FCNs)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#You-Only-Look-Once-YOLO"><span class="nav-number">2.9.2.</span> <span class="nav-text">You Only Look Once (YOLO)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2"><span class="nav-number">2.10.</span> <span class="nav-text">语义分割</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

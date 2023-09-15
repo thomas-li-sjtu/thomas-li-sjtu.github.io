@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Yarn 概述、调度器与调度算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="YARN">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="Yarn 概述、调度器与调度算法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220703193516001.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705165757853.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705165847385.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705171516841.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705182501440.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705191739804.png">
+<meta property="article:published_time" content="2022-07-05T07:04:31.000Z">
+<meta property="article:modified_time" content="2022-08-07T13:19:14.347Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220703193516001.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>YARN | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          YARN
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-05 15:04:31" itemprop="dateCreated datePublished" datetime="2022-07-05T15:04:31+08:00">2022-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/" itemprop="url" rel="index"><span itemprop="name">大数据</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Yarn 概述、调度器与调度算法</p>
+<a id="more"></a>
+
+<h2 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><img src="/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220703193516001.png" alt="image-20220703193516001" style="zoom:67%;">
+
+<ul>
+<li><p>Yet Another Resource Negotiator，资源（内存、cpu等）管理器，相当于一个分布式操作系统平台，MapReduce等运算程序相当于运行于OS上的应用程序</p>
+</li>
+<li><p>Hadoop1.0中，jobTracker的任务过多（接收任务、资源调度、监控TaskTracker运行情况），虽然实现简单但容易产生单点故障问题</p>
+</li>
+<li><p>ResourceManager：整个集群的资源管理（单节点的cpu*节点数、单节点的内存*节点数）</p>
+<ul>
+<li>处理客户端请求，监控NodeManager，启动ApplicationMaster</li>
+<li>一个集群有且只有一个RM，包含两个主要组件：定时调用器（Scheduler）、应用管理器（ApplicationManager）</li>
+<li>调度器：一种策略或算法，Client提交一个任务后，根据所需资源和集群当前资源状况进行分配——只负责向应用程序分配资源，不监控或跟踪应用程序的状态</li>
+<li>应用管理器（AM）：管理单个任务的运行，监控、跟踪状态</li>
+</ul>
+</li>
+<li><p>NodeManager：每个节点上运行的资源和任务管理器</p>
+<ul>
+<li>NodeManager是ResourceManager在每台机器的上代理</li>
+<li>管理容器，监控容器的资源使用情况（cpu，内存，磁盘，网络等），向ResourceManager/Scheduler发送资源的使用报告，接收并处理来自AM的Container启动/停止等各种请求</li>
+</ul>
+</li>
+<li><p>ApplicationMaster：</p>
+<ul>
+<li>Client提交一个Application，就新建一个ApplicationMaster</li>
+<li>ApplicationMaster向ResourceManager申请容器资源，获得资源后将Application发送到容器上启动、分布式计算</li>
+</ul>
+</li>
+<li><p>数据太多难以移动，因此将容易移动的应用程序发布到各个节点进行计算</p>
+</li>
+<li><p>Container：任务运行的环境，Container封装了任务运行所需的资源——可以跨节点；由NodeManager启动和管理，并被它监控；被ResourceManager调度</p>
+</li>
+<li><p>全局组件： RM（Scheduler，ApplicationManager）、NM</p>
+</li>
+<li><p>Job独有组件：ApplicationMaster、Container</p>
+</li>
+<li><p>提交一个程序的流程：</p>
+<ul>
+<li>Client向Yarn提交Application（假设是一个MapReduce任务）</li>
+<li>RM的ApplicationManager向NodeManager通信，为Application分配一个运行Application对应ApplicationMaster的容器</li>
+<li>ApplicationMaster向RM注册并启动后，计算应用完成所需要的资源，拆分Application为多个task（task需要运行在一个或多个容器中），向RM申请需要的资源（容器），定时向RM发送心跳</li>
+<li>申请容器后，ApplicationMaster与容器对应的VM通信，将作业分发到对应的NM的容器运行——对于一个MapReduce任务，容器中运行的可能是Map任务，可能是Reduce任务</li>
+<li>容器中运行的任务向ApplicationMaster发送心跳。程序运行完成，ApplicationMaster向RM注销并释放容器的资源</li>
+</ul>
+</li>
+<li><p>运行一个mapreduce程序的流程：（假设有3个服务器）</p>
+<ul>
+<li><p>作业提交</p>
+<ul>
+<li>Client调用方法job.waitForCompletion，将一个MapReduce job提交给集群</li>
+<li>Client向RM申请一个job id</li>
+<li>RM返回job的资源提交路径和job id给Client</li>
+<li>Client提交jar包、切片信息、配置文件到指定的提交路径</li>
+<li>Client提交完资源，向RM申请运行MrAppMaster（MapReduce对ApplicationMaster的实现）</li>
+</ul>
+</li>
+<li><p>作业初始化</p>
+<ul>
+<li>RM收到Client的请求，将job添加到容量调度器</li>
+<li>某个空闲的NM领取该Job</li>
+<li>NM创建Container，产生MRAppmaster，下载Client提交的资源到NM本地</li>
+</ul>
+</li>
+<li><p>任务分配</p>
+<ul>
+<li>MrAppMaster向RM申请运行多个MapTask的资源</li>
+<li>RM将MapTask分配给另外两个NM，另两个 NM领取任务并创建容器</li>
+</ul>
+</li>
+<li><p>任务运行</p>
+<ul>
+<li>MR向两个接收到任务的NM发送程序启动脚本，它们分别启动MapTask</li>
+<li>MrAppMaster等待所有MapTask运行完毕，向RM申请容器，运行ReduceTask</li>
+<li>程序运行完毕，MR向RM申请注销</li>
+</ul>
+</li>
+<li><p>进度和状态更新：YARN中的任务将其进度和状态返回应用管理器，Client每秒（<code>mapreduce.client.progressmonitor.pollinterval</code>参数设置）向应用管理器请求进度更新, 展示给用户</p>
+</li>
+<li><p>作业完成</p>
+<ul>
+<li>Client每5秒调用waitForCompletion()（<code>mapreduce.client.completion.pollinterval</code>参数）检查作业是否完成</li>
+<li>作业完成后，应用管理器和Container清理工作状态，作业信息被作业历史服务器存储，以备核查</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>关键参数</p>
+<ul>
+<li>RM相关<ul>
+<li><code>yarn.resourcemanager.scheduler.class</code>：调度器，默认为容量调度器</li>
+<li><code>yarn.resourcemanager.scheduler.client.thread-count</code>：RM处理调度器请求的线程数，默认50</li>
+</ul>
+</li>
+<li>NM相关<ul>
+<li><code>yarn.nodemanager.resource.detect-hardware-capabilities</code>：yarn自己检测硬件进行配置，默认为false</li>
+<li><code>yarn.nodemanager.resource.count-logical-processors-as-cores</code>：虚拟核数当作cpu核数，默认false</li>
+<li><code>yarn.nodemanager.resource.pcores-vcores-multiplier</code>：虚拟核数和物理核数乘数。4核8线程则为2，默认1.0</li>
+<li><code>yarn.nodemanager.resource.pcores-vcores-multiplier</code>：NM使用内存，默认8G</li>
+<li><code>yarn.nodemanager.resource.system-reserved-memory-mb</code>：NM为系统保留多少内存</li>
+<li><code>yarn.nodemanager.resource.cpu-vcores</code>：NM使用CPU核数，默认8个</li>
+<li><code>yarn.nodemanager.pmem-check-enabled</code>：是否开启物理内存检查限制container，默认打开</li>
+<li><code>yarn.nodemanager.vmem-check-enabled</code>：是否开启虚拟内存检查限制container，默认打开</li>
+<li><code>yarn.nodemanager.vmem-pmem-ratio</code>：虚拟内存物理内存比例</li>
+</ul>
+</li>
+<li>Container相关<ul>
+<li><code>yarn.scheduler.minimum-allocation-mb</code>：容器最小内存，默认1G</li>
+<li><code>yarn.scheduler.maximum-allocation-mb</code>：容器最大内存，默认8G</li>
+<li><code>yarn.scheduler.minimum-allocation-vcores</code>：容器最小CPU核数，默认1个</li>
+<li><code>yarn.scheduler.maximum-allocation-vcores</code>：容器最大CPU核数，默认4个</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Yarn调度器和调度算法"><a href="#Yarn调度器和调度算法" class="headerlink" title="Yarn调度器和调度算法"></a>Yarn调度器和调度算法</h3><ul>
+<li>主要有三种：<ul>
+<li>FIFO</li>
+<li>容量（Capacity Scheduler）</li>
+<li>公平（Fair  Scheduler）</li>
+</ul>
+</li>
+<li>Hadoop默认资源调度器为Capacity Scheduler</li>
+<li>CDH默认调度器为Fair Scheduler</li>
+</ul>
+<h4 id="FIFO调度器"><a href="#FIFO调度器" class="headerlink" title="FIFO调度器"></a>FIFO调度器</h4><ul>
+<li>单队列，YARN集群中所有的资源全部调集过来，分配给当前任务，根据提交作业的先后顺序服务（不支持多队列，生产环境很少使用）</li>
+</ul>
+<p><img src="/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705165757853.png" alt="image-20220705165757853"></p>
+<h4 id="容量调度器"><a href="#容量调度器" class="headerlink" title="容量调度器"></a>容量调度器</h4><p><img src="/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705165847385.png" alt="image-20220705165847385"></p>
+<ul>
+<li><p>每个队列可以配置一定资源，队列采用FIFO调度</p>
+</li>
+<li><p>管理员为每个队列设置资源使用下限和上限</p>
+</li>
+<li><p>一个队列中的资源有剩余，则可暂时共享给其他队列，如果该队列有新的提交任务，则回收资源</p>
+</li>
+<li><p>支持多用户、多作业同时进行</p>
+</li>
+<li><p>限定同一用户提交的作业所占资源，以防止一个用户独占队列所有资源（上图ss、cls为用户）</p>
+</li>
+<li><p>资源分配算法：</p>
+<img src="/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705171516841.png" alt="image-20220705171516841" style="zoom:67%;">
+
+<ul>
+<li>假设队列A有20%资源，队列B有50%资源，队列C有30%资源，队列C下有两个子队列ss、和cls，分别占据15%资源</li>
+<li>队列资源分配：深度优先算法，优先选择资源占用率最低的队列（此时优先选择队列A）</li>
+<li>作业资源分配：默认按照作业的优先级和提交时间顺序分配资源（此时如果作业1的优先级高，则先分配作业1的资源）</li>
+<li>容器分配：<ul>
+<li>按容器优先级分配资源（这里有三个容器，根据优先级分配任务）</li>
+<li>如果优先级相同，按数据本地性原则<ul>
+<li>任务和数据在同一节点</li>
+<li>任务和数据在同一机架</li>
+<li>任务和数据不在同一节点、同一机架</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>相关参数的配置：</p>
+<p>（1）<code>capacity</code>：队列的资源容量（百分比），所有队列的容量之和应小于100</p>
+<p>（2）<code>maximum-capacity</code>：队列的资源使用上限（百分比）</p>
+<p>（3）<code>user-limit-factor</code>：每个用户最多可使用的资源量（百分比）。假设值为30，则每个用户使用的资源量不能超过该队列容量的30%</p>
+<p>（4）<code>maximum-applications</code> ：集群或者队列中同时处于等待和运行状态的应用程序数目上限——超过该上限，后续提交的任务将被拒绝，默认值为 10000。所有队列的数目上限可通过参数<code>yarn.scheduler.capacity.maximum-applications</code>设置，单个队列可通过参数<code>yarn.scheduler.capacity.&lt;queue-path&gt;.maximum-applications</code>设置</p>
+<p>（5）<code>maximum-am-resource-percent</code>：集群中用于运行应用程序ApplicationMaster的资源比例上限</p>
+<p>（6）<code>state </code>：状态可以为STOPPED或者 RUNNING，如果一个队列处于STOPPED状态，用户不能将任务提交到该队列或者它的子队列。如果ROOT队列处于STOPPED状态，用户不能向集群中提交任务</p>
+<p>（7）<code>acl_submit_applications</code>：限定哪些Linux用户/用户组可向给定队列提交应用程序——如果一个用户可以向某个队列提交应用程序，则它可以向所有子队列提交应用程序。用户之间或用户组之间用“,”分割，用户和用户组之间用空格分割，如<code>user1, user2 group1, group2</code></p>
+<p>（8）<code>acl_administer_queue</code>：为队列指定一个管理员，管理员可控制该队列的所有应用程序，如杀死任意一个应用程序等</p>
+</li>
+</ul>
+<h4 id="公平调度器"><a href="#公平调度器" class="headerlink" title="公平调度器"></a>公平调度器</h4><p><img src="/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705182501440.png" alt="image-20220705182501440"></p>
+<ul>
+<li><p>异同：</p>
+<ul>
+<li>相同点：<ul>
+<li>支持多队列</li>
+<li>可设置队列的资源上下限</li>
+<li>队列资源剩余，可共享给其他队列</li>
+<li>限定同一用户提交作业所占资源</li>
+</ul>
+</li>
+<li>不同点：<ul>
+<li>核心调度策略：<ul>
+<li>容量：资源利用率低的队列优先</li>
+<li>公平：资源的缺额比例大的队列优先</li>
+</ul>
+</li>
+<li>每个队列单独设置资源分配方式<ul>
+<li>容量：FIFO、DRF</li>
+<li>公平：FIFIO、FAIR、DRF</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>缺额：时间尺度上，所有作业获得公平的资源。某一时刻一个作业应获资源和实际获取资源的差距为缺额</p>
+<img src="/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/image-20220705191739804.png" alt="image-20220705191739804" style="zoom: 80%;">
+</li>
+<li><p>资源分配方式：</p>
+<ul>
+<li>FIFO：若每个队列资源分配策略为FIFO，则公平调度器==容量调度器</li>
+<li>Fair：整个时间线上，所有Job平均获取资源。默认情况下，调度器只是对内存资源做公平的调度和分配——集群中只有一个任务在运行时，此任务占用整个集群的资源，当其他的任务提交，第一个任务缓慢释放资源，分配给新的Job，每个job最终能获取几乎一样多的资源</li>
+<li>DRF（Dominant Resource Fairness）：<ul>
+<li>以上资源是单一标准，例如只考虑内存（Yarn默认）</li>
+<li>假设集群有100CPU和10T内存，应用A需要（2 CPU，300GB），应用B需要（6CP，100GB）， 则两个应用分别需要A（2%CPU, 3%内存）和B（6%CPU, 1%内存）——A是内存主导，B是CPU主导，此时DRF策略对不同应用进行不同资源（CPU和内存）做不同比例的限制</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>相关参数配置</p>
+<p>（1）<code>yarn.scheduler.fair.allocation.file</code>： “allocation”文件的位置。“allocation”文件用来描述queue以及它们的属性的配置文件。这个文件必须为格式严格的xml文件。如果为相对路径，那么将会在classpath下查找此文件(conf目录下)。默认值为“fair-scheduler.xml”</p>
+<p>（2）<code>yarn.scheduler.fair.user-as-default-queue</code>：是否将与allocation有关的username作为默认的queue name，当queue name没有指定的时候。默认值为true</p>
+<p>（3）<code>yarn.scheduler.fair.preemption</code>：是否使用“preemption”(优先权，抢占)，默认为fasle</p>
+<p>（4）<code>yarn.scheduler.fair.assignmultiple</code>：是否在允许在一个心跳中，发送多个container分配信息。默认值为false。</p>
+<p>（5）<code>yarn.scheduler.fair.max.assign</code>：如果assignmultuple为true，在一次心跳中，最多发送分配container的个数。默认为-1，无限制</p>
+<p>（6）<code>yarn.scheduler.fair.sizebaseweight</code>：是否将application的大小（Job的个数）作为权重。默认为false，如果为true，复杂的application将获取更多的资源</p>
+</li>
+</ul>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><ul>
+<li>查看任务<ul>
+<li>列出所有Application：<code>yarn application -list</code></li>
+<li>根据Application状态过滤：<code>yarn application -list -appStates 状态</code>（状态包括ALL、NEW、 NEW_SAVING、SUBMITTED、ACCEPTED、RUNNING、FINISHED、FAILED、KILLED）</li>
+<li>Kill任务：<code>yarn application -kill application_1612577921195_0001</code>（最后的参数为Application-Id）</li>
+</ul>
+</li>
+<li>查看日志：<ul>
+<li>查询Application日志：<code>yarn logs -applicationId &lt;ApplicationId&gt;</code></li>
+<li>查询Container日志：<code>yarn logs -applicationId &lt;ApplicationId&gt; -containerId &lt;ContainerId&gt; </code></li>
+</ul>
+</li>
+<li>查看尝试运行的任务：<ul>
+<li>所有尝试运行的任务：<code>yarn applicationattempt -list &lt;ApplicationId&gt;</code></li>
+<li>查看某个任务状态：<code>yarn applicationattempt -status &lt;ApplicationAttemptId&gt;</code></li>
+</ul>
+</li>
+<li>查看容器：<ul>
+<li>所有容器：<code>yarn container -list &lt;ApplicationAttemptId&gt;</code></li>
+<li>查看容器状态：<code>yarn container -status &lt;ContainerId&gt;</code></li>
+</ul>
+</li>
+<li>查看节点状态：<code>yarn node -list -all</code></li>
+<li>查看队列信息：<code>yarn queue -status &lt;QueueName&gt;</code></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/07/05/hadoop%E5%AD%A6%E4%B9%A02/" title="YARN">https://thomas-li-sjtu.github.io/2022/07/05/hadoop学习2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/03/hadoop%E5%AD%A6%E4%B9%A01/" rel="prev" title="HDFS">
+      <i class="fa fa-chevron-left"></i> HDFS
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/07/Password-Guessing-via-Neural-Language-Modeling/" rel="next" title="Password Guessing via Neural Language Modeling">
+      Password Guessing via Neural Language Modeling <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#YARN"><span class="nav-number">1.</span> <span class="nav-text">YARN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Yarn%E8%B0%83%E5%BA%A6%E5%99%A8%E5%92%8C%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">Yarn调度器和调度算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#FIFO%E8%B0%83%E5%BA%A6%E5%99%A8"><span class="nav-number">1.2.1.</span> <span class="nav-text">FIFO调度器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%B9%E9%87%8F%E8%B0%83%E5%BA%A6%E5%99%A8"><span class="nav-number">1.2.2.</span> <span class="nav-text">容量调度器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%AC%E5%B9%B3%E8%B0%83%E5%BA%A6%E5%99%A8"><span class="nav-number">1.2.3.</span> <span class="nav-text">公平调度器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">1.3.</span> <span class="nav-text">常用命令</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

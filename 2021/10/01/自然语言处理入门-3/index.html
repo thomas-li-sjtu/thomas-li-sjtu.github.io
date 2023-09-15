@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《自然语言处理入门》阅读笔记（3） 第五章+第六章">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自然语言处理入门（3） 感知机与条件随机场">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《自然语言处理入门》阅读笔记（3） 第五章+第六章">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124432663.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124831996.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124839251.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124646930.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003130641413.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003135657491.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003135724789.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003140305141.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003140454126.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003140748714.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003141723814.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003141733706.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003141953967.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003142005387.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009160220705.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009160924534.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009161605027.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009164203258.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009164419520.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009164529059.png">
+<meta property="article:published_time" content="2021-10-01T05:01:53.000Z">
+<meta property="article:modified_time" content="2021-10-28T14:11:29.630Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="自然语言处理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124432663.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>自然语言处理入门（3） 感知机与条件随机场 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          自然语言处理入门（3） 感知机与条件随机场
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-10-01 13:01:53" itemprop="dateCreated datePublished" datetime="2021-10-01T13:01:53+08:00">2021-10-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《自然语言处理入门》阅读笔记（3） 第五章+第六章</p>
+<a id="more"></a>
+
+<h2 id="感知机"><a href="#感知机" class="headerlink" title="感知机"></a>感知机</h2><ul>
+<li>隐马尔可夫模型仅捕捉两个特征：前一个标签、当前字符</li>
+<li>线性模型包括：提取特征的特征函数$\phi$、权重向量$w$</li>
+</ul>
+<h3 id="线性分类与感知机算法"><a href="#线性分类与感知机算法" class="headerlink" title="线性分类与感知机算法"></a>线性分类与感知机算法</h3><ul>
+<li><p>线性模型：用一条线性直线或高位平面将数据一分为二，模型由特征函数$\phi$、权重向量$w$组成</p>
+</li>
+<li><p>特征向量：描述样本特征的向量</p>
+</li>
+<li><p>特征提取：构造特征向量的过程</p>
+</li>
+<li><p>分离超平面：任意维度空间中的线性决策边界</p>
+<ul>
+<li><p>D维空间的超平面方程为：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124432663.png" alt="image-20211003124432663"></p>
+</li>
+<li><p>将$b$也看作一个权重，则：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124831996.png" alt="image-20211003124831996"></p>
+<p>超平面方程简化为：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124839251.png" alt="image-20211003124839251"></p>
+</li>
+</ul>
+</li>
+<li><p>线性模型进行最终决策：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003124646930.png" alt="image-20211003124646930"></p>
+</li>
+<li><p>感知机算法：迭代式算法，每次读入一个样本，将预测结果与标签对比，计算误差、更新参数</p>
+<ul>
+<li><p>过程：</p>
+<ul>
+<li>读入训练样本$(x^{(i)},y^{(i)})$，预测$\hat{y}=sign(w\cdot x^{(i)})$</li>
+<li>若$\hat{y}\neq y^{(i)}$，则更新参数$w \leftarrow w+y^{(i)}x^{(i)}$</li>
+</ul>
+</li>
+<li><p>如果数据本身线性不可分，则感知机的损失函数不收敛，此时解决方案为：</p>
+<ul>
+<li><p>创造更多特征，将样本映射到高维空间，使其线性可分</p>
+</li>
+<li><p>使用其他训练算法，如支持向量机</p>
+</li>
+<li><p>使用投票感知机、平均感知机</p>
+<ul>
+<li><p>投票感知机：每个epoch产生一个新模型，则预测时每个模型给出结果，结果根据模型在测试机上的准确率加权平均，作为最终结果</p>
+</li>
+<li><p>平均感知机：取多个模型权重的平均</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003130641413.png" alt="image-20211003130641413"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>模型调优方法：</p>
+<ul>
+<li>特征工程（修改特征模板）</li>
+<li>更换训练算法</li>
+<li>收集、标注更多数据</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="结构化预测问题"><a href="#结构化预测问题" class="headerlink" title="结构化预测问题"></a>结构化预测问题</h3><ul>
+<li>预测对象结构的监督学习问题</li>
+<li>例如：序列标注、语法分析、机器翻译</li>
+<li>每个小部分都是分类问题，但必须考虑整体结构的合理性——由模型给出的分值或概率来衡量</li>
+<li>给定模型$\lambda$、打分函数$score_\lambda(\cdot)$，利用打分函数给备选结构打分，选择分数最高的结构输出</li>
+</ul>
+<h3 id="结构化感知机"><a href="#结构化感知机" class="headerlink" title="结构化感知机"></a>结构化感知机</h3><ul>
+<li><p>定义新的特征函数，将结构$y$也作为一种特征，得到结构化特征向量$\phi(x,y)$，则$score_\lambda(x, y)=w\cdot \phi(x,y)$，预测函数为：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003135657491.png" alt="image-20211003135657491"></p>
+<ul>
+<li><p>预测算法：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003135724789.png" alt="image-20211003135724789"></p>
+</li>
+</ul>
+</li>
+<li><p>序列标注问题：</p>
+<ul>
+<li><p>对连续标签提取转移特征：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003140305141.png" alt="image-20211003140305141"></p>
+<ul>
+<li>$y_t$为序列第$t$个标签，$s_i$为标注集第$i$种标签，$N$为标注集大小，</li>
+</ul>
+</li>
+<li><p>获得每个时刻的状态特征：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003140454126.png" alt="image-20211003140454126"></p>
+<ul>
+<li>具体什么时候等于1，什么时候等于0，取决于特征模板</li>
+<li>状态特征只与当前状态有关，与先前状态无关</li>
+</ul>
+</li>
+<li><p>结构化感知机的特征函数为转移特征、状态特征的合集：$\phi=[\phi_k;\phi_l]$，即$\phi(y_{t-1},y_t,x_t)$</p>
+</li>
+<li><p>整个序列的得分为各个时刻得分之和：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003140748714.png" alt="image-20211003140748714"></p>
+</li>
+</ul>
+</li>
+<li><p>结构化感知机的维特比算法：</p>
+<ul>
+<li><p>搜索分数最高的结构，这里即为对序列的搜索</p>
+</li>
+<li><p>定义$\delta_{t,i}$为时刻$t$以$s_i$结尾的所有局部路径最高分数</p>
+</li>
+<li><p>定义$\psi_{t,i}$存储局部最优路径中，最后一个状态$y_t$的前驱状态</p>
+</li>
+<li><p>具体如下：</p>
+<ul>
+<li><p>初始化，$t=1$时初始最优路径的备选由$N$个状态组成，前驱为空</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003141723814.png" alt="image-20211003141723814"></p>
+</li>
+<li><p>递推，$2\leq t$时每条备选路径增长一个单位，分数由打分函数确定。确定新的最优局部路径，更新以上两个二维数组</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003141733706.png" alt="image-20211003141733706"></p>
+</li>
+<li><p>终止，获得最终时刻$\delta_{t,i}$数组中最大分数$S^*$与相应结尾状态下标$i_T^*$</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003141953967.png" alt="image-20211003141953967"></p>
+</li>
+<li><p>回溯，根据前驱数组$\psi$回溯前驱状态，获得最优路径下标$i^*=i_1^*,…,i_T^*$</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211003142005387.png" alt="image-20211003142005387"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="条件随机场"><a href="#条件随机场" class="headerlink" title="条件随机场"></a>条件随机场</h2><h3 id="机器学习谱系"><a href="#机器学习谱系" class="headerlink" title="机器学习谱系"></a>机器学习谱系</h3><ul>
+<li><p>机器学习谱系图（忽略回归问题）</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009160220705.png" alt="image-20211009160220705"></p>
+<ul>
+<li>根本问题是，给定一些随机变量x，预测另一些随机变量y</li>
+<li>根据y是独立变量还是多个关联的变量，分为分类问题和结构化预测问题</li>
+<li>根据建模内容（联合概率分布$p(x,y)$还是条件概率分布$p(y|x)$），分为生成式模型和判别式模型<ul>
+<li>生成式模型：先有因素y，后有结果x——由联合分布模拟 $p(x,y)=p(y)p(x|y)$<ul>
+<li>如隐马尔可夫模型和朴素贝叶斯模型</li>
+<li>间接建模$p(x)=\sum p(x,y)$</li>
+</ul>
+</li>
+<li>判别式模型：不关心x的内部联系，直接对$p(y|x)$建模<ul>
+<li>感知机、条件随机场、支持向量机、神经网络等</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>概率图模型（PGM）</p>
+<ul>
+<li>表示与推断联合分布$p(x,y)$</li>
+<li>节点$V$表示随机变量，边$E$连接有关联的随机变量</li>
+</ul>
+</li>
+<li><p>有向图模型（DGM）</p>
+<ul>
+<li><p>根据事件的先后因果顺序将节点连接为有向图</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009160924534.png" alt="image-20211009160924534"></p>
+</li>
+<li><p>将概率有向图分解为条件概率的乘积，如果$\pi(v)$表明节点$v$的所有前驱节点，则联合分布$p(x,y)=\prod_{v\in V}p(x|\pi(v))$</p>
+</li>
+</ul>
+</li>
+<li><p>无向图模型</p>
+<ul>
+<li><p>不涉及条件概率分解，边代表两个事件有关联</p>
+</li>
+<li><p>将概率分解为所有最大团上的某个函数乘积：$p(x,y)=\frac{1}{Z}\prod_a{\psi_a(x_a,y_a)}$</p>
+<ul>
+<li>$a$为因子节点</li>
+<li>$\psi_a$为一个因子节点对应的函数，如$\psi_a(x_a,y_a)=exp{\sum_k w_{ak}f_{ak}(x_a,y_a)}$<ul>
+<li>$k$为特征编号</li>
+<li>$f_{ak}()$为特征函数</li>
+<li>$w_{ak}$为特征权重</li>
+</ul>
+</li>
+<li>$x_a,y_a$为与因子节点相连的所有变量节点</li>
+<li>为约束上式成为概率分布，常数$Z$定义为归一化因子$Z=\sum_{x,y}\prod_a{\psi(x_a,y_a)}$</li>
+</ul>
+</li>
+<li><p>最大团：满足所有节点相互连接的最大子团</p>
+</li>
+<li><p>为便于分析，定义了一些虚拟的因子节点（factor），每个因子节点只连接部分节点，以组成较小的最大团</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009161605027.png" alt="image-20211009161605027"></p>
+</li>
+<li><p>判别式模型常用无向图表示，归一化时对每个x求一个归一化因子$Z(x)=\sum_{y}\prod_a{\psi(x_a,y_a)}$，则$p(y|x)=\frac{1}{Z(x)}\prod_a{\psi_a(x_a,y_a)}$</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="条件随机场-1"><a href="#条件随机场-1" class="headerlink" title="条件随机场"></a>条件随机场</h3><ul>
+<li><p>给定输入随机变量x，求解条件概率$p(y|x)$的概率无向图模型</p>
+</li>
+<li><p>序列标注时，特化为线性链条件随机场，输入输出随机变量为等长的两个序列</p>
+<ul>
+<li><p>例如：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009164203258.png" alt="image-20211009164203258"></p>
+<ul>
+<li><p>灰色节点代表特征（这里表明每个$x_i$有三个特征）</p>
+</li>
+<li><p>黑色方块为因子节点，视为特征函数$f_k(y_{t-1},y_t,x_t)$，其中只利用$x_t,y_t$的称为状态特征，利用了$y_{t-1}$的称为转移特征</p>
+</li>
+<li><p>线性链条件随机场定义如下：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009164419520.png" alt="image-20211009164419520"></p>
+<ul>
+<li>需要遍历所有可能的标注序列，即使是非法的</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>将特征函数和权重写作向量形式，则简化为：</p>
+<p><img src="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/image-20211009164529059.png" alt="image-20211009164529059"></p>
+</li>
+<li><p>对比结构化感知机的打分函数可知：</p>
+<ul>
+<li>感知机打分函数与此式的指数部分一致</li>
+<li>条件随机场和结构化感知机的特征函数一致</li>
+<li>结构化感知机对某预测打分高，则随机场对其的预测概率越大</li>
+<li>结构化感知机和条件随机场的预测算法一致，均为维特比算法</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>训练条件随机场：略</p>
+</li>
+<li><p>对比结构化感知机：</p>
+<ul>
+<li>特征函数、权重向量、打分函数、预测算法一致</li>
+<li>训练算法不同——这是二者准确率差异的唯一原因<ul>
+<li>感知机为在线学习，每次参数更新只使用一个训练实例，没有考虑整个数据集；感知机奖励正确答案对应的特征函数，但只惩罚错得厉害的特征函数</li>
+<li>条件随机场的对数似然函数和梯度，定义在整个数据集上，每次参数更新都经过全局的考虑；奖励正确的特征函数，惩罚所有错误结果对应的特征函数（虽然惩罚总量不变，但根据模型赋予每个答案的概率，分摊惩罚力度）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>工具包：略</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\13\A-Survey-Organizing-Contextualized-Encoders\" rel="bookmark">A Survey Organizing Contextualized Encoders</a></div>
+        <div class="popular-posts-excerpt"><p><p>​    综述《Which *BERT? A Survey Organizing Contextualized Encoders》（EMNLP 2020）</p>
+<p>​</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\05\04\A-Systematic-Survey-of-Prompting-Methods-in-Natural-Language-Processing\" rel="bookmark">A Systematic Survey of Prompting Methods in Natural Language Processing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Pre-train, Prompt, and Predict: A Systematic Survey of Prompting Methods in Natural Language Processing》（2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\15\ALBERT\" rel="bookmark">ALBERT A Lite BERT For Self-supervised Learning Of Language Representations</a></div>
+        <div class="popular-posts-excerpt"><p><p>《ALBERT: A LITE BERT FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS》（ALBERT ICLR 2020）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\23\BART\" rel="bookmark">BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension》（BART）论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\16\BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding\" rel="bookmark">BERT Pre-training of Deep Bidirectional Transformers for Language Understanding</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/" title="自然语言处理入门（3） 感知机与条件随机场">https://thomas-li-sjtu.github.io/2021/10/01/自然语言处理入门-3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" rel="tag"><i class="fa fa-tag"></i> 自然语言处理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/" rel="prev" title="自然语言处理入门（2） 二元语法与隐马尔可夫模型">
+      <i class="fa fa-chevron-left"></i> 自然语言处理入门（2） 二元语法与隐马尔可夫模型
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/10/14/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-4/" rel="next" title="自然语言处理入门（4） 词性标注、命名实体识别、信息抽取">
+      自然语言处理入门（4） 词性标注、命名实体识别、信息抽取 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%84%9F%E7%9F%A5%E6%9C%BA"><span class="nav-number">1.</span> <span class="nav-text">感知机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E5%88%86%E7%B1%BB%E4%B8%8E%E6%84%9F%E7%9F%A5%E6%9C%BA%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">线性分类与感知机算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E5%8C%96%E9%A2%84%E6%B5%8B%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.</span> <span class="nav-text">结构化预测问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E5%8C%96%E6%84%9F%E7%9F%A5%E6%9C%BA"><span class="nav-number">1.3.</span> <span class="nav-text">结构化感知机</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA"><span class="nav-number">2.</span> <span class="nav-text">条件随机场</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E8%B0%B1%E7%B3%BB"><span class="nav-number">2.1.</span> <span class="nav-text">机器学习谱系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA-1"><span class="nav-number">2.2.</span> <span class="nav-text">条件随机场</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

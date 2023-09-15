@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《密码协议》课程笔记（2） 比特承诺协议">
+<meta property="og:type" content="article">
+<meta property="og:title" content="密码协议(2) 比特承诺协议">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《密码协议》课程笔记（2） 比特承诺协议">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/image-20220328162130398.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/image-20220328181247618.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/image-20220328181529817.png">
+<meta property="article:published_time" content="2022-03-28T07:12:33.000Z">
+<meta property="article:modified_time" content="2022-04-28T05:38:46.537Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/image-20220328162130398.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>密码协议(2) 比特承诺协议 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          密码协议(2) 比特承诺协议
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-28 15:12:33" itemprop="dateCreated datePublished" datetime="2022-03-28T15:12:33+08:00">2022-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">信息安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《密码协议》课程笔记（2） 比特承诺协议</p>
+<a id="more"></a>
+
+<h2 id="比特承诺协议"><a href="#比特承诺协议" class="headerlink" title="比特承诺协议"></a>比特承诺协议</h2><p>要解决的问题：A向B承诺一个预测，一段时间后才揭示，此期间A不能改变该预测</p>
+<h3 id="协议概述"><a href="#协议概述" class="headerlink" title="协议概述"></a>协议概述</h3><ul>
+<li><p>可能场景：拍卖、彩票方案、商业谈判、零知识证明，多方协议、盲签名</p>
+</li>
+<li><p><strong>直观含义</strong>：</p>
+<ul>
+<li>A把承诺的比特放在一个箱子里并锁住，只有A有钥匙，箱子送给B，之后A决定向B证实消息（打开承诺），把钥匙给B，B打开箱子确认A的承诺，且B确信箱子里的消息在保管期间没有被篡改</li>
+<li>A：承诺者，B：验证者</li>
+<li>承诺阶段：A选择一个要承诺的比特，将能表示比特的信息c发给B</li>
+<li>打开阶段：A把打开承诺的消息d和b发给B，B用d打开c，验证b是否为承诺的比特</li>
+</ul>
+</li>
+<li><p><strong>安全性质：</strong></p>
+<ul>
+<li>隐藏性：一个不诚实的接受方无法看到发送方承诺的值</li>
+<li>绑定性：发送者不能在打开承诺阶段改变自己承诺的比特</li>
+<li>协议同时满足两个性质才称为安全；如果性质的成立依赖于某个计算困难假设，则称其是计算上绑定的，或计算上隐藏的；如果不依赖，则认为是信息论上绑定的、隐藏的</li>
+</ul>
+</li>
+<li><p><strong>比特承诺方案是由两方（发送方与接收方）参与的、分为两个阶段（承诺阶段与打开阶段）执行的协议，满足隐藏性和绑定性</strong></p>
+<img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/image-20220328162130398.png" alt="image-20220328162130398" style="zoom:67%;">
+</li>
+<li><p>可能存在中间人攻击：攻击者在提交承诺时用$C’$替换$C$，在打开时用$r’,x’$替换$r,x$</p>
+</li>
+<li><p>比特承诺对验证者有些不公平</p>
+</li>
+<li><p>比特承诺不是公开可验证的——和公钥签名不同</p>
+</li>
+<li><p>不存在信息论隐藏和信息论绑定的比特承诺协议</p>
+</li>
+</ul>
+<h3 id="常用的比特承诺协议"><a href="#常用的比特承诺协议" class="headerlink" title="常用的比特承诺协议"></a>常用的比特承诺协议</h3><h4 id="基于加密"><a href="#基于加密" class="headerlink" title="基于加密"></a>基于加密</h4><ul>
+<li><p>基于对称密钥</p>
+<ul>
+<li>加密算法E，解密算法D，$||$表示将两个字符串合并</li>
+<li>承诺阶段：<ol>
+<li>B产生一个随机比特串r，发给A</li>
+<li>A选择承诺的比特b，随机产生密钥K，将$E_K(r||b)$发给B</li>
+</ol>
+</li>
+<li>打开阶段：<ol>
+<li>A发送K给B</li>
+<li>B解密消息，验证其中的随机串是否和r一致，验证承诺的有效性</li>
+</ol>
+</li>
+<li>若要作假，A必须能找到一个新的消息，不仅使承诺的比特反转，还准确产生B的随机串r</li>
+</ul>
+</li>
+<li><p>基于RSA</p>
+<ul>
+<li><p>$K=(n=pq,e,d)$为RSA密钥</p>
+</li>
+<li><p>承诺阶段：</p>
+<ol>
+<li><p>A随机选择x，x为奇数则b为0，为偶数则b为1</p>
+</li>
+<li><p>A发送$x^e\ mod\ n$给B</p>
+</li>
+</ol>
+</li>
+<li><p>打开阶段：B使用RSA解密即可</p>
+</li>
+<li><p>隐藏性：b不参与运算；绑定性：不存在奇数的$x_1$和偶数的$x_2$使得$x_1^e=x_2^e\ mod\ n$</p>
+</li>
+</ul>
+</li>
+<li><p>平方剩余问题</p>
+<ul>
+<li>$K=(n=pq,m\notin QR(n))$，公开n和m</li>
+<li>承诺阶段：选择随机的x，使得$Y=f(b,x)=m^bx^2\ mod\ n$</li>
+<li>打开阶段：发送b和x，B重复加密过程检查结果是否一致</li>
+<li>隐藏性：若平方剩余问题不可解，则b的信息不会泄露；绑定性：若不绑定，则存在$x_1,x_2$使得$mx_1^2=mx_2^2 \mod n$，则$m=(x_2x_1^{-1})^2\ mod\ n$，矛盾</li>
+</ul>
+</li>
+</ul>
+<h4 id="基于Hash函数"><a href="#基于Hash函数" class="headerlink" title="基于Hash函数"></a>基于Hash函数</h4><ul>
+<li>承诺阶段：<ol>
+<li>A随机产生两个比特串$r_1,r_2$</li>
+<li>A发送$H(r_1||r_2||b)$和$r_1$给B</li>
+</ol>
+</li>
+<li>打开阶段：<ol>
+<li>A将原始消息$r_1||r_2||b$发给B</li>
+<li>B计算散列值，并对比收到的承诺和$r_1$</li>
+</ol>
+</li>
+<li>隐藏性：哈希的单向性保证；绑定性：哈希的抗碰撞性保证——计算隐藏和计算绑定的</li>
+</ul>
+<h4 id="基于离散对数"><a href="#基于离散对数" class="headerlink" title="基于离散对数"></a>基于离散对数</h4><ul>
+<li><p>Pedersen：</p>
+<ul>
+<li>$g$是$Z_p^{*}$的生成元，令$h$为一个随机的群元素，因此$h$的阶是保密的</li>
+<li>承诺阶段：（commit(r,b): b为待commit的信息，r为一个随机值）<ol>
+<li>A选择比特b，从$Z_p^*$中选一个随机元素$r$</li>
+<li>计算$c=g^rh^b\ mod\ n$，发送给B</li>
+</ol>
+</li>
+<li>打开阶段：<ol>
+<li>将r和b发给B</li>
+<li>验证c的计算结果是否一致</li>
+</ol>
+</li>
+<li>隐藏性：由于r是随机选择的，因此B无法区分$c_0=g^r\ mod\ p$和$c_1=g^rh\ mod\ p$，即$g^r,g^rh$的分布是统计不可区分的；绑定性：若A要修改，A要重新计算随机数h的离散对数，这是计算困难问题——信息论隐藏、计算绑定</li>
+</ul>
+</li>
+<li><p>信息论隐藏：<code>commit(r,0)</code>和<code>commit(r,1)</code>统计不可区分</p>
+</li>
+<li><p>ElGamal-like：</p>
+<ul>
+<li>发送$g^r$和$h^{r+b}$</li>
+<li>计算隐藏：基于DDH问题——给定结果来求b是DDH困难的</li>
+<li>信息论绑定——不存在$r,r’$使得结果相等，即不能又作为0又作为1打开承诺</li>
+</ul>
+</li>
+</ul>
+<h4 id="同态承诺"><a href="#同态承诺" class="headerlink" title="同态承诺"></a>同态承诺</h4><ul>
+<li><strong>具有性质“保持两个域上运算不变”的承诺</strong>，能够在提交的承诺做计算而不失去承诺的安全性（隐藏、绑定）</li>
+<li>举例：Pedersen协议是同态的：$commit_1(r,x)commit(r’,x’)=commit_1(r+r’,x+x’)$<ul>
+<li>右边的乘积计算在群$G$中进行，左边的加法计算在$Z_n$中进行——两个承诺的乘积，是承诺值的和</li>
+<li>可以作为安全选举的一部分：投票人将选票放入同态承诺，计数阶段，选票通过取所有承诺的乘积来计数)</li>
+</ul>
+</li>
+</ul>
+<h4 id="基于二次剩余（Quadratic-Residuosity）的承诺"><a href="#基于二次剩余（Quadratic-Residuosity）的承诺" class="headerlink" title="基于二次剩余（Quadratic Residuosity）的承诺"></a>基于二次剩余（Quadratic Residuosity）的承诺</h4><ul>
+<li><p>$commit(r,b)=y^br^2\ mod\ m,r\in Z_m$</p>
+<img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/image-20220328181247618.png" alt="image-20220328181247618" style="zoom:80%;">
+</li>
+<li><p>b为0，当且仅当$commit(r,b)$为一个m的二次剩余</p>
+</li>
+<li><p>同态性质：$commit_1(r,x)commit(r’,x’)=commit_1(rr’,x\bigoplus x’)$</p>
+<img src="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/image-20220328181529817.png" alt="image-20220328181529817" style="zoom:80%;">
+
+</li>
+</ul>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><ul>
+<li>抛硬币<ul>
+<li>A和B通过抛硬币做决定，二者位于两个不同地方</li>
+<li>A和B各自选择一个随机比特，各自对选择的比特作承诺。最后都打开自己的承诺，抛硬币结果是选择的随机比特的异或</li>
+</ul>
+</li>
+<li>拍卖</li>
+<li>零知识：A向B证明A拥有某种知识，但是证明过程不向B透露知识到底是什么</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\28\Empirical-Analysis-of-Password-Reuse-and-Modification-across-Online-Service\" rel="bookmark">Empirical Analysis of Password Reuse and Modification across Online Service</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Empirical Analysis of Password Reuse and Modification across Online Service》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-2/" title="密码协议(2) 比特承诺协议">https://thomas-li-sjtu.github.io/2022/03/28/密码协议-2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/27/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-1/" rel="prev" title="密码协议(1) 引论与密钥交换协议">
+      <i class="fa fa-chevron-left"></i> 密码协议(1) 引论与密钥交换协议
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/28/%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE-3/" rel="next" title="密码协议(3) 身份认证协议">
+      密码协议(3) 身份认证协议 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%94%E7%89%B9%E6%89%BF%E8%AF%BA%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.</span> <span class="nav-text">比特承诺协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">协议概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84%E6%AF%94%E7%89%B9%E6%89%BF%E8%AF%BA%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.2.</span> <span class="nav-text">常用的比特承诺协议</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E5%8A%A0%E5%AF%86"><span class="nav-number">1.2.1.</span> <span class="nav-text">基于加密</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8EHash%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.</span> <span class="nav-text">基于Hash函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E7%A6%BB%E6%95%A3%E5%AF%B9%E6%95%B0"><span class="nav-number">1.2.3.</span> <span class="nav-text">基于离散对数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%8C%E6%80%81%E6%89%BF%E8%AF%BA"><span class="nav-number">1.2.4.</span> <span class="nav-text">同态承诺</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E4%BA%8C%E6%AC%A1%E5%89%A9%E4%BD%99%EF%BC%88Quadratic-Residuosity%EF%BC%89%E7%9A%84%E6%89%BF%E8%AF%BA"><span class="nav-number">1.2.5.</span> <span class="nav-text">基于二次剩余（Quadratic Residuosity）的承诺</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8"><span class="nav-number">1.3.</span> <span class="nav-text">应用</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221103417092.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221104244237.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221110151553.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221115434921.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221124158814.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221124833388.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221125404039.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221132931934.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221133110821.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221133128685.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221133703194.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221143038964.png">
+<meta property="article:published_time" content="2021-02-20T08:10:16.000Z">
+<meta property="article:modified_time" content="2021-02-21T06:35:35.562Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta property="article:tag" content="GAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221103417092.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-20 16:10:16" itemprop="dateCreated datePublished" datetime="2021-02-20T16:10:16+08:00">2021-02-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>与传统的暴力破解攻击和字典攻击相比，密码猜测模型通过泄露的密码库生成猜测密码，期望通过更少的猜测覆盖尽可能多的目标密码</li>
+<li>本文分析了 8 个泄露密码库的密码模式<code>password patterns</code>，并对比研究两种主要的概率模型（马尔可夫、PCFG）和 PassGAN（目前最具代表性的深度学习方法）<ul>
+<li>对马尔可夫模型应用拉普拉斯平滑</li>
+<li>对 PCFG 应用语义模式<code>semantic patterns</code></li>
+</ul>
+</li>
+<li>结果显示：<ul>
+<li>马尔可夫模型可以覆盖大部分测试集的密码</li>
+<li>PassGAN 的表现非常差</li>
+<li>考虑到攻击者会调整训练集，PCFG 将优于马尔可夫模型</li>
+<li>暴力攻击与概率模型结合使用时（破解4-8位纯数字口令），original-PCFG 与 modified-PCFG 能分别提高 11% 和 8.5%</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>文本密码容易使用且对存储空间的需求低。在将来文本密码不太可能被其他的方法【2】替代【1】</li>
+<li>大多网站使用严格的密码生成策略，以引导用户创建更强的密码。密码强度会实时反馈给用户<ul>
+<li>NIST【3】推荐用密码的信息熵<code>password&#39;s information entropy</code>——现代密码攻击下，此方法效果不好【4】</li>
+<li>密码安全的关键在于密码猜测攻击<ul>
+<li>攻击者创建一个候选密码集</li>
+<li>攻击者依此一个一个测试，直到猜测密码和目标密码匹配，或者穷尽候选集</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>暴力攻击：是最基本的策略：在特定的密码空间上尝试所有可能的猜测，直到得到正确的密码空间——不现实，时间和存储空间成本随着密码空间的增加而增加——完全覆盖给定空间需要的猜测次数：$Guess_Number = \sum_{k=i}^n x^k$</li>
+<li>字典攻击：比前者节省空间。猜测时，攻击者从预定义的字典中逐一尝试可能的密码（构成词典的条目通常被认为是用户更可能用来创建密码的字符串）；攻击者可以通过规则集合<code>mangling-rules</code>，生成更多的猜测</li>
+<li>一些开创性工作引入了密码猜测概率模型和深度学习模型</li>
+<li>猜测攻击的有效性很大程度上取决于使用的猜测模型</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>Weir【5】提出 PCFG，每个密码被分割成字母、数字、特殊符号的子串，并以此生成规则集</li>
+<li>Houshmand【6】向 PCFG 引入了 <code>keyboard mode</code> 和 <code>multi-word mode</code></li>
+<li>Wang【7】分析了来自中国网站的不同数据集，并系统地调查了中国用户的密码特征。他们在基于 PCFG 的模型中加入了拼音、日期等其他特征；他们一个主要贡献是攻击者能够通过分析数据集的特征，提高覆盖率</li>
+<li>Veras【8】探索密码的语义，他们使用自然语言处理技术来提取对密码中语义模式，并将这些模式添加到基于 PCFG 的模型</li>
+<li>Narayanan【9】首次提出了一种基于马尔可夫模型的猜测模型。他们观察到，容易记住的密码与用户使用的语言具有相似的分布，因此通过低阶马尔可夫链生成密码</li>
+<li>【10】对马尔可夫模型和 PCFG 模型进行归一化和平滑处理，结果马尔可夫模型比PCFG模型能够覆盖更多的密码</li>
+<li>Hitaj【11】提出了 生成性对抗性网络 PassGAN，不需要手动分析数据集</li>
+<li>Xu【12】将 LSTM 引入密码猜测。在生成密码的下一个字符时，基于LSTM的模型会考虑前缀中的所有字符</li>
+</ul>
+<h2 id="数据集分析"><a href="#数据集分析" class="headerlink" title="数据集分析"></a>数据集分析</h2><h3 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h3><ul>
+<li><p>收集 8 个密码数据集</p>
+</li>
+<li><p>删除长度小于 4 或大于 18 的密码</p>
+</li>
+<li><p>保留仅包含 95 个可打印字符的合法密码</p>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221103417092.png" alt="image-20210221103417092" style="zoom:67%;">
+</li>
+<li><p>Gmail 为英文库，语言上的差异可能会使数据集在某些方面表现出与其他数据集不同的特征</p>
+</li>
+<li><p>17173 和 7k7k 在用户语言和网站服务上相同，数据集的大小和唯一的密码分布相当接近——一些特殊的测试中，前者为训练集，后者为测试集；其他六个也可以作为测试集</p>
+</li>
+<li><p>17173 与 7k7k 的互换是可行的</p>
+</li>
+</ul>
+<h3 id="密码模式"><a href="#密码模式" class="headerlink" title="密码模式"></a>密码模式</h3><ul>
+<li><p>下表显示了密码在每个数据集中的前五位的简单模式（D代表数字序列，L代表字母序列）</p>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221104244237.png" alt="image-20210221104244237" style="zoom:67%;">
+
+<ul>
+<li>数字序列相关的密码模式之和比例较大，中国用户更喜欢数字而不是字母</li>
+<li>Gmail 中纯字母序列占比最高</li>
+</ul>
+</li>
+<li><p>其他信息</p>
+<ul>
+<li><p>用户喜欢添加自己的生日、姓名等信息</p>
+</li>
+<li><p>参考【7，8，13，14】，对语义模式分类</p>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221110151553.png" alt="image-20210221110151553" style="zoom: 67%;">
+</li>
+<li><p>实现数字序列语义模式的正则表达式</p>
+</li>
+<li><p>汉语语义模式：</p>
+<ul>
+<li>收集汉语词汇</li>
+<li>【15】将其转换成汉语拼音</li>
+<li>从姓氏、中国省市区名收集 568 个条目，分别作为汉语姓氏和汉语地名的汉语词汇</li>
+<li>从【7】收集 2000 万个预订数据集和三个在线购买数据集（当当，亚马逊中国，凡客诚品）——它们包括买家的姓名——选择这 4 个数据集中的所有中文全名</li>
+</ul>
+</li>
+<li><p>英文语义模式：</p>
+<ul>
+<li>根据【8】，英语姓名词典来自【16】，包括自1879年以来美国流行的婴儿姓名。英语单词来自【17】，包括 58110 个小写英语单词【7】</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>将匹配某个语义模式的密码数除以数据集的大小获得对应比例</p>
+<ul>
+<li>对于每个密码，确定它们的某个子串是否符合一个语义模式</li>
+<li>一个密码中的任何子串都不能多次用于形成语义模式：例如 zhangsan，这里子串 zhang 计入姓氏而非全名</li>
+</ul>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221115434921.png" alt="image-20210221115434921" style="zoom:67%;">
+
+<ul>
+<li>结论：<ul>
+<li>出生日期在密码记忆中起着关键作用</li>
+<li>名字是一组经常使用的语义模式</li>
+<li>人人网的英文语义模式在中文数据集里最多——基于国内接受英语教育较好的青年学生的用户群体</li>
+<li>手机号码模式在中文数据集中也有一定的比例</li>
+<li>连续的键盘字符很容易记住</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h2><h3 id="Original-PCFG"><a href="#Original-PCFG" class="headerlink" title="Original-PCFG"></a>Original-PCFG</h3><ul>
+<li>将密码分作数字、字母和特殊符号的序列子串</li>
+<li><code>abcd1234</code>的概率计算方式为：$P(abcd1234)=P(L_4D_4)\times P(L_4 \rightarrow abcd)\times P(D_4 \rightarrow 1234)$<ul>
+<li>$P(L_4D_4)$ 是模板 $L_4D_4$ 在训练集的频率</li>
+<li>$P(L_4 \rightarrow abcd)$ 是<code>abcd</code>在 $L_4$ 子串集中的出现频率，以此类推</li>
+</ul>
+</li>
+<li>Weir【5】在密码生成时使用外部字典填充模板中的字母子串<ul>
+<li>模板 $S_1L_3D_3$ 可以转换为前终端结构<code>pre-terminal structure</code> $!L_3123$</li>
+<li>之后选择外部字典中长度为 3 的字母序列来代替$L_3$</li>
+<li>PCFG 模型自动地从训练集中导出规则集合<code>mangling rules</code>，但有效性将取决于外部字典的质量</li>
+<li>本文还使用训练集中的字母序列来填充模板中的 $L$</li>
+</ul>
+</li>
+</ul>
+<h3 id="M-Order-Markov-Model"><a href="#M-Order-Markov-Model" class="headerlink" title="M-Order Markov Model"></a>M-Order Markov Model</h3><ul>
+<li>【9】首次提出马尔可夫模型：一个 m 阶马尔可夫模型对应一个 N-gram（N = m+ 1），下一个字符将由其前 m 个字符决定</li>
+<li>$P(c_1c_2…c_l)=\prod_{i=1}^lP(c_i|c_{i-m}c_{i-m+1}…c_{i-1})$<ul>
+<li>右边的每一项从训练集计算得到：$P(c_i|c_{i-m}c_{i-m+1}…c_{i-1})=\frac{O(c_{i-m}c_{i-m+1}…c_{i-1}c_i)}{\sum_{c\in\sum}O(c_{i-m}c_{i-m+1}…c_{i-1}c)}$<ul>
+<li>分子为出现次数，分母中的 $\sum$ 表示包含 95 个可打印字符的字典</li>
+<li>在第一个字符前添加填充符号，并在末尾添加特殊的结束符号</li>
+</ul>
+</li>
+<li>阶数过高，则很多概率为0，因此【10】引入了平滑技术，解决数据稀疏问题，本文和【10】添加拉普拉斯平滑，分子分母都增加一个常数 $\delta=0.01$（分母最终增加 $\delta \times \sum$）（字符集大小为 96）</li>
+</ul>
+</li>
+<li>【10】将生成密码的过程建模为搜索树，父节点为 $c_1c_2…c_{l-1}$ 和子节点 $c_1c_2…c_l$ 之间的连接用转移概率标记；树中的节点存储在优先级队列中，按概率降序排列，每次迭代时，概率最高的节点出列，更多的子节点被推入优先级队列。如果出列节点的最后一个字符是终结字符，则对应于该节点的字符串是密码猜测</li>
+<li>本文输出猜测密码以及它们的概率，在生成所有高于给定概率阈值的密码后，根据概率间隔将它们分成块，并对每个块的密码进行排序</li>
+</ul>
+<h3 id="PassGAN"><a href="#PassGAN" class="headerlink" title="PassGAN"></a>PassGAN</h3><ul>
+<li>【11】提出 PassGAN</li>
+<li>利用生成对抗网络，可以自动从训练集中获取密码的分布；遗传神经网络由生成深层神经网络 G （生成器）和判别深层神经网络 D（鉴别器）组成。每次迭代都会给它一个输入 I，生成器 G 生成一个伪样本，鉴别器 D 的目标是区分生成的来自 G 的样本和来自 I 的真实样本，当 D 无法区分 G 生成的伪样本和真实样本时，认为训练完成</li>
+<li>IWGAN 要求输入字符串的长度一致，因此使用填充符号扩展训练集中的密码长度</li>
+<li>参数遵循【11】，下图显示不同 checkpoint 下分别生成 500w 密码猜测的覆盖率（训练集为 17173，测试集为 7k7k）</li>
+</ul>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221124158814.png" alt="image-20210221124158814" style="zoom:67%;">
+
+<h3 id="Modified-PCFG"><a href="#Modified-PCFG" class="headerlink" title="Modified-PCFG"></a>Modified-PCFG</h3><ul>
+<li><p>Original-PCFG 将密码字符串分割成三种类型的子字符串，但用户选择的密码往往有语义</p>
+</li>
+<li><p>Modified-PCFG 模型的分割首先确定子串是数字序列还是字母序列，然后确定它们是否符合某种语义模式的定义。不符合的子串仍定义为 $D_n$ 与 $L_n$</p>
+</li>
+<li><p>具体算法如下：</p>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221124833388.png" alt="image-20210221124833388" style="zoom: 67%;">
+
+</li>
+</ul>
+<h2 id="执行结果"><a href="#执行结果" class="headerlink" title="执行结果"></a>执行结果</h2><h3 id="Markov-vs-PCFG"><a href="#Markov-vs-PCFG" class="headerlink" title="Markov vs PCFG"></a>Markov vs PCFG</h3><ul>
+<li><p>马尔可夫的概率阈值设置为 $10^{-10}$，训练 1-5 元，添加拉普拉斯平滑，训练集为 17173</p>
+<p><img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221125404039.png" alt="image-20210221125404039"></p>
+</li>
+<li><p>猜测次数-覆盖率图表说明</p>
+</li>
+<li><p>选择了两个性能最好的模型——5-拉普拉斯和4-拉普拉斯——与 Original-PCFG 和 Modified-PCFG 对比，猜测次数设为10亿</p>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221132931934.png" alt="image-20210221132931934" style="zoom:67%;">
+</li>
+<li><p>探索了训练集大小的影响：模型在使用完整的训练集时可以学习完整的密码分发信息，但这种优势只有在猜测数达到一定数量时才能体现出来</p>
+<img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221133110821.png" alt="image-20210221133110821" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="PassGAN-vs-概率模型"><a href="#PassGAN-vs-概率模型" class="headerlink" title="PassGAN vs 概率模型"></a>PassGAN vs 概率模型</h3><ul>
+<li><p>生成不重复的密码</p>
+</li>
+<li><p>PassGAN 效果最差，但不需要任何的密码先验知识</p>
+</li>
+<li><p>其他测试结果</p>
+<p><img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221133128685.png" alt="image-20210221133128685"></p>
+<ul>
+<li><p>语言上的差异使得训练集和测试集有不同的分布</p>
+</li>
+<li><p>训练集与测试集相同（对训练集进行猜测攻击）：</p>
+<ul>
+<li><p>出发点是攻击者可以根据被攻击数据集的特征调整自己的训练集</p>
+</li>
+<li><p>极端的情况：攻击者得到一个与测试集几乎没有区别的训练集</p>
+</li>
+<li><p>PassGAN 仍然无法达到预期的效果：PassGAN适合在数据集内训练高频长度的密码，如【11】</p>
+<ul>
+<li><p>把17173数据集中长度为4到9的密码拿出来，把每个长度的所有密码分别输入 PassGAN 模型中进行训练</p>
+</li>
+<li><p>结果如下</p>
+<p><img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221133703194.png" alt="image-20210221133703194"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="联合攻击"><a href="#联合攻击" class="headerlink" title="联合攻击"></a>联合攻击</h3><ul>
+<li><p>暴力攻击和概率模型组合，共同破解长度 4-8 的纯数字密码</p>
+</li>
+<li><p>此时应当生成 111,110,000 条密码（纯数字），再用概率模型生成概率最高的 88,890,000 条密码，二者混合后测试覆盖率</p>
+<p><img src="/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/image-20210221143038964.png" alt="image-20210221143038964"></p>
+</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>Zhu, B., Yan, J., Bao, G., Yang, M., Xu, N.: Captcha as graphical passwords- a new security primitive based on hard AI problems. IEEE Trans. Inf. Forensics Secur. 9, 234–240 (2014)</li>
+<li>van Herley, C., Oorschot, P.: A research agenda acknowledging the persistence of passwords. IEEE Secur. Priv. 10, 28–36 (2012)</li>
+<li>Burr, W.E., et al.: NIST SP800-63-2: Electronic authentication guideline. National Institute of Standards and Technology, Reston, V A, Technical report, Special Publication (NIST SP) - 800–63-1 (2011)</li>
+<li>Matt, W., Sudhir, A., et al.: Testing metrics for password creation policies by attacking large sets of revealed passwords. In: ACM CCS 2010, pp. 162–175 (2010)</li>
+<li>Matt, W., Sudhir, A., et al.: Password cracking using probabilistic context-free grammars. In: IEEE Symposium on Security and Privacy, pp. 391–405 (2009)</li>
+<li>Houshmand, S., Aggarwal, S., Flood, R.: Next gen PCFG password cracking. IEEE Trans. Inf. Forensics Secur. 10, 1776–1791 (2015)</li>
+<li>Wang, D., Cheng, H., et al.: Understanding Passwords of Chinese Users: Characteristics, Security and Implications, July 2014. <a target="_blank" rel="noopener" href="https://www.researchgate.net/profile/Ding_Wang12/publication/269101022_Understanding_Passwords_of_Chinese_Users_Characteristics_Security_and_Implications/links/5544e2700cf23ff7168696a8.pdf">https://www.researchgate.net/profile/Ding_Wang12/publication/269101022_Understanding_Passwords_of_Chinese_Users_Characteristics_Security_and_Implications/links/5544e2700cf23ff7168696a8.pdf</a></li>
+<li>Veras, R., Collins, C., Thorpe, J.: On the semantic patterns of passwords and their security impact. In: Network and Distributed System Security Symposium (2014)</li>
+<li>Arvind, N., Vitaly, S.: Fast dictionary attacks on passwords using time-space trade-off. In: ACM CCS 2005, pp. 364–372 (2005)</li>
+<li>Ma, J., Yang, W., Luo, M., Li, N.: A study of probabilistic password models. In: Proceedings of IEEE Symposium on Security and Privacy, pp. 689–704 (2014)</li>
+<li>Hitaj, B., Gasti, P., Ateniese, G., Pérez-Cruz, F.: PassGAN: a deep learning approach for password guessing. CoRR abs/1709.00440 (2017)</li>
+<li><strong>Xu, L., Ge, C., et al.: Password guessing based on LSTM recurrent neural networks. In: IEEE International Conference on Computational Science and Engineering, pp. 785–788 (2017)</strong></li>
+<li>Li, Y., Wang, H., Sun, K.: A study of personal information in human-chosen passwords and its security implications. In: IEEE INFOCOM, pp. 1-9 (2016)</li>
+<li>Wang, D., Zhang, Z., Wang, P., Yan, J., Huang, X.: An underestimated threat. In: ACM CCS, Targeted Online Password Guessing (2016)</li>
+<li>ChineseTone. <a target="_blank" rel="noopener" href="https://github.com/letiantian/ChineseTone">https://github.com/letiantian/ChineseTone</a></li>
+<li>ssa.gov. <a target="_blank" rel="noopener" href="https://www.ssa.gov/oact/babynames/limits.html">https://www.ssa.gov/oact/babynames/limits.html</a></li>
+<li>English words. <a target="_blank" rel="noopener" href="http://www.mieliestronk.com/wordlist.html">http://www.mieliestronk.com/wordlist.html</a></li>
+<li>Gulrajani, I., Ahmed, F., et al.: Improved Training of Wasserstein GANs. CoRRabs/1704.00028 (2017). <a target="_blank" rel="noopener" href="http://arxiv.org/abs/1704.00028">http://arxiv.org/abs/1704.00028</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\03\Improving-Password-Guessing-via-Representation-Learning\" rel="bookmark">Improving Password Guessing via Representation Learning</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Improving Password Guessing via Representation Learning》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\PassGAN-A-Deep-Learning-Approach-for-Password-Guessing\" rel="bookmark">PassGAN:A Deep Learning Approach for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《PassGAN：A Deep Learning Approach for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/" title="Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing">https://thomas-li-sjtu.github.io/2021/02/20/Deep-Learning-vs-Traditional-Probabilistic-Models/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+              <a href="/tags/GAN/" rel="tag"><i class="fa fa-tag"></i> GAN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/08/Hands-on-ML-8/" rel="prev" title="Hands-on Machine Learning（8）">
+      <i class="fa fa-chevron-left"></i> Hands-on Machine Learning（8）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/21/Password-Guessing-Based-on-LSTM-Recurrent-Neural-Networks/" rel="next" title="Password Guessing Based on LSTM Recurrent Neural Networks">
+      Password Guessing Based on LSTM Recurrent Neural Networks <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">数据集分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97"><span class="nav-number">4.1.</span> <span class="nav-text">数据清洗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.2.</span> <span class="nav-text">密码模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">5.</span> <span class="nav-text">攻击模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Original-PCFG"><span class="nav-number">5.1.</span> <span class="nav-text">Original-PCFG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#M-Order-Markov-Model"><span class="nav-number">5.2.</span> <span class="nav-text">M-Order Markov Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PassGAN"><span class="nav-number">5.3.</span> <span class="nav-text">PassGAN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Modified-PCFG"><span class="nav-number">5.4.</span> <span class="nav-text">Modified-PCFG</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">6.</span> <span class="nav-text">执行结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Markov-vs-PCFG"><span class="nav-number">6.1.</span> <span class="nav-text">Markov vs PCFG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PassGAN-vs-%E6%A6%82%E7%8E%87%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.2.</span> <span class="nav-text">PassGAN vs 概率模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%94%E5%90%88%E6%94%BB%E5%87%BB"><span class="nav-number">6.3.</span> <span class="nav-text">联合攻击</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

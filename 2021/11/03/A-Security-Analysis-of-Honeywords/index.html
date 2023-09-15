@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Security Analysis of Honeywords">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211103194455076.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211103194529121.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211103200415611.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104104301340.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104110835878.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104110821105.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104113634092.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104113905049.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104122006746.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104131503103.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104131612889.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104131737745.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104132808725.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104132940891.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104133930121.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104134000249.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104143954463.png">
+<meta property="article:published_time" content="2021-11-03T04:37:58.000Z">
+<meta property="article:modified_time" content="2021-11-04T06:42:21.011Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211103194455076.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>A Security Analysis of Honeywords | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A Security Analysis of Honeywords
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-03 12:37:58" itemprop="dateCreated datePublished" datetime="2021-11-03T12:37:58+08:00">2021-11-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>蜜语是与每个用户帐户相关联的诱饵密码，为检测密码泄漏提供了一种有前途的方法</li>
+<li>最早由Juels和Rivest在CCS2013上提出</li>
+<li>蜜语看似简单，但自动生成难以与真实密码区分的蜜语是一个深刻而复杂的挑战，在Juels的工作中，提出了四种主要的蜜语生成方法，但只有启发式安全参数证明能够生成难以区分的密码</li>
+<li>本文首次开发了一系列实际实验，使用10个大规模数据集，总共1.04亿个真实世界的密码，来定量评估四种方法所能提供的安全性<ul>
+<li>结果显示，它们都无法提供预期的安全性：<ul>
+<li><strong>通过基本的离线猜测攻击，可以以29.29%到32.62%的成功率，在20个密码（1个真实+19个蜜语）中仅猜测一次就区分真实密码</strong>，而不是预期的5%</li>
+<li>在<strong>利用各种最先进的概率密码模型的高级离线猜测攻击下，能够达到34.21%到49.02%</strong></li>
+<li>在一个可以<strong>利用受害者个人信息，进行有针对性的猜测攻击环境下，进一步评估了Juels-Rivest方法的安全性：56.81%到67.98%</strong></li>
+</ul>
+</li>
+<li>本文总地解决了由Juels和Rivest定义的蜜语研究中的三个公开问题</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>尽管密码在安全性和可用性方面都存在臭名昭著的缺陷，但它仍然是最流行的用户身份验证方法，并有可能在可预见的未来保持其地位</li>
+<li>基于密码的身份验证系统的一个固有限制是服务器需要维护一个由所有注册用户的密码组成的敏感文件</li>
+<li>即使泄露的密码按照标准惯例存储在加盐散列中，也不会给攻击者造成真正的障碍，通过使用基于现代机器学习的破解算法和通用硬件（如GPU），能够恢复一定量的密码——一旦攻击者获得密码哈希文件，就可以假设大多数密码都可以离线猜测</li>
+<li>已经提出了一些方法来完全消除离线密码猜测的可能性<ul>
+<li>使用机器相关函数（例如，ErsatzPasswords）</li>
+<li>采用分布式密码技术（(例如，门限密码认证的秘密共享[7])</li>
+<li>使用外部密码强化服务(例如凤凰城[23])。</li>
+<li>以上方法都需要对服务器端身份验证系统进行重大更改，并且第一种方法不支持以分布式方式备份密码哈希文件，第二个需要更新客户端系统，不利于用户使用，第三个受到单点故障的影响，可能会向外部泄露用户行为信息</li>
+</ul>
+</li>
+<li>一种更有希望改善这种情况的方法是引入与每个用户的账户相关联的诱饵密码——最早由Juels和Rivest在2013年提出的。他们认为即使攻击者窃取了密码文件并恢复了所有密码，也必须首先从一组k-1有意生成的蜜语中分辨出用户的真实密码，并进行在线登录尝试，此过程极大地阻碍攻击者，而且试图登录时还会在服务器上引发密码文件泄露的警报</li>
+<li>此方法对现有服务器端系统的改变少，对客户端系统没有改变，有实用性</li>
+</ul>
+<h3 id="挑战与动机"><a href="#挑战与动机" class="headerlink" title="挑战与动机"></a>挑战与动机</h3><ul>
+<li>主要的挑战是如何生成不容易与真实密码区分的蜜语</li>
+<li>Juels-Rivest提出五种蜜词生成方法：四种用于遗留UI，一种用于修改后的UI，并首选前四种（鉴于可用性）——本文也关注遗留UI的蜜语生成</li>
+<li>所有的Juels-Rivest方法都是基于随机替换，本质上无法抵抗语义感知攻击<ul>
+<li>这些方法在多大程度上对语义感知/非感知攻击有效（或无效）从来没有在理论上或经验上量化</li>
+<li>大多数关于蜜语的现有技术在评估时仅仅提供启发式的安全性论证，没有严格的理论分析，也没有真实数据集的经验评估——本文将通过实验表明所有蜜语生成方法在很大程度上不能提供预期的安全性</li>
+<li>[14]给出名为“honeyindex”的改进，但其评估仍然基于启发式的，并受到区分攻击问题和部署问题的困扰</li>
+<li>[17]从经验上展示了kulback-Leibler散度(KLD)可用来区分真实密码分布和诱饵密码分布，但KLD不适合攻击蜜语的场景——此场景需要区分单个真实密码和一组目标甜言蜜语</li>
+</ul>
+</li>
+<li>此外，在有针对性的猜测攻击下，很少人关注对蜜语安全性的分析——攻击者利用用户选择流行密码的行为、用户的个人身份信息（PII）——随着有针对性的猜测威胁变得越来越多，应当在这种新的威胁下评估蜜语</li>
+</ul>
+<h3 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h3><ul>
+<li>离线猜测攻击<ul>
+<li><strong>首次开发一系列使用大规模真实密码数据的实验来评估[21]中的四种蜜语生成方法，发现它们都无法提供预期的安全性</strong></li>
+<li>在一个基本的离线猜测环境下只猜一次，真实密码有29.29%到32.62%的几率被区分，而不是预期的5%</li>
+<li>利用最先进的概率密码破解模型（如马尔可夫和PCFG）做猜测攻击，准确率达到34.21%到49.02%。</li>
+</ul>
+</li>
+<li>有针对性的猜测攻击<ul>
+<li><strong>评估Juels-Rivest的方法在语义感知攻击下的表现——首次通过执行有针对性的猜测攻击来评估蜜语的安全性</strong></li>
+<li>如果攻击者知道一些常见的个人信息，如姓名和生日，只需进行一次猜测（当k=20时）就可以以56.8%到67.9%的成功率区分真实密码——回答[21]中“有针对性的攻击在多大程度上有助于识别特定蜜语生成方法的用户密码”</li>
+</ul>
+</li>
+<li>广泛的评估<ul>
+<li>实验建立在各种概率密码破解模型之上（马尔可夫、TarGuess、PCFG）</li>
+<li>使用10个大规模的真实世界密码列表，总共包含1.0436亿个密码，涵盖了各种流行的网络服务</li>
+<li>是第一项实证评估甜言蜜语的研究</li>
+</ul>
+</li>
+<li>新的见解<ul>
+<li>本文发现，<strong>生成与用户真实密码的可能性相等的假密码（通过随机替换部分或全部的真实密码字符）是完全不可能的</strong>——Juels-Rivest基于随机替换的方法天生就容易受到攻击</li>
+<li>本文发现，概率密码模型不适合用于生成蜜语</li>
+<li>密码模型可以结合真实数据集，设计有效的实验来评估蜜语的方法——回答了[21]中“有没有好的实验方法来量化蜜语方法的平坦度”的开放性问题</li>
+</ul>
+</li>
+</ul>
+<h2 id="数据集、安全模型和计量"><a href="#数据集、安全模型和计量" class="headerlink" title="数据集、安全模型和计量"></a>数据集、安全模型和计量</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li><p>基于10个大型真实密码数据集评估了Juels-Rivest的蜜语方法</p>
+<ul>
+<li>4个来自中文网站，6个来自英文网站</li>
+<li>数据集由1.0436亿个纯文本密码组成，涉及9个不同的web服务</li>
+<li>纳入三个最近泄露的数据集，可能显示最新的用户密码行为</li>
+</ul>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211103194455076.png" alt="image-20211103194455076"></p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211103194529121.png" alt="image-20211103194529121"></p>
+</li>
+<li><p>有两个数据集以MD5哈希形式泄露，在一周内通过在一台带有GPU的普通电脑上使用各种离线猜测模型和目标猜测模型TarGuess成功恢复其中的绝大部分</p>
+<ul>
+<li>Rootkit包含71,228个密码，恢复了其中的97.46%</li>
+<li>QNB包含97,415个密码，恢复了其中的81.69%——QNB于16年4月从中东的卡塔尔国家银行泄露，据本文所知，这是第一个在学术研究中探索的真实世界银行密码数据集</li>
+</ul>
+</li>
+<li><p>四个密码数据集（12306、ClixSense、Rootkit、QNB）与PII相关联</p>
+<ul>
+<li><p><strong>使用邮箱进一步将不含PII的数据集与含PII的数据集匹配</strong>，产生下表第一行所示九个具有PII的密码数据集</p>
+<ul>
+<li>四个中文密码数据集：将对应的无PII数据集与12306匹配邮箱获得</li>
+<li>四个美英分别是：PII-Rootkit、PII-ClixSense，000webhost和Yahoo与ClixSense匹配得到相关PII</li>
+<li>PII-QNB：QNB本身</li>
+<li><strong>进一步使用两个辅助PII数据集（即Hotel和51job）来扩充每个中文密码数据集</strong>——许多账户遗漏一些重要的PII属性，可以通过使用辅助的PII数据集补充</li>
+</ul>
+</li>
+<li><p>本文使用[30]中type-based PII-tagging来获取PII在密码中的用法</p>
+<ul>
+<li>高达36.95%-51.43%的中国用户使用其六种PII中的至少一种来构造密码，美国的英文用户为12.76%-29.94%，中东的英文用户为27.16%——这是因为这里的美国英文用户代表了精通技术的用户</li>
+<li>大量用户使用PII来建立密码，合理的蜜语生成方法应该考虑这种用户行为</li>
+<li>尽管QNB用户说英语，他们的密码与其他四个英语用户群几乎没有关联——用户分为三组：中文、美国英文和中东英文</li>
+</ul>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211103200415611.png" alt="image-20211103200415611"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="威胁模型"><a href="#威胁模型" class="headerlink" title="威胁模型"></a>威胁模型</h3><ul>
+<li>本文考虑客户端-服务器架构的蜜语系统</li>
+<li>蜜语系统<ul>
+<li>涉及到四个实体：一个用户$U_i$、一个身份验证服务器$S$、一个蜜罐检查器和一个攻击者$A$</li>
+<li>用户注册了一个账户（$ID_i,\ PW_i$），并由$Gen(k；PW_i)$生成k-1个不同的、看起来像诱饵的密码，[21]中建议k=20</li>
+<li>两种类型的蜜语生成方法<ul>
+<li>基于随机替换，如调整密码尾部</li>
+<li>基于密码模型</li>
+</ul>
+</li>
+<li>此时用户在$S$的账户记录为$(ID_i,\ SW_i)$，其中$SW_i=(sw_{i,1},\ sw_{i,2},\ sw_{i,k})$，密码和蜜语通过哈希存储。真实密码的位置用下标来记录，存储在蜜罐检查器中——蜜罐检查器是一个独立的、强化的计算机系统，确保分布式安全，不能公开访问，只能通过“专用和/或加密和认证”的通信通道进行交互</li>
+<li>如果用户使用蜜语登录，则报警$S$，不使用蜜语但密码错误则拒绝登录</li>
+<li>如果某用户的蜜语登录尝试次数超过阈值$T_1$，则用户必须重设密码</li>
+<li>如果所有用户的蜜语登录尝试总数超过预定义的阈值$T_2$，则关闭计算机系统并要求所有用户重置新密码——本文设置$T_2=10^4$</li>
+</ul>
+</li>
+<li>尝试区分蜜语的攻击者<ul>
+<li>$A$的蜜语登录尝试应该尽可能少</li>
+<li>假设$A$获得了密码散列文件，知道生成和散列蜜语的算法，拥有所有公开可用的信息——公开泄露的密码数据集和目标站点的密码策略——此类攻击者为类型1攻击者</li>
+<li>如果还获得用户PII，此类攻击者为类型2攻击者</li>
+</ul>
+</li>
+<li>其他攻击者<ul>
+<li>[21]认为蜜语面临的其他威胁包括：攻击蜜罐检查器系统、欺骗蜜语系统的DoS攻击以及攻击者利用跨不同系统重复使用的用户密码的交叉攻击</li>
+<li>本文不考虑这些</li>
+</ul>
+</li>
+</ul>
+<h3 id="评估指标"><a href="#评估指标" class="headerlink" title="评估指标"></a>评估指标</h3><ul>
+<li>[21]提出$\epsilon-flat$衡量一个蜜语生成方案安全性</li>
+<li>$\epsilon-flat$表示<strong>给出一个用户的k个蜜语时，攻击者只提交一次密码的最大攻击成功率</strong>——当允许用户进行一次以上的在线猜测，即$T_1&gt;1$时)，该度量不足以衡量方法的安全性</li>
+<li>本文提出两个新的度量：flatness graph和成功数图（success-number graph），<strong>以平均和最坏的角度衡量方法的安全性</strong><ul>
+<li>flatness graph：绘制区分真实密码的概率 vs 用户允许的蜜语尝试次数，即真实密码在前x次猜测中有概率为y的可能被猜中——x=1时的数据点即为$\epsilon-flat$（$x&lt;=k,x&lt;T_1$）</li>
+<li>success-number graph：绘制成功登录的总尝试次数 vs 错误登录的尝试次数，即第x次蜜语登录尝试前，有y个真实密码被找到，$x&lt;=T_2$——<strong>如果各个蜜语的概率和真实密码的概率相似，那么服从几何分布，预期安全性为，攻击者只有1/k的概率猜到密码</strong>，将绘制斜率为$\frac{1}{k}$的直线</li>
+</ul>
+</li>
+</ul>
+<h2 id="离线攻击"><a href="#离线攻击" class="headerlink" title="离线攻击"></a>离线攻击</h2><h3 id="Juels-Rivest的蜜语生成方案"><a href="#Juels-Rivest的蜜语生成方案" class="headerlink" title="Juels-Rivest的蜜语生成方案"></a>Juels-Rivest的蜜语生成方案</h3><ul>
+<li>四种蜜语生成都是基于随机替换的方法——随机替换部分（或全部）真实密码而产生的，前三个取决于真实密码的结构</li>
+<li>Tweaking by tail：<ul>
+<li>“调整”真实密码的所选字符位置，以生成k-1个蜜语</li>
+<li>$t$表示需要调整的位置数，[21]主要讨论了“尾部修改”</li>
+<li>$pw_i$的最后$t$个位置中的每个字符都被随机选择的相同类型的字符替换：数字被数字替换，字母被字母替换——trustno1，t=3，则蜜语是trustyp0、trustmi7等</li>
+</ul>
+</li>
+<li>Modeling syntax：<ul>
+<li>将$pw_i$分割，标记为相同类型的连续字符并提取相应的语法，通过随机选择的与语法匹配的值替换标记来生成蜜语</li>
+<li>trustno1抽象L7D1，生成dfdphus3、letmein4等</li>
+</ul>
+</li>
+<li>Hybrid：<ul>
+<li>将前二者合并</li>
+<li>采用Modeling syntax提取$pw_i$的语法并生成a个种子蜜语（包括$pw_i$），通过调整每个种子蜜语来生成b-1个蜜语，最后，从a*(b-1)个蜜语中随机选择$pw_i$之外的k-1个蜜语</li>
+<li>假设k=20，a=4，b=5：trustno1抽取语法L7D1，生成3个种子蜜语dfdphus3、letmein4和kebrton9，通过尾部调整从4个种子蜜语中各产生4个新的蜜语，合计产生20个蜜语</li>
+</ul>
+</li>
+<li>Simple model：<ul>
+<li>使用真实的密码样本来帮助生成蜜语</li>
+<li>根据现实生活密码和8%的不同长度随机密码建立一个列表，从列表选取一个长度为d的随机元素$w=w_1w_2…w_d$，启发式地生成一个带有字符序列$w_1c_2…c_d$的蜜语</li>
+<li>后面d-1个字符，$c_i$用L中随机元素的$w_i$替换的概率为10%，保持不变的概率为50%，在$c_{i-1}=w_{i-1}$的前提下用$c_i$替换$w_i$的概率为40%</li>
+</ul>
+</li>
+</ul>
+<h3 id="两种攻击方式"><a href="#两种攻击方式" class="headerlink" title="两种攻击方式"></a>两种攻击方式</h3><ul>
+<li>提出两个蜜词区分策略，本质上不同于现有的启发式策略</li>
+<li>利用用户选择的密码遵循齐夫定律的事实，并根据一些已知的概率分布对蜜语进行排序，无论这些概率分布是否在用户内部标准化——概率分布从泄露的密码数据集中计算，或者基于概率密码模型获得</li>
+</ul>
+<h4 id="Top-PW-attack"><a href="#Top-PW-attack" class="headerlink" title="Top-PW attack"></a>Top-PW attack</h4><ul>
+<li><p>$A$按照概率递减顺序依次尝试$n*k$个蜜语（包含真实密码在内），每个尝试密码$sw_{i,j}$的概率来自一个已知的概率分布$P_D$，$D$是一个泄露的密码集合：</p>
+<ul>
+<li>如果$sw_{i,j} \in D$，设置$Pr(sw_{i,j})=P_D(sw_{i,j})$</li>
+<li>否者设置$Pr(sw_{i,j})=0$</li>
+<li>其中$P_D(x)=\frac{Count(x)}{|D|}$</li>
+</ul>
+</li>
+<li><p>将DuDuNiu分割为相等的两份，分别为训练和测试；为测试部分的每个密码，分别根据上面的四种方法生成$k-1$个蜜语，$P_D$来自训练部分</p>
+</li>
+<li><p>图a-d结果显示本攻击能够区分测试集中至少615664的真实密码，但根据[21]的说法，攻击者理应最多区分出$T_2/(k-1)$个真实密码，即在success-number标准下，[21]的方案均比预想的安全性差</p>
+</li>
+<li><p>图e显示，给定某个用户的k个蜜语（包括真实密码），根据上面的方法排列各个蜜语概率，选取概率最大蜜语进行登录尝试，有35%的几率一次成功</p>
+</li>
+<li><p>这一识别过程与$sw_{i,j}$所属的蜜语列表的性质没有什么关系，即如果蜜语列表$SW_i$中一个蜜语概率为0.03其他为0.029，蜜语列表$SW_j$中一个蜜语概率为0.028其他为0.001，则应当先使用$SW_j$中概率0.028的蜜语尝试破解用户$U_j$的账户——即为下面的方法</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104104301340.png" alt="image-20211104104301340"></p>
+</li>
+</ul>
+<h4 id="Normalized-top-PW-attack"><a href="#Normalized-top-PW-attack" class="headerlink" title="Normalized top-PW attack"></a>Normalized top-PW attack</h4><ul>
+<li><p>与上述不同的是，攻击者根据归一化概率的降序尝试蜜语：$sw_{i,j}$的概率来自一个已知的密码分布$P_D$</p>
+<ul>
+<li>如果$sw_{i,j} \in D$，设置$Pr(sw_{i,j})=P_D(sw_{i,j})$</li>
+<li>否者设置$Pr(sw_{i,j})=0$</li>
+<li>设置$P_r(sw_{i,j})=\frac{P_r(sw_{i,j})}{\sum_{t=1}^kPr(sw_{i,t})}$</li>
+<li>若系统的$T_1&gt;1$，则每当一个$SW_i$的蜜语经过尝试后，其他没有尝试的蜜语的概率需要归一化为：<ul>
+<li>任意的$sw_{i,j}\in SW_i$且不在尝试过的蜜语集合$L$中，$Pr(sw_{i,j})=Pr(sw_{i,j})/\sum_{t\notin L}Pr(sw_{i,t})$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>以上步骤为下面算法1的line 5，算法1可用于生成success-number graph</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104110835878.png" alt="image-20211104110835878"></p>
+</li>
+<li><p>以上步骤为下面算法2的line 5，算法1可用于生成flatness graph</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104110821105.png" alt="image-20211104110821105"></p>
+</li>
+<li><p>以上可能导致很多蜜语的概率为0——但不应该认为没见过的东西概率为0，此时稀疏性较高，因此设置一种+1平滑：如果$sw_{i,j} \notin D$，设置$Pr(sw_{i,j})=\frac{1}{|D|+1}$，实验表明此平滑优于Laplace等平滑策略</p>
+</li>
+<li><p>标准化的过程，对success-number有较大影响，但对flatness graph没什么影响，<strong>因为不会更改一个</strong>$SW_i$<strong>内部的相对排名</strong></p>
+</li>
+<li><p>本文认为，关键在于如何对$k$个蜜语排序</p>
+</li>
+<li><p>以上两个方法在区分热门蜜语和冷门蜜语是有效的，因此当热门蜜语更可能是用户密码时，以上策略有效——它们适合攻击不基于密码模型的方法，例如[21]的四个方法，这些方法生成的k-1个蜜语通常比用户的原始密码概率的更低</p>
+</li>
+</ul>
+<h3 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h3><ul>
+<li><p>各个评估的不同之处在于，上面的方法（算法1、2的line 5）是怎么初始化的：</p>
+<ul>
+<li>攻击的策略</li>
+<li>训练集和测试集</li>
+<li>此外，对每个攻击策略，还有7种不同的密码模型：list、PCFG、马尔可夫、三者的TarGuess版本、no-training-set</li>
+</ul>
+</li>
+<li><p>训练集和测试集都是对半开</p>
+</li>
+<li><p>所有的图种，线越低，相应的蜜语策略越好</p>
+</li>
+</ul>
+<h3 id="基本的离线攻击"><a href="#基本的离线攻击" class="headerlink" title="基本的离线攻击"></a>基本的离线攻击</h3><ul>
+<li><p>设置密码模型为List，即$P_D(x)=\frac{Count(x)}{|D|}$</p>
+</li>
+<li><p>测试结果即为上面的Fig3(a)-(d)——结果显示平滑与标准化极为重要</p>
+</li>
+<li><p>Model-syntax&gt;Simple model=Hybrid&gt;Tweak-tail</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104113634092.png" alt="image-20211104113634092"></p>
+</li>
+<li><p>本文方法如此有效的原因，是因为能够区分热门蜜语和冷门蜜语，下表说明，DuDuNew的测试集中，最热门的密码极少（小于0.01%）由[21]的任何方法生成</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104113905049.png" alt="image-20211104113905049"></p>
+</li>
+</ul>
+<h3 id="进一步评估"><a href="#进一步评估" class="headerlink" title="进一步评估"></a>进一步评估</h3><h4 id="不同的训练集"><a href="#不同的训练集" class="headerlink" title="不同的训练集"></a>不同的训练集</h4><ul>
+<li><p>训练集和测试集来自不同的库</p>
+</li>
+<li><p>结论：</p>
+<ul>
+<li>训练集和测试集越接近，攻击越有效</li>
+<li>训练集越大，攻击越有效</li>
+<li>四种蜜语生成方法的安全性远低于预期</li>
+</ul>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104122006746.png" alt="image-20211104122006746"></p>
+</li>
+</ul>
+<h4 id="攻击基于密码模型的方法"><a href="#攻击基于密码模型的方法" class="headerlink" title="攻击基于密码模型的方法"></a>攻击基于密码模型的方法</h4><ul>
+<li><p>[21]的四个方法基于随机替换</p>
+</li>
+<li><p>本文使用PCFG为例，用PCFG构建蜜语生成方法</p>
+<ul>
+<li><p>对于给定用户的密码$PW_i$，k-1个蜜语通过在指定数据集$D$上训练的PCFG模型（记作$P_{PCFG(D)}(\cdot)$）生成，此时k-1个蜜语独立于$PW_i$</p>
+</li>
+<li><p>此时热门蜜语一般不会更有可能是真正的密码，因为现在生成k-1个蜜语完全依赖于密码模型而不是$PW_i$</p>
+</li>
+<li><p>为此，修改Norm top-PW策略，提出Norm PW-model攻击策略：</p>
+<ul>
+<li><p>设置基本相同</p>
+</li>
+<li><p>最开始将密码列表应用于模型，得到$PCFG(D)$</p>
+<blockquote>
+<p>the known password distribution D(e.g., a leaked password list) is first applied to the PCFG model (we use the laplace smoothing, see [24]), and this results in a password distribution PCFG(D).</p>
+</blockquote>
+</li>
+<li><p>在标准化时，设置：</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104131503103.png" alt="image-20211104131503103"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>马尔可夫模型同理</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104131612889.png" alt="image-20211104131612889"></p>
+</li>
+</ul>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104131737745.png" alt="image-20211104131737745"></p>
+<ul>
+<li><strong>结果显示，用PCFG生成蜜语，其安全性确实会提升，但仍不是预期的安全性</strong></li>
+</ul>
+<h2 id="高级离线攻击"><a href="#高级离线攻击" class="headerlink" title="高级离线攻击"></a>高级离线攻击</h2><ul>
+<li><p>以上均基于List的攻击模型，即获得一个密码list后，统计蜜语的概率，排序，攻击，区别在于蜜语是如何生成的</p>
+</li>
+<li><p><strong>下面的实验，构建其他的攻击模型，来破解基于Tweak-tail的蜜语生成方法</strong></p>
+</li>
+<li><p>no-training-set：</p>
+<ul>
+<li><p>蜜语的分布$Pr_{SW}$由真实密码分布$Pr_{PW}$和蜜语密码分布$Pr_{HW}$组成，且：</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104132808725.png" alt="image-20211104132808725"></p>
+<ul>
+<li><p>$Pr_{SW}$的分布可近似为$\frac{count_{SW}(x)}{count_{SW}}$，因此得到$Pr_{PW}(x)$的估计：</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104132940891.png" alt="image-20211104132940891"></p>
+</li>
+</ul>
+</li>
+<li><p>采用5个不同方式进行平滑</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104133930121.png" alt="image-20211104133930121"></p>
+</li>
+</ul>
+</li>
+<li><p>对PCFG使用Laplace平滑，对马尔可夫使用back-off平滑</p>
+</li>
+<li><p>实验的设置与Norm top-PW类似，但是：将泄露密码集首先应用到马尔可夫或PCFG上，得到密码分布$Markov(D)$和$PCFG(D)$，之后用$P_{Markov(D)}(\cdot)$来对密码分配概率</p>
+</li>
+<li><p>实验结果如下所示：</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104134000249.png" alt="image-20211104134000249"></p>
+</li>
+</ul>
+<h2 id="Targeted猜测攻击"><a href="#Targeted猜测攻击" class="headerlink" title="Targeted猜测攻击"></a>Targeted猜测攻击</h2><ul>
+<li><p>攻击者掌握用户的PII</p>
+</li>
+<li><p>采用三种有针对性的密码破解模型：TarPCFG  [30]，TarList和TarMarkov</p>
+<ul>
+<li>TarPCFG是[30]中的TarGuess-I，TarList和TarMarkov分别是PII-enriched马尔可夫模型和List模型</li>
+<li>TarMarkov模型通过应用[30]中提出的基于类型的PII段匹配方法从Markov模型转换而来，只需要将各种在[30]中定义的基于类型的PII标签，合并到Markov模型的字母表中，其余操作都与字母表中的原有字符相同</li>
+<li>TarList模型的转换类似</li>
+</ul>
+</li>
+<li><p>与”Norm top-PW: smooth, 1t“的设置相似，但已知的密码集用于训练TarPCFG模型，并用$P_{TarPCFG}$替代$P_D$，其他两个同理；模型在PII-DuDuNiu训练和测试</p>
+<p><img src="/2021/11/03/A-Security-Analysis-of-Honeywords/image-20211104143954463.png" alt="image-20211104143954463"></p>
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>首次实证评估了Juels和Rivest在CCS’13上提出的四种主要的蜜语生成方法，结果表明，他们的方法都不满足预期的安全级别</li>
+<li>本文工作首次给出了全面、令人信服的量化证据，证明了最先进的蜜语生成方法有多脆弱，突出了蜜语研究看似简单的本质——自动生成难以与真实密码区分的蜜语并不容易，但却是一个巨大的挑战</li>
+<li>由于所研究的四种蜜语生成方法的局限性不能轻易解决，本文认为实现主动和及时的泄露检测具有广泛的意义</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\22\Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks\" rel="bookmark">Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/" title="A Security Analysis of Honeywords">https://thomas-li-sjtu.github.io/2021/11/03/A-Security-Analysis-of-Honeywords/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/29/Honeywords-Making-password-cracking-detectable/" rel="prev" title="Honeywords：Making password cracking detectable">
+      <i class="fa fa-chevron-left"></i> Honeywords：Making password cracking detectable
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/23/BART/" rel="next" title="BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension">
+      BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%91%E6%88%98%E4%B8%8E%E5%8A%A8%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">挑战与动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%A1%E7%8C%AE"><span class="nav-number">2.2.</span> <span class="nav-text">贡献</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86%E3%80%81%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9E%8B%E5%92%8C%E8%AE%A1%E9%87%8F"><span class="nav-number">3.</span> <span class="nav-text">数据集、安全模型和计量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">3.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A8%81%E8%83%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.2.</span> <span class="nav-text">威胁模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87"><span class="nav-number">3.3.</span> <span class="nav-text">评估指标</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A6%BB%E7%BA%BF%E6%94%BB%E5%87%BB"><span class="nav-number">4.</span> <span class="nav-text">离线攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Juels-Rivest%E7%9A%84%E8%9C%9C%E8%AF%AD%E7%94%9F%E6%88%90%E6%96%B9%E6%A1%88"><span class="nav-number">4.1.</span> <span class="nav-text">Juels-Rivest的蜜语生成方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8D%E6%94%BB%E5%87%BB%E6%96%B9%E5%BC%8F"><span class="nav-number">4.2.</span> <span class="nav-text">两种攻击方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Top-PW-attack"><span class="nav-number">4.2.1.</span> <span class="nav-text">Top-PW attack</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Normalized-top-PW-attack"><span class="nav-number">4.2.2.</span> <span class="nav-text">Normalized top-PW attack</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.3.</span> <span class="nav-text">实验设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E7%9A%84%E7%A6%BB%E7%BA%BF%E6%94%BB%E5%87%BB"><span class="nav-number">4.4.</span> <span class="nav-text">基本的离线攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E4%B8%80%E6%AD%A5%E8%AF%84%E4%BC%B0"><span class="nav-number">4.5.</span> <span class="nav-text">进一步评估</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E7%9A%84%E8%AE%AD%E7%BB%83%E9%9B%86"><span class="nav-number">4.5.1.</span> <span class="nav-text">不同的训练集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E5%9F%BA%E4%BA%8E%E5%AF%86%E7%A0%81%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">4.5.2.</span> <span class="nav-text">攻击基于密码模型的方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E7%BA%A7%E7%A6%BB%E7%BA%BF%E6%94%BB%E5%87%BB"><span class="nav-number">5.</span> <span class="nav-text">高级离线攻击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Targeted%E7%8C%9C%E6%B5%8B%E6%94%BB%E5%87%BB"><span class="nav-number">6.</span> <span class="nav-text">Targeted猜测攻击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

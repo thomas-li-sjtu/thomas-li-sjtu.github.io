@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MIT-6.830 Lab1 总结与备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Simple-DB Lab1">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="MIT-6.830 Lab1 总结与备忘">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/image-20220613191511718.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/image-20220614124918311.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/image-20220614125046066.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/controlflow.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/20200103180012189.png">
+<meta property="article:published_time" content="2022-06-13T06:41:00.000Z">
+<meta property="article:modified_time" content="2022-12-11T13:24:36.994Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/image-20220613191511718.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Simple-DB Lab1 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Simple-DB Lab1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-13 14:41:00" itemprop="dateCreated datePublished" datetime="2022-06-13T14:41:00+08:00">2022-06-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">项目实践</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>12 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> MIT-6.830 Lab1 总结与备忘</p>
+<a id="more"></a>
+
+<ul>
+<li><p>SimpleDB由以下部分组成：</p>
+<ul>
+<li><p>代表字段、Tuple和Tuple模式（tuple schemas）的类</p>
+<ul>
+<li>Fields是字段属性接口，包含FileName和FileType，其中FiledType目前仅支持Int和String</li>
+<li>Tuple一条记录，包含TupleDesc、RecordId和FiledList属性</li>
+<li>TupleDesc是Tuple的属性，存储Tuple的相关Field信息</li>
+<li>Page是读入内存的数据页面，磁盘里的数据页称作页块，PageId作为主键，PageSize存储在BufferPool中。SimpleDb中包含了两类page：<ul>
+<li>HeapPage，存放于HeapFile中</li>
+<li>BTreePage</li>
+</ul>
+</li>
+<li>PageId为Page的识别码，有TableId、pageNumber属性。TableId根据文档描述暂时指定为DbFile.Id，每个Table可能有多个Page共同存储数据；pageNumber标识当前页在磁盘file中的相对位置</li>
+</ul>
+</li>
+<li><p>对Tuple应用谓词和条件的类。</p>
+</li>
+<li><p>一个或多个访问方法（例如，堆文件），将关系存储在磁盘上，并提供一种方法来遍历这些关系的Tuple</p>
+<ul>
+<li><p>SimpleDb中，<strong>每个table对应一个DBFile</strong></p>
+</li>
+<li><p>HeapFile是DBfile的一种实现，是一种顺序文件，一个HeapFile对象由一系列固定大小的连续HeapPage构成</p>
+</li>
+<li><p>HeapPage：</p>
+<ul>
+<li>HeapFile中由一些列的插槽（slot）组成，每一个插槽可以存放一个tuple。在一张表中的tuple所占大小相同</li>
+<li>有一个bitmap存放slots是否有tuple信息，方便数据访问操作</li>
+</ul>
+</li>
+<li><p>HeapPage在HeapFile中按顺序存放，依据HeapPage.PageId.PageNumber快速定位HeapPage在HeapFile中的位置</p>
+</li>
+<li><p>HeapPage的信息由header + actual content构成，header的大小由tupleSize和pageSize共同决定；一个tuple需要tupleSize字节存真实数据， 以及一个bitmap中的标识位：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tupleNumber = Math.floor(pageSize * <span class="number">8</span> / (tupleSize * <span class="number">8</span> + <span class="number">1</span>));</span><br><span class="line">headerSize = Math.ceil(tupleNumber / <span class="number">8</span>);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>一个操作类的集合（例如，选择、连接、插入、删除等），用于处理Tuple。</p>
+</li>
+<li><p>一个缓冲池，用于缓存内存中的活动Tuple和Page，并处理并发控制和事务（在本实验中你不需要担心这两点）</p>
+<ul>
+<li>所有读Page的操作均需要从BufferPool经过，DataBase全局仅有一个缓冲池实例</li>
+<li>缓冲池大小由属性numPages决定</li>
+<li>BufferPool需要实现事务请求页面的加锁处理、死锁检测、页面换入换出等功能</li>
+</ul>
+</li>
+<li><p>一个 catalog ，存储数据库元信息（metadata），比如table</p>
+</li>
+</ul>
+</li>
+<li><p>SimpleDB没有实现视图</p>
+</li>
+<li><p>要理解Table、Page以及HeapFile的关系，即看到的Table、内存的Page、磁盘的File是如何交互的——数据库中的block对应HeapFile，在内存中数据以Page为单位存储</p>
+</li>
+<li><p>Lab1除了顺序扫描外，不需要实现其他操作符（select、join等）</p>
+</li>
+</ul>
+<h2 id="Exercise-1"><a href="#Exercise-1" class="headerlink" title="Exercise 1"></a>Exercise 1</h2><h3 id="思路整理"><a href="#思路整理" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the skeleton methods in：<code>src/java/simpledb/storage/TupleDesc.java</code>、<code>src/java/simpledb/storage/Tuple.java</code>，通过单元测试TupleTest和TupleDescTest</p>
+</li>
+<li><p>一个Tuple对象表示一行数据</p>
+<ul>
+<li>包含TupleDesc、RecordId和fieldList属性</li>
+<li><code>Tuple</code>由<code>Field</code>组成，<code>Field</code>为储存数据的单位</li>
+</ul>
+</li>
+<li><p>一个TupleDesc对象表示数据的表头</p>
+<ul>
+<li>有一个TDItem队列，TDItem表示一个属性，其中有 fieldType 和 fieldName 两个字段</li>
+<li>例如学生的姓名属性，fieldName是姓名，fieldType是字符串</li>
+</ul>
+</li>
+<li><p>fieldType，这是一个 Type 对象，分为INT_TYPE和STRING_TYPE类型</p>
+</li>
+<li><p>Field是一个接口，实现了String和Int</p>
+</li>
+</ul>
+<h3 id="具体实现（包括java的一点实践记录）"><a href="#具体实现（包括java的一点实践记录）" class="headerlink" title="具体实现（包括java的一点实践记录）"></a>具体实现（包括java的一点实践记录）</h3><ul>
+<li><code>import java.util.ArrayList </code><ul>
+<li>ArrayList是动态的数组（是一个模板），而另一个包Array是静态的数组</li>
+<li>ArrayList的增删改查：<code>add(element)</code>，<code>remove(int Index)</code>，<code>set(index, element)</code>，<code> get(int index)</code></li>
+</ul>
+</li>
+<li><code>StringBuilder </code>：<ul>
+<li>String内容是不可变的，StringBuilder内容是可变的</li>
+<li>常用方法：<code>length()</code>、<code>append</code>、<code>setCharAt(int index, element)</code>、<code>insert(int index, element)</code>、<code>delete(int fromIndex, int toIndex)</code>（前闭后开）</li>
+</ul>
+</li>
+<li>具体实现过程，理解两个类分别代表什么含义，然后根据相应函数上方的提示完成即可</li>
+</ul>
+<h2 id="Exercise-2"><a href="#Exercise-2" class="headerlink" title="Exercise 2"></a>Exercise 2</h2><h3 id="思路整理-1"><a href="#思路整理-1" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li>Implement the skeleton methods in：<code>src/java/simpledb/common/Catalog.java</code>，通过单元测试CatalogTest</li>
+<li>Catalog：<ul>
+<li>实现一个Table内部类，Catalog要维护多张表<ul>
+<li>Table类：<ul>
+<li>表示一张表</li>
+<li>类似TDItem，包含file，name，pkeyField三个字段，pkeyField表示主键，name表示表的名字，file是一个DbFile对象</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>用HashMap来维护，<code>key: file.getId()</code>，<code>value:Table</code></li>
+<li>对于重名table，删除该table再重新添加</li>
+</ul>
+</li>
+<li>DbFile为数据库磁盘文件的接口，可由HeapFile和B+树实现，目前是HeapFile，其中存储了很多Tuple，数据库中每张表对应着一个DbFile，DbFile储存着表中的所有信息（Exercise 3有更具体的说明）</li>
+</ul>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>Hashmap：</p>
+<ul>
+<li><p>加入元素：<code>put(key, value)</code></p>
+</li>
+<li><p>遍历：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addTable</span><span class="params">(DbFile file, String name, String pkeyField)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    Table curTablle = <span class="keyword">new</span> Table(pkeyField, name, file);</span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;Integer, Table&gt; entry: <span class="keyword">this</span>.tables.entrySet()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (entry.getValue().getName().equals(name)) &#123;</span><br><span class="line">            <span class="keyword">this</span>.tables.remove(entry.getKey());</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>.tables.put(file.getId(), curTablle);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>是否存在键：<code>containsKey(key)</code></p>
+</li>
+</ul>
+</li>
+<li><p>注意在<code>addTable</code>的时候，检查table的name是否重合，如果重合则删除旧的table再add</p>
+</li>
+</ul>
+<h2 id="Exercise-3"><a href="#Exercise-3" class="headerlink" title="Exercise 3"></a>Exercise 3</h2><h3 id="思路整理-2"><a href="#思路整理-2" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the skeleton methods in：<code>src/java/simpledb/storage/BufferPool.java</code>，无单元测试，在HeapFile的实现中测试</p>
+</li>
+<li><p>缓冲池负责在内存中缓存最近从磁盘读取的Page，操作者通过缓冲池从磁盘上的各种文件读写Page。缓冲池由固定数量的页面组成——<code>numPages</code>参数定义，本实验中如果对不同页面的请求超过<code>numPages</code>，可以抛出一个DbException。之后的实验会要求实现一个替换策略，本lab只需要实现构造函数和SeqScan操作所需要的<code>BufferPool.getPage()</code></p>
+</li>
+<li><p>Database类提供了一个静态方法<code>Database.getBufferPool()</code>，用于返回整个SimpleDB进程的单个BufferPool实例的引用</p>
+</li>
+<li><p>ConcurrentHashMap——HashMap 存在并发问题——来存page，key和value分别是PageId和Page</p>
+</li>
+<li><p><code>getPage()</code> </p>
+<ol>
+<li>根据PageId查询内存缓存中是否有对应页面，若有执行3，否则进行2</li>
+</ol>
+</li>
+</ul>
+<ol start="2">
+<li>如果当前缓存的页数等于<code>numPages</code>，抛出<ol start="3">
+<li>一个DbException。否则，根据PageId.TableId在Catalog中获取DbFile，在DbFile中依据PageId.PageNumber从磁盘读取页面，将读出的页面放入缓存</li>
+</ol>
+</li>
+<li>将结果返回</li>
+</ol>
+<ul>
+<li><p>DbFile：</p>
+<ul>
+<li>接口实现向磁盘读写page、向Page插入删除tuple等功能</li>
+<li>一个DbFile存一个table ，数据库中的Table和DbFile是对应的</li>
+<li>HeapFile是DbFile的一种实现（还有B-tree实现）——HeapFile access method<ul>
+<li>HeapFile存了一个Page集合，每个页面由固定数量的字节组成</li>
+<li>HeapPage是Page的一种实现，每一个page都存有固定数量（<code>BufferPool.DEFAULT_PAGE_SIZE</code>）的 tuple</li>
+</ul>
+</li>
+<li>HeapFile每一页都有一组槽（slot），每个slot“嵌入”一个tuple </li>
+<li>每个page还有head 部分，记录page中的slot是否被使用</li>
+</ul>
+</li>
+<li><p>数据库中的block对应HeapFile，在内存中数据以Page为单位存储</p>
+</li>
+</ul>
+<h3 id="具体实现-1"><a href="#具体实现-1" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>多线程环境下，使用Hashmap进行put操作会引起死循环——所有访问HashTable的线程都必须竞争同一把锁</p>
+</li>
+<li><p>ConcurrentHashMap：</p>
+<ul>
+<li>使用锁分段技术，将数据分成一段一段的存储，给每一段数据配一把锁，当一个线程占用锁访问其中一个段数据的时候，其他段的数据也能被其他线程访问</li>
+<li>ConcurrentHashMap可以做到读取数据不加锁</li>
+<li>由Segment数组结构和HashEntry数组结构组成<ul>
+<li>Segment是一种可重入锁ReentrantLock，在ConcurrentHashMap里扮演锁的角色。Segment的结构和HashMap类似，是一种数组和链表结构， 一个Segment里包含一个HashEntry数组，每个HashEntry是一个链表结构的元素， 每个Segment守护着一个HashEntry数组里的元素，当对HashEntry数组的数据进行修改时，必须首先获得它对应的Segment锁</li>
+<li>HashEntry用于存储键值对数据</li>
+</ul>
+</li>
+</ul>
+<img src="/2022/06/13/Simple-DB-Lab1/image-20220613191511718.png" alt="image-20220613191511718" style="zoom:67%;">
+</li>
+<li><p>综上，需要新增两个属性：<code>numPage</code>和<code>ConcurrentHashMap&lt;PageId, Page&gt; map</code></p>
+</li>
+<li><p><code>getPage()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Page <span class="title">getPage</span><span class="params">(TransactionId tid, PageId pid, Permissions perm)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    Page curPage = <span class="keyword">this</span>.map.get(pid);</span><br><span class="line">    <span class="keyword">if</span> (curPage == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.map.size() == <span class="keyword">this</span>.numPages) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> DbException(<span class="string">&quot;BufferPool is full...&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.map.put(pid, Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> curPage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="Exercise-4"><a href="#Exercise-4" class="headerlink" title="Exercise 4"></a>Exercise 4</h2><h3 id="思路整理-3"><a href="#思路整理-3" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the skeleton methods in：<code>src/java/simpledb/storage/HeapPageId.java</code>、<code>src/java/simpledb/storage/RecordId.java</code>、<code>src/java/simpledb/storage/HeapPage.java</code>，代码应该通过HeapPageIdTest、RecordIDTest和HeapPageReadTest单元测试</p>
+</li>
+<li><p>HeapFile中存了一组Page ，Page中存tuple 。数据库中一张table对应一个Heap File</p>
+</li>
+<li><p>HeapFile分为head和slot，slot对应一个tuple，注意此处的tuple长度相同。head则是bitmap ，表示slot是否被使用，0表示没有被用， 1表示已经被使用</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_tuples per page_ = floor((<span class="name">_page</span> size_ * 8) / (_tuple size_ * <span class="number">8</span> + <span class="number">1</span>))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>其中 <code>_page size_ * 8</code> 表示一页需要多少二进制位，<code>_tuple size_ * 8 + 1</code> 表示一个 tuple 占多少二进制位。除此之外，一个 tuple 存在与否也占一个二进制位，所以加一。二者做除法就是一页可以存放多少 tuple</li>
+<li>根据页面的 tuple 数字可以确定 bitmap 的个数：<code>headerBytes = ceiling(tupsPerPage/8)</code></li>
+</ul>
+</li>
+<li><p>HeapPageId和RecordId即完成构造函数和getter</p>
+</li>
+<li><p>bitmap的get操作，需要做一个从原始序号到bitmap序号的映射</p>
+</li>
+</ul>
+<h3 id="具体实现-2"><a href="#具体实现-2" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>A RecordId is a reference to a specific tuple on a specific page of a specific table，因此RecordId有属性</p>
+</li>
+<li><p>HeapPageId有属性<code>int tableId</code>和<code>int pageNo</code></p>
+</li>
+<li><p>要注意header为一个bitmap（一个字节存8个），因此给定一个index去查该index的slot是否被使用时，需要转换为bitmap的位置</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSlotUsed</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">int</span> bytes = i/<span class="number">8</span>;</span><br><span class="line">    <span class="keyword">int</span> bits = i%<span class="number">8</span>;</span><br><span class="line">    <span class="keyword">return</span>  ((header[bytes] &gt;&gt; bits) &amp; <span class="number">1</span>) == <span class="number">1</span>;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>实现哈希：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Objects;</span><br><span class="line"></span><br><span class="line">Objects.hash(x, y);  <span class="comment">// 基于x和y的哈希（后面可以继续加）</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="Exercise-5"><a href="#Exercise-5" class="headerlink" title="Exercise 5"></a>Exercise 5</h2><h3 id="思路整理-4"><a href="#思路整理-4" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the skeleton methods in：<code>src/java/simpledb/storage/HeapFile.java</code>，通过HeapFileReadTest的单元测试</p>
+</li>
+<li><p>从磁盘上读取一个页面时，需要计算出Page在文件的偏移量（此时不应该调用BufferPool方法）</p>
+</li>
+<li><p>还需要实现<code>HeapFile.iterator()</code>方法，应该遍历HeapFile中每个页面的 tuple 。迭代器必须使用<code>BufferPool.getPage()</code>方法来访问<code>HeapFile</code>中的页面——将页面加载到缓冲池中，用于后面实验中实现基于锁的并发控制和恢复。 不要在open()调用时将整个表加载到内存中</p>
+<img src="/2022/06/13/Simple-DB-Lab1/image-20220614124918311.png" alt="image-20220614124918311" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="具体实现-3"><a href="#具体实现-3" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>readPage需要结合RandomAccessFile实现，由PageId.PageNumber + BufferPool.PageSize确定offset，读入字节数据data，将data传递给HeapPage构造方法返回</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Page <span class="title">readPage</span><span class="params">(PageId pid)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">int</span> pageNo = pid.getPageNumber();</span><br><span class="line">    <span class="keyword">int</span> pageSize = BufferPool.getPageSize();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        RandomAccessFile curFile = <span class="keyword">new</span> RandomAccessFile(<span class="keyword">this</span>.file, <span class="string">&quot;r&quot;</span>);</span><br><span class="line">        <span class="keyword">byte</span>[] data = <span class="keyword">new</span> <span class="keyword">byte</span>[pageSize];</span><br><span class="line">        curFile.seek((<span class="keyword">long</span>) pageNo * pageSize);</span><br><span class="line">        curFile.read(data);</span><br><span class="line">        HeapPage curPage = <span class="keyword">new</span> HeapPage(<span class="keyword">new</span> HeapPageId(pid.getTableId(), pid.getPageNumber()), data);</span><br><span class="line">        curFile.close();</span><br><span class="line">        <span class="keyword">return</span> curPage;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>iterator需要返回HeapFile中tuple的迭代器——iterator的返回对象可以通过继承DbFileIterator接口实现——要求不停读入页面，<strong>此时iterator读入页面时需要调用BufferPool.getPage，而BufferPool.getPage又会调用HF.readPage</strong>，然后再从Page中读入tuple。因此内部还有Page.iterator，并根据id更换Page。其中的<code>open()</code>是打开一个page，<code>hasNext()</code>判断当前的File是否还有tuple</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HeapFileIterator</span> <span class="keyword">implements</span> <span class="title">DbFileIterator</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> curPageNo;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> pageNum;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> Iterator&lt;Tuple&gt; iterator;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> HeapFile heapFile;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> TransactionId tid;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">HeapFileIterator</span> <span class="params">(HeapFile heapFile, TransactionId tid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.heapFile = heapFile;</span><br><span class="line">        <span class="keyword">this</span>.tid = tid;</span><br><span class="line">        <span class="keyword">this</span>.curPageNo = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">this</span>.pageNum = heapFile.numPages();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Iterator&lt;Tuple&gt; <span class="title">getNextPage</span><span class="params">(HeapPageId id)</span> <span class="keyword">throws</span> TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">        BufferPool pool = Database.getBufferPool();  <span class="comment">// 从bufferpool中读取page，如果没有再从磁盘读（getPage中有判断）</span></span><br><span class="line">        HeapPage page = (HeapPage) pool.getPage(<span class="keyword">this</span>.tid, id, Permissions.READ_ONLY);</span><br><span class="line">        <span class="keyword">return</span> page.iterator();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span><span class="params">()</span> <span class="keyword">throws</span> DbException, TransactionAbortedException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.curPageNo = <span class="number">0</span>;</span><br><span class="line">        HeapPageId pageId = <span class="keyword">new</span> HeapPageId(<span class="keyword">this</span>.heapFile.getId(), <span class="number">0</span>);  <span class="comment">// table和HeapFile一一对应</span></span><br><span class="line">        <span class="keyword">this</span>.iterator = <span class="keyword">this</span>.getNextPage(pageId);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> <span class="keyword">throws</span> DbException, TransactionAbortedException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.iterator.hasNext()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="keyword">this</span>.curPageNo; i &lt; <span class="keyword">this</span>.pageNum; i++) &#123;</span><br><span class="line">                <span class="keyword">this</span>.curPageNo += <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">this</span>.iterator = <span class="keyword">this</span>.getNextPage(<span class="keyword">new</span> HeapPageId(<span class="keyword">this</span>.heapFile.getId(), <span class="keyword">this</span>.curPageNo));</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">this</span>.iterator.hasNext()) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Tuple <span class="title">next</span><span class="params">()</span> <span class="keyword">throws</span> DbException, TransactionAbortedException, NoSuchElementException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span> || !<span class="keyword">this</span>.iterator.hasNext()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.iterator.next();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">rewind</span><span class="params">()</span> <span class="keyword">throws</span> DbException, TransactionAbortedException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.curPageNo = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">this</span>.close();</span><br><span class="line">        <span class="keyword">this</span>.open();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.curPageNo = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">this</span>.iterator = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RandomAccessFile：</p>
+<ul>
+<li>Java 输入/输出流体系中功能最丰富的文件内容访问类，可以从任意位置访问文件</li>
+</ul>
+</li>
+</ul>
+<h2 id="Exercise-6"><a href="#Exercise-6" class="headerlink" title="Exercise 6"></a>Exercise 6</h2><h3 id="思路整理-5"><a href="#思路整理-5" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>Implement the skeleton methods in：<code>src/java/simpledb/execution/SeqScan.java</code>，完成ScanTest系统测试</p>
+</li>
+<li><p>SimpleDB中，操作符是基于迭代器的——操作符都实现了<code>DbIterator</code>接口</p>
+</li>
+<li><p>操作符通过将低级别的操作符传递到高级别的操作符的构造器中，即“chain them together”。 Special access method operators at the leaves of the plan are responsible for reading data from the disk. 和SimpleDB交互的程序只需在根操作符上调用<code>getNext</code>，从而根操作符在其子操作符上调用<code>getNext</code>，以此类推，直到调用叶操作符从磁盘中获取 tuple ，作为<code>getNext</code>的返回参数向上传递</p>
+<img src="/2022/06/13/Simple-DB-Lab1/image-20220614125046066.png" alt="image-20220614125046066" style="zoom:67%;">
+</li>
+<li><p>SeqScan从构造函数的<code>tableid</code>指定的表中的页面，顺序扫描所有 tuple。这个操作符应该通过<code>DbFile.iterator()</code>（<code>DbFileIterator</code>）访问tuple——即上一个exercise实现的HeapFile.iterator来访问（next、hasnext等），时刻记住<code>DbFileIterator</code>是一个接口</p>
+</li>
+</ul>
+<h3 id="具体实现-4"><a href="#具体实现-4" class="headerlink" title="具体实现"></a>具体实现</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> TransactionId tid;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> tableId;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> String tableAlias;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> DbFileIterator iterator;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">SeqScan</span><span class="params">(TransactionId tid, <span class="keyword">int</span> tableid, String tableAlias)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">this</span>.tid = tid;</span><br><span class="line">    <span class="keyword">this</span>.tableId = tableid;</span><br><span class="line">    <span class="keyword">this</span>.tableAlias = tableAlias;</span><br><span class="line">    <span class="keyword">this</span>.iterator = Database.getCatalog().getDatabaseFile(tableid).iterator(tid);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> TupleDesc <span class="title">getTupleDesc</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> <span class="keyword">throws</span> TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.iterator.hasNext();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Tuple <span class="title">next</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchElementException,</span></span><br><span class="line"><span class="function">        TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.iterator.next();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">this</span>.iterator.close();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">rewind</span><span class="params">()</span> <span class="keyword">throws</span> DbException, NoSuchElementException,</span></span><br><span class="line"><span class="function">        TransactionAbortedException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">this</span>.iterator.rewind();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改HeapFile中的hasNext()——否则，无法通过测试中的testCache()，Counts the number of readPage operations，总是会多一次。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> <span class="keyword">throws</span> DbException, TransactionAbortedException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.iterator.hasNext()) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.curPageNo += <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.curPageNo &gt;= pageNum) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.iterator = <span class="keyword">this</span>.getNextPage(<span class="keyword">new</span> HeapPageId(<span class="keyword">this</span>.heapFile.getId(), <span class="keyword">this</span>.curPageNo));</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.iterator == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.iterator.hasNext();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><ul>
+<li><p>Catalog 中有多个table，一个table对应一个DbFile，HeapFile中存了多个Page，一个Page中有一个head和多个slot ，一个slot存一个tuple</p>
+</li>
+<li><p>HeapFile是DbFile的一种实现方式，除此之外还有BTreeFile</p>
+</li>
+<li><p>BufferPool保存缓存的Page，需要更新Page时，从HeapFile中查找并更新</p>
+<img src="/2022/06/13/Simple-DB-Lab1/controlflow.png" alt="controlflow" style="zoom: 50%;">
+
+
+
+</li>
+</ul>
+<img src="/2022/06/13/Simple-DB-Lab1/20200103180012189.png" alt="20200103180012189" style="zoom:67%;">
+
+<p>（本图来自<a target="_blank" rel="noopener" href="https://www.cnblogs.com/cpaulyz/p/14606606.html%EF%BC%89">https://www.cnblogs.com/cpaulyz/p/14606606.html）</a></p>
+<h2 id="补充：一个具体的查询过程"><a href="#补充：一个具体的查询过程" class="headerlink" title="补充：一个具体的查询过程"></a>补充：一个具体的查询过程</h2><ul>
+<li><p>假设有一个数据文件”some_data_file.txt”，内容如下：</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span></span><br><span class="line"><span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span> </span><br><span class="line"><span class="number">3</span>,<span class="number">4</span>,<span class="number">4</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>转换为SimpleDB查询的二进制文件：``java -jar dist/simpledb.jar convert some_data_file.txt 3`，“3”表明输入有三列</p>
+</li>
+<li><p>具体查询代码为（<code>SELECT * FROM some_data_file</code>）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> simpledb;</span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] argv)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// construct a 3-column table schema</span></span><br><span class="line">        Type types[] = <span class="keyword">new</span> Type[]&#123; Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE &#125;;</span><br><span class="line">        String names[] = <span class="keyword">new</span> String[]&#123; <span class="string">&quot;field0&quot;</span>, <span class="string">&quot;field1&quot;</span>, <span class="string">&quot;field2&quot;</span> &#125;;</span><br><span class="line">        TupleDesc descriptor = <span class="keyword">new</span> TupleDesc(types, names);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// create the table, associate it with some_data_file.dat</span></span><br><span class="line">        <span class="comment">// and tell the catalog about the schema of this table.</span></span><br><span class="line">        HeapFile table1 = <span class="keyword">new</span> HeapFile(<span class="keyword">new</span> File(<span class="string">&quot;some_data_file.dat&quot;</span>), descriptor);</span><br><span class="line">        Database.getCatalog().addTable(table1, <span class="string">&quot;test&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// construct the query: we use a simple SeqScan, which spoonfeeds</span></span><br><span class="line">        <span class="comment">// tuples via its iterator.</span></span><br><span class="line">        TransactionId tid = <span class="keyword">new</span> TransactionId();</span><br><span class="line">        SeqScan f = <span class="keyword">new</span> SeqScan(tid, table1.getId());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// and run it</span></span><br><span class="line">            f.open();</span><br><span class="line">            <span class="keyword">while</span> (f.hasNext()) &#123;</span><br><span class="line">                Tuple tup = f.next();</span><br><span class="line">                System.out.println(tup);</span><br><span class="line">            &#125;</span><br><span class="line">            f.close();</span><br><span class="line">            Database.getBufferPool().transactionComplete(tid);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            System.out.println (<span class="string">&quot;Exception : &quot;</span> + e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>表有三个整数字段，为描述这一信息，创建一个<code>TupleDesc</code>对象，并传递给它<code>Type</code>对象数组和<code>String</code>字段名数组</p>
+</li>
+<li><p>创建<code>TupleDesc</code>后初始化一个<code>HeapFile</code>对象，代表存储在<code>some_data_file.dat</code>的表</p>
+</li>
+<li><p>将表加入catalog中。正在运行的数据库服务器会加载这个catalog信息</p>
+</li>
+<li><p>以上为数据库初始化的过程</p>
+</li>
+<li><p>创建一个查询计划（只用到<code>SeqScan</code>操作符），从磁盘上扫描tuple 。一般而言，实例化的操作符需要引用相应的表（如果操作符<code>SeqScan</code>）或子操作符（如果操作符是Filter等）。测试程序在<code>SeqScan</code>运算符上反复调用<code>hasNext</code>和<code>next</code>，以逐个获取tuple。在扫描过程中，数据先尝试从bufferpool中的page读取，找不到的话再通过<code>HeapFile</code>对象从磁盘读取</p>
+</li>
+<li><p>上面的代码文件应当创建在<code>src/java/simpledb</code>目录下，并将<code>some_data_file.dat</code>文件放在top level dir中。运行命令以生成包含test.java的jar文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ant</span><br><span class="line">java -classpath dist/simpledb.jar simpledb.test</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\25\BTree-B-Tree\" rel="bookmark">B树，B+树</a></div>
+        <div class="popular-posts-excerpt"><p><p> 数据库索引BTree和B+Tree</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\20\MongoDB_1\" rel="bookmark">MongoDB(1)</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\17\Simple-DB-Lab2\" rel="bookmark">Simple-DB Lab2</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab2 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\19\Simple-DB-Lab3\" rel="bookmark">Simple-DB Lab3</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab3 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\20\Simple-DB-Lab4\" rel="bookmark">Simple-DB Lab4</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab4 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/" title="Simple-DB Lab1">https://thomas-li-sjtu.github.io/2022/06/13/Simple-DB-Lab1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"><i class="fa fa-tag"></i> 数据库</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/08/ShardKV-Lab4B%E6%80%BB%E7%BB%93/" rel="prev" title="ShardKV Lab4B总结">
+      <i class="fa fa-chevron-left"></i> ShardKV Lab4B总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/17/Simple-DB-Lab2/" rel="next" title="Simple-DB Lab2">
+      Simple-DB Lab2 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-1"><span class="nav-number">1.</span> <span class="nav-text">Exercise 1</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%8C%85%E6%8B%ACjava%E7%9A%84%E4%B8%80%E7%82%B9%E5%AE%9E%E8%B7%B5%E8%AE%B0%E5%BD%95%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">具体实现（包括java的一点实践记录）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-2"><span class="nav-number">2.</span> <span class="nav-text">Exercise 2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-1"><span class="nav-number">2.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-3"><span class="nav-number">3.</span> <span class="nav-text">Exercise 3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-2"><span class="nav-number">3.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-1"><span class="nav-number">3.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-4"><span class="nav-number">4.</span> <span class="nav-text">Exercise 4</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-3"><span class="nav-number">4.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-2"><span class="nav-number">4.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-5"><span class="nav-number">5.</span> <span class="nav-text">Exercise 5</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-4"><span class="nav-number">5.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-3"><span class="nav-number">5.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-6"><span class="nav-number">6.</span> <span class="nav-text">Exercise 6</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-5"><span class="nav-number">6.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-4"><span class="nav-number">6.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">7.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%A5%E5%85%85%EF%BC%9A%E4%B8%80%E4%B8%AA%E5%85%B7%E4%BD%93%E7%9A%84%E6%9F%A5%E8%AF%A2%E8%BF%87%E7%A8%8B"><span class="nav-number">8.</span> <span class="nav-text">补充：一个具体的查询过程</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

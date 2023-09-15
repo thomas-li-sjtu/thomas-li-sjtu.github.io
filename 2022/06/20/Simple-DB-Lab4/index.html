@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MIT-6.830 Lab4 总结与备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Simple-DB Lab4">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/06/20/Simple-DB-Lab4/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="MIT-6.830 Lab4 总结与备忘">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-19T16:10:02.000Z">
+<meta property="article:modified_time" content="2022-06-24T03:29:37.553Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/06/20/Simple-DB-Lab4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Simple-DB Lab4 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/06/20/Simple-DB-Lab4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Simple-DB Lab4
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-20 00:10:02" itemprop="dateCreated datePublished" datetime="2022-06-20T00:10:02+08:00">2022-06-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">项目实践</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> MIT-6.830 Lab4 总结与备忘</p>
+<a id="more"></a>
+
+<ul>
+<li><p>实现一个基于锁的事务系统，需要添加加锁和解锁调用，并跟踪每个事务所持有的锁</p>
+</li>
+<li><p>事务、锁和一致性控制：</p>
+<ul>
+<li>事务是一组原子执行的数据库操作（插入、读取、删除等），要么操作都完成，要么都没有完成</li>
+<li>ACID属性：<ul>
+<li>两阶段锁定、缓冲区管理确保原子性</li>
+<li>基于原子性，数据库是事务一致的</li>
+<li>隔离：严格的两阶段锁定提供隔离</li>
+<li>持久性：强制的缓冲区管理确保持久性（NO STEAL/FORCE buffer management policy）<ul>
+<li>如果脏页被一个未提交的事务加锁，不应该从缓冲池中淘汰它（更新到磁盘）</li>
+<li>事务提交时，脏页强制写到磁盘</li>
+<li>Lab4假设数据库不会崩溃</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>以页为单位锁定</p>
+<ul>
+<li>需要创建数据结构，跟踪事务持有哪些锁，在事务被请求时检查是否应该授予其锁</li>
+<li>需要实现共享锁和独占锁：事务读取一个对象前加共享锁，事务写入一个对象前加独占锁（如果事务t在对象o上有唯一的共享锁，则t可以将其升级前为独占锁）</li>
+</ul>
+</li>
+<li><p>如果一个事务请求的锁不能立刻授予，则应当阻塞</p>
+</li>
+</ul>
+<h2 id="Exercise-1、2"><a href="#Exercise-1、2" class="headerlink" title="Exercise 1、2"></a>Exercise 1、2</h2><h3 id="思路整理"><a href="#思路整理" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li>要在<code>BufferPool</code>写获取、释放锁的方法，通过LockingTest单元测试</li>
+<li>修改<code>getPage()</code>，其在返回页面前阻塞并获得所需的锁</li>
+<li>这里最好还是在getPage()中获得页面的锁，而不是在每个操作中对页面加锁<ul>
+<li>共享锁和独占锁可以根据Permission类的一个实例（Permissions.READ_WRITE或 Permissions.READ_ONLY）进行区分，即作为Lock类的一个属性</li>
+</ul>
+</li>
+<li>实现<code>unsafeReleasePage()</code>，在事务结束的时候调用</li>
+<li>实现<code>holdsLock()</code>，判断一个页面是否已经被事务加锁</li>
+<li>要考虑，在writePage的时候，是否存在和其他事务的race</li>
+<li>注意，在插入tuple的时候，如果事务t发现页面p上没有空槽，那么t对p的锁可以立刻释放</li>
+<li>因此，需要在bufferpool中定义一个Lock类，拥有事务id属性，以及读写的permission，作为锁类型的区分</li>
+<li>同时，需要在bufferpool中定义一个LockManager类，并添加一个实例作为属性，用于维护事务和锁的状态，包括分配锁、移除锁</li>
+<li>这个类里需要有一个页号到锁的集合的concurrentHashMap<ul>
+<li>分配锁：</li>
+<li>如果当前页号没有锁，说明是第一次获取锁。所以读就直接分配共享锁，写就直接分配独占锁（此时，分配就是指在map里新建一个entry，new一个锁，然后把锁加到entry的value里），返回true<ul>
+<li>如果当前页号已经有锁，则遍历页号对应的所有锁，看锁保持的transactionId和这次的事务id是不是一样：</li>
+<li>如果和当前的transactionId一样，则判断已有锁的类型<ul>
+<li>case1：已有读锁，还想要读锁。直接返回true</li>
+<li>case2：已有读锁，想要写锁。要检查页号对应的锁是不是只有这一个，是则锁升级，不是则返回false</li>
+<li>case3：已有写锁。直接返回<ul>
+<li>如果和当前的transactionId不一样，则</li>
+</ul>
+</li>
+<li>case1：如果这次想要写锁，直接false</li>
+<li>case2：如果这次要读锁，则看页号对应的锁里有没有写锁。有写锁则失败，全是读锁则可以分配个新的读锁</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>移除锁：即，将锁从concurrentHashMap移除</li>
+</ul>
+</li>
+<li>这里为了保证请求的一致性（保证并发的请求具有线性一致性），可以简单地使用java的synchronized关键字，作为函数的修饰符——某个对象实例内，synchronized aMethod(){}可以防止多个线程同时访问这个对象的synchronized方法，并且如果一个对象有多个synchronized方法，只要一个线程访问其中一个synchronized方法，其它线程不能同时访问这个对象中任何一个synchronized方法。但是不同对象实例的 synchronized方法是不相干扰的，其它线程可以同时访问相同类的另一个对象实例中的synchronized方法。由于一个database只有一个bufferpool实例，一个bufferpool只有一个lockmanager实例，因此就保证了一次只有一个线程访问，其他线程阻塞</li>
+<li>（synchronized static aStaticMethod{}防止多个线程同时访问这个类中的synchronized static方法，可以对类的所有对象实例起作用）</li>
+</ul>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li><p>LockManager</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LockManager</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> ConcurrentHashMap&lt;PageId, Vector&lt;Lock&gt;&gt; lockMap;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">LockManager</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">        lockMap = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 删除一个lock，如果对应的Vector为空，则删除这个entry</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">removeLock</span><span class="params">(TransactionId tid, PageId pageId)</span> </span>&#123;</span><br><span class="line">        Vector&lt;Lock&gt; curLockVector = <span class="keyword">this</span>.lockMap.get(pageId);</span><br><span class="line">        <span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">boolean</span> found = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; curLockVector.size(); i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (curLockVector.get(i).getTid().equals(tid)) &#123;</span><br><span class="line">                found = <span class="keyword">true</span>;</span><br><span class="line">                index = i;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (found) &#123;</span><br><span class="line">            curLockVector.remove(index);</span><br><span class="line">            <span class="keyword">if</span> (curLockVector.size() == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">this</span>.lockMap.remove(pageId);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 加锁</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">boolean</span> <span class="title">setLock</span><span class="params">(PageId pageId, TransactionId tid, Permissions type)</span> </span>&#123;</span><br><span class="line">        Vector&lt;Lock&gt; curLockVector = <span class="keyword">this</span>.lockMap.get(pageId);</span><br><span class="line">        <span class="keyword">if</span> (curLockVector == <span class="keyword">null</span>) &#123;  <span class="comment">// 如果这个page没有上锁</span></span><br><span class="line">            curLockVector = <span class="keyword">new</span> Vector&lt;&gt;();</span><br><span class="line">            curLockVector.add(<span class="keyword">new</span> Lock(tid, type));</span><br><span class="line">            <span class="keyword">this</span>.lockMap.put(pageId, curLockVector);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (type.equals(Permissions.READ_WRITE)) &#123;</span><br><span class="line">                <span class="comment">// 申请独占锁</span></span><br><span class="line">                <span class="keyword">if</span> (curLockVector.size() == <span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (curLockVector.get(<span class="number">0</span>).getTid().equals(tid)) &#123;</span><br><span class="line">                        <span class="comment">// 只有一个锁并且锁的事务id一致，看是否升级锁</span></span><br><span class="line">                        <span class="keyword">if</span> (curLockVector.get(<span class="number">0</span>).getPermission().equals(Permissions.READ_ONLY)) &#123;</span><br><span class="line">                            curLockVector.get(<span class="number">0</span>).setPermission(type);</span><br><span class="line">                            <span class="keyword">this</span>.lockMap.put(pageId, curLockVector);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                    &#125; <span class="keyword">else</span>&#123; <span class="comment">// 当前页面已经被其他事务共享，暂时不能独占</span></span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123; <span class="comment">// 当前页面的锁有多个</span></span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 申请共享锁</span></span><br><span class="line">                <span class="keyword">for</span> (Lock curLock : curLockVector) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (curLock.getPermission().equals(Permissions.READ_WRITE)) &#123; <span class="comment">// 如果这个锁是独占锁，此时只能有一个锁</span></span><br><span class="line">                        <span class="keyword">return</span> curLock.getTid().equals(tid) &amp;&amp; curLockVector.size() == <span class="number">1</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span>(curLock.getTid().equals(tid)) &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                curLockVector.add(<span class="keyword">new</span> Lock(tid, type));</span><br><span class="line">                <span class="keyword">this</span>.lockMap.put(pageId, curLockVector);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 查看一个tid是否对pid加了lock</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">boolean</span> <span class="title">holdLock</span> <span class="params">(PageId pid, TransactionId tid)</span> </span>&#123;</span><br><span class="line">        Vector&lt;Lock&gt; curLockVector = <span class="keyword">this</span>.lockMap.get(pid);</span><br><span class="line">        <span class="keyword">for</span> (Lock curLock : curLockVector) &#123;</span><br><span class="line">            <span class="keyword">if</span> (curLock.getTid().equals(tid)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在GetPage时，要重复地检查是否获得相应的锁，如果没有，则需要循环等待（设置循环超时时间）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Page <span class="title">getPage</span><span class="params">(TransactionId tid, PageId pid, Permissions perm)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> TransactionAbortedException, DbException </span>&#123;</span><br><span class="line">    <span class="comment">// some code goes here</span></span><br><span class="line">    <span class="keyword">boolean</span> hasLock = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">long</span> timeout = <span class="number">100</span>;</span><br><span class="line">    <span class="keyword">while</span> (!hasLock) &#123;</span><br><span class="line">        <span class="keyword">if</span> (System.currentTimeMillis()-startTime &gt; timeout) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> TransactionAbortedException();</span><br><span class="line">        &#125;</span><br><span class="line">        hasLock = <span class="keyword">this</span>.lockManager.setLock(pid, tid, perm);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在insert tuple时，如果当前Page的slot没有空的，则当前page去锁</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// public List&lt;Page&gt; insertTuple(TransactionId tid, Tuple t)</span></span><br><span class="line">...</span><br><span class="line">            <span class="keyword">if</span> (curPage.getNumEmptySlots() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                curPage.insertTuple(t);</span><br><span class="line">                res.add(curPage);</span><br><span class="line">                <span class="keyword">this</span>.writePage(curPage);</span><br><span class="line">                <span class="keyword">return</span> res;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                Database.getBufferPool().unsafeReleasePage(tid, curPage.pid);</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="Exercise-3、4"><a href="#Exercise-3、4" class="headerlink" title="Exercise 3、4"></a>Exercise 3、4</h2><h3 id="思路整理-1"><a href="#思路整理-1" class="headerlink" title="思路整理"></a>思路整理</h3><ul>
+<li><p>修改<code>BufferPool</code>的<code>evictPage()</code>，使其不驱逐脏页；BufferPool中实现<code>transactionComplete()</code>，通过TransactionTest单元测试和AbortEvictionTest系统测试</p>
+</li>
+<li><p>一个事务对page的修改，只有在提交之后才被写入磁盘，因此不能淘汰脏页（如果可以淘汰，则可能通过丢弃脏页并从磁盘重读中止一个事务）。如果缓冲池所有Page都是脏页，应该抛出DbException。如果驱逐了一个干净页面，注意事务可能持有被淘汰页面的锁</p>
+</li>
+<li><p>SimpleDB每次查询都会创建一个TransactionId对象，对象传递给每个参与查询的操作符，而查询完成后BufferPool的<code>transactionComplete()</code>被调用。这个方法可以提交或中止事务（由参数commit指定），事务执行时操作符可以抛出一个TransactionAbortedException异常，表明发生了内部错误或死锁。代码里transactionComplete有两个版本：接受额外的布尔提交参数，一个不接受——没有额外参数的方法总是commit，可以简单地调用<code>transactionComplete(tid, true)</code>来实现</p>
+</li>
+<li><p>提交时，应该将与事务相关的脏页flush到磁盘上；中止时，应该恢复页面为磁盘内容，以恢复事务所做的任何改变。而无论提交还是中止，都应该释放BufferPool保存的关于该事务的任何状态，并释放该事务持有的任何锁</p>
+</li>
+</ul>
+<h3 id="具体实现-1"><a href="#具体实现-1" class="headerlink" title="具体实现"></a>具体实现</h3><ul>
+<li>修改<code>evictPage()</code>，倒着遍历，删除最后一个非脏页</li>
+<li>修改<code>transactionComplete()</code>，根据commit判断是否调用<code>public synchronized void restorePages(TransactionId tid)</code></li>
+<li>为<code>LockManager</code>添加<code>removeTidLocks(tid)</code>，删除所有关于tid的锁</li>
+<li>修改<code>HeapFile.java</code>，<code>writePage()</code>方法由<code>flushPage()</code>调用，以及insertTuple时创建新页时调用（以更新磁盘中HeapFile的page数目），deletePage不调用——这个bug导致<code>AbortEvictionTest</code>一直没有通过，找了很久。。。</li>
+<li>修改<code>lruCache</code>，之前双向链表的更新与<code>lruCache</code>的更新混在了一起，要将其分开——否则不能保证<code>lruCache</code>的size，和双向链表的长度相等</li>
+<li><code>getPage</code>前增加<code>synchronized </code>修饰符，保证一次只有一个事务在操作缓冲池</li>
+</ul>
+<h2 id="Exercise-5"><a href="#Exercise-5" class="headerlink" title="Exercise 5"></a>Exercise 5</h2><p>这里没有更改代码，测试自然通过（其实就是要在<code>getPage</code>的一开始，增加事务获取锁需要的时间的检测，超过时间则抛出异常）</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\25\BTree-B-Tree\" rel="bookmark">B树，B+树</a></div>
+        <div class="popular-posts-excerpt"><p><p> 数据库索引BTree和B+Tree</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\20\MongoDB_1\" rel="bookmark">MongoDB(1)</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\13\Simple-DB-Lab1\" rel="bookmark">Simple-DB Lab1</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab1 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\17\Simple-DB-Lab2\" rel="bookmark">Simple-DB Lab2</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab2 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\19\Simple-DB-Lab3\" rel="bookmark">Simple-DB Lab3</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.830 Lab3 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/06/20/Simple-DB-Lab4/" title="Simple-DB Lab4">https://thomas-li-sjtu.github.io/2022/06/20/Simple-DB-Lab4/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"><i class="fa fa-tag"></i> 数据库</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/19/Simple-DB-Lab3/" rel="prev" title="Simple-DB Lab3">
+      <i class="fa fa-chevron-left"></i> Simple-DB Lab3
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/23/Simple-DB-Lab5/" rel="next" title="Simple-DB Lab5">
+      Simple-DB Lab5 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-1%E3%80%812"><span class="nav-number">1.</span> <span class="nav-text">Exercise 1、2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-3%E3%80%814"><span class="nav-number">2.</span> <span class="nav-text">Exercise 3、4</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86-1"><span class="nav-number">2.1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-1"><span class="nav-number">2.2.</span> <span class="nav-text">具体实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exercise-5"><span class="nav-number">3.</span> <span class="nav-text">Exercise 5</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

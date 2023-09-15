@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Google File System》（2003，SOSP）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Google File System">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/04/27/GFS/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Google File System》（2003，SOSP）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/27/GFS/image-20220427143203195.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/27/GFS/image-20220427155053741.png">
+<meta property="article:published_time" content="2022-04-27T02:44:15.000Z">
+<meta property="article:modified_time" content="2022-04-27T11:33:41.811Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/04/27/GFS/image-20220427143203195.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/04/27/GFS/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Google File System | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/04/27/GFS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Google File System
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-27 10:44:15" itemprop="dateCreated datePublished" datetime="2022-04-27T10:44:15+08:00">2022-04-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Google File System》（2003，SOSP）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>GFS是一个可扩展的分布式文件系统，提供容错功能，并为大量客户机提供高聚合性能</li>
+<li>广泛部署在谷歌中作为存储平台，用于服务数据的生成和处理，以及基于大型数据集的研究和开发任务</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>组件故障是常见的，而不是例外，因此持续的监控、错误检测、容错和自动恢复必须是分布式系统的组成部分</p>
+</li>
+<li><p>文件很大，因此必须考虑I/O操作和block size</p>
+</li>
+<li><p>大多数文件需要附加新数据，而不是直接覆盖原有数据——引入了一个原子的追加操作，多个客户机可以并发地在同一个文件内追加内容，而不必进行额外的同步</p>
+</li>
+<li><blockquote>
+<p>co-designing the applications and the file system API benefits the overall system by increasing our flexibility</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="设计概述"><a href="#设计概述" class="headerlink" title="设计概述"></a>设计概述</h2><h3 id="假设"><a href="#假设" class="headerlink" title="假设"></a>假设</h3><ul>
+<li><p>必须持续检测、容错和迅速从组件故障中恢复</p>
+</li>
+<li><p>系统存储的大文件数量适中，系统同样支持小文件的处理</p>
+</li>
+<li><p>工作时的负载主要包括两种读取：大的流读取和小的随机读取。前者的单个操作通常读取数百个KB，后者通常读取一些任意偏移量的KBs</p>
+</li>
+<li><p>工作时的负载还包括许多向文件追加数据的连续写操作。同时支持在文件中的任意位置进行小的写操作，但不一定高效</p>
+</li>
+<li><p>系统必须高效地、行为明确地实现多客户端并行追加数据到同一个文件里</p>
+</li>
+<li><p>高性能的稳定网络带宽远比低延迟重要</p>
+</li>
+</ul>
+<h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><ul>
+<li>GFS提供一套类似传统文件系统的API接口函数（支持常用的操作如创建和删除、打开和关闭文件、读写文件），文件以分层目录的形式组织，用路径名来标识</li>
+<li>GFS提供快照和记录追加操作。快照能创建一个文件或目录树的副本。记录追加操作允许多个客户端同时对一个文件进行数据追加操作，每个客户端的追加操作都是原子性的——利于多路结果合并，和”生产者-消费者”实现</li>
+</ul>
+<h3 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h3><img src="/2022/04/27/GFS/image-20220427143203195.png" alt="image-20220427143203195" style="zoom:67%;">
+
+<ul>
+<li><p>GFS集群包含一个单独的Master节点（系统中只存在一个逻辑上的Master组件，一个逻辑的Master节点包括两台Master服务器）、多台Chunk服务器，同时被多个客户端访问</p>
+</li>
+<li><p>可以把Chunk服务器和客户端放在同一台机器上，前提是机器资源允许，并且能够接受不可靠的应用代码降低系统的稳定性</p>
+</li>
+<li><p>Master节点：</p>
+<ul>
+<li><p>管理所有的文件系统元数据（名字空间、访问控制、文件和Chunk的映射信息、当前Chunk的位置）。</p>
+</li>
+<li><p>管理系统范围内的活动，如Chunk租用管理 、回收孤儿Chunk（orphaned chunk）、Chunk服务器之间迁移Chunk</p>
+</li>
+<li><p>周期地和各个Chunk服务器通通讯，发送指令并接收Chunk服务器的状态信息</p>
+</li>
+</ul>
+</li>
+<li><p>GFS客户端：</p>
+<ul>
+<li>客户端代码以库的形式链接到客户程序</li>
+<li>实现了GFS文件系统的API接口、应用程序与Master节点和Chunk服务器通讯、对数据读写操作</li>
+<li>客户端和Master节点的通信只获取元数据，数据操作由客户端直接和Chunk服务器进行交互</li>
+</ul>
+</li>
+<li><p>Chunk服务器不缓存文件数据，直接以本地文件的方式保存</p>
+</li>
+</ul>
+<h3 id="单一Master节点"><a href="#单一Master节点" class="headerlink" title="单一Master节点"></a>单一Master节点</h3><ul>
+<li>单一的Master节点通过全局信息精确定位Chunk的位置</li>
+<li>必须减少对Master节点的读写，避免其成为系统的性能瓶颈</li>
+<li>客户端向Master节点询问应该联系的Chunk服务器，并将Master节点返回的元数据缓存，后续直接和Chunk服务器进行数据读写</li>
+<li>简单读取的流程：<ul>
+<li>客户端把文件名和程序指定的字节偏移量，根据Chunk大小（固定值）转换成文件的Chunk索引</li>
+<li>客户端把文件名和Chunk索引发给Master</li>
+<li>Master将相应Chunk标识和副本的位置发回客户端</li>
+<li>客户端用文件名和Chunk索引作为key缓存这些信息，之后客户端给最近的目标Chunk副本发送申请（包含了Chunk标识和字节范围）</li>
+<li>后续读取Chunk时客户端不再和Master通讯，除非缓存的元数据过期或者文件被重新打开</li>
+</ul>
+</li>
+<li>客户端通常会在一次请求中查询多个Chunk信息</li>
+</ul>
+<h3 id="Chunk尺寸"><a href="#Chunk尺寸" class="headerlink" title="Chunk尺寸"></a>Chunk尺寸</h3><ul>
+<li>Chunk size设计为64MB</li>
+<li>选择较大的Chunk尺寸：<ul>
+<li>能够减少客户端和Master的通讯需求，并且能够对一个块进行多次操作</li>
+<li>通过与Chunk服务器保持较长时间的TCP连接减少网络负载</li>
+<li>减少Master需要保存的元数据数量</li>
+</ul>
+</li>
+<li>但是，小文件包含较少的Chunk，甚至只有一个Chunk。当许多客户端对同一个小文件进行多次的访问时，存储这些Chunk的Chunk服务 器就会变成热点。在实际应用中，由于我们的程序通常是连续的读取包含多个Chunk的大文件，热点还不 是主要的问题。 然而，当我们第一次把GFS用于批处理队列系统的时候，热点的问题还是产生了：一个可执行文件在GFS 上保存为single-chunk文件，之后这个可执行文件在数百台机器上同时启动。存放这个可执行文件的几个 Chunk服务器被数百个客户端的并发请求访问导致系统局部过载。我们通过使用更大的复制参数来保存可 执行文件，以及错开批处理队列系统程序的启动时间的方法解决了这个问题。一个可能的长效解决方案 是，在这种的情况下，允许客户端从其它客户端读取数据</li>
+</ul>
+<h3 id="元数据"><a href="#元数据" class="headerlink" title="元数据"></a>元数据</h3><ul>
+<li>Master服务器主要存储3种类型元数据：文件和Chunk的命名空间、文件和Chunk的映射关系、每个Chunk副本的存放位置，都存放在内存里</li>
+<li>前两种类型元数据还会以记录变更日志的方式，记录在OS的系统日志文件，存储在本地磁盘。日志会复制到其它远程Master服务器——可以简单可靠地更新Master服务器 的状态</li>
+<li>Master服务器在启动时，或有新的Chunk服务器加入时，向各个Chunk服务器轮询相应的Chunk信息</li>
+</ul>
+<h3 id="内存中的数据结构"><a href="#内存中的数据结构" class="headerlink" title="内存中的数据结构"></a>内存中的数据结构</h3><ul>
+<li>元数据保存在内存中，因此Master服务器操作速度很快，能够周期性扫描保存的全部状态信息</li>
+<li>但此时Chunk的数量以及系统的承载能力受限于Master服务器的内存大小——实际应用中这不是一个大问题</li>
+</ul>
+<h3 id="Chunk位置信息"><a href="#Chunk位置信息" class="headerlink" title="Chunk位置信息"></a>Chunk位置信息</h3><ul>
+<li>Master服务器不持久化保存“哪个Chunk服务器存有指定Chunk的副本”，而是启动时轮询Chunk服务器以获取该信息</li>
+<li>这种设计简化了Chunk服务器加入集群、离开集群、更名、失效、以及重启的时，Master服务器和Chunk服务器数据同步的问题</li>
+</ul>
+<h3 id="操作日志"><a href="#操作日志" class="headerlink" title="操作日志"></a>操作日志</h3><ul>
+<li>操作日志包含关键的元数据变更历史记录——操作日志是元数据唯一的持久化存储记录，也是判断同步操作顺序的时间基准——通过逻辑日志的序号作为操作发生的逻辑时间——文件、Chunk、它们的版本都由它们创建的逻辑时间唯一地标识</li>
+<li>只有把相应的日志记录写入本地以及远程机器的硬盘后，才会响应客户端的操作请求（会收集多个日志记录后批量处理）</li>
+<li>为了缩短Master启动时间，必须使日志足够小——Master服务器在日志规模到一定程度时对系统状态保存为一个Checkpoint，并删除之前的日志文件</li>
+<li>灾难恢复时，Master服务器读取磁盘中Checkpoint文件，以及重复Checkpoint之后的有限个日志记录即可恢复</li>
+<li>创建Checkpoint需要时间，因此Master服务器内部状态被组织为特殊的格式，确保创建时不会阻塞正在进行的修改操作（包含百万个文件的集群创建一个Checkpoint需要1分钟）</li>
+<li>Checkpoint文件会被写入在本地和远程的硬盘，旧的Checkpoint文件和日志文件可以被删除</li>
+</ul>
+<h3 id="一致性"><a href="#一致性" class="headerlink" title="一致性"></a>一致性</h3><ul>
+<li>文件命名空间的修改（如文件创建）是原子的</li>
+<li>在客户端缓存的超时时间和文件下一次被打开的时间之间存在一个时间窗，文件再次被打开后会清除缓存中与该文件有关的所有Chunk位置信息</li>
+<li>GFS通过Master服务器和所有Chunk服务器的定期“握手”来找到失效的Chunk服务器，使用Checksum来校验数据是否损坏 ，只有当一个Chunk的所有副本在GFS检测到错误并采取应对措施之前全部丢失，这个Chunk才会不可逆转的丢失</li>
+</ul>
+<h2 id="系统交互"><a href="#系统交互" class="headerlink" title="系统交互"></a>系统交互</h2><h3 id="租约（lease）和变更顺序"><a href="#租约（lease）和变更顺序" class="headerlink" title="租约（lease）和变更顺序"></a>租约（lease）和变更顺序</h3><ul>
+<li><p>变更：一个会改变Chunk内容或者元数据的操作，如写入操作或者记录追加操作，变更操作在Chunk 的所有副本上执行</p>
+</li>
+<li><p>使用租约（lease）机制来保持多个副本间变更顺序的一致性</p>
+</li>
+<li><p>Master为Chunk的一个副本建立一个租约，该副本称主Chunk。主Chunk对Chunk的所有更改操作进行序列化。所有的副本都遵从操作序列进行修改</p>
+<img src="/2022/04/27/GFS/image-20220427155053741.png" alt="image-20220427155053741" style="zoom:67%;">
+</li>
+<li><p>写入操作的控制流程：（上图）</p>
+<ul>
+<li>客户机向Master节点询问哪个Chunk服务器持有当前的租约，以及其它副本的位置。若没有Chunk持有租约，Master选择一个副本建立租约</li>
+<li>Master将主Chunk标识符及其它副本（二级副本）的位置返回给客户机。客户机缓存这些数据，只有主Chunk不可用，或者主Chunk回复已不再持有租约时，客户机才重新跟Master联系</li>
+<li>客户机以任意的顺序把数据推送到所有的副本上</li>
+<li>当所有副本都确认接收到数据，客户机发送写请求到主Chunk服务器。主Chunk为接收到的所有操作分配连续的序列号（操作可能来自不同的客户机，序列号保证操作顺序执行），并以序列号的顺序在本地执行这些操作</li>
+<li>主Chunk把写请求传递到所有的二级副本，二级副本依照主Chunk分配的序列号以相同的顺序执行操作</li>
+<li>二级副本回复主Chunk表示已经完成操作，主Chunk服务器回复客户机。任何副本产生的任何错误都会返回给客户机，客户机代码通过重复执行失败的操作来处理</li>
+<li>一次写入的数据量很大，或者数据跨越了多个Chunk，GFS客户机代码会把它们分成多个写操作</li>
+</ul>
+</li>
+</ul>
+<h3 id="数据流"><a href="#数据流" class="headerlink" title="数据流"></a>数据流</h3><ul>
+<li>把数据流和控制流分开</li>
+<li>在控制流从客户机到主Chunk、再到二级副本的同时，数据以管道的方式沿一个精心选择的Chunk服务器链推送——而不是以其它拓扑形式分散推送</li>
+<li>线性推送下，每台机器所有的出口带宽都用于以最快的速度传输数据， 而不是在多个接受者之间分配带宽</li>
+<li>网络拓扑非常简单，通过IP地址就可以计算出节点的“距离”</li>
+<li>利用基于TCP连接的、管道式数据推送方式来最小化延迟</li>
+</ul>
+<h3 id="原子的记录追加"><a href="#原子的记录追加" class="headerlink" title="原子的记录追加"></a>原子的记录追加</h3><ul>
+<li>GFS提供了一种原子的数据追加操作–记录追加</li>
+<li>传统的写入操作里，客户程序会指定数据写入的偏移量</li>
+<li>使用记录追加，客户机只需要指定要写入的数据，GFS保证至少有一次原子的写入操作成功执行，写入的数据追加到GFS指定的偏移位置上，之后GFS返回偏移量给客户机</li>
+<li>记录追加是一种修改操作，也遵循上一节描述的控制流程</li>
+<li>客户机把数据推送给文件最后一个Chunk的所有副本后，发送请求给主Chunk。主Chunk检查这次记录追加操作是否会使Chunk超过最大尺寸<ul>
+<li>如果超过了最大尺寸，主Chunk先将当前Chunk填到最大尺寸，之后通知所有二级副本做同样的操作，回复客户机要求其对下一个Chunk重新进行记录追加操作</li>
+<li>如果没有超过，主Chunk把数据追加到自己的副本内，通知二级副本把数据写在跟主Chunk一样的位置上，回复客户机操作成功</li>
+<li>如果在任何一个副本上失败，客户端需要重新进行操作</li>
+</ul>
+</li>
+</ul>
+<h3 id="快照"><a href="#快照" class="headerlink" title="快照"></a>快照</h3><ul>
+<li>(alex注：这一节非常难以理解，总的来说依次讲述了什么是快照、快照使用的COW技术、快照如何不干 扰当前操作) </li>
+<li>快照操作几乎可以瞬间完成对一个文件或者目录树的拷贝，几乎不会对正在进行的其它操作造成干扰</li>
+<li>用户可以使用快照创建一个大数据集的分支拷贝，或者在数据操作前使用快照备份当前状态</li>
+<li>用标准的copy-on-write技术实现快照</li>
+</ul>
+<h2 id="Master节点的操作"><a href="#Master节点的操作" class="headerlink" title="Master节点的操作"></a>Master节点的操作</h2><h3 id="命名空间管理和锁"><a href="#命名空间管理和锁" class="headerlink" title="命名空间管理和锁"></a>命名空间管理和锁</h3><ul>
+<li>Master节点的很多操作会花费很长时间，因此允许多个操作同时进行，使用名称空间的region上的锁来保证执行的正确顺序</li>
+<li>在逻辑上，GFS的名称空间是一个全路径和元数据映射关系的查找表。利用前缀压缩，查找表可以存储在内存中</li>
+<li>在存储名称空间的树型结构上，每个节点（绝对路径的文件名或绝对路径的目录名）都有一个关联的读写锁，Master节点的操作在开始之前都要获得一系列的锁</li>
+<li>采用这种锁方案的优点是支持对同一目录的并行操作</li>
+<li>锁的获取也要依据一个全局一致的顺序来避免死锁：首先按名称空间的层次排序，在同一个层次内按字典顺序</li>
+</ul>
+<h3 id="副本的位置"><a href="#副本的位置" class="headerlink" title="副本的位置"></a>副本的位置</h3><ul>
+<li> Chunk副本位置选择的策略：最大化数据可靠性和可用性，最大化网络带宽利用率</li>
+<li>必须在多个机架间分布储存Chunk的副本</li>
+</ul>
+<h3 id="创建，重新复制，重新负载均衡"><a href="#创建，重新复制，重新负载均衡" class="headerlink" title="创建，重新复制，重新负载均衡"></a>创建，重新复制，重新负载均衡</h3><ul>
+<li>Chunk的副本有三个用途：Chunk创建，重新复制和重新负载均衡</li>
+<li>当Master节点创建一个Chunk，它会选择在放置初始的空的副本位置，选择因素包括：<ul>
+<li>在低于平均硬盘使用率的Chunk服务器上存储新的副本</li>
+<li>限制在每个Chunk服务器上”最近”的Chunk创建操作的次数</li>
+<li>把Chunk的副本分布在多个机架之间</li>
+</ul>
+</li>
+<li>当Chunk的有效副本数量少于用户指定的复制因数时，Master节点会重新复制它</li>
+<li>为了最小化失效的Chunk对正在运行的应用程序的影响，提高会阻塞客户机程序处理流程的Chunk的优先级。 Master节点选择优先级最高的Chunk，命令某个Chunk服务器直接从可用的副本”克隆”一个副本</li>
+<li>Master服务器周期性地对副本进行重新负载均衡：检查当前的副本分布情况，移动副本以更好的利用硬盘空间、更有效的进行负载均衡</li>
+</ul>
+<h3 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h3><ul>
+<li>惰性策略，只在文件和Chunk级的常规垃圾收集时进行</li>
+<li>当一个文件被应用程序删除时，Master节点把删除操作以日志的方式记录 下来，但并不马上回收资源，而是把文件名改为一个包含删除时间戳的隐藏名</li>
+<li>Master节点对文件系统命名空间做常规扫描时，会删除所有三天前的隐藏文件</li>
+<li>当隐藏文件被从名称空间中删除，Master服务器内存中保存的这个文件的相关元数据才会被删除——切断了文件和它包含的所有Chunk的连接</li>
+<li>类似的，Master节点找到孤儿Chunk（不被任何文件包含的Chunk） 并删除它们的元数据。Chunk服务器在和Master节点交互的心跳信息中，报告拥有的Chunk子集，Master节点回复哪些Chunk的元数据中已经删除，Chunk服务器据此删除相应Chunk</li>
+</ul>
+<h3 id="过期失效的副本检测"><a href="#过期失效的副本检测" class="headerlink" title="过期失效的副本检测"></a>过期失效的副本检测</h3><ul>
+<li>Master节点保存每个Chunk的版本号，以区分当前副本和过期副本</li>
+<li>若某个副本所在的Chunk服务器正好处于失效状态，副本的版本号就不会被增加。在这个Chunk服务器重新启动，并向Master节点报告拥有的Chunk集合及相应的版本号时，Master会检测出它包含过期的Chunk</li>
+<li>Master节点在例行的垃圾回收过程中移除所有的过期失效副本</li>
+<li>Master节点在通知客户机哪个Chunk服务器持有租约、或者指示Chunk服务器从哪个Chunk服务器进行克隆时，消息中都附带Chunk的版本——客户机或Chunk服务器都会验证版本号，以确保访问最新数据</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\21\MIT6.824-1\" rel="bookmark">MIT-6.824 (1)</a></div>
+        <div class="popular-posts-excerpt"><p><p>MIT-6.824 分布式系统学习笔记（1） </p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/04/27/GFS/" title="Google File System">https://thomas-li-sjtu.github.io/2022/04/27/GFS/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/25/MapReduce-Lab1%E6%80%BB%E7%BB%93/" rel="prev" title="MapReduce Lab1总结">
+      <i class="fa fa-chevron-left"></i> MapReduce Lab1总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/27/MIT6.824-3/" rel="next" title="MIT-6.824 (3)">
+      MIT-6.824 (3) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E6%A6%82%E8%BF%B0"><span class="nav-number">3.</span> <span class="nav-text">设计概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%87%E8%AE%BE"><span class="nav-number">3.1.</span> <span class="nav-text">假设</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.2.</span> <span class="nav-text">接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">3.3.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%B8%80Master%E8%8A%82%E7%82%B9"><span class="nav-number">3.4.</span> <span class="nav-text">单一Master节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Chunk%E5%B0%BA%E5%AF%B8"><span class="nav-number">3.5.</span> <span class="nav-text">Chunk尺寸</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE"><span class="nav-number">3.6.</span> <span class="nav-text">元数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">3.7.</span> <span class="nav-text">内存中的数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Chunk%E4%BD%8D%E7%BD%AE%E4%BF%A1%E6%81%AF"><span class="nav-number">3.8.</span> <span class="nav-text">Chunk位置信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E6%97%A5%E5%BF%97"><span class="nav-number">3.9.</span> <span class="nav-text">操作日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">3.10.</span> <span class="nav-text">一致性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E4%BA%A4%E4%BA%92"><span class="nav-number">4.</span> <span class="nav-text">系统交互</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%9F%E7%BA%A6%EF%BC%88lease%EF%BC%89%E5%92%8C%E5%8F%98%E6%9B%B4%E9%A1%BA%E5%BA%8F"><span class="nav-number">4.1.</span> <span class="nav-text">租约（lease）和变更顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="nav-number">4.2.</span> <span class="nav-text">数据流</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E7%9A%84%E8%AE%B0%E5%BD%95%E8%BF%BD%E5%8A%A0"><span class="nav-number">4.3.</span> <span class="nav-text">原子的记录追加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%AB%E7%85%A7"><span class="nav-number">4.4.</span> <span class="nav-text">快照</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Master%E8%8A%82%E7%82%B9%E7%9A%84%E6%93%8D%E4%BD%9C"><span class="nav-number">5.</span> <span class="nav-text">Master节点的操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E7%AE%A1%E7%90%86%E5%92%8C%E9%94%81"><span class="nav-number">5.1.</span> <span class="nav-text">命名空间管理和锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%AF%E6%9C%AC%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">5.2.</span> <span class="nav-text">副本的位置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%EF%BC%8C%E9%87%8D%E6%96%B0%E5%A4%8D%E5%88%B6%EF%BC%8C%E9%87%8D%E6%96%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">5.3.</span> <span class="nav-text">创建，重新复制，重新负载均衡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="nav-number">5.4.</span> <span class="nav-text">垃圾回收</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%87%E6%9C%9F%E5%A4%B1%E6%95%88%E7%9A%84%E5%89%AF%E6%9C%AC%E6%A3%80%E6%B5%8B"><span class="nav-number">5.5.</span> <span class="nav-text">过期失效的副本检测</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

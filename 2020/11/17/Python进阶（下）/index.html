@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Intermediate Python》阅读笔记 下半部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python进阶（下）">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2020/11/17/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8B%EF%BC%89/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Intermediate Python》阅读笔记 下半部分">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-17T13:58:20.000Z">
+<meta property="article:modified_time" content="2020-11-18T02:55:39.237Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="进阶语法">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2020/11/17/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8B%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Python进阶（下） | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2020/11/17/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8B%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python进阶（下）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-17 21:58:20" itemprop="dateCreated datePublished" datetime="2020-11-17T21:58:20+08:00">2020-11-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" itemprop="url" rel="index"><span itemprop="name">编程语言</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Intermediate Python》阅读笔记 下半部分</p>
+<a id="more"></a>
+
+<h2 id="容器-Collections"><a href="#容器-Collections" class="headerlink" title="容器 Collections"></a>容器 Collections</h2><ul>
+<li><p>一个模块</p>
+</li>
+<li><p>defaultdict：当字典里的key不存在但被查找时，返回的不是keyError而是一个默认值</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"><span class="built_in">dict</span> = defaultdict( factory_function)  <span class="comment"># 可以是list、set、str等，当key不存在时，返回工厂函数的默认值——[],(),&#x27;&#x27;,0等</span></span><br><span class="line"></span><br><span class="line">colours = ( (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Yellow&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Blue&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Arham&#x27;</span>, <span class="string">&#x27;Green&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Black&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Red&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ahmed&#x27;</span>, <span class="string">&#x27;Silver&#x27;</span>), </span><br><span class="line">          )</span><br><span class="line">favourite_colours = defaultdict(<span class="built_in">list</span>)</span><br><span class="line"><span class="keyword">for</span> name, colour <span class="keyword">in</span> colours:</span><br><span class="line">    favourite_colours[name].append(colour)</span><br><span class="line"><span class="comment"># defaultdict(&lt;type &#x27;list&#x27;&gt;, </span></span><br><span class="line"><span class="comment"># &#123;&#x27;Arham&#x27;: [&#x27;Green&#x27;], </span></span><br><span class="line"><span class="comment"># &#x27;Yasoob&#x27;: [&#x27;Yellow&#x27;, &#x27;Red&#x27;], </span></span><br><span class="line"><span class="comment"># &#x27;Ahmed&#x27;: [&#x27;Silver&#x27;], </span></span><br><span class="line"><span class="comment"># &#x27;Ali&#x27;: [&#x27;Blue&#x27;, &#x27;Black&#x27;] </span></span><br><span class="line"><span class="comment"># &#125;)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>counter：适用于需要使用dict和次数的场景，传入迭代器</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line">colours = ( (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Yellow&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Blue&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Arham&#x27;</span>, <span class="string">&#x27;Green&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ali&#x27;</span>, <span class="string">&#x27;Black&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;Red&#x27;</span>), </span><br><span class="line">           (<span class="string">&#x27;Ahmed&#x27;</span>, <span class="string">&#x27;Silver&#x27;</span>), </span><br><span class="line">          )</span><br><span class="line">favs = Counter(name <span class="keyword">for</span> name, colour <span class="keyword">in</span> colours)</span><br><span class="line"><span class="comment">## Counter(&#123; </span></span><br><span class="line"><span class="comment">## &#x27;Yasoob&#x27;: 2, </span></span><br><span class="line"><span class="comment">## &#x27;Ali&#x27;: 2,</span></span><br><span class="line"><span class="comment">## &#x27;Arham&#x27;: 1, </span></span><br><span class="line"><span class="comment">## &#x27;Ahmed&#x27;: 1 </span></span><br><span class="line"><span class="comment">## &#125;)</span></span><br><span class="line"></span><br><span class="line">c = Counter(a=<span class="number">3</span>, b=<span class="number">1</span>)</span><br><span class="line">d = Counter(a=<span class="number">1</span>, b=<span class="number">2</span>)</span><br><span class="line">c + d                       <span class="comment"># 相加</span></span><br><span class="line"><span class="comment">#Counter(&#123;&#x27;a&#x27;: 4, &#x27;b&#x27;: 3&#125;)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>deque：双端队列，可以从头/尾两端添加或删除元素</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> deque</span><br><span class="line">d = deque()</span><br><span class="line">d = deque(<span class="built_in">range</span>(<span class="number">5</span>))</span><br><span class="line">d.popleft()  <span class="comment"># 输出: 0</span></span><br><span class="line">d = deque(maxlen=<span class="number">30</span>)  <span class="comment"># 限制列表⼤⼩，当超出限制，数据会从队列另⼀端被挤出</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nametuple：像字典(dict)⼀样访问namedtuples，但namedtuples不可变</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> namedtuple</span><br><span class="line">Animal = namedtuple(<span class="string">&#x27;Animal&#x27;</span>, <span class="string">&#x27;name age type&#x27;</span>)</span><br><span class="line">perry = Animal(name=<span class="string">&quot;perry&quot;</span>, age=<span class="number">31</span>, <span class="built_in">type</span>=<span class="string">&quot;cat&quot;</span>)</span><br><span class="line"><span class="comment"># Animal(name=&#x27;perry&#x27;, age=31, type=&#x27;cat&#x27;)</span></span><br><span class="line">print(perry.name)  <span class="comment"># &#x27;perry&#x27;</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="枚举-Enumerate"><a href="#枚举-Enumerate" class="headerlink" title="枚举 Enumerate"></a>枚举 Enumerate</h2><ul>
+<li><p>内置函数</p>
+</li>
+<li><p>遍历数据并⾃动计数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> counter, value <span class="keyword">in</span> <span class="built_in">enumerate</span>(some_list):</span><br><span class="line">	print(counter, value)</span><br><span class="line">   </span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line">(<span class="number">0</span>, ...)</span><br><span class="line">(<span class="number">1</span>, ...)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定制从其他数字开始枚举</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">enumerate</span>(my_list, <span class="number">1</span>)  <span class="comment"># 从1开始枚举</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="对象自省"><a href="#对象自省" class="headerlink" title="对象自省"></a>对象自省</h2><ul>
+<li><p>运⾏时判断⼀个对象的类型的能⼒</p>
+</li>
+<li><p>dir</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">my_list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>] </span><br><span class="line"><span class="built_in">dir</span>(my_list)  <span class="comment"># 返回⼀个列表对象的所有⽅法名</span></span><br><span class="line"><span class="comment"># Output: [&#x27;__add__&#x27;, &#x27;__class__&#x27;, &#x27;__contains__&#x27;, &#x27;__delattr__&#x27;, &#x27;__delitem__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__delslice__&#x27;, &#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;, &#x27;__getattribute__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__getitem__&#x27;, &#x27;__getslice__&#x27;, &#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__iadd__&#x27;, &#x27;__imul__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__init__&#x27;, &#x27;__iter__&#x27;, &#x27;__le__&#x27;, &#x27;__len__&#x27;, &#x27;__lt__&#x27;, &#x27;__mul__&#x27;, &#x27;__ne__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__new__&#x27;, &#x27;__reduce__&#x27;, &#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;, &#x27;__reversed__&#x27;, &#x27;__rmul__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__setattr__&#x27;, &#x27;__setitem__&#x27;, &#x27;__setslice__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;__subclasshook__&#x27;, &#x27;append&#x27;, &#x27;count&#x27;, &#x27;extend&#x27;, &#x27;index&#x27;, &#x27;insert&#x27;, &#x27;pop&#x27;, </span></span><br><span class="line"><span class="comment"># &#x27;remove&#x27;, &#x27;reverse&#x27;, &#x27;sort&#x27;]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>type与id：type函数返回⼀个对象的类型，id函数返回任意不同种类对象的唯⼀ID</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">print(<span class="built_in">type</span>(<span class="string">&#x27;&#x27;</span>))</span><br><span class="line"><span class="comment"># Output: &lt;type &#x27;str&#x27;&gt;</span></span><br><span class="line">name = <span class="string">&quot;Yasoob&quot;</span> </span><br><span class="line">print(<span class="built_in">id</span>(name))</span><br><span class="line"><span class="comment"># Output: 139972439030304</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="推导式"><a href="#推导式" class="headerlink" title="推导式"></a>推导式</h2><ul>
+<li><p>列表推导式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">variable = [out_exp <span class="keyword">for</span> out_exp <span class="keyword">in</span> input_list <span class="keyword">if</span> out_exp == <span class="number">2</span>]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>字典推导式：类似列表推导式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mcase = &#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">10</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">34</span>, <span class="string">&#x27;A&#x27;</span>: <span class="number">7</span>, <span class="string">&#x27;Z&#x27;</span>: <span class="number">3</span>&#125;</span><br><span class="line"><span class="comment"># 同⼀个字母但不同⼤⼩写的值合并</span></span><br><span class="line">mcase_frequency = &#123;</span><br><span class="line">    k.lower(): mcase.get(k.lower(), <span class="number">0</span>) + mcase.get(k.upper(), <span class="number">0</span>) <span class="keyword">for</span> k <span class="keyword">in</span> mcase.keys()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对换键值</span></span><br><span class="line">&#123;v: k <span class="keyword">for</span> k, v <span class="keyword">in</span> some_dict.items()&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>集合推导式：使用大括号的”列表推导“</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">squared = &#123;x**<span class="number">2</span> <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><ul>
+<li><p>try/except从句</p>
+</li>
+<li><p>处理多个异常</p>
+<ul>
+<li><p>把所有可能发⽣的异常放到⼀个元组⾥</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    file = <span class="built_in">open</span>(<span class="string">&#x27;test.txt&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>)</span><br><span class="line"><span class="keyword">except</span> (IOError, EOFError) <span class="keyword">as</span> e:</span><br><span class="line">    print(<span class="string">&quot;An error occurred. &#123;&#125;&quot;</span>.<span class="built_in">format</span>(e.args[<span class="number">-1</span>]))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对每个单独的异常在单独的except语句块中处理</p>
+</li>
+<li><p>捕获所有异常</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    file = <span class="built_in">open</span>(<span class="string">&#x27;test.txt&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>)</span><br><span class="line"><span class="keyword">except</span> Exception:</span><br><span class="line">    <span class="comment"># 打印⼀些异常⽇志，如果你想要的话</span></span><br><span class="line">    <span class="keyword">raise</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>Finally从句：代码不管异常是否触发都将会被执⾏</p>
+</li>
+<li><p>try/else从句 ：在没有触发异常的时候执⾏⼀些代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    print(<span class="string">&#x27;I am sure no exception is going to occur!&#x27;</span>) </span><br><span class="line"><span class="keyword">except</span> Exception: </span><br><span class="line">    print(<span class="string">&#x27;exception&#x27;</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="comment"># 这⾥的代码只会在try语句⾥没有触发异常时运⾏, </span></span><br><span class="line">    <span class="comment"># 但是这⾥的异常将 *不会* 被捕获 </span></span><br><span class="line">    print(<span class="string">&#x27;This would only run if no exception occurs. And an error here &#x27;</span> <span class="string">&#x27;would NOT be caught.&#x27;</span>) </span><br><span class="line"><span class="keyword">finally</span>: </span><br><span class="line">    print(<span class="string">&#x27;This would be printed in every case.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a><strong>lambda</strong>表达式</h2><ul>
+<li><p>是一行函数</p>
+</li>
+<li><p>lambda 参数:操作(参数)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">add = <span class="keyword">lambda</span> x, y: x + y</span><br><span class="line">print(add(<span class="number">3</span>, <span class="number">5</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列表排序</span></span><br><span class="line">a = [(<span class="number">1</span>, <span class="number">2</span>), (<span class="number">4</span>, <span class="number">1</span>), (<span class="number">9</span>, <span class="number">10</span>), (<span class="number">13</span>, <span class="number">-3</span>)]</span><br><span class="line">a.sort(key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>])</span><br><span class="line"><span class="comment"># Output: [(13, -3), (4, 1), (1, 2), (9, 10)]</span></span><br><span class="line"><span class="comment"># 列表并行排序</span></span><br><span class="line">data = <span class="built_in">zip</span>(list1, list2)</span><br><span class="line">data.sort()</span><br><span class="line">list1, list2 = <span class="built_in">map</span>(<span class="keyword">lambda</span> t: <span class="built_in">list</span>(t), <span class="built_in">zip</span>(*data))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="一行式"><a href="#一行式" class="headerlink" title="一行式"></a>一行式</h2><ul>
+<li><p>简易Web Server ：通过⽹络快速共享⽂件；在共享文件目录下的命令行输入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ python -m http.server</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>规范的打印：规范打印出列表和字典</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pprint <span class="keyword">import</span> pprint</span><br><span class="line">my_dict = &#123;<span class="string">&#x27;name&#x27;</span>: <span class="string">&#x27;Yasoob&#x27;</span>, <span class="string">&#x27;age&#x27;</span>: <span class="string">&#x27;undefined&#x27;</span>&#125;</span><br><span class="line">pprint(my_dict)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>脚本性能分析：定位脚本中的性能瓶颈</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ python -m cProfile my_script.py</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>csv转为json</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ python -c <span class="string">&quot;import csv,json;print json.dumps(list(csv.reader(open(&#x27;csv_file.csv&#x27;))))&quot;</span> </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>列表展平</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> itertools.chain.from_iterable</span><br><span class="line">a_list = [[<span class="number">1</span>, <span class="number">2</span>], [<span class="number">3</span>, <span class="number">4</span>], [<span class="number">5</span>, <span class="number">6</span>]]</span><br><span class="line">print(<span class="built_in">list</span>(itertools.chain.from_iterable(a_list))) </span><br><span class="line"><span class="comment"># Output: [1, 2, 3, 4, 5, 6]</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="For-else"><a href="#For-else" class="headerlink" title="For else"></a>For else</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> container: </span><br><span class="line">    <span class="keyword">if</span> search_something(item): </span><br><span class="line">        <span class="comment"># Found it! </span></span><br><span class="line">        process(item) </span><br><span class="line">        <span class="keyword">break</span> </span><br><span class="line"><span class="keyword">else</span>:  <span class="comment"># else从句会在循环正常结束时执⾏，即循环没有遇到任何break</span></span><br><span class="line">    <span class="comment"># Didn&#x27;t find anything.. </span></span><br><span class="line">    not_found_in_container()</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用C扩展"><a href="#使用C扩展" class="headerlink" title="使用C扩展"></a>使用C扩展</h2><h3 id="ctypes模块"><a href="#ctypes模块" class="headerlink" title="ctypes模块"></a>ctypes模块</h3><ul>
+<li><p>提供了和C语⾔ 兼容的数据类型和函数来加载dll⽂件</p>
+</li>
+<li><p>示例</p>
+<ul>
+<li><p>C代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt; </span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add_int</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">int</span>)</span></span>; </span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">add_float</span><span class="params">(<span class="keyword">float</span>, <span class="keyword">float</span>)</span></span>; </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add_int</span><span class="params">(<span class="keyword">int</span> num1, <span class="keyword">int</span> num2)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> num1 + num2; </span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">add_float</span><span class="params">(<span class="keyword">float</span> num1, <span class="keyword">float</span> num2)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> num1 + num2; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译为.so文件（windows下为DLL）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#For windows</span></span><br><span class="line">gcc -shared -o Test.dll Test.c</span><br><span class="line"><span class="comment">#For Linux </span></span><br><span class="line">$ gcc -shared -Wl,-soname,adder -o adder.so -fPIC add.c</span><br><span class="line"><span class="comment">#For Mac </span></span><br><span class="line">$ gcc -shared -Wl,-install_name,adder.so -o adder.so -fPIC add.c</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>python中调用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ctypes <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#load the shared object file </span></span><br><span class="line">adder = CDLL(<span class="string">&#x27;./adder.so&#x27;</span>)</span><br><span class="line"><span class="comment">#Find sum of integers </span></span><br><span class="line">res_int = adder.add_int(<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">a = c_float(<span class="number">5.5</span>) </span><br><span class="line">b = c_float(<span class="number">4.1</span>)</span><br><span class="line">add_float = adder.add_float</span><br><span class="line">add_float.restype = c_float</span><br><span class="line">add_float(a, b)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ctypes接口允许在调⽤C函数时使⽤Python中默认的字符串型和整型，对于其他布尔型和浮点型，应先转化为c_float</p>
+</li>
+<li><p>不能在C中对对象进⾏操作</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Python-C-API"><a href="#Python-C-API" class="headerlink" title="Python/C API"></a>Python/C API</h3><ul>
+<li><p>以特定的⽅式来编写C代码</p>
+</li>
+<li><p>所有的Python对象都被表⽰为PyObject的结构体，且Python.h头⽂件中提供操作函数</p>
+</li>
+<li><p>示例</p>
+<ul>
+<li><p>C代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;Python.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">static</span> PyObject* <span class="title">addList_add</span><span class="params">(PyObject* self, PyObject* args)</span></span>&#123; </span><br><span class="line">    PyObject * listObj; </span><br><span class="line">   </span><br><span class="line">    <span class="comment">//The input arguments come as a tuple, we parse the args to get the various variables </span></span><br><span class="line">    <span class="comment">//In this case it&#x27;s only one list variable, which will now be referenced by listObj </span></span><br><span class="line">    <span class="keyword">if</span> (! PyArg_ParseTuple( args, <span class="string">&quot;O&quot;</span>, &amp;listObj )) </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>; </span><br><span class="line">    </span><br><span class="line">    <span class="comment">//length of the list long </span></span><br><span class="line">    length = PyList_Size(listObj); </span><br><span class="line">    </span><br><span class="line">    <span class="comment">//iterate over all the elements </span></span><br><span class="line">    <span class="keyword">int</span> i, sum =<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; length; i++) &#123; </span><br><span class="line">        <span class="comment">//get an element out of the list - the element is also a python objects </span></span><br><span class="line">        PyObject* temp = PyList_GetItem(listObj, i); </span><br><span class="line">        <span class="comment">//we know that object represents an integer - so convert it into C long </span></span><br><span class="line">        <span class="keyword">long</span> elem = PyInt_AsLong(temp); </span><br><span class="line">        sum += elem; </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//value returned back to python code - another python object </span></span><br><span class="line">    <span class="comment">//build value here converts the C long to a python integer </span></span><br><span class="line">    <span class="keyword">return</span> Py_BuildValue(<span class="string">&quot;i&quot;</span>, sum); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//This is the docstring that corresponds to our &#x27;add&#x27; function.</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">char</span> addList_docs[] = <span class="string">&quot;add( ): add all elements of the list\n&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* This table contains the relavent info mapping -</span></span><br><span class="line"><span class="comment">   &lt;function-name in python module&gt;, &lt;actual-function&gt;,</span></span><br><span class="line"><span class="comment">   &lt;type-of-args the function expects&gt;, &lt;docstring associated with the function&gt; </span></span><br><span class="line"><span class="comment">*/</span> </span><br><span class="line"><span class="keyword">static</span> PyMethodDef addList_funcs[] = &#123; </span><br><span class="line">    &#123;<span class="string">&quot;add&quot;</span>, (PyCFunction)addList_add, METH_VARARGS, addList_docs&#125;,</span><br><span class="line">    &#123;<span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="literal">NULL</span>&#125; </span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* addList is the module name, and this is the initialization block of the module. </span></span><br><span class="line"><span class="comment">   &lt;desired module name&gt;, &lt;the-info-table&gt;, &lt;module&#x27;s-docstring&gt; </span></span><br><span class="line"><span class="comment">*/</span> </span><br><span class="line"><span class="function">PyMODINIT_FUNC <span class="title">initaddList</span><span class="params">(<span class="keyword">void</span>)</span></span>&#123;</span><br><span class="line">    Py_InitModule3(<span class="string">&quot;addList&quot;</span>, addList_funcs, <span class="string">&quot;Add all ze lists&quot;</span>); </span><br><span class="line">&#125; <span class="comment">//模块初始化块签名为PyMODINIT_FUNC init&#123;模块名&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>setup.py：编译安装到Python模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> distutils.core <span class="keyword">import</span> setup, Extension</span><br><span class="line">setup(name=<span class="string">&#x27;addList&#x27;</span>, version=<span class="string">&#x27;1.0&#x27;</span>, \</span><br><span class="line">      ext_modules=[Extension(<span class="string">&#x27;addList&#x27;</span>, [<span class="string">&#x27;adder.c&#x27;</span>])])</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ python setup.py install</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> addList</span><br><span class="line">l = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">print(<span class="string">&quot;Sum of List - &quot;</span> + <span class="built_in">str</span>(l) + <span class="string">&quot; = &quot;</span> + <span class="built_in">str</span>(addList.add(l)))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="上下文管理器"><a href="#上下文管理器" class="headerlink" title="上下文管理器"></a>上下文管理器</h2><ul>
+<li>在有需要的时候，精确地分配和释放资源</li>
+<li>最⼴泛的案例是with语句</li>
+</ul>
+<h3 id="基于类的实现"><a href="#基于类的实现" class="headerlink" title="基于类的实现"></a>基于类的实现</h3><ul>
+<li><p>⼀个上下⽂管理器的类，最起码要定义<code>__enter__</code>和<code>__exit__</code>⽅法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">File</span>(<span class="params"><span class="built_in">object</span></span>):</span> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, file_name, method</span>):</span> </span><br><span class="line">        self.file_obj = <span class="built_in">open</span>(file_name, method) </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__enter__</span>(<span class="params">self</span>):</span> </span><br><span class="line">        <span class="keyword">return</span> self.file_obj </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__exit__</span>(<span class="params">self, <span class="built_in">type</span>, value, traceback</span>):</span> </span><br><span class="line">        print(<span class="string">&quot;Exception has been handled&quot;</span>) </span><br><span class="line">        self.file_obj.close() </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        </span><br><span class="line"><span class="keyword">with</span> File(<span class="string">&#x27;demo.txt&#x27;</span>, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> opened_file: </span><br><span class="line">    opened_file.write(<span class="string">&#x27;Hola!&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>过程：</p>
+<ul>
+<li>with语句先暂存了File的<code>__exit__</code></li>
+<li>调⽤File的<code>__enter__</code>，打开⽂件并返回给with语句</li>
+<li>使⽤.write()写⽂件 </li>
+<li>with语句调⽤之前暂存的<code>__exit__</code>，关闭⽂件</li>
+</ul>
+</li>
+</ul>
+<h3 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h3><ul>
+<li>如果发⽣异常，异常的type,value和traceback传递给<code>__exit__</code>处理，如果<code>__exit__</code>返回的是True，这个异常被处理，否则with语句抛出异常</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\16\Python进阶（上）\" rel="bookmark">Python进阶（上）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Intermediate Python》阅读笔记 上半部分</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\19\Django实践_1\" rel="bookmark">Django实践(1)</a></div>
+        <div class="popular-posts-excerpt"><p><p>Django 框架</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\03\FlaskWeb开发-2\" rel="bookmark">FlaskWeb开发（2）Flask实例</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 用户认证、角色分配与资料编辑</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\30\FlaskWeb开发-1\" rel="bookmark">FlaskWeb开发（1）Flask介绍</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第一部分 Flask简介</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\06\FlaskWeb开发-3\" rel="bookmark">FlaskWeb开发（3）Flask实例</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 博客引擎、关注和评论</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2020/11/17/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8B%EF%BC%89/" title="Python进阶（下）">https://thomas-li-sjtu.github.io/2020/11/17/Python进阶（下）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/%E8%BF%9B%E9%98%B6%E8%AF%AD%E6%B3%95/" rel="tag"><i class="fa fa-tag"></i> 进阶语法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/16/Python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%8A%EF%BC%89/" rel="prev" title="Python进阶（上）">
+      <i class="fa fa-chevron-left"></i> Python进阶（上）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/20/PassGAN-A-Deep-Learning-Approach-for-Password-Guessing/" rel="next" title="PassGAN:A Deep Learning Approach for Password Guessing">
+      PassGAN:A Deep Learning Approach for Password Guessing <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8-Collections"><span class="nav-number">1.</span> <span class="nav-text">容器 Collections</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE-Enumerate"><span class="nav-number">2.</span> <span class="nav-text">枚举 Enumerate</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E8%87%AA%E7%9C%81"><span class="nav-number">3.</span> <span class="nav-text">对象自省</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E5%AF%BC%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">推导式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8"><span class="nav-number">5.</span> <span class="nav-text">异常</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">lambda表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E8%A1%8C%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">一行式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#For-else"><span class="nav-number">8.</span> <span class="nav-text">For else</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8C%E6%89%A9%E5%B1%95"><span class="nav-number">9.</span> <span class="nav-text">使用C扩展</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ctypes%E6%A8%A1%E5%9D%97"><span class="nav-number">9.1.</span> <span class="nav-text">ctypes模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python-C-API"><span class="nav-number">9.2.</span> <span class="nav-text">Python&#x2F;C API</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%E5%99%A8"><span class="nav-number">10.</span> <span class="nav-text">上下文管理器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E7%B1%BB%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">10.1.</span> <span class="nav-text">基于类的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="nav-number">10.2.</span> <span class="nav-text">异常处理</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

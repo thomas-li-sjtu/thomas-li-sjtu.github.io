@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka (2)Broker、Consumer">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="Kafka">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220817202613407.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220817202845878.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818112805185.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818113651188.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818122928534.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818123310191.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818123541315.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818124635278.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818131449418.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818131645180.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818132231857.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818132537185.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818132555472.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818133110032.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818180128357.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818180306004.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818180951411.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818181232693.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818181312085.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818201226095.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818200731688.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818201400592.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818203713056.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818204432639.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818204645671.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818203246832.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818203300367.png">
+<meta property="article:published_time" content="2022-08-17T04:52:43.000Z">
+<meta property="article:modified_time" content="2022-08-18T13:05:19.000Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220817202613407.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Kafka (2)Broker、Consumer | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kafka (2)Broker、Consumer
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-17 12:52:43" itemprop="dateCreated datePublished" datetime="2022-08-17T12:52:43+08:00">2022-08-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/" itemprop="url" rel="index"><span itemprop="name">大数据</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Kafka</p>
+<a id="more"></a>
+
+<h2 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h2><h3 id="Broker-工作流程"><a href="#Broker-工作流程" class="headerlink" title="Broker 工作流程"></a>Broker 工作流程</h3><ul>
+<li>zk存储的信息</li>
+</ul>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220817202613407.png" alt="image-20220817202613407" style="zoom:80%;">
+
+<ul>
+<li><p>总体工作流程</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220817202845878.png" alt="image-20220817202845878" style="zoom:80%;">
+
+<ul>
+<li>每台Broker启动后在zk中注册，三台启动后产生三个：0、1、2</li>
+<li>谁先抢占controller，谁成为controller，成为controller后监控/brokers/ids目录，检测brokers节点是否产生变化——<strong>控制器管理着整个集群中分区以及副本的状态，控制器的选举需要依赖于Zookeeper</strong></li>
+<li>选举分区的leader：<ul>
+<li>kafka中，分区的leader的选举操作也通过controller完成，选举一般在创建topic的时候和leader上下线的时候</li>
+<li>kafka中默认的leader的选举策略是OfflinePartitionLeaderElectionStrategy，从AR中按顺序查找第一个存活的副本（存活的副本的集合为ISR），副本必须在ISR中，如果不进行分区的重新分配，AR中的副本以及顺序是不变的，但是ISR会变。一般来说，Leader就是优先副本</li>
+</ul>
+</li>
+<li>底层以log形式存储，分为不同的Segment（大小为1G）。Segment内部采用索引的方式查询</li>
+</ul>
+</li>
+</ul>
+<h3 id="节点的服役和退役"><a href="#节点的服役和退役" class="headerlink" title="节点的服役和退役"></a>节点的服役和退役</h3><h4 id="服役"><a href="#服役" class="headerlink" title="服役"></a>服役</h4><ul>
+<li><p>启动新的一个服务器（假设已经启动了hadoop102、hadoop103、hadoop104）</p>
+</li>
+<li><p>创建一个要均衡的topic</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ vim topics-to-move.json</span><br><span class="line">&#123;</span><br><span class="line"> <span class="string">&quot;topics&quot;</span>: [</span><br><span class="line"> 	&#123;<span class="string">&quot;topic&quot;</span>: <span class="string">&quot;first&quot;</span>&#125;</span><br><span class="line"> ],</span><br><span class="line"> <span class="string">&quot;version&quot;</span>: 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成一个负载均衡计划</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-reassign-partitions.sh --bootstrap-server hadoop102:9092 --topics-to-move-json-file topics-to-move.json --broker-list <span class="string">&quot;0,1,2,3&quot;</span> --generate</span><br><span class="line">Current partition replica assignment</span><br><span class="line">...</span><br><span class="line">Proposed partition reassignment configuration</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建副本存储计划（数据存储在broker0、），该计划即为上一个命令的输出<code>Proposed partition reassignment configuration</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line"></span><br><span class="line">&#123;<span class="string">&quot;version&quot;</span>:1,<span class="string">&quot;partitions&quot;</span>:[&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;first&quot;</span>,<span class="string">&quot;partition&quot;</span>:0,<span class="string">&quot;replicas&quot;</span>:[2,3,0],<span class="string">&quot;log_dirs&quot;</span>:[<span class="string">&quot;any&quot;</span>,<span class="string">&quot;any&quot;</span>,<span class="string">&quot;any&quot;</span>]&#125;,&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;first&quot;</span>,<span class="string">&quot;partition&quot;</span>:1,<span class="string">&quot;replicas&quot;</span>:[3,0,1],<span class="string">&quot;log_dirs&quot;</span>:[<span class="string">&quot;any&quot;</span>,<span class="string">&quot;any&quot;</span>,<span class="string">&quot;any&quot;</span>]&#125;,&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;first&quot;</span>,<span class="string">&quot;partition&quot;</span>:2,<span class="string">&quot;replicas&quot;</span>:[0,1,2],<span class="string">&quot;log_dirs&quot;</span>:[<span class="string">&quot;any&quot;</span>,<span class="string">&quot;</span></span><br><span class="line"><span class="string">any&quot;</span>,<span class="string">&quot;any&quot;</span>]&#125;]&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>执行副本存储计划</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-reassign-partitions.sh --bootstrap-server hadoop102:9092 --reassignment-json-file increase-replication-factor.json --execute</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>验证副本存储计划</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-reassign-partitions.sh --bootstrap-server hadoop102:9092 --reassignment-json-file increase-replication-factor.json --verify</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="退役"><a href="#退役" class="headerlink" title="退役"></a>退役</h4><ul>
+<li><p>退役hadoop105</p>
+</li>
+<li><p>与节点服役类似，创建一个要均衡的topic，然后创建执行计划（原本的broker-list为0,1,2,3）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-reassign-partitions.sh --bootstrap-server hadoop102:9092 --topics-to-move-json-file topics-to-move.json --broker-list <span class="string">&quot;0,1,2&quot;</span> --generate</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>复制上面的输出，创建副本存储计划<code>increase-replication-factor.json</code>并执行，最后停止hadoop105的kafka</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-reassign-partitions.sh --bootstrap-server hadoop102:9092 --reassignment-json-file increase-replication-factor.json --execute</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="Kafka副本"><a href="#Kafka副本" class="headerlink" title="Kafka副本"></a>Kafka副本</h3><h4 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h4><ul>
+<li>提高数据可靠性，Kafka默认副本为1个，生产环境一般配置为2个</li>
+<li>Kafka中副本分为：Leader和Follower——<strong>Hadoop中的副本等价，不区分leader、follower</strong><ul>
+<li>生产者和消费者的操作对象为Leader</li>
+<li>Follower通过Leader同步数据</li>
+</ul>
+</li>
+<li>分区中的所有副本统称为AR（Assigned Repllicas），AR = ISR + OSR<ul>
+<li>ISR：和Leader保持同步的Follower集合（包括Leader本身）。Follower长时间不与Leader通信，则被踢出 ISR。时间阈值由replica.lag.time.max.ms参数设定，默认30s。Leader挂掉后从ISR选举新Leader</li>
+<li>OSR：Follower与Leader副本同步时，延迟过多的副本</li>
+</ul>
+</li>
+</ul>
+<h4 id="选举流程"><a href="#选举流程" class="headerlink" title="选举流程"></a>选举流程</h4><ul>
+<li><p>有一个broker的Controller会被选举为Controller Leader（抢占式），管理集群broker的上下线，所有topic的分区副本分配和Leader选举等工作</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818112805185.png" alt="image-20220818112805185" style="zoom:80%;">
+</li>
+<li><p>选择ISR中的、位于AR前面的节点作为Leader</p>
+</li>
+</ul>
+<h4 id="故障处理"><a href="#故障处理" class="headerlink" title="故障处理"></a>故障处理</h4><ul>
+<li><p>Follower故障</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818113651188.png" alt="image-20220818113651188" style="zoom:67%;">
+* LEO（Log End Offset）：每个副本的最后一个offset，LEO是最新的offset+1
+* HW（High Watermark）：所有副本中最小的LEO，HW之前的数据才对Consumer可见
+* Follower发生故障后会被临时踢出ISR，期间Leader和其他Follower继续接收数据；该Follower恢复后，会读取本地磁盘记录的上次的HW，将log文件高于HW的部分截掉，从HW向Leader同步，等该Follower的LEO大于等于该Partition的HW，该Follower就追上了，可以重新加入ISR
+* 上图紫色为新读取的数据，broker2本来有数据5、6，挂掉后，broker0、1继续读取数据，HW移动到8（此时broker0读取到9，broker1同步到7），broker2重连，将高于原HW的数据5、6删除，同步5、6、7，此时broker2的LEO大于等于当前的HW，broker2可以重新加入ISR
+</li>
+<li><p>Leader故障</p>
+<ul>
+<li>Leader发生故障后，从ISR选出一个新的Leader，其余的Follower先将各自的log文件高于HW的部分截掉，然后从新的Leader同步数据</li>
+<li>只能保证副本之间的数据一致性，不能保证数据不丢失或者不重复（例如，上一个leader处理到5、6、7，但新leader只保留数据到4）</li>
+</ul>
+</li>
+</ul>
+<h4 id="分区副本的分配"><a href="#分区副本的分配" class="headerlink" title="分区副本的分配"></a>分区副本的分配</h4><ul>
+<li><p>kafka的分区数大于服务器台数：Leader按循环分配到不同的broker，保证负载均衡</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-topics.sh --bootstrap-server hadoop102:9092 --create --partitions 16 --replication-factor 3 --topic <span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818122928534.png" alt="image-20220818122928534" style="zoom:67%;">
+</li>
+<li><p>手动调整分区副本存储：创建一个新的topic，4个分区两个副本，将topic的所有副本存储到broker0、broker1</p>
+<ul>
+<li><p>创建topic</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-topics.sh --bootstrap-server hadoop102:9092 --create --partitions 4 --replication-factor 2 --topic testnew</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建副本存储计划， 所有副本指定存储在broker0、broker1，执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line">&#123;</span><br><span class="line">	<span class="string">&quot;version&quot;</span>:1,</span><br><span class="line">	<span class="string">&quot;partitions&quot;</span>:[&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;testnew&quot;</span>,<span class="string">&quot;partition&quot;</span>:0,<span class="string">&quot;replicas&quot;</span>:[0,1]&#125;,</span><br><span class="line">		&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;testnew&quot;</span>,<span class="string">&quot;partition&quot;</span>:1,<span class="string">&quot;replicas&quot;</span>:[0,1]&#125;,</span><br><span class="line">		&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;testnew&quot;</span>,<span class="string">&quot;partition&quot;</span>:2,<span class="string">&quot;replicas&quot;</span>:[1,0]&#125;,</span><br><span class="line">		&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;testnew&quot;</span>,<span class="string">&quot;partition&quot;</span>:3,<span class="string">&quot;replicas&quot;</span>:[1,0]&#125;]</span><br><span class="line">&#125;</span><br><span class="line">$ bin/kafka-reassign-partitions.sh --bootstrap-server hadoop102:9092 --reassignment-json-file increase-replication-factor.json --execute</span><br></pre></td></tr></table></figure>
+
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818123310191.png" alt="image-20220818123310191" style="zoom:80%;">
+</li>
+</ul>
+</li>
+<li><p>Leader Partition负载平衡：</p>
+<ul>
+<li><p>Kafka会自动把Leader Partition均匀分散在各个机器上，保证每台机器的读写吞吐量都是均匀的</p>
+</li>
+<li><p>如果某些broker宕机，会导致Leader Partition重新选举后集中在其他少部分几台broker，宕机的broker重启之后会重新成为Follower，造成集群负载不均衡</p>
+</li>
+<li><p>通过参数设置再平衡：</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818123541315.png" alt="image-20220818123541315" style="zoom:80%;">
+</li>
+</ul>
+</li>
+<li><p>增加副本数目</p>
+<ul>
+<li><p>创建topic（一个副本）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-topics.sh --bootstrap-server hadoop102:9092 --create --partitions 3 --replication-factor 1 --topic testAdd</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>手动增加副本（3个副本）：创建副本存储计划并执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line">&#123;</span><br><span class="line">	<span class="string">&quot;version&quot;</span>:1,</span><br><span class="line">	<span class="string">&quot;partitions&quot;</span>:[</span><br><span class="line">		&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;testAdd&quot;</span>,<span class="string">&quot;partition&quot;</span>:0,<span class="string">&quot;replicas&quot;</span>:[0,1,2]&#125;,	</span><br><span class="line">		&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;testAdd&quot;</span>,<span class="string">&quot;partition&quot;</span>:1,<span class="string">&quot;replicas&quot;</span>:[0,1,2]&#125;,</span><br><span class="line">		&#123;<span class="string">&quot;topic&quot;</span>:<span class="string">&quot;testAdd&quot;</span>,<span class="string">&quot;partition&quot;</span>:2,<span class="string">&quot;replicas&quot;</span>:[0,1,2]&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br><span class="line">$ bin/kafka-reassign-partitions.sh --bootstrap-server hadoop102:9092 --reassignment-json-file increase-replication-factor.json --execute</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="文件存储"><a href="#文件存储" class="headerlink" title="文件存储"></a>文件存储</h3><h4 id="文件存储机制"><a href="#文件存储机制" class="headerlink" title="文件存储机制"></a>文件存储机制</h4><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818124635278.png" alt="image-20220818124635278" style="zoom:80%;">
+
+<ul>
+<li><p>Topic是逻辑的概念，partition是物理的概念，每个partition对应一个log文件，log文件中存储的Producer发送的数据，数据追加到log文件末端</p>
+</li>
+<li><p>Kafka采取了分片和索引机制，每个partition分为多个segment。每个segment包括：“.index”文件、“.log”文件和.timeindex等文件，位于一个文件夹下，文件夹的命名规则为：topic名称+分区序号，例如：first-0</p>
+<ul>
+<li>.log：日志文件</li>
+<li>.index：偏移量索引文件</li>
+<li>.timeindex：时间戳索引文件</li>
+<li>index和log文件以当前segment的第一条消息的offset命名</li>
+</ul>
+</li>
+<li><p>Log文件与Index文件：</p>
+<p><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818131449418.png" alt="image-20220818131449418"></p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818131645180.png" alt="image-20220818131645180" style="zoom:67%;">
+
+</li>
+</ul>
+<h4 id="文件清理策略"><a href="#文件清理策略" class="headerlink" title="文件清理策略"></a>文件清理策略</h4><ul>
+<li><p>默认的日志保存时间为7天</p>
+<ul>
+<li>log.retention.hours，最低优先级，小时为单位，默认 7 天</li>
+<li>log.retention.minutes，优先级高一些，分钟为单位</li>
+<li>log.retention.ms，最高优先级，毫秒为单位</li>
+<li>log.retention.check.interval.ms，检查周期，默认5分钟</li>
+</ul>
+</li>
+<li><p>delete清理策略：log.cleanup.policy = delete</p>
+<ul>
+<li>基于时间：默认打开。以segment中所有记录中的最大时间戳作为该文件时间戳（segment中最后一个记录的时间戳）</li>
+<li>基于大小：默认关闭。超过设置的所有日志总大小，删除最早的segment</li>
+</ul>
+</li>
+<li><p>compact清理策略：log.cleanup.policy = compact</p>
+<ul>
+<li><p>对于相同key的不同value值，只保留最后一个版本</p>
+<p><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818132231857.png" alt="image-20220818132231857"></p>
+</li>
+<li><p>压缩后的offset可能是不连续的，上图中没有offset 6</p>
+</li>
+<li><p>该策略只适合特殊场景，例如消息的key是用户ID，value是用户的资料，压缩后的消息集保存用户最新的资料</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="数据读写的高效性"><a href="#数据读写的高效性" class="headerlink" title="数据读写的高效性"></a>数据读写的高效性</h3><ul>
+<li><p>高效：</p>
+<ul>
+<li>Kafka 本身是分布式集群，可以采用分区技术，并行度高</li>
+<li>读数据采用稀疏索引，快速定位要消费的数据</li>
+<li>顺序写磁盘（写的过程是追加到文件末端）</li>
+<li>页缓存 + 零拷贝</li>
+</ul>
+</li>
+<li><p>零拷贝：Kafka的数据加工操作交给生产者和消费者，Broker应用层不关心存储的数据，因此数据传输时不经过应用层</p>
+</li>
+<li><p>PageCache页缓存：</p>
+<ul>
+<li>Kafka重度依赖底层操作系统提供的PageCache功能</li>
+<li>当上层有写操作时，操作系统将数据写入PageCache，kernel space决定什么时候数据落盘</li>
+<li>当上层有读操作时，先从PageCache查找，找不到再去磁盘中读取</li>
+</ul>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818132537185.png" alt="image-20220818132537185" style="zoom:67%;">
+
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818132555472.png" alt="image-20220818132555472" style="zoom:67%;">
+
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818133110032.png" alt="image-20220818133110032" style="zoom: 67%;">
+
+
+</li>
+</ul>
+<h2 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h2><h3 id="消费方式"><a href="#消费方式" class="headerlink" title="消费方式"></a>消费方式</h3><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818180128357.png" alt="image-20220818180128357" style="zoom:67%;">
+
+<ul>
+<li>pull模式：主动从broker拉取数据，但如果broker没有数据，消费者可能陷入循环（一直返回空数据）</li>
+<li>push模式：由broker决定消息发送速率——很难适应所有消费者的消费速率</li>
+</ul>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818180306004.png" alt="image-20220818180306004" style="zoom:80%;">
+
+<ul>
+<li><p>总体流程：</p>
+<ul>
+<li>Producer发送数据到broker的leader，follower同步数据</li>
+<li>消费者相互独立</li>
+<li>每个分区的数据，只能由消费者组里的一个消费者消费——将消费者组视为一个独立的消费者</li>
+<li>通过offset，记录消费者目前消费到的位置（老版本中offset存储在zk中，现在由系统主题保存到磁盘，减少网络通信）</li>
+</ul>
+</li>
+<li><p>消费者组</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818180951411.png" alt="image-20220818180951411" style="zoom:67%;">
+
+<ul>
+<li>消费者组由多个consumer组成，同组的consumer的groupid相同</li>
+<li>消费者组之间互不影响</li>
+<li>所有的消费者都属于某个消费者组，即消费者组是逻辑上的一个订阅者</li>
+<li>如果向消费组中添加更多的消费者，最终超过主题分区数量，则有一部分消费者会闲 置，不接收任何消息</li>
+</ul>
+</li>
+<li><p>消费者组初始化流程：</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818181232693.png" alt="image-20220818181232693" style="zoom:67%;">
+* coordinator：辅助消费者组的初始化和分区的分配，每个broker都有一个。节点选择=groupid的hashcode % 50（ `__consumer_offsets`的分区数量）。消费者组下的消费者向该coordinator提交offset
+* 过程：
+  * 组内每个消费者向该coordinator发送加入组的请求
+  * coordinator随机选出该消费者组的leader，将要消费的topic的情况（该topic的分区情况等信息）发给leader
+  * leader制定消费计划，确定组内各个消费者分别消费的分区号（见后面的分区分配策略）
+  * coordinator下发方案给这个组的所有消费者
+  * **coordinator会监控消费者的心跳和消费能力**
+</li>
+<li><p>消费者组消费流程：</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818181312085.png" alt="image-20220818181312085" style="zoom:67%;">
+* 消费者创建消费者网络客户端
+* 首先调用sendFetches方法，协调每批次拉取的大小和拉取时间间隔，方法中包含三个参数
+* 调用send方法发送请求，通过回调方法onSuccess将结果拉取到消息队列
+* 反序列化、拦截器、数据处理
+
+</li>
+</ul>
+<h3 id="消费者API"><a href="#消费者API" class="headerlink" title="消费者API"></a>消费者API</h3><ul>
+<li><p>独立消费者：</p>
+<ul>
+<li><p>消费topic的数据（要求生产者发送了相应topic的数据）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Properties properties = <span class="keyword">new</span> Properties();</span><br><span class="line">    </span><br><span class="line">properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, <span class="string">&quot;localhost:9092&quot;</span>);</span><br><span class="line">properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());</span><br><span class="line">properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 配置消费者组</span></span><br><span class="line">properties.put(ConsumerConfig.GROUP_ID_CONFIG, <span class="string">&quot;test&quot;</span>);</span><br><span class="line"><span class="comment">// 创建消费者对象</span></span><br><span class="line">KafkaConsumer&lt;String, String&gt; kafkaConsumer = <span class="keyword">new</span> KafkaConsumer&lt;String, String&gt;(properties);</span><br><span class="line"><span class="comment">// 注册要消费的主题（可以消费多个主题）</span></span><br><span class="line">ArrayList&lt;String&gt; topics = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">topics.add(<span class="string">&quot;first&quot;</span>);</span><br><span class="line">kafkaConsumer.subscribe(topics);</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 拉取数据打印</span></span><br><span class="line"><span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">    <span class="comment">// 设置 1s 中消费一批数据</span></span><br><span class="line">    ConsumerRecords&lt;String, String&gt; consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(<span class="number">1</span>));</span><br><span class="line">    <span class="comment">// 打印消费到的数据</span></span><br><span class="line">    <span class="keyword">for</span> (ConsumerRecord&lt;String, String&gt; consumerRecord : consumerRecords) &#123;</span><br><span class="line">        System.out.println(consumerRecord);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>消费某个主题的某个分区（结合之前的生产者partition）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 消费某个主题的某个分区数据</span></span><br><span class="line">ArrayList&lt;TopicPartition&gt; topicPartitions = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">topicPartitions.add(<span class="keyword">new</span> TopicPartition(<span class="string">&quot;first&quot;</span>, <span class="number">0</span>));</span><br><span class="line">kafkaConsumer.assign(topicPartitions);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>消费者组：复制一份基础消费者的代码，同时启动即可启动同一个消费者组中的两个消费者</p>
+</li>
+<li><p>注意，如果想要重复消费已经消费过的数据，要改groupid并且<code>properties.setProperty(&quot;auto.offset.reset&quot;, &quot;earliest&quot;);</code>，或者停止当前的消费者线程，重新运行时代码里主动修改offset。因为原来的groupid的offset已经变了！参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/admin294/article/details/96429669">kafka常见问题如果想消费已经被消费过的数据</a></p>
+</li>
+</ul>
+<h3 id="分区的分配和再平衡"><a href="#分区的分配和再平衡" class="headerlink" title="分区的分配和再平衡"></a>分区的分配和再平衡</h3><ul>
+<li><p>消费者组中包含多个消费者，topic包含多个分区——哪个consumer消费哪个partition的数据？</p>
+</li>
+<li><p>四种主流的分区分配策略： Range、RoundRobin、Sticky、CooperativeSticky</p>
+</li>
+<li><p>配置参数partition.assignment.strategy修改分区的分配策略</p>
+</li>
+<li><p>默认策略是Range + CooperativeSticky——可以同时使用多个分区分配策略</p>
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818201226095.png" alt="image-20220818201226095" style="zoom:67%;">
+
+</li>
+</ul>
+<h4 id="Range-以及再平衡"><a href="#Range-以及再平衡" class="headerlink" title="Range 以及再平衡"></a>Range 以及再平衡</h4><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818200731688.png" alt="image-20220818200731688" style="zoom: 67%;">
+
+<ul>
+<li>Range是对一个topic的</li>
+<li>对同一个topic的分区按序号排序，对消费者按字母顺序排序<ul>
+<li>如果有7个分区，3 个消费者，排序后分区为：<code>0,1,2,3,4,5,6</code>，消费者为<code>C0,C1,C2</code>，除不尽则前面的消费者消费的分区数目增加</li>
+<li>即，partitions数/consumer数，决定每个消费者消费几个分区。如果除不尽，前面的消费者将会多消费1个分区</li>
+</ul>
+</li>
+<li>当topic数目增多，C0消费者的分区消费数目，会比其他消费者明显更多，容易产生数据倾斜</li>
+<li>再平衡：如果停止C0，则会重新按照range方式分配——平衡后，C1消费原来的0、1、3、4号分区数据，C2消费者原来的消费2、5、6号分区数据，新的数据分区后，C1消费0、1、2、3、4号分区，C2消费4、5、6号分区</li>
+</ul>
+<h4 id="RoundRobin-以及再平衡"><a href="#RoundRobin-以及再平衡" class="headerlink" title="RoundRobin 以及再平衡"></a>RoundRobin 以及再平衡</h4><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818201400592.png" alt="image-20220818201400592" style="zoom:67%;">
+
+<ul>
+<li>把所有partition和组内所有consumer列出，按照hashcode排序，通过轮询算法分配partition到各个消费者</li>
+<li>再分配：如果C0挂掉，数据轮询内容为0、3、6号分区，平衡后C1消费0、1、4、6号分区数据，C2消费者消费2、3、5号分区数据</li>
+</ul>
+<h4 id="Sticky-以及再平衡"><a href="#Sticky-以及再平衡" class="headerlink" title="Sticky 以及再平衡"></a>Sticky 以及再平衡</h4><ul>
+<li>执行一次新的分配之前， 考虑上一次分配的结果，尽量少的调整分配的变动，节省大量的开销</li>
+<li>与Range相似，但同样的例子里，C0消费者虽然消费三个分区，分区号是随机的</li>
+</ul>
+<h3 id="Offset"><a href="#Offset" class="headerlink" title="Offset"></a>Offset</h3><h4 id="维护位置"><a href="#维护位置" class="headerlink" title="维护位置"></a>维护位置</h4><ul>
+<li><p>consumer默认将offset保存在Kafka一个内置的topic中：<code>__consumer_offsets</code></p>
+</li>
+<li><p><code>__consumer_offsets</code>采用key-value存储数据</p>
+<ul>
+<li>key是group.id+topic+分区号，value是当前offset的值</li>
+<li>每隔一段时间，kafka会对这个topic进行compact，group.id+topic+分区号保留最新数据</li>
+</ul>
+</li>
+<li><p>如果要查看这个topic，则配置文件<code>config/consumer.properties</code>中添加配置 <code>exclude.internal.topics=false</code>， 默认true，表示不能消费系统主题</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-console-consumer.sh --topic __consumer_offsets --bootstrap-server hadoop102:9092 --consumer.config config/consumer.properties --formatter <span class="string">&quot;kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter&quot;</span> --from-beginning</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="自动提交offset"><a href="#自动提交offset" class="headerlink" title="自动提交offset"></a>自动提交offset</h4><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818203713056.png" alt="image-20220818203713056" style="zoom:80%;">
+
+<img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818204432639.png" alt="image-20220818204432639" style="zoom:80%;">
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 自动提交offset</span></span><br><span class="line">properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, <span class="keyword">true</span>);  <span class="comment">// 是否自动提交 offset</span></span><br><span class="line">properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, <span class="number">1000</span>);  <span class="comment">// 提交 offset 的时间周期 1000ms，默认 5s</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="手动提交offset"><a href="#手动提交offset" class="headerlink" title="手动提交offset"></a>手动提交offset</h4><ul>
+<li><p>commitSync同步提交：阻塞当前线程，发送提交offset请求，一直到提交成功，并且会自动失败重试</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 手动提交offset</span></span><br><span class="line">properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, <span class="keyword">false</span>);</span><br><span class="line">...</span><br><span class="line"><span class="comment">// 拉取数据打印</span></span><br><span class="line"><span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">    <span class="comment">// 设置 1s 中消费一批数据</span></span><br><span class="line">    ConsumerRecords&lt;String, String&gt; consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(<span class="number">1</span>));</span><br><span class="line">    <span class="comment">// 打印消费到的数据</span></span><br><span class="line">    <span class="keyword">for</span> (ConsumerRecord&lt;String, String&gt; consumerRecord : consumerRecords) &#123;</span><br><span class="line">        System.out.println(consumerRecord);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 同步提交 offset</span></span><br><span class="line">    kafkaConsumer.commitSync();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>commitAsync异步提交：发送完提交offset请求后，就开始拉取下一批数据，没有失败重试机制，有可能提交失败——修改为<code>kafkaConsumer.commitAsync();</code>即可</p>
+</li>
+</ul>
+<h4 id="指定offset消费"><a href="#指定offset消费" class="headerlink" title="指定offset消费"></a>指定offset消费</h4><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818204645671.png" alt="image-20220818204645671" style="zoom: 67%;">
+
+<ul>
+<li><p>当Kafka中没有初始偏移量（消费者组第一次消费）或服务器上不再存在当前偏移量（例如数据已删除）</p>
+</li>
+<li><p>参数：<code>auto.offset.reset = earliest | latest | none</code>，默认是latest</p>
+<ul>
+<li>earliest：自动将偏移量重置为最早的偏移量，–from-beginning</li>
+<li>none：未找到消费者组的先前偏移量，则抛出异常</li>
+</ul>
+</li>
+<li><p>指定任意offset位置开始消费——要先获得消费者对应的分区！</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 配置消费者组</span></span><br><span class="line">properties.put(ConsumerConfig.GROUP_ID_CONFIG, <span class="string">&quot;test&quot;</span>);</span><br><span class="line"><span class="comment">// 创建消费者对象</span></span><br><span class="line">KafkaConsumer&lt;String, String&gt; kafkaConsumer = <span class="keyword">new</span> KafkaConsumer&lt;String, String&gt;(properties);</span><br><span class="line"><span class="comment">// 注册要消费的主题（可以消费多个主题）</span></span><br><span class="line">List&lt;String&gt; topics = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">topics.add(<span class="string">&quot;first&quot;</span>);</span><br><span class="line">kafkaConsumer.subscribe(topics);</span><br><span class="line">  </span><br><span class="line"><span class="comment">// 指定位置消费</span></span><br><span class="line">Set&lt;TopicPartition&gt; assignment = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line"><span class="keyword">while</span> (assignment.size() == <span class="number">0</span>) &#123;</span><br><span class="line">    kafkaConsumer.poll(Duration.ofSeconds(<span class="number">1</span>));</span><br><span class="line">    <span class="comment">// 获取消费者分区分配方案（有了分区分配信息才能开始消费）</span></span><br><span class="line">    assignment = kafkaConsumer.assignment();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 遍历所有分区，并指定 offset 从 5 的位置开始消费</span></span><br><span class="line"><span class="keyword">for</span> (TopicPartition tp: assignment) &#123;</span><br><span class="line">    kafkaConsumer.seek(tp, <span class="number">5</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="重新按照时间消费（指定时间消费）"><a href="#重新按照时间消费（指定时间消费）" class="headerlink" title="重新按照时间消费（指定时间消费）"></a>重新按照时间消费（指定时间消费）</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获得分区分配方案</span></span><br><span class="line">Set&lt;TopicPartition&gt; assignment = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line"><span class="keyword">while</span> (assignment.size() == <span class="number">0</span>) &#123;</span><br><span class="line">    kafkaConsumer.poll(Duration.ofSeconds(<span class="number">1</span>));</span><br><span class="line">    assignment = kafkaConsumer.assignment();</span><br><span class="line">&#125;</span><br><span class="line">HashMap&lt;TopicPartition, Long&gt; timestampToSearch = <span class="keyword">new</span> HashMap&lt;&gt;();  <span class="comment">// 每个分区对应的一天前的时间</span></span><br><span class="line"><span class="keyword">for</span> (TopicPartition topicPartition : assignment) &#123;</span><br><span class="line">    timestampToSearch.put(topicPartition, System.currentTimeMillis() - <span class="number">24</span> * <span class="number">3600</span> * <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 一天前，每个分区的 offset</span></span><br><span class="line">Map&lt;TopicPartition, OffsetAndTimestamp&gt; offsets = kafkaConsumer.offsetsForTimes(timestampToSearch);</span><br><span class="line"><span class="comment">// 遍历每个分区，对每个分区设置消费时间。</span></span><br><span class="line"><span class="keyword">for</span> (TopicPartition topicPartition : assignment) &#123;</span><br><span class="line">    OffsetAndTimestamp offsetAndTimestamp = offsets.get(topicPartition);</span><br><span class="line">    <span class="comment">// 根据时间指定开始消费的位置</span></span><br><span class="line">    <span class="keyword">if</span> (offsetAndTimestamp != <span class="keyword">null</span>) &#123;</span><br><span class="line">        kafkaConsumer.seek(topicPartition, offsetAndTimestamp.offset());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="漏消费和重复消费"><a href="#漏消费和重复消费" class="headerlink" title="漏消费和重复消费"></a>漏消费和重复消费</h4><ul>
+<li><p>重复消费：已经消费了数据，但是offset没提交（自动提交offset引起）</p>
+<p><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818203246832.png" alt="image-20220818203246832"></p>
+</li>
+<li><p>漏消费：先提交offset后消费，有可能会造成数据的漏消费（offset被提交，但数据还在内存中未落盘，刚好消费者线程被kill，此时offset已经提交但是数据未处理，这部分内存中的数据丢失，下次启动是broker显示已经offset已经移动，但实际上消费者没有这个数据）</p>
+<p><img src="/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/image-20220818203300367.png" alt="image-20220818203300367"></p>
+</li>
+</ul>
+<h3 id="消费者事务"><a href="#消费者事务" class="headerlink" title="消费者事务"></a>消费者事务</h3><ul>
+<li>完成Consumer端的精准一次性消费（不漏消费也不重复消费），需要Kafka消费端将消费过程和提交offset过程做原子绑定——需要将Kafka的offset保存到支持事务的自定义介质（如 MySQL）</li>
+<li>下游消费者必须支持事务，才能做到精确的一次性消费</li>
+</ul>
+<h3 id="数据积压（提高消费者吞吐量）"><a href="#数据积压（提高消费者吞吐量）" class="headerlink" title="数据积压（提高消费者吞吐量）"></a>数据积压（提高消费者吞吐量）</h3><ul>
+<li>如果消费能力不足，考虑增加Topic的分区数，同时提升消费组的消费者数量，消费者数 = 分区数</li>
+<li>下游的数据处理不及时：提高每批次拉取的数量</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/08/17/hadoop%E5%AD%A6%E4%B9%A010/" title="Kafka (2)Broker、Consumer">https://thomas-li-sjtu.github.io/2022/08/17/hadoop学习10/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/14/hadoop%E5%AD%A6%E4%B9%A09/" rel="prev" title="Kafka (1)消息队列概述、生产者">
+      <i class="fa fa-chevron-left"></i> Kafka (1)消息队列概述、生产者
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/10/01/Docker/" rel="next" title="Docker 核心概念">
+      Docker 核心概念 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Broker"><span class="nav-number">1.</span> <span class="nav-text">Broker</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Broker-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Broker 工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E7%9A%84%E6%9C%8D%E5%BD%B9%E5%92%8C%E9%80%80%E5%BD%B9"><span class="nav-number">1.2.</span> <span class="nav-text">节点的服役和退役</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%8D%E5%BD%B9"><span class="nav-number">1.2.1.</span> <span class="nav-text">服役</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%80%E5%BD%B9"><span class="nav-number">1.2.2.</span> <span class="nav-text">退役</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kafka%E5%89%AF%E6%9C%AC"><span class="nav-number">1.3.</span> <span class="nav-text">Kafka副本</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="nav-number">1.3.1.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E6%B5%81%E7%A8%8B"><span class="nav-number">1.3.2.</span> <span class="nav-text">选举流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86"><span class="nav-number">1.3.3.</span> <span class="nav-text">故障处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E5%8C%BA%E5%89%AF%E6%9C%AC%E7%9A%84%E5%88%86%E9%85%8D"><span class="nav-number">1.3.4.</span> <span class="nav-text">分区副本的分配</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8"><span class="nav-number">1.4.</span> <span class="nav-text">文件存储</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E6%9C%BA%E5%88%B6"><span class="nav-number">1.4.1.</span> <span class="nav-text">文件存储机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E6%B8%85%E7%90%86%E7%AD%96%E7%95%A5"><span class="nav-number">1.4.2.</span> <span class="nav-text">文件清理策略</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99%E7%9A%84%E9%AB%98%E6%95%88%E6%80%A7"><span class="nav-number">1.5.</span> <span class="nav-text">数据读写的高效性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Consumer"><span class="nav-number">2.</span> <span class="nav-text">Consumer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E6%96%B9%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">消费方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85API"><span class="nav-number">2.3.</span> <span class="nav-text">消费者API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%8C%BA%E7%9A%84%E5%88%86%E9%85%8D%E5%92%8C%E5%86%8D%E5%B9%B3%E8%A1%A1"><span class="nav-number">2.4.</span> <span class="nav-text">分区的分配和再平衡</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Range-%E4%BB%A5%E5%8F%8A%E5%86%8D%E5%B9%B3%E8%A1%A1"><span class="nav-number">2.4.1.</span> <span class="nav-text">Range 以及再平衡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RoundRobin-%E4%BB%A5%E5%8F%8A%E5%86%8D%E5%B9%B3%E8%A1%A1"><span class="nav-number">2.4.2.</span> <span class="nav-text">RoundRobin 以及再平衡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sticky-%E4%BB%A5%E5%8F%8A%E5%86%8D%E5%B9%B3%E8%A1%A1"><span class="nav-number">2.4.3.</span> <span class="nav-text">Sticky 以及再平衡</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Offset"><span class="nav-number">2.5.</span> <span class="nav-text">Offset</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%B4%E6%8A%A4%E4%BD%8D%E7%BD%AE"><span class="nav-number">2.5.1.</span> <span class="nav-text">维护位置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E6%8F%90%E4%BA%A4offset"><span class="nav-number">2.5.2.</span> <span class="nav-text">自动提交offset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%8B%E5%8A%A8%E6%8F%90%E4%BA%A4offset"><span class="nav-number">2.5.3.</span> <span class="nav-text">手动提交offset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E5%AE%9Aoffset%E6%B6%88%E8%B4%B9"><span class="nav-number">2.5.4.</span> <span class="nav-text">指定offset消费</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E6%8C%89%E7%85%A7%E6%97%B6%E9%97%B4%E6%B6%88%E8%B4%B9%EF%BC%88%E6%8C%87%E5%AE%9A%E6%97%B6%E9%97%B4%E6%B6%88%E8%B4%B9%EF%BC%89"><span class="nav-number">2.5.5.</span> <span class="nav-text">重新按照时间消费（指定时间消费）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%BC%8F%E6%B6%88%E8%B4%B9%E5%92%8C%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9"><span class="nav-number">2.5.6.</span> <span class="nav-text">漏消费和重复消费</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85%E4%BA%8B%E5%8A%A1"><span class="nav-number">2.6.</span> <span class="nav-text">消费者事务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%A7%AF%E5%8E%8B%EF%BC%88%E6%8F%90%E9%AB%98%E6%B6%88%E8%B4%B9%E8%80%85%E5%90%9E%E5%90%90%E9%87%8F%EF%BC%89"><span class="nav-number">2.7.</span> <span class="nav-text">数据积压（提高消费者吞吐量）</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

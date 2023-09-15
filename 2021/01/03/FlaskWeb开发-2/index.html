@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《FlaskWeb开发》阅读笔记 第二部分 Flask实例：社交博客 —— 用户认证、角色分配与资料编辑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FlaskWeb开发（2）Flask实例">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/01/03/FlaskWeb%E5%BC%80%E5%8F%91-2/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《FlaskWeb开发》阅读笔记 第二部分 Flask实例：社交博客 —— 用户认证、角色分配与资料编辑">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-03T06:05:35.000Z">
+<meta property="article:modified_time" content="2021-01-06T12:17:59.187Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="Web应用">
+<meta property="article:tag" content="可视化">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/01/03/FlaskWeb%E5%BC%80%E5%8F%91-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>FlaskWeb开发（2）Flask实例 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/01/03/FlaskWeb%E5%BC%80%E5%8F%91-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          FlaskWeb开发（2）Flask实例
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-03 14:05:35" itemprop="dateCreated datePublished" datetime="2021-01-03T14:05:35+08:00">2021-01-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">项目实践</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>20k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>18 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 用户认证、角色分配与资料编辑</p>
+<a id="more"></a>
+
+<h2 id="第二部分-实例：社交博客-上"><a href="#第二部分-实例：社交博客-上" class="headerlink" title="第二部分 实例：社交博客(上)"></a>第二部分 实例：社交博客(上)</h2><h3 id="用户认证"><a href="#用户认证" class="headerlink" title="用户认证"></a>用户认证</h3><p>认证包：</p>
+<ul>
+<li> Flask-Login：管理已登录用户的用户会话</li>
+<li>Werkzeug：计算密码散列值并进行核对</li>
+<li>itsdangerous：生成并核对加密安全令牌</li>
+</ul>
+<h4 id="密码散列实现（Werkzeug）"><a href="#密码散列实现（Werkzeug）" class="headerlink" title="密码散列实现（Werkzeug）"></a>密码散列实现（Werkzeug）</h4><ul>
+<li><code>generate_password_hash(password, method=pbkdf2:sha1, salt_length=8)</code>：原始密码作为输入， 以字符串形式输出密码的散列值</li>
+<li><code>check_password_hash(hash, password)</code>：参数为密码散列和用户输入的密码</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> werkzeug.security <span class="keyword">import</span> generate_password_hash, check_password_hash </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    password_hash = db.Column(db.String(<span class="number">128</span>)) </span><br><span class="line"> </span><br><span class="line"><span class="meta">    @property  # 让password字段无法直接读取</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">password</span>(<span class="params">self</span>):</span>  </span><br><span class="line">        <span class="keyword">raise</span> AttributeError(<span class="string">&#x27;password is not a readable attribute&#x27;</span>) </span><br><span class="line"></span><br><span class="line"><span class="meta">    @password.setter  # 修改用户的password 字段 </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">password</span>(<span class="params">self, password</span>):</span>  <span class="comment"># 通过password的只写属性实现</span></span><br><span class="line">        self.password_hash = generate_password_hash(password)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">verify_password</span>(<span class="params">self, password</span>):</span> </span><br><span class="line">        <span class="keyword">return</span> check_password_hash(self.password_hash, password)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">$ tree /F</span><br><span class="line">│  .gitignore</span><br><span class="line">│  config.py</span><br><span class="line">│  flasky.py</span><br><span class="line">│  LICENSE</span><br><span class="line">│  README.md</span><br><span class="line">│  requirements.txt</span><br><span class="line">├─app</span><br><span class="line">│  │  email.py</span><br><span class="line">│  │  models.py</span><br><span class="line">│  │  __init__.py</span><br><span class="line">│  │</span><br><span class="line">│  ├─main</span><br><span class="line">│  │      errors.py</span><br><span class="line">│  │      forms.py</span><br><span class="line">│  │      views.py</span><br><span class="line">│  │      __init__.py</span><br><span class="line">│  │</span><br><span class="line">│  ├─static</span><br><span class="line">│  │      favicon.ico</span><br><span class="line">│  │</span><br><span class="line">│  └─templates</span><br><span class="line">│      │  404.html</span><br><span class="line">│      │  500.html</span><br><span class="line">│      │  base.html</span><br><span class="line">│      │  index.html</span><br><span class="line">│      │</span><br><span class="line">│      └─mail</span><br><span class="line">│              new_user.html</span><br><span class="line">│              new_user.txt</span><br><span class="line">│</span><br><span class="line">├─migrations</span><br><span class="line">│  │  alembic.ini</span><br><span class="line">│  │  env.py</span><br><span class="line">│  │  README</span><br><span class="line">│  │  script.py.mako</span><br><span class="line">│  │</span><br><span class="line">│  └─versions</span><br><span class="line">│          38c4e85512a9_initial_migration.py</span><br><span class="line">│</span><br><span class="line">└─tests</span><br><span class="line">        test_basics.py</span><br><span class="line">        test_user_model.py</span><br><span class="line">        __init__.py</span><br></pre></td></tr></table></figure>
+
+<h4 id="认证蓝本"><a href="#认证蓝本" class="headerlink" title="认证蓝本"></a>认证蓝本</h4><ul>
+<li><p>auth 蓝本保存在同名 Python 包</p>
+</li>
+<li><p>蓝本的包构造文件创建蓝本对象，再从 views.py 引入路由</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/auth/__init__.py：创建蓝本</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Blueprint </span><br><span class="line"> </span><br><span class="line">auth = Blueprint(<span class="string">&#x27;auth&#x27;</span>, __name__) </span><br><span class="line"> </span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> views</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用蓝本的 route 修饰器定义与认证相关的路由</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> render_template </span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> auth </span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/login&#x27;) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span>():</span> </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/login.html&#x27;</span>)  <span class="comment"># 模板的路径是相对于程序模板文件夹，这里保存在了一个单独的文件夹</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>蓝本要在<code>create_app()</code>中附加到程序</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/__init__.py：附加蓝本</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_app</span>(<span class="params">config_name</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    <span class="keyword">from</span> .auth <span class="keyword">import</span> auth <span class="keyword">as</span> auth_blueprint </span><br><span class="line">    app.register_blueprint(auth_blueprint, url_prefix=<span class="string">&#x27;/auth&#x27;</span>)  <span class="comment"># 有了url_prefix，注册后蓝本中定义的所有路由都会加上指定的前缀，即http://localhost:5000/auth/login</span></span><br><span class="line"> </span><br><span class="line">    <span class="keyword">return</span> app</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="Flask-Login认证"><a href="#Flask-Login认证" class="headerlink" title="Flask-Login认证"></a>Flask-Login认证</h4><ul>
+<li><p>需要记录用户认证状态</p>
+</li>
+<li><p>User 模型必须实现：</p>
+<ul>
+<li><code>is_authenticated()</code>：若用户已登录，返回 True，否则返回 False</li>
+<li><code>is_active()</code>：允许用户登录，返回 True，否则返回 False；要禁用账户，可以返回 False</li>
+<li><code>is_anonymous()</code>：普通用户返回 False</li>
+<li><code>get_id()</code>：返回用户的唯一标识符——使用 Unicode 编码的字符串</li>
+</ul>
+</li>
+<li><p>Flask-Login 提供 UserMixin 类，包含以上的实现</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> UserMixin </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    __tablename__ = <span class="string">&#x27;users&#x27;</span> </span><br><span class="line">    <span class="built_in">id</span> = db.Column(db.Integer, primary_key = <span class="literal">True</span>) </span><br><span class="line">    email = db.Column(db.String(<span class="number">64</span>), unique=<span class="literal">True</span>, index=<span class="literal">True</span>)  <span class="comment"># 用户使用email登录</span></span><br><span class="line">    username = db.Column(db.String(<span class="number">64</span>), unique=<span class="literal">True</span>, index=<span class="literal">True</span>) </span><br><span class="line">    password_hash = db.Column(db.String(<span class="number">128</span>)) </span><br><span class="line">    role_id = db.Column(db.Integer, db.ForeignKey(<span class="string">&#x27;roles.id&#x27;</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在<code>create_app()</code>中实现</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> LoginManager </span><br><span class="line"> </span><br><span class="line">login_manager = LoginManager() </span><br><span class="line">login_manager.session_protection = <span class="string">&#x27;strong&#x27;</span>  <span class="comment"># 属性可以设为 None、&#x27;basic&#x27; 或 &#x27;strong&#x27;，提供不同的安全等级</span></span><br><span class="line">login_manager.login_view = <span class="string">&#x27;auth.login&#x27;</span>  <span class="comment"># 设置登录页面，auth为蓝本名字</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_app</span>(<span class="params">config_name</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    login_manager.init_app(app) </span><br><span class="line">    <span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>要求实现回调函数，接收 user_id 加载用户</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/models.py：加载用户的回调函数</span></span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> login_manager </span><br><span class="line"> </span><br><span class="line"><span class="meta">@login_manager.user_loader </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_user</span>(<span class="params">user_id</span>):</span> </span><br><span class="line">    <span class="keyword">return</span> User.query.get(<span class="built_in">int</span>(user_id))  <span class="comment"># 如果能找到用户，则返回用户对象</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>只让认证用户访问路由：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> login_required </span><br><span class="line"> </span><br><span class="line"><span class="meta">@app.route(&#x27;/secret&#x27;) </span></span><br><span class="line"><span class="meta">@login_required  # 使用此修饰器</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> 。。。</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置登录表单</p>
+</li>
+<li><p>设置登入和登出的视图函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> render_template, redirect, request, url_for, flash </span><br><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> login_user, login_required </span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> auth </span><br><span class="line"><span class="keyword">from</span> ..models <span class="keyword">import</span> User </span><br><span class="line"><span class="keyword">from</span> .forms <span class="keyword">import</span> LoginForm </span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/login&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span>():</span> </span><br><span class="line">    form = LoginForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        user = User.query.filter_by(email=form.email.data).first()  <span class="comment"># 使用表单中填写的email从数据库中加载用户</span></span><br><span class="line">        <span class="keyword">if</span> user <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> user.verify_password(form.password.data):  <span class="comment"># 校验密码</span></span><br><span class="line">            login_user(user, form.remember_me.data)  <span class="comment"># 用户会话中把用户标记为已登录</span></span><br><span class="line">            <span class="keyword">return</span> redirect(request.args.get(<span class="string">&#x27;next&#x27;</span>) <span class="keyword">or</span> url_for(<span class="string">&#x27;main.index&#x27;</span>))  <span class="comment"># 用户访问未授权的URL时会显示登录表单，此时将原地址保存在查询字符串的 next 参数中。如果不是上面的情况，则重定向到首页</span></span><br><span class="line">        flash(<span class="string">&#x27;Invalid username or password.&#x27;</span>)  <span class="comment"># 用户输入的电子邮件或密码不正确时，显示此flash消息</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/login.html&#x27;</span>, form=form)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/logout&#x27;) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logout</span>():</span> </span><br><span class="line">    logout_user()  <span class="comment"># 删除并重设用户会话</span></span><br><span class="line">    flash(<span class="string">&#x27;You have been logged out.&#x27;</span>)  <span class="comment"># 随后显示一个Flash消息，以确认这次操作</span></span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="注册新用户"><a href="#注册新用户" class="headerlink" title="注册新用户"></a>注册新用户</h4><ul>
+<li><p>添加注册表单</p>
+<ul>
+<li><p>表单函数</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/auth/forms.py：用户注册表单</span></span><br><span class="line"><span class="keyword">from</span> flask.ext.wtf <span class="keyword">import</span> Form</span><br><span class="line"><span class="keyword">from</span> wtforms <span class="keyword">import</span> StringField, PasswordField, BooleanField, SubmitField</span><br><span class="line"><span class="keyword">from</span> wtforms.validators <span class="keyword">import</span> Required, Length, Email, Regexp, EqualTo</span><br><span class="line"><span class="keyword">from</span> wtforms <span class="keyword">import</span> ValidationError</span><br><span class="line"><span class="keyword">from</span> ..models <span class="keyword">import</span> User</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RegistrationForm</span>(<span class="params">Form</span>):</span> </span><br><span class="line">    email = StringField(<span class="string">&#x27;Email&#x27;</span>, validators=[Required(), Length(<span class="number">1</span>, <span class="number">64</span>), </span><br><span class="line">                                             Email()]) </span><br><span class="line">    username = StringField(<span class="string">&#x27;Username&#x27;</span>, validators=[ </span><br><span class="line">        Required(), Length(<span class="number">1</span>, <span class="number">64</span>), Regexp(<span class="string">&#x27;^[A-Za-z][A-Za-z0-9_.]*$&#x27;</span>, <span class="number">0</span>, </span><br><span class="line">                                          <span class="string">&#x27;Usernames must have only letters, &#x27;</span> </span><br><span class="line">                                          <span class="string">&#x27;numbers, dots or underscores&#x27;</span>)])  <span class="comment"># Regexp 验证函数，确保username字段只包含字母、数字、下划线和点号；正则表达式后的参数：正则表达式的旗标和验证失败时显示的错误消息</span></span><br><span class="line">    password = PasswordField(<span class="string">&#x27;Password&#x27;</span>, validators=[ </span><br><span class="line">        Required(), EqualTo(<span class="string">&#x27;password2&#x27;</span>, message=<span class="string">&#x27;Passwords must match.&#x27;</span>)])  <span class="comment"># Equalto：验证两个密码字段中的值是否一致</span></span><br><span class="line">    password2 = PasswordField(<span class="string">&#x27;Confirm password&#x27;</span>, validators=[Required()]) </span><br><span class="line">    submit = SubmitField(<span class="string">&#x27;Register&#x27;</span>) </span><br><span class="line"></span><br><span class="line">  <span class="comment"># 表单类中定义validate_ 开头且后面跟着字段名的方法——类似验证函数，和验证函数一起调用</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_email</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> User.query.filter_by(email=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Email already registered.&#x27;</span>)  <span class="comment"># 验证失败则抛出ValidationError异常，参数是错误消息</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_username</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> User.query.filter_by(username=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Username already in use.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>登录页面要显示一个指向注册页面的链接</p>
+  <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/templates/auth/login.html：链接到注册页面--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span> </span><br><span class="line">    New user? </span><br><span class="line">    <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; url_for(&#x27;auth.register&#x27;) &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">        Click here to register </span><br><span class="line">    <span class="tag">&lt;/<span class="name">a</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>注册的视图函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：用户注册路由</span></span><br><span class="line"><span class="meta">@auth.route(&#x27;/register&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">register</span>():</span> </span><br><span class="line">    form = RegistrationForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        user = User(email=form.email.data, </span><br><span class="line">                    username=form.username.data, </span><br><span class="line">                    password=form.password.data) </span><br><span class="line">        db.session.add(user) </span><br><span class="line">        flash(<span class="string">&#x27;You can now login.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;auth.login&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/register.html&#x27;</span>, form=form)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="确认账户"><a href="#确认账户" class="headerlink" title="确认账户"></a>确认账户</h4><ul>
+<li><p>有时需要确认注册时用户提供的信息是否正确，例如能够验证邮箱——需要发送确认邮件，新账户标记为待确认，用户需要点击邮件中包含确认令牌的 URL 链接</p>
+</li>
+<li><p>确认链接通常为：<code>http://www.example.com/auth/confirm/&lt;确认令牌&gt;</code></p>
+</li>
+<li><p>将生成和校验令牌的功能加入 User 模型中</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/models.py：确认用户账户</span></span><br><span class="line"><span class="keyword">from</span> itsdangerous <span class="keyword">import</span> TimedJSONWebSignatureSerializer <span class="keyword">as</span> Serializer  <span class="comment"># 生成具有过期时间的 JSON Web 签名，类的构造函数参数为一个密钥，可使用SECRET_KEY</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> current_app </span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> db </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    confirmed = db.Column(db.Boolean, default=<span class="literal">False</span>) </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">generate_confirmation_token</span>(<span class="params">self, expiration=<span class="number">3600</span></span>):</span> </span><br><span class="line">        s = Serializer(current_app.config[<span class="string">&#x27;SECRET_KEY&#x27;</span>], expiration)  <span class="comment"># 参数expires_in设置令牌的过期时间（秒）</span></span><br><span class="line">        <span class="keyword">return</span> s.dumps(&#123;<span class="string">&#x27;confirm&#x27;</span>: self.<span class="built_in">id</span>&#125;)  <span class="comment"># dumps()为指定数据生成加密签名并生成序列串</span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">confirm</span>(<span class="params">self, token</span>):</span> </span><br><span class="line">        s = Serializer(current_app.config[<span class="string">&#x27;SECRET_KEY&#x27;</span>]) </span><br><span class="line">        <span class="keyword">try</span>: </span><br><span class="line">            data = s.loads(token)  <span class="comment"># 解码令牌，检验签名和过期时间，如果通过则返回原始数据，或者抛出异常</span></span><br><span class="line">        <span class="keyword">except</span>: </span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line">        <span class="keyword">if</span> data.get(<span class="string">&#x27;confirm&#x27;</span>) != self.<span class="built_in">id</span>:  <span class="comment"># 检查令牌中的id是否和存储在current_user中的已登录用户匹配</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line">        self.confirmed = <span class="literal">True</span> </span><br><span class="line">        db.session.add(self) </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>发送确认邮件</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：能发送确认邮件的注册路由</span></span><br><span class="line"><span class="keyword">from</span> ..email <span class="keyword">import</span> send_email </span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/register&#x27;, methods = [&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">register</span>():</span> </span><br><span class="line">    form = RegistrationForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        <span class="comment"># ... </span></span><br><span class="line">        <span class="comment"># 重定向之前需要发送确认邮件</span></span><br><span class="line">        db.session.add(user) </span><br><span class="line">        db.session.commit()  <span class="comment"># 提交数据库之后才能赋予新用户id值</span></span><br><span class="line">        token = user.generate_confirmation_token()  <span class="comment"># 生成令牌</span></span><br><span class="line">        send_email(user.email, <span class="string">&#x27;Confirm Your Account&#x27;</span>, </span><br><span class="line">                   <span class="string">&#x27;auth/email/confirm&#x27;</span>, user=user, token=token)  </span><br><span class="line">        flash(<span class="string">&#x27;A confirmation email has been sent to you by email.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/register.html&#x27;</span>, form=form)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>邮件需要两个模板：纯文本正文和富文本正文</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/templates/auth/email/confirm.txt：确认邮件的纯文本正文</span></span><br><span class="line">Dear &#123;&#123; user.username &#125;&#125;, </span><br><span class="line"></span><br><span class="line">Welcome to Flasky! </span><br><span class="line">To confirm your account please click on the following link: </span><br><span class="line">&#123;&#123; url_for(<span class="string">&#x27;auth.confirm&#x27;</span>, token=token, _external=<span class="literal">True</span>) &#125;&#125;  <span class="comment"># 一般url_for()生成相对URL，因此需要设置_external=True以生成完整的URL</span></span><br><span class="line">Sincerely, </span><br><span class="line">The Flasky Team </span><br><span class="line"> </span><br><span class="line">Note: replies to this email address are <span class="keyword">not</span> monitored.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>确认账户的视图函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> current_user </span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/confirm/&lt;token&gt;&#x27;) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">confirm</span>(<span class="params">token</span>):</span> </span><br><span class="line">    <span class="keyword">if</span> current_user.confirmed:  <span class="comment"># 检查已登录的用户是否已经确认过</span></span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">if</span> current_user.confirm(token):  <span class="comment"># 调用user模型的确认功能</span></span><br><span class="line">        flash(<span class="string">&#x27;You have confirmed your account. Thanks!&#x27;</span>) </span><br><span class="line">    <span class="keyword">else</span>: </span><br><span class="line">        flash(<span class="string">&#x27;The confirmation link is invalid or has expired.&#x27;</span>) </span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>过滤未确认的账户，并显示一个页面，要求用户获取权限前确认账户</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：before_app_request中过滤未确认的账户</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@auth.before_app_request </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">before_request</span>():</span> </span><br><span class="line">    <span class="comment"># 同时满足：用户已登录+用户账户没有确认+请求端点不在蓝本中，会拦截请求</span></span><br><span class="line">    <span class="keyword">if</span> current_user.is_authenticated() \ </span><br><span class="line">            <span class="keyword">and</span> <span class="keyword">not</span> current_user.confirmed \ </span><br><span class="line">            <span class="keyword">and</span> request.endpoint[:<span class="number">5</span>] != <span class="string">&#x27;auth.&#x27;</span> \  </span><br><span class="line">            <span class="keyword">and</span> request.endpoint != <span class="string">&#x27;static&#x27;</span>:  <span class="comment"># endpoint获取请求端点</span></span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;auth.unconfirmed&#x27;</span>))  <span class="comment"># 重定向到路由/auth/unconfirmed</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">@auth.route(&#x27;/unconfirmed&#x27;) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">unconfirmed</span>():</span> </span><br><span class="line">    <span class="keyword">if</span> current_user.is_anonymous() <span class="keyword">or</span> current_user.confirmed: </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>)) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;auth/unconfirmed.html&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>邮件重发</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/auth/views.py：重新发送账户确认邮件</span></span><br><span class="line"><span class="meta">@auth.route(&#x27;/confirm&#x27;) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">resend_confirmation</span>():</span>  <span class="comment"># 重复了一次register()中的操作</span></span><br><span class="line">    token = current_user.generate_confirmation_token() </span><br><span class="line">    send_email(current_user.email, <span class="string">&#x27;Confirm Your Account&#x27;</span>, </span><br><span class="line">               <span class="string">&#x27;auth/email/confirm&#x27;</span>, user=current_user, token=token) </span><br><span class="line">    flash(<span class="string">&#x27;A new confirmation email has been sent to you by email.&#x27;</span>) </span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;main.index&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="管理账户"><a href="#管理账户" class="headerlink" title="管理账户"></a>管理账户</h4><ul>
+<li>其他的账户功能：<ul>
+<li>修改密码</li>
+<li>重设密码（忘记密码）</li>
+<li>修改电子邮件地址</li>
+</ul>
+</li>
+</ul>
+<h3 id="用户角色"><a href="#用户角色" class="headerlink" title="用户角色"></a>用户角色</h3><ul>
+<li>管理员、普通用户、助理等</li>
+<li>存在角色的分立，以及权限的组合（这里将用户分为不同角色，但角色用权限定义）</li>
+</ul>
+<h4 id="数据库中的表示"><a href="#数据库中的表示" class="headerlink" title="数据库中的表示"></a>数据库中的表示</h4><ul>
+<li><p>Role 模型</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 权限常量</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Permission</span>:</span>  </span><br><span class="line">    FOLLOW = <span class="number">0x01</span> </span><br><span class="line">    COMMENT = <span class="number">0x02</span> </span><br><span class="line">    WRITE_ARTICLES = <span class="number">0x04</span> </span><br><span class="line">    MODERATE_COMMENTS = <span class="number">0x08</span> </span><br><span class="line">    ADMINISTER = <span class="number">0x80</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Role</span>(<span class="params">db.Model</span>):</span> </span><br><span class="line">    __tablename__ = <span class="string">&#x27;roles&#x27;</span> </span><br><span class="line">    <span class="built_in">id</span> = db.Column(db.Integer, primary_key=<span class="literal">True</span>) </span><br><span class="line">    name = db.Column(db.String(<span class="number">64</span>), unique=<span class="literal">True</span>) </span><br><span class="line">    default = db.Column(db.Boolean, default=<span class="literal">False</span>, index=<span class="literal">True</span>) </span><br><span class="line">    permissions = db.Column(db.Integer)  <span class="comment"># 各权限都对应一个位位置，能执行某项操作的角色，其位会被设为1。int一共8位，因此能表示8个权限</span></span><br><span class="line">    users = db.relationship(<span class="string">&#x27;User&#x27;</span>, backref=<span class="string">&#x27;role&#x27;</span>, lazy=<span class="string">&#x27;dynamic&#x27;</span>)</span><br><span class="line">    </span><br><span class="line"><span class="meta">    @staticmethod </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">insert_roles</span>():</span>  </span><br><span class="line">        <span class="comment"># 通过角色名查找现有的角色，然后再进行更新。没有角色名才新建角色对象</span></span><br><span class="line">        roles = &#123;  <span class="comment"># 使用权限组织角色，新增新角色只需使用不同的权限组合即可</span></span><br><span class="line">            <span class="string">&#x27;User&#x27;</span>: (Permission.FOLLOW | </span><br><span class="line">                     Permission.COMMENT | </span><br><span class="line">                     Permission.WRITE_ARTICLES, <span class="literal">True</span>), </span><br><span class="line">            <span class="string">&#x27;Moderator&#x27;</span>: (Permission.FOLLOW | </span><br><span class="line">                          Permission.COMMENT | </span><br><span class="line">                          Permission.WRITE_ARTICLES | </span><br><span class="line">                          Permission.MODERATE_COMMENTS, <span class="literal">False</span>), </span><br><span class="line">            <span class="string">&#x27;Administrator&#x27;</span>: (<span class="number">0xff</span>, <span class="literal">False</span>) </span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">for</span> r <span class="keyword">in</span> roles: </span><br><span class="line">            role = Role.query.filter_by(name=r).first() </span><br><span class="line">            <span class="keyword">if</span> role <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">                role = Role(name=r) </span><br><span class="line">            role.permissions = roles[r][<span class="number">0</span>] </span><br><span class="line">            role.default = roles[r][<span class="number">1</span>] </span><br><span class="line">            db.session.add(role) </span><br><span class="line">        db.session.commit()</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="角色赋予"><a href="#角色赋予" class="headerlink" title="角色赋予"></a>角色赋予</h4><ul>
+<li><p>用户注册时默认位“一般用户”</p>
+</li>
+<li><p>管理员注册时，由变量 FLASKY_ADMIN 中的邮箱地址识别，并自动赋予其管理员角色</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, **kwargs</span>):</span>  </span><br><span class="line">        <span class="built_in">super</span>(User, self).__init__(**kwargs)  <span class="comment"># 构造函数首先调用基类的构造函数，如果没有定义角色，则根据邮箱地址设置角色</span></span><br><span class="line">        <span class="keyword">if</span> self.role <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">            <span class="keyword">if</span> self.email == current_app.config[<span class="string">&#x27;FLASKY_ADMIN&#x27;</span>]: </span><br><span class="line">                self.role = Role.query.filter_by(permissions=<span class="number">0xff</span>).first() </span><br><span class="line">            <span class="keyword">if</span> self.role <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">                self.role = Role.query.filter_by(default=<span class="literal">True</span>).first() </span><br><span class="line">    <span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="角色验证"><a href="#角色验证" class="headerlink" title="角色验证"></a>角色验证</h4><ul>
+<li><p>添加辅助方法，以验证角色是否有指定的权限</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/models.py</span></span><br><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> UserMixin, AnonymousUserMixin </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">can</span>(<span class="params">self, permissions</span>):</span>  <span class="comment"># 位与操作</span></span><br><span class="line">        <span class="keyword">return</span> self.role <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> \ </span><br><span class="line">            (self.role.permissions &amp; permissions) == permissions </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">is_administrator</span>(<span class="params">self</span>):</span>  <span class="comment"># 单独实现管理员权限检查</span></span><br><span class="line">        <span class="keyword">return</span> self.can(Permission.ADMINISTER) </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AnonymousUser</span>(<span class="params">AnonymousUserMixin</span>):</span>  <span class="comment"># 匿名角色</span></span><br><span class="line">    <span class="comment"># 设为用户未登录时current_user的值，不用预先检查用户是否登录</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">can</span>(<span class="params">self, permissions</span>):</span> </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">is_administrator</span>(<span class="params">self</span>):</span> </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span> </span><br><span class="line"> </span><br><span class="line">login_manager.anonymous_user = AnonymousUser</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>自定义检查用户权限的修饰器</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/decorators.py</span></span><br><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> wraps </span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> abort </span><br><span class="line"><span class="keyword">from</span> flask.ext.login <span class="keyword">import</span> current_user </span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">permission_required</span>(<span class="params">permission</span>):</span>  <span class="comment"># 用于常规权限检查</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">decorator</span>(<span class="params">f</span>):</span> </span><br><span class="line"><span class="meta">        @wraps(f) </span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">decorated_function</span>(<span class="params">*args, **kwargs</span>):</span> </span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> current_user.can(permission): </span><br><span class="line">                abort(<span class="number">403</span>) </span><br><span class="line">            <span class="keyword">return</span> f(*args, **kwargs) </span><br><span class="line">        <span class="keyword">return</span> decorated_function </span><br><span class="line">    <span class="keyword">return</span> decorator </span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">admin_required</span>(<span class="params">f</span>):</span>  <span class="comment"># 用于管理员权限检查</span></span><br><span class="line">    <span class="keyword">return</span> permission_required(Permission.ADMINISTER)(f)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>让 Permission 类在所有模板中全局可访问，需要使用上下文处理器，此时 render_template() 可以不用添加 Permission 类的模板参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/main/__init__.py：把 Permission 类加入模板上下文</span></span><br><span class="line"><span class="meta">@main.app_context_processor </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">inject_permissions</span>():</span> </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(Permission=Permission)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="用户资料"><a href="#用户资料" class="headerlink" title="用户资料"></a>用户资料</h3><ul>
+<li>类似个人空间</li>
+</ul>
+<h4 id="资料信息"><a href="#资料信息" class="headerlink" title="资料信息"></a>资料信息</h4><ul>
+<li><p>扩充 User 模型，增加用户的其他信息</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/models.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    name = db.Column(db.String(<span class="number">64</span>))  <span class="comment"># 用户真实姓名</span></span><br><span class="line">    location = db.Column(db.String(<span class="number">64</span>)) </span><br><span class="line">    about_me = db.Column(db.Text())  <span class="comment"># db.String需要指定最大长度，db.Text不用</span></span><br><span class="line">    member_since = db.Column(db.DateTime(), default=datetime.utcnow)  <span class="comment"># datetime.utcnow后面没有()， default参数可以接受函数作为默认值</span></span><br><span class="line">    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">ping</span>(<span class="params">self</span>):</span>  <span class="comment"># 刷新用户的最后访问时间，此时要在app/auth/views.py的before_request()中增加语句current_user.ping()</span></span><br><span class="line">        self.last_seen = datetime.utcnow() </span><br><span class="line">        db.session.add(self)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="用户资料页面"><a href="#用户资料页面" class="headerlink" title="用户资料页面"></a>用户资料页面</h4><ul>
+<li><p>为每个用户都创建资料页面</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/main/views.py：资料页面的路由</span></span><br><span class="line"><span class="meta">@main.route(&#x27;/user/&lt;username&gt;&#x27;) </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">user</span>(<span class="params">username</span>):</span> </span><br><span class="line">    user = User.query.filter_by(username=username).first() </span><br><span class="line">    <span class="keyword">if</span> user <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">        abort(<span class="number">404</span>) </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;user.html&#x27;</span>, user=user)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置资料页面的模板</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/templates/user.html：用户资料页面的模板--&gt;</span></span><br><span class="line">&#123;% block page_content %&#125; </span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;page-header&quot;</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>&#123;&#123; user.username &#125;&#125;<span class="tag">&lt;/<span class="name">h1</span>&gt;</span> </span><br><span class="line">    &#123;% if user.name or user.location %&#125; </span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span> </span><br><span class="line">        <span class="comment">&lt;!--name和location字段在同一个&lt;p&gt;元素中，因此至少定义二者的一个时，&lt;p&gt;元素就会创建--&gt;</span></span><br><span class="line">        &#123;% if user.name %&#125;&#123;&#123; user.name &#125;&#125;&#123;% endif %&#125; </span><br><span class="line">        &#123;% if user.location %&#125; </span><br><span class="line">        <span class="comment">&lt;!--location字段被渲染成指向谷歌地图的查询链接--&gt;</span></span><br><span class="line">            From <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;http://maps.google.com/?q=&#123;&#123; user.location &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">                &#123;&#123; user.location &#125;&#125; </span><br><span class="line">            <span class="tag">&lt;/<span class="name">a</span>&gt;</span> </span><br><span class="line">        &#123;% endif %&#125; </span><br><span class="line">    <span class="tag">&lt;/<span class="name">p</span>&gt;</span> </span><br><span class="line">    &#123;% endif %&#125; </span><br><span class="line">    &#123;% if current_user.is_administrator() %&#125; </span><br><span class="line">    <span class="comment">&lt;!--如果用户是管理员，就显示其邮箱地址--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;mailto:&#123;&#123; user.email &#125;&#125;&quot;</span>&gt;</span>&#123;&#123; user.email &#125;&#125;<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span> </span><br><span class="line">    &#123;% endif %&#125; </span><br><span class="line">    &#123;% if user.about_me %&#125;<span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123; user.about_me &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span>&#123;% endif %&#125; </span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span> </span><br><span class="line">        Member since &#123;&#123; moment(user.member_since).format(&#x27;L&#x27;) &#125;&#125;. </span><br><span class="line">        Last seen &#123;&#123; moment(user.last_seen).fromNow() &#125;&#125;. </span><br><span class="line">    <span class="tag">&lt;/<span class="name">p</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span> </span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在 base.html 中，在导航条上添加一个链接，指向用户资料页面</p>
+</li>
+</ul>
+<h4 id="资料编辑器"><a href="#资料编辑器" class="headerlink" title="资料编辑器"></a>资料编辑器</h4><ul>
+<li><p>用户要进入一个页面并编辑资料，而管理员也要能够编辑任意用户的资料——包括用户不能直接访问的 User 模型字段</p>
+</li>
+<li><p>用户级别的资料编辑器</p>
+<ul>
+<li><p>编辑表单</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/main/forms.py：资料编辑表单</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EditProfileForm</span>(<span class="params">Form</span>):</span>  <span class="comment"># 此表单字段都是可选的，因此长度验证函数允许长度为0</span></span><br><span class="line">    name = StringField(<span class="string">&#x27;Real name&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    location = StringField(<span class="string">&#x27;Location&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    about_me = TextAreaField(<span class="string">&#x27;About me&#x27;</span>) </span><br><span class="line">    submit = SubmitField(<span class="string">&#x27;Submit&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编辑路由</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/main/views.py：资料编辑路由</span></span><br><span class="line"><span class="meta">@main.route(&#x27;/edit-profile&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit_profile</span>():</span> </span><br><span class="line">    form = EditProfileForm() </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        current_user.name = form.name.data </span><br><span class="line">        current_user.location = form.location.data </span><br><span class="line">        current_user.about_me = form.about_me.data </span><br><span class="line">        db.session.add(current_user) </span><br><span class="line">        flash(<span class="string">&#x27;Your profile has been updated.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;.user&#x27;</span>, username=current_user.username)) </span><br><span class="line">    form.name.data = current_user.name </span><br><span class="line">    form.location.data = current_user.location </span><br><span class="line">    form.about_me.data = current_user.about_me </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;edit_profile.html&#x27;</span>, form=form)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在资料页面添加编辑链接</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/templates/user.html：资料编辑的链接--&gt;</span></span><br><span class="line">&#123;% if user == current_user %&#125;  <span class="comment">&lt;!--只有当用户查看自己的资料页面时才显示--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">class</span>=<span class="string">&quot;btn btn-default&quot;</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; url_for(&#x27;.edit_profile&#x27;) &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">    Edit Profile </span><br><span class="line"><span class="tag">&lt;/<span class="name">a</span>&gt;</span> </span><br><span class="line">&#123;% endif %&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>管理员级别的资料编辑器</p>
+<ul>
+<li><p>编辑表单</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/main/forms.py：管理员使用的资料编辑表单</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EditProfileAdminForm</span>(<span class="params">Form</span>):</span> </span><br><span class="line">    email = StringField(<span class="string">&#x27;Email&#x27;</span>, validators=[Required(), Length(<span class="number">1</span>, <span class="number">64</span>), </span><br><span class="line">                                             Email()]) </span><br><span class="line">    username = StringField(<span class="string">&#x27;Username&#x27;</span>, validators=[ </span><br><span class="line">        Required(), Length(<span class="number">1</span>, <span class="number">64</span>), Regexp(<span class="string">&#x27;^[A-Za-z][A-Za-z0-9_.]*$&#x27;</span>, <span class="number">0</span>, </span><br><span class="line">                                          <span class="string">&#x27;Usernames must have only letters, &#x27;</span> </span><br><span class="line">                                          <span class="string">&#x27;numbers, dots or underscores&#x27;</span>)]) </span><br><span class="line">    confirmed = BooleanField(<span class="string">&#x27;Confirmed&#x27;</span>) </span><br><span class="line">    role = SelectField(<span class="string">&#x27;Role&#x27;</span>, coerce=<span class="built_in">int</span>)  <span class="comment"># # SelectField包装，从而实现下拉列表，用来在这个表单中选择用户角色</span></span><br><span class="line">    name = StringField(<span class="string">&#x27;Real name&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    location = StringField(<span class="string">&#x27;Location&#x27;</span>, validators=[Length(<span class="number">0</span>, <span class="number">64</span>)]) </span><br><span class="line">    about_me = TextAreaField(<span class="string">&#x27;About me&#x27;</span>) </span><br><span class="line">    submit = SubmitField(<span class="string">&#x27;Submit&#x27;</span>)  </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, user, *args, **kwargs</span>):</span> </span><br><span class="line">        <span class="built_in">super</span>(EditProfileAdminForm, self).__init__(*args, **kwargs) </span><br><span class="line">        self.role.choices = [(role.<span class="built_in">id</span>, role.name) </span><br><span class="line">                             <span class="keyword">for</span> role <span class="keyword">in</span> Role.query.order_by(Role.name).<span class="built_in">all</span>()]  <span class="comment"># 实例的choices属性中设置各选项，选项是元组列表，元组为(选项标识符，控件中的文本字段)；参数coerce=int把字段的值转换为整数</span></span><br><span class="line">        self.user = user  <span class="comment"># 表单构造函数接收用户对象，并将其保存在成员变量中</span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_email</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> field.data != self.user.email <span class="keyword">and</span> \ </span><br><span class="line">                User.query.filter_by(email=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Email already registered.&#x27;</span>) </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate_username</span>(<span class="params">self, field</span>):</span> </span><br><span class="line">        <span class="keyword">if</span> field.data != self.user.username <span class="keyword">and</span> \ </span><br><span class="line">                User.query.filter_by(username=field.data).first(): </span><br><span class="line">            <span class="keyword">raise</span> ValidationError(<span class="string">&#x27;Username already in use.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编辑路由：和普通用户的编辑路由具有基本相同的结构</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/main/views.py：管理员的资料编辑路由</span></span><br><span class="line"><span class="meta">@main.route(&#x27;/edit-profile/&lt;int:id&gt;&#x27;, methods=[&#x27;GET&#x27;, &#x27;POST&#x27;]) </span></span><br><span class="line"><span class="meta">@login_required </span></span><br><span class="line"><span class="meta">@admin_required </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit_profile_admin</span>(<span class="params"><span class="built_in">id</span></span>):</span> </span><br><span class="line">    user = User.query.get_or_404(<span class="built_in">id</span>)  <span class="comment"># 提供的id不正确则返回 404 错误</span></span><br><span class="line">    form = EditProfileAdminForm(user=user) </span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit(): </span><br><span class="line">        user.email = form.email.data </span><br><span class="line">        user.username = form.username.data </span><br><span class="line">        user.confirmed = form.confirmed.data </span><br><span class="line">        user.role = Role.query.get(form.role.data) </span><br><span class="line">        user.name = form.name.data </span><br><span class="line">        user.location = form.location.data </span><br><span class="line">        user.about_me = form.about_me.data </span><br><span class="line">        db.session.add(user) </span><br><span class="line">        flash(<span class="string">&#x27;The profile has been updated.&#x27;</span>) </span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">&#x27;.user&#x27;</span>, username=user.username)) </span><br><span class="line">    </span><br><span class="line">    form.email.data = user.email </span><br><span class="line">    form.username.data = user.username </span><br><span class="line">    form.confirmed.data = user.confirmed </span><br><span class="line">    form.role.data = user.role_id </span><br><span class="line">    form.name.data = user.name </span><br><span class="line">    form.location.data = user.location </span><br><span class="line">    form.about_me.data = user.about_me </span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;edit_profile.html&#x27;</span>, form=form, user=user)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在资料页面添加编辑链接</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="用户头像"><a href="#用户头像" class="headerlink" title="用户头像"></a>用户头像</h4><ul>
+<li><p>添加 <a target="_blank" rel="noopener" href="http://gravatar.com/">Gravatar</a> 提供的用户头像——将头像和邮箱地址关联</p>
+</li>
+<li><p>生成头像的 URL 时，要计算邮箱地址的 MD5 散列值：<code> http://www.gravatar.com/avatar/&lt;hash&gt;</code>，URL 的查询字符串中可包含多个参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/models.py：生成 Gravatar URL</span></span><br><span class="line"><span class="keyword">import</span> hashlib </span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> request </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gravatar</span>(<span class="params">self, size=<span class="number">100</span>, default=<span class="string">&#x27;identicon&#x27;</span>, rating=<span class="string">&#x27;g&#x27;</span></span>):</span> </span><br><span class="line">        <span class="keyword">if</span> request.is_secure: </span><br><span class="line">            url = <span class="string">&#x27;https://secure.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="keyword">else</span>: </span><br><span class="line">            url = <span class="string">&#x27;http://www.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="built_in">hash</span> = hashlib.md5(self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;&#123;url&#125;/&#123;hash&#125;?s=&#123;size&#125;&amp;d=&#123;default&#125;&amp;r=&#123;rating&#125;&#x27;</span>.<span class="built_in">format</span>( </span><br><span class="line">            url=url, <span class="built_in">hash</span>=<span class="built_in">hash</span>, size=size, default=default, rating=rating)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>资料页面的头像</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--app/tempaltes/user.html：资料页面中的头像--&gt;</span></span><br><span class="line">... </span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">class</span>=<span class="string">&quot;img-rounded profile-thumbnail&quot;</span> <span class="attr">src</span>=<span class="string">&quot;&#123;&#123; user.gravatar(size=256) &#125;&#125;&quot;</span>&gt;</span> </span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将哈希结果存到数据库</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># app/models.py：使用缓存的 MD5 散列值生成 Gravatar URL</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>(<span class="params">UserMixin, db.Model</span>):</span> </span><br><span class="line">    <span class="comment"># ... </span></span><br><span class="line">    avatar_hash = db.Column(db.String(<span class="number">32</span>)) </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, **kwargs</span>):</span> </span><br><span class="line">        <span class="comment"># ... </span></span><br><span class="line">        <span class="keyword">if</span> self.email <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> self.avatar_hash <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">            self.avatar_hash = hashlib.md5( </span><br><span class="line">                self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">change_email</span>(<span class="params">self, token</span>):</span>  <span class="comment"># 若用户更新了邮箱地址，则重新计算散列</span></span><br><span class="line">        <span class="comment"># ... </span></span><br><span class="line">        self.email = new_email </span><br><span class="line">        self.avatar_hash = hashlib.md5( </span><br><span class="line">            self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line">        db.session.add(self) </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span> </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gravatar</span>(<span class="params">self, size=<span class="number">100</span>, default=<span class="string">&#x27;identicon&#x27;</span>, rating=<span class="string">&#x27;g&#x27;</span></span>):</span>  <span class="comment"># 优先使用模型中保存的散列值</span></span><br><span class="line">        <span class="keyword">if</span> request.is_secure: </span><br><span class="line">            url = <span class="string">&#x27;https://secure.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="keyword">else</span>: </span><br><span class="line">            url = <span class="string">&#x27;http://www.gravatar.com/avatar&#x27;</span> </span><br><span class="line">        <span class="built_in">hash</span> = self.avatar_hash <span class="keyword">or</span> hashlib.md5( </span><br><span class="line">            self.email.encode(<span class="string">&#x27;utf-8&#x27;</span>)).hexdigest() </span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;&#123;url&#125;/&#123;hash&#125;?s=&#123;size&#125;&amp;d=&#123;default&#125;&amp;r=&#123;rating&#125;&#x27;</span>.<span class="built_in">format</span>( </span><br><span class="line">            url=url, <span class="built_in">hash</span>=<span class="built_in">hash</span>, size=size, default=default, rating=rating)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\19\Django实践_1\" rel="bookmark">Django实践(1)</a></div>
+        <div class="popular-posts-excerpt"><p><p>Django 框架</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\12\30\FlaskWeb开发-1\" rel="bookmark">FlaskWeb开发（1）Flask介绍</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第一部分 Flask简介</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\06\FlaskWeb开发-3\" rel="bookmark">FlaskWeb开发（3）Flask实例</a></div>
+        <div class="popular-posts-excerpt"><p><p>《FlaskWeb开发》阅读笔记</p>
+<p>第二部分 Flask实例：社交博客 —— 博客引擎、关注和评论</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\04\Python编程：从入门到实践（3）项目实践——Django\" rel="bookmark">《Python编程：从入门到实践》 （3）Django</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Python编程 从入门到实践》第二部分阅读笔记：Django</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\04\Python编程：从入门到实践（2）项目实践——可视化\" rel="bookmark">《Python编程：从入门到实践》 （2）可视化</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Python编程 从入门到实践》第二部分阅读笔记：可视化</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/01/03/FlaskWeb%E5%BC%80%E5%8F%91-2/" title="FlaskWeb开发（2）Flask实例">https://thomas-li-sjtu.github.io/2021/01/03/FlaskWeb开发-2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/Web%E5%BA%94%E7%94%A8/" rel="tag"><i class="fa fa-tag"></i> Web应用</a>
+              <a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96/" rel="tag"><i class="fa fa-tag"></i> 可视化</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/30/FlaskWeb%E5%BC%80%E5%8F%91-1/" rel="prev" title="FlaskWeb开发（1）Flask介绍">
+      <i class="fa fa-chevron-left"></i> FlaskWeb开发（1）Flask介绍
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/03/Improving-Password-Guessing-via-Representation-Learning/" rel="next" title="Improving Password Guessing via Representation Learning">
+      Improving Password Guessing via Representation Learning <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86-%E5%AE%9E%E4%BE%8B%EF%BC%9A%E7%A4%BE%E4%BA%A4%E5%8D%9A%E5%AE%A2-%E4%B8%8A"><span class="nav-number">1.</span> <span class="nav-text">第二部分 实例：社交博客(上)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E8%AE%A4%E8%AF%81"><span class="nav-number">1.1.</span> <span class="nav-text">用户认证</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%95%A3%E5%88%97%E5%AE%9E%E7%8E%B0%EF%BC%88Werkzeug%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">密码散列实现（Werkzeug）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E8%93%9D%E6%9C%AC"><span class="nav-number">1.1.2.</span> <span class="nav-text">认证蓝本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Flask-Login%E8%AE%A4%E8%AF%81"><span class="nav-number">1.1.3.</span> <span class="nav-text">Flask-Login认证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%A8%E5%86%8C%E6%96%B0%E7%94%A8%E6%88%B7"><span class="nav-number">1.1.4.</span> <span class="nav-text">注册新用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A1%AE%E8%AE%A4%E8%B4%A6%E6%88%B7"><span class="nav-number">1.1.5.</span> <span class="nav-text">确认账户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%A1%E7%90%86%E8%B4%A6%E6%88%B7"><span class="nav-number">1.1.6.</span> <span class="nav-text">管理账户</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E8%A7%92%E8%89%B2"><span class="nav-number">1.2.</span> <span class="nav-text">用户角色</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="nav-number">1.2.1.</span> <span class="nav-text">数据库中的表示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%92%E8%89%B2%E8%B5%8B%E4%BA%88"><span class="nav-number">1.2.2.</span> <span class="nav-text">角色赋予</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%92%E8%89%B2%E9%AA%8C%E8%AF%81"><span class="nav-number">1.2.3.</span> <span class="nav-text">角色验证</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E8%B5%84%E6%96%99"><span class="nav-number">1.3.</span> <span class="nav-text">用户资料</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B5%84%E6%96%99%E4%BF%A1%E6%81%AF"><span class="nav-number">1.3.1.</span> <span class="nav-text">资料信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E8%B5%84%E6%96%99%E9%A1%B5%E9%9D%A2"><span class="nav-number">1.3.2.</span> <span class="nav-text">用户资料页面</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B5%84%E6%96%99%E7%BC%96%E8%BE%91%E5%99%A8"><span class="nav-number">1.3.3.</span> <span class="nav-text">资料编辑器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E5%A4%B4%E5%83%8F"><span class="nav-number">1.3.4.</span> <span class="nav-text">用户头像</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

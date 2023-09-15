@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand》（2022 USENIX）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand》（2022 USENIX）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208091403410.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208102427321.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208102524970.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208122034440.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208122052202.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208122111945.png">
+<meta property="article:published_time" content="2021-12-08T14:52:05.000Z">
+<meta property="article:modified_time" content="2021-12-08T04:21:52.401Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Motion Tracking">
+<meta property="article:tag" content="PIN Lock">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208091403410.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-12-08 22:52:05" itemprop="dateCreated datePublished" datetime="2021-12-08T22:52:05+08:00">2021-12-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand》（2022 USENIX）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>攻击场景：ATM机取款时拍摄视频</li>
+<li>本文提出了一种新的攻击方法，重建受害者的PIN（用户输入PIN时，用另一只手覆盖打字手）</li>
+<li>攻击使用深度学习架构，从打字手的位置和动作推断个人识别码</li>
+<li>运行一个包含58个用户的详细实验，可以在三次尝试中猜出30%的5位数PINs</li>
+<li>对78名用户进行了一项调查，在相同的设置下，平均准确率仅为7.92%</li>
+<li>本文最后评估了一种屏蔽对策，该对策被证明是相当低效的</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li><p>虽然自动取款机和PoS设备被广泛使用，但许多人并不认为除了通常提到的安全风险和防御措施之外还有其他安全风险和防御措施</p>
+<ul>
+<li>在打字时隐藏个人识别码</li>
+<li>确保没有人观看屏幕</li>
+</ul>
+</li>
+<li><p>为了减轻肩部冲浪攻击（<code> shoulder surfing attacks</code>），ISO 9564-1标准指出：PIN数字不得显示在屏幕上、反馈声音的持续时间和类型对于每个按键必须相同</p>
+</li>
+<li><p>本文使用深度学习方法进行攻击——攻击者可以访问与受害者使用的个人识别码相同或相似的个人识别码，为此构建一个分析模型，预测在目标设备上输入了什么数字</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://spritz.math.unipd.it/projects/HandMeYourPIN">代码和数据集</a></p>
+</li>
+<li><p>贡献：</p>
+<ul>
+<li>提出一种新的攻击来从视频中推断PIN。</li>
+<li>攻击可以在三次尝试内重建30%的5位数PIN和41%的4位数PIN</li>
+<li>收集了5800个5位数PIN的视频（58个志愿者将PIN输入模拟ATM）</li>
+<li>进行了一项研究，评估人类从视频中推断覆盖PIN的准确性——本文攻击性能优于人类，在三次尝试中，重建5位数PIN的性能提高了四倍</li>
+<li>对覆盖PIN输入板时的攻击性能进行了分析（覆盖25%、50%、75%和100%），表明即使覆盖PIN输入板，攻击也是可能成功的</li>
+</ul>
+</li>
+</ul>
+<h2 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h2><ul>
+<li>ATM配有PIN输入板，按下按键时会发出反馈声音——PIN输入板的反馈声音都是相同的</li>
+<li>本文的攻击可以视为card-skimmer攻击的替代方法，但一般的card-skimmer攻击依赖直接记录输入数字的假密码板，本文的攻击是从视频中推断密码</li>
+</ul>
+<h3 id="攻击者"><a href="#攻击者" class="headerlink" title="攻击者"></a>攻击者</h3><ul>
+<li>攻击者旨在窃取受害者的PIN</li>
+<li>攻击者可以在ATM附近放置一个隐藏的摄像头——假设摄像机隐藏在ATM附近，同时有PIN板的直接视野</li>
+<li>当受害者在键盘上键入时，攻击者可以检索时间戳，并通过收听视频记录的音频来获得键入帧</li>
+<li>攻击者可以利用两种声音线索：<ul>
+<li>按键时键盘发出的反馈声音</li>
+<li>键盘上物理按钮被按下的声音</li>
+</ul>
+</li>
+<li>如果出于任何原因，攻击者无法从录制的音频中检索时间戳，则可以将摄像机放置在自动柜员机的键盘和屏幕上进行录制——攻击者通过查看屏幕上出现的PIN屏蔽符号来提取按键的时间，常见的屏蔽符号通常是点和星号</li>
+</ul>
+<h3 id="受害者"><a href="#受害者" class="headerlink" title="受害者"></a>受害者</h3><ul>
+<li>受害者采取了基本的对策来对抗盗卡攻击，例如在输入PIN时遮住手</li>
+</ul>
+<h2 id="攻击方法"><a href="#攻击方法" class="headerlink" title="攻击方法"></a>攻击方法</h2><h3 id="攻击阶段"><a href="#攻击阶段" class="headerlink" title="攻击阶段"></a>攻击阶段</h3><p><img src="/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208091403410.png" alt="image-20211208091403410"></p>
+<ul>
+<li>训练<ul>
+<li>攻击者选择一个ATM作为攻击目标，建立目标ATM的副本（使用类似于目标ATM上的键盘，或者使用略有不同的PIN输入板）</li>
+<li>攻击者使用ATM副本构建训练集，模拟受害者输入PIN时的行为</li>
+<li>在不失一般性的情况下，攻击者可以使用一个记录所按下的按键和相应时间戳的带USB的PIN板，以分割视频并打标签——得到每个按键事件的帧序列和数字标签</li>
+</ul>
+</li>
+<li>视频获取<ul>
+<li>攻击者在目标ATM附近隐藏一个摄像头来记录PIN</li>
+<li>相机可以放在多个地方</li>
+</ul>
+</li>
+<li>PIN推断<ul>
+<li>攻击者从录制的视频中检索时间戳（按键事件）——利用按键的反馈声音或屏幕上出现的屏蔽符号</li>
+<li>利用时间戳，执行与第一个阶段相同的过程来生成攻击集——攻击集包含每个受害者的按键帧序列，不包含相关标签的信息</li>
+<li>攻击者在攻击集里检测对应于PIN输入的帧序列，并将视频分割为N个子序列，其中N是PIN的位数</li>
+<li>对每个子序列，应用在第一阶段训练的模型。模型的每个类对应于输入子序列的概率</li>
+<li>利用对子序列的预测结果，按概率的降序建立一个PIN排名（PIN的概率对应各位数字预测概率乘积）</li>
+</ul>
+</li>
+</ul>
+<h3 id="攻击设置"><a href="#攻击设置" class="headerlink" title="攻击设置"></a>攻击设置</h3><ul>
+<li>考虑三种现实的攻击场景</li>
+<li>单个PIN输入板：<ul>
+<li>攻击者知道目标PIN输入板的模型，并获得它的副本来进行训练</li>
+<li>攻击者可以很容易获得关于要攻击的ATM的信息，购买具有相同布局的键盘</li>
+</ul>
+</li>
+<li>PIN输入板独立：<ul>
+<li>最有挑战的场景</li>
+<li>攻击者不知道或无法检索目标PIN板的型号</li>
+<li>在与目标PIN板具有相似特征（形状、按键之间的距离、按键布局、按键灵敏度）的PIN板上训练</li>
+</ul>
+</li>
+<li>混合场景<ul>
+<li>攻击者知道目标PIN板</li>
+<li>训练在两个PIN板上进行的：目标PIN板的副本和至少一个具有相似特性的PIN板</li>
+<li>如果攻击者对键盘模型不确定、攻击者假设键盘会因环境条件而表现不同、攻击者旨在用相同的机器学习模型攻击多种类型的ATM、攻击者未能获得单个键盘的大数量训练数据，需要考虑在训练集中使用多个PIN板</li>
+</ul>
+</li>
+</ul>
+<h3 id="相机位置"><a href="#相机位置" class="headerlink" title="相机位置"></a>相机位置</h3><ul>
+<li>本文允许相机位于任何位置</li>
+<li>本文认为位于ATM顶部的位置对攻击者来说更好</li>
+<li>本文还考虑了机箱正面的设置，因为可视性更好，并且受害者很难拿注意到摄像头</li>
+<li>相机的三个主要位置：左上角、中间、右上角<ul>
+<li>若摄像头位于右上角，输入PIN为右手，观察输入的数字会更容易</li>
+<li>本文集中讨论机箱正面、顶部中心的摄像头位置</li>
+</ul>
+</li>
+</ul>
+<h2 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h2><h3 id="实验设备"><a href="#实验设备" class="headerlink" title="实验设备"></a>实验设备</h3><p><img src="/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208102427321.png" alt="image-20211208102427321"></p>
+<ul>
+<li><p>DA VO LIN ModelD-8201 F：100mm*100mm</p>
+</li>
+<li><p>Model D-8203 B：92mm*88mm</p>
+</li>
+<li><p>相机最大分辨率为1080p，采集速率为30 fps。本文以720p的分辨率和30 fps的采集速率录制视频</p>
+<p><img src="/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208102524970.png" alt="image-20211208102524970"></p>
+</li>
+</ul>
+<h3 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h3><ul>
+<li>在实验过程中，参与者站在测试ATM前，并在输入PIN时遮住打字手</li>
+<li>每个参与者输入100个随机生成的5位数PIN</li>
+<li>总共记录了5800个随机的5位数PIN</li>
+<li>通过USB接口采集了环境音频（利用网络摄像头麦克风）和PIN板的键盘记录——对于输入的每个数字，都会收集向下键和向上键事件，将视频记录与关键事件的时间戳同步</li>
+</ul>
+<h3 id="视频预处理"><a href="#视频预处理" class="headerlink" title="视频预处理"></a>视频预处理</h3><ul>
+<li>对采集的视频进行预处理<ol>
+<li>将视频帧转换为灰度</li>
+<li>归一化输入，所有像素值位于[0，1]</li>
+<li>将PIN输入板居中，裁剪帧，去除背景无关部分</li>
+<li>图像调整到250x250像素</li>
+<li>对每个PIN视频进行分割，获得对应于单次按键的帧的子序列（5位PIN对应5个子序列）</li>
+</ol>
+</li>
+<li>从记录的PIN板反馈声音中提取按键的时间戳（根据[8]中的程序）。特别地，以反馈声音的特定频率为中心（D-8201型2900Hz、D-8203 B型2500Hz），使用带通滤波器对音频信号进行滤波，通过识别滤波信号的峰值，可以检测按键（下记为TK，target keyt）的时间戳</li>
+<li>根据时间戳，在每个TK邻域提取一组帧。对于每个TK，最大帧数（full neighborhood）包括从TK前面的关键帧到TK后面的关键帧之间的所有帧<ul>
+<li>TK对应于PIN的第一位：只考虑TK和下一次按键之间的帧</li>
+<li>TK对应于PIN的最后一位：只考虑TK与其前一次按键之间的帧</li>
+</ul>
+</li>
+<li>模型要求所有输入样本具有相同的长度，本文为每个样本保留11帧（去除异常值——即$3\sigma$——后邻域帧的平均值）<ul>
+<li>将TK放在帧序列的中心，TK前后各有5个帧</li>
+<li>三种边界情况：<ul>
+<li>第一个数字：子序列头部添加5个黑色帧</li>
+<li>最后一个数字：子序列尾部添加5个黑色帧</li>
+<li>全邻域的帧少于11帧：在前后添加黑色帧</li>
+<li>pad到11帧</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="网络模型设置"><a href="#网络模型设置" class="headerlink" title="网络模型设置"></a>网络模型设置</h3><ul>
+<li>使用Keras 2.3.0-tf（Tensorflow 2.2.0）、Python 3.8.6</li>
+<li>使用CNN和LSTM实现模型<ul>
+<li>CNN为序列的每一帧做空间特征提取</li>
+<li>LSTM利用这些特征为整个帧序列提取时间特征</li>
+<li>LSTM的输出通过MLP和softmax（10个unit）</li>
+<li>该模型在文献中被称为LRCN[11]</li>
+<li>使用遍及所有CNNs层的TimeDistributed wrapper来实现，使得相同的卷积滤波器被应用于输入序列的所有时间步长（即帧）</li>
+</ul>
+</li>
+<li>使用随机网格搜索来探索不同的超参数<ul>
+<li>超参数的范围：<ul>
+<li>CNN的kernel size：[3x3，6x6，9x9]</li>
+<li>CNN层数：[1，…，4]</li>
+<li>后面的Dropout：[0.01，0.05，0.1，0.2]</li>
+<li>LSTM层数：[1，2，3]</li>
+<li>LSTM单元数：[32，64，128，256]</li>
+<li>循环单元：GRU、LSTM</li>
+<li>MLP：层数在在1到4范围内，单元数在[16，32，64，128]</li>
+<li>MLP架构：所有层单元数相同、单元数量不断减少（漏斗架构，下一层为上一层单元数的一半）</li>
+</ul>
+</li>
+<li>结果：<ul>
+<li>四个卷积层（Keras中的Conv2D）+ReLU激活</li>
+<li>每个卷积层后有一个池化（Keras中的MaxPooling2D）</li>
+<li>三个卷积层的kernel size为3x3，第二个的kernel size为9x9；每个池化层都一个2x2的filter；卷积层的filter数量在每一层都翻倍：第一层32个、第四层256个</li>
+<li>最后一个池化层后添加dropout层（0.1）</li>
+<li>展平输出，保留时间维度；单层128维的LSTM+双曲正切激活</li>
+<li>MLP堆叠四层，每层有64个单元</li>
+<li>使用分类交叉熵损失函数和SGD优化器</li>
+</ul>
+</li>
+<li>batchsize为16，学习率为0.1，epoch为70</li>
+</ul>
+</li>
+<li>本文注意到本文使用的架构符合手跟踪问题的最新结果[17，23]</li>
+<li>数据增强（训练集的20%）：<ul>
+<li>旋转：顺时针和逆时针旋转7度</li>
+<li>水平位移：做最大宽度10%的水平位移</li>
+<li>垂直位移：做最大高度为10%的垂直位移</li>
+<li>缩放：0.9和1.1之间的缩放</li>
+</ul>
+</li>
+</ul>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><ul>
+<li><p>针对第2节描述的三种攻击场景评估性能</p>
+</li>
+<li><p>参与者的视频在三组中只出现一次；删除参与者误输入的所有非5位序列</p>
+</li>
+<li><p>如何预测PIN：最佳猜测包括对每个数字的最佳猜测，如果该PIN不正确，考虑两个最佳猜测之间差异最小的数字，将该数字更改为个人识别码中的次优猜测，然后重试</p>
+</li>
+<li><p>场景1：只考虑了由40名参与者组成的第一个数据集合，划分比例为0.8，0.1，0.1</p>
+</li>
+<li><p>场景2：用第一个收集的数据集（40名参与者组成）进行训练和验证——35训练，5验证，第二个收集的数据集做测试</p>
+</li>
+<li><p>场景3：合并两个收集的数据集，0.8+0.1+0.1</p>
+</li>
+<li><p>图6显示了单键精度，图7显示PIN的精度</p>
+<p><img src="/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208122034440.png" alt="image-20211208122034440"></p>
+</li>
+</ul>
+<p><img src="/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208122052202.png" alt="image-20211208122052202"></p>
+<p><img src="/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/image-20211208122111945.png" alt="image-20211208122111945"></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>提出了一种深度学习的密码攻击，即使用户覆盖了要输入的密码，也能达到很高的准确率</li>
+<li>攻击利用了手的位置信息和输入PIN时手的移动</li>
+<li>对于一个4位数的PIN，攻击准确率达到了40%以上</li>
+<li>数据集太小，无法得出一般性结论</li>
+<li>分析只考虑了两种类型的键盘</li>
+<li>虽然尽量平衡了志愿者性别比例，但志愿者的年龄不够丰富、只分析了右撇子、所有志愿者都是白种人</li>
+<li>未来可能的工作<ol>
+<li>允许用户选择他们的覆盖策略，探索用户覆盖PIN的方式是否会能更好保护PIN</li>
+<li>丰富数据集</li>
+<li>研究是否有可能直接从视频中提取时间戳（按键帧）</li>
+</ol>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\03\14\Attack-and-Verification-of-PIN-Entry-Using-Keypress-Sounds\" rel="bookmark">Behavioral Acoustic Emanations：Attack and Verification of PIN Entry Using Keypress Sounds</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Behavioral Acoustic Emanations: Attack and Verification of PIN Entry Using Keypress Sounds》(Sensors) 2020</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\12\06\Beware-Your-Hands-Reveal-Your-Secrets\" rel="bookmark">Beware Your Hands Reveal Your Secrets</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Beware, Your Hands Reveal Your Secrets !》2014年ACM</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\12\07\Stealing-Passwords-by-Observing-Hands-Movement\" rel="bookmark">Stealing Passwords by Observing Hands Movement</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Stealing Passwords by Observing Hands Movement》（TIFS CCF A类）2019</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\03\14\Thermal-Imaging-Attacks-on-Keypad-Security-Systems\" rel="bookmark">Thermal Imaging Attacks on Keypad Security Systems</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Thermal Imaging Attacks on Keypad Security Systems》（ICETE） 2016</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/" title="Hand Me Your PIN! Inferring ATM PINs of Users Typing with a Covered Hand">https://thomas-li-sjtu.github.io/2021/12/08/Inferring-ATM-PINs-of-Users-Typing-with-a-Covered-Hand/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Motion-Tracking/" rel="tag"><i class="fa fa-tag"></i> Motion Tracking</a>
+              <a href="/tags/PIN-Lock/" rel="tag"><i class="fa fa-tag"></i> PIN Lock</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/07/Stealing-Passwords-by-Observing-Hands-Movement/" rel="prev" title="Stealing Passwords by Observing Hands Movement">
+      <i class="fa fa-chevron-left"></i> Stealing Passwords by Observing Hands Movement
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/10/Regularized-Dropout-for-Neural-Networks/" rel="next" title="R-Drop：Regularized Dropout for Neural Networks">
+      R-Drop：Regularized Dropout for Neural Networks <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">攻击模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E8%80%85"><span class="nav-number">3.1.</span> <span class="nav-text">攻击者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%97%E5%AE%B3%E8%80%85"><span class="nav-number">3.2.</span> <span class="nav-text">受害者</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%96%B9%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">攻击方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E9%98%B6%E6%AE%B5"><span class="nav-number">4.1.</span> <span class="nav-text">攻击阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.2.</span> <span class="nav-text">攻击设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E6%9C%BA%E4%BD%8D%E7%BD%AE"><span class="nav-number">4.3.</span> <span class="nav-text">相机位置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E8%AE%BE%E7%BD%AE"><span class="nav-number">5.</span> <span class="nav-text">实验设置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E8%AE%BE%E5%A4%87"><span class="nav-number">5.1.</span> <span class="nav-text">实验设备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%94%B6%E9%9B%86"><span class="nav-number">5.2.</span> <span class="nav-text">数据收集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%86%E9%A2%91%E9%A2%84%E5%A4%84%E7%90%86"><span class="nav-number">5.3.</span> <span class="nav-text">视频预处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E8%AE%BE%E7%BD%AE"><span class="nav-number">5.4.</span> <span class="nav-text">网络模型设置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">6.</span> <span class="nav-text">实验结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">结论</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

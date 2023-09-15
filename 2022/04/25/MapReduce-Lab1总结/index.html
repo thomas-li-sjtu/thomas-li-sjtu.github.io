@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MIT-6.824 Lab1 总结与备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MapReduce Lab1总结">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/04/25/MapReduce-Lab1%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="MIT-6.824 Lab1 总结与备忘">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-25T08:58:35.000Z">
+<meta property="article:modified_time" content="2022-04-25T10:27:30.928Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/04/25/MapReduce-Lab1%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MapReduce Lab1总结 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/04/25/MapReduce-Lab1%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MapReduce Lab1总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-25 16:58:35" itemprop="dateCreated datePublished" datetime="2022-04-25T16:58:35+08:00">2022-04-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">项目实践</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> MIT-6.824 Lab1 总结与备忘</p>
+<a id="more"></a>
+
+<h2 id="思路整理"><a href="#思路整理" class="headerlink" title="思路整理"></a>思路整理</h2><ul>
+<li>整个mapreduce框架分为两个大的阶段：map和reduce。master在被启动后，最外层一直周期性调用<code>done()</code>，当其返回值为<code>true</code>时说明job完成。</li>
+<li>两个阶段中，master首先需要等worker先把所有的map任务完成——这里，一个worker做一个map任务，即对一个输入文件做map任务，有<code>files</code>有多少个文件，master就要分配几次map任务——然后再进入reduce阶段，reduce阶段要分配reduce任务的次数为“超参数”<code>nReduce</code>。等所有的reduce任务结束，master的状态转为特殊的结束状态，此时最外层再调用<code>done()</code>时，返回值为<code>true</code>，结束master进程。本条分析表明：<ul>
+<li>要实现两种task结构体</li>
+<li>要用两个列表存储map task和reduce task</li>
+<li>master类中的成员应当包括：map的任务数、reduce的任务数、map task列表、reduce task列表、master当前所处的阶段</li>
+<li>master在初始化时就要建立两个列表</li>
+<li>task结构体里要有一个flag，标志其是否完成，每当一个worker传回finish信号时，将该worker的task标记为已完成</li>
+</ul>
+</li>
+<li>在做map task或reduce task时，master和worker（任意一个worker）的通信过程和处理过程为：<ul>
+<li>一个worker启动后，通过RPC来主动申请任务（<code>call</code>）。因此master需要实现一个成员函数，用来处理worker的申请，根据master所处的阶段，以及当前阶段任务的状态（还是否存在没有被分配的任务）来决定是否向这个worker分配任务。本条分析表明：<ul>
+<li>master要实现：<code>func (m *Master) Ask_for_task(args *Ask_args, reply *Ask_reply) error</code></li>
+<li>task结构体包含：<ul>
+<li>task号码：<code>task_index</code></li>
+<li>是否分配的标志<code>distributed</code></li>
+<li>该task被分配给哪个worker：<code>worker_id</code></li>
+</ul>
+</li>
+<li>worker的ask结构体包含：<ul>
+<li>自己的id（这里以进程号唯一标识一个worker）</li>
+</ul>
+</li>
+<li>worker的reply结构体（master直接操作reply的内容，worker将）包含：（这里，将map task的reply和reduce task的reply合并为一个通用的结构体）<ul>
+<li>map任务对应的文件名<code>file_name</code></li>
+<li>reduce任务对应的文件列表<code>intermediate_files</code></li>
+<li>nReduce</li>
+<li>和master所处阶段一致的任务类型<code>task_type</code></li>
+<li>任务结束时间（用于超时判定）</li>
+<li>任务编号<code>task_index</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>当worker被分配任务后，worker根据reply的内容决定执行什么任务。如果为map task，则读取map task对应的文件并调用用户定义的map函数，将处理结果存储为中间文件<code>mr-map_task_id-x</code>（x取值范围为0~nReduce-1）。如果为reduce task，则根据任务的id，读取中间文件<code>mr-x-reduce_task_id</code>（x取值范围为0~nMap-1，nMap为map task的总数）。而当任务完成时，向master报告“任务已完成”。本条分析表明：<ul>
+<li>worker要实现：<ul>
+<li>申请任务-报告任务-申请任务-报告任务的死循环</li>
+<li>根据<code>task_type</code>做不同的任务</li>
+<li>当<code>task_type</code>为<code>done</code>或者申请任务的返回值为false时，跳出死循环，结束该worker进程</li>
+</ul>
+</li>
+<li>报告结构体<code>finish_args</code>要实现：<ul>
+<li>记录该项已完成任务的类型<code>task_type</code></li>
+<li>记录该项已完成任务的id<code>task_index</code>，它和<code>reply</code>结构体的<code>task_index</code>应当是相同的</li>
+<li>记录发送该报告的worker id（即该worker的进程号）</li>
+</ul>
+</li>
+<li>报告回复结构体<code>finish_reply</code>为空，因为worker报告后，master不需要再回复它，worker自行进入下一个申请任务-报告任务的循环</li>
+</ul>
+</li>
+<li>master收到完成的任务时，根据master所处的阶段能够判别该完成的task是什么类型，于是master根据<code>finish_reply</code>的<code>task_index</code>从相应的task列表中找到这个task，标记该task已完成，并检查该列表中是否所有task都已经完成，如果都完成则master进入下一个阶段。本条分析表明：<ul>
+<li>master要实现成员函数<code>func (m *Master) Finish(args *Finish_args, reply *Finish_reply) error</code></li>
+<li>master要根据所处的状态，分别检查不同的task列表</li>
+<li>task结构体包含一个标志本任务是否完成的flag<code>task_done</code>，初始化时为false</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>在以上过程里，master要随时关注分配出去的task运行时间，因此master需要另起一个协程，以死循环的方式每隔一小段时间就检查，当前时间是否在分配出去task的deadline之后。本条分析表明：<ul>
+<li>master在分配任务时设置task的deadline</li>
+<li>task结构体包含：<ul>
+<li>记录task最晚结束时间的deadline</li>
+</ul>
+</li>
+<li>需要实现一个内含死循环的<code>check()</code>，并在<code>makeMaster()</code>中<code>go check()</code>调用</li>
+</ul>
+</li>
+</ul>
+<h2 id="关键实现"><a href="#关键实现" class="headerlink" title="关键实现"></a>关键实现</h2><h3 id="master"><a href="#master" class="headerlink" title="master"></a>master</h3><ul>
+<li><p>master结构体</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Master <span class="keyword">struct</span> &#123;</span><br><span class="line">	lock        sync.Mutex</span><br><span class="line">	num_map     <span class="keyword">int</span> <span class="comment">// 输入文件数目</span></span><br><span class="line">	num_reduce  <span class="keyword">int</span></span><br><span class="line">	cur_stage   <span class="keyword">string</span>        <span class="comment">//记录当前的工作状态（map/reduce）</span></span><br><span class="line">	map_task    []Map_task    <span class="comment">// map task</span></span><br><span class="line">	reduce_task []Reduce_task <span class="comment">//</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>master.Ask_for_task(args *Ask_args, reply *Ask_reply) error</code>:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">m.lock.Lock()</span><br><span class="line"><span class="keyword">defer</span> m.lock.Unlock()</span><br><span class="line">  </span><br><span class="line">reply.Task_op = <span class="number">0</span></span><br><span class="line">  </span><br><span class="line"><span class="keyword">if</span> m.cur_stage == <span class="string">&quot;map&quot;</span> &#123;</span><br><span class="line">	<span class="comment">// fmt.Printf(&quot;Master current stage: %v\n&quot;, m.cur_stage)</span></span><br><span class="line">	<span class="keyword">for</span> i, temp_task := <span class="keyword">range</span> m.map_task &#123;</span><br><span class="line">		<span class="keyword">if</span> !temp_task.Distributed &#123; <span class="comment">// map task没有分配出去</span></span><br><span class="line">			m.map_task[i].Distributed = <span class="literal">true</span></span><br><span class="line">			m.map_task[i].Deadline = time.Now().Add(<span class="number">10</span> * time.Second)</span><br><span class="line">			m.map_task[i].Worker_id = args.Worker_id</span><br><span class="line">  </span><br><span class="line">			reply.File_name = temp_task.File_name</span><br><span class="line">			reply.Num_reduce = m.num_reduce</span><br><span class="line">			reply.Task_type = <span class="string">&quot;map&quot;</span></span><br><span class="line">			reply.Task_index = temp_task.Index</span><br><span class="line">			reply.Task_deadline = m.map_task[i].Deadline</span><br><span class="line">			reply.Worker_id = args.Worker_id</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> m.cur_stage == <span class="string">&quot;reduce&quot;</span> &#123; <span class="comment">// m.cur_stage == &quot;reduce&quot;</span></span><br><span class="line">	<span class="comment">// fmt.Println(&quot;Master current stage: &quot; + m.cur_stage)</span></span><br><span class="line">	<span class="keyword">for</span> i, temp_task := <span class="keyword">range</span> m.reduce_task &#123;</span><br><span class="line">		<span class="keyword">if</span> !temp_task.Distributed &#123; <span class="comment">// map task没有分配出去</span></span><br><span class="line">			m.reduce_task[i].Distributed = <span class="literal">true</span></span><br><span class="line">			m.reduce_task[i].Deadline = time.Now().Add(<span class="number">10</span> * time.Second)</span><br><span class="line">			m.reduce_task[i].Worker_id = args.Worker_id</span><br><span class="line">  </span><br><span class="line">			reply.File_name = <span class="string">&quot;&quot;</span></span><br><span class="line">			reply.Num_reduce = m.num_reduce</span><br><span class="line">			reply.Task_type = <span class="string">&quot;reduce&quot;</span></span><br><span class="line">			reply.Task_index = temp_task.Index</span><br><span class="line">			reply.Task_deadline = m.reduce_task[i].Deadline</span><br><span class="line">			reply.Worker_id = args.Worker_id</span><br><span class="line">  </span><br><span class="line">			reply.Intermediate_files = <span class="literal">nil</span> <span class="comment">// 中间文件名mr-X-Y，其中X是map任务号，Y是reduce任务</span></span><br><span class="line">			<span class="keyword">for</span> map_index := <span class="number">0</span>; map_index &lt; m.num_map; map_index++ &#123;</span><br><span class="line">				reply.Intermediate_files = <span class="built_in">append</span>(reply.Intermediate_files, fmt.Sprintf(<span class="string">&quot;mr-%d-%d&quot;</span>, map_index, temp_task.Index))</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>master.Finish(args *Finish_args, reply *Finish_reply) error</code></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">m.lock.Lock()</span><br><span class="line"><span class="keyword">defer</span> m.lock.Unlock()</span><br><span class="line">  </span><br><span class="line"><span class="keyword">if</span> m.cur_stage == <span class="string">&quot;map&quot;</span> &#123;</span><br><span class="line">	<span class="comment">// fmt.Println(&quot;A map task finished&quot;)</span></span><br><span class="line">	<span class="keyword">if</span> args.Task_type != <span class="string">&quot;map&quot;</span> &#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;Expect map type finish message, got %s type&quot;</span>, args.Task_type)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m.map_task[args.Task_index].Distributed &amp;&amp;</span><br><span class="line">		m.map_task[args.Task_index].Worker_id == args.Worker_id &amp;&amp;</span><br><span class="line">		m.map_task[args.Task_index].Map_done == <span class="number">0</span> &amp;&amp;</span><br><span class="line">		time.Now().Before(m.map_task[args.Task_index].Deadline) &#123;</span><br><span class="line">		<span class="comment">// fmt.Printf(&quot;map task %v is done\n&quot;, args.Task_index)</span></span><br><span class="line">		m.map_task[args.Task_index].Map_done = <span class="number">1</span></span><br><span class="line">		<span class="keyword">for</span> _, tmp_task := <span class="keyword">range</span> m.map_task &#123;</span><br><span class="line">			<span class="keyword">if</span> tmp_task.Map_done == <span class="number">0</span> &#123; <span class="comment">// 如果有一个map task任务没有完成，则继续进行</span></span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">		m.cur_stage = <span class="string">&quot;reduce&quot;</span></span><br><span class="line">  </span><br><span class="line">		fmt.Println(<span class="string">&quot;Start to reduce&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> m.cur_stage == <span class="string">&quot;reduce&quot;</span> &#123;</span><br><span class="line">	<span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>master.check()</code>（这里实现为匿名函数）</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		time.Sleep(<span class="number">500</span> * time.Millisecond)</span><br><span class="line">  </span><br><span class="line">		m.lock.Lock()</span><br><span class="line">		<span class="keyword">if</span> m.cur_stage == <span class="string">&quot;map&quot;</span> &#123;</span><br><span class="line">			<span class="keyword">for</span> i, task := <span class="keyword">range</span> m.map_task &#123;</span><br><span class="line">				<span class="keyword">if</span> task.Worker_id != <span class="string">&quot;&quot;</span> &amp;&amp;</span><br><span class="line">					task.Distributed &amp;&amp;</span><br><span class="line">					time.Now().After(task.Deadline) &amp;&amp;</span><br><span class="line">					task.Map_done == <span class="number">0</span> &#123; <span class="comment">// 回收并重新分配</span></span><br><span class="line">					<span class="comment">// log.Printf(</span></span><br><span class="line">					<span class="comment">// 	&quot;Found timed-out %s task %d previously on worker %s. Re-assign&quot;,</span></span><br><span class="line">					<span class="comment">// 	m.cur_stage, task.Index, task.Worker_id,</span></span><br><span class="line">					<span class="comment">// )</span></span><br><span class="line">					m.map_task[i].Worker_id = <span class="string">&quot;&quot;</span></span><br><span class="line">					m.map_task[i].Distributed = <span class="literal">false</span></span><br><span class="line">					m.map_task[i].Map_done = <span class="number">0</span></span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">for</span> i, task := <span class="keyword">range</span> m.reduce_task &#123;</span><br><span class="line">				<span class="keyword">if</span> task.Worker_id != <span class="string">&quot;&quot;</span> &amp;&amp;</span><br><span class="line">					task.Distributed &amp;&amp;</span><br><span class="line">					time.Now().After(task.Deadline) &amp;&amp;</span><br><span class="line">					task.Reduce_done == <span class="number">0</span> &#123; <span class="comment">// 回收并重新分配</span></span><br><span class="line">					<span class="comment">// log.Printf(</span></span><br><span class="line">					<span class="comment">// 	&quot;Found timed-out %s task %d previously on worker %s. Re-assign&quot;,</span></span><br><span class="line">					<span class="comment">// 	m.cur_stage, task.Index, task.Worker_id,</span></span><br><span class="line">					<span class="comment">// )</span></span><br><span class="line">					m.reduce_task[i].Worker_id = <span class="string">&quot;&quot;</span></span><br><span class="line">					m.reduce_task[i].Distributed = <span class="literal">false</span></span><br><span class="line">					m.reduce_task[i].Reduce_done = <span class="number">0</span></span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		m.lock.Unlock()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;()</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="worker"><a href="#worker" class="headerlink" title="worker"></a>worker</h3><ul>
+<li><p>worker:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">worker_id := strconv.Itoa(os.Getpid())</span><br><span class="line"><span class="comment">// Your worker implementation here.</span></span><br><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">	reply := Ask_reply&#123;&#125;</span><br><span class="line">	args := Ask_args&#123;</span><br><span class="line">		Worker_id: worker_id,</span><br><span class="line">		Task_type: <span class="string">&quot;&quot;</span>,</span><br><span class="line">	&#125;</span><br><span class="line">	call_result := call(<span class="string">&quot;Master.Ask_for_task&quot;</span>, &amp;args, &amp;reply)</span><br><span class="line">	time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">	<span class="keyword">if</span> !call_result || reply.Task_type == <span class="string">&quot;done&quot;</span> &#123; <span class="comment">// call不成功，可能job已经结束</span></span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> reply.Task_op == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">continue</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">switch</span> reply.Task_type &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&quot;map&quot;</span>:</span><br><span class="line">		file, err := os.Open(reply.File_name)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatalf(<span class="string">&quot;cannot open %v&quot;</span>, reply.File_name)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		content, err := ioutil.ReadAll(file)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatalf(<span class="string">&quot;cannot read %v&quot;</span>, reply.File_name)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">defer</span> file.Close()</span><br><span class="line">  </span><br><span class="line">		key_value := mapf(reply.File_name, <span class="keyword">string</span>(content))</span><br><span class="line">  </span><br><span class="line">		<span class="comment">// 创建输出文件</span></span><br><span class="line">		<span class="keyword">var</span> encoders []*json.Encoder</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; reply.Num_reduce; i++ &#123;</span><br><span class="line">			f, err := os.Create(fmt.Sprintf(<span class="string">&quot;mr-%d-%d&quot;</span>, reply.Task_index, i))</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				log.Fatalf(<span class="string">&quot;cannot create intermediate result file&quot;</span>)</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">			encoders = <span class="built_in">append</span>(encoders, json.NewEncoder(f))</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 写入中间结果</span></span><br><span class="line">		<span class="keyword">for</span> _, kv := <span class="keyword">range</span> key_value &#123;</span><br><span class="line">			_ = encoders[ihash(kv.Key)%reply.Num_reduce].Encode(&amp;kv)</span><br><span class="line">		&#125;</span><br><span class="line">  </span><br><span class="line">		call(<span class="string">&quot;Master.Finish&quot;</span>, &amp;Finish_args&#123;Worker_id: worker_id, Task_type: <span class="string">&quot;map&quot;</span>, Task_index: reply.Task_index&#125;, &amp;Finish_reply&#123;&#125;)</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&quot;reduce&quot;</span>:</span><br><span class="line">		<span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>call</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// send an RPC request to the Master, wait for the response.</span></span><br><span class="line"><span class="comment">// usually returns true.</span></span><br><span class="line"><span class="comment">// returns false if something goes wrong.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">call</span><span class="params">(rpcname <span class="keyword">string</span>, args <span class="keyword">interface</span>&#123;&#125;, reply <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="comment">// c, err := rpc.DialHTTP(&quot;tcp&quot;, &quot;127.0.0.1&quot;+&quot;:1234&quot;)</span></span><br><span class="line">	sockname := masterSock()</span><br><span class="line">	c, err := rpc.DialHTTP(<span class="string">&quot;unix&quot;</span>, sockname)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(<span class="string">&quot;dialing:&quot;</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> c.Close()</span><br><span class="line"></span><br><span class="line">	err = c.Call(rpcname, args, reply)</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Println(err)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="rpc通信需要的结构体"><a href="#rpc通信需要的结构体" class="headerlink" title="rpc通信需要的结构体"></a>rpc通信需要的结构体</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Map_task <span class="keyword">struct</span> &#123;</span><br><span class="line">	Index       <span class="keyword">int</span>    <span class="comment">// 当前task号（即第i个文件）</span></span><br><span class="line">	Worker_id   <span class="keyword">string</span> <span class="comment">// 当前task所属worker的id</span></span><br><span class="line">	File_name   <span class="keyword">string</span></span><br><span class="line">	Deadline    time.Time</span><br><span class="line">	Map_done    <span class="keyword">int</span></span><br><span class="line">	Distributed <span class="keyword">bool</span> <span class="comment">// 是否已经分配出去</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Reduce_task <span class="keyword">struct</span> &#123;</span><br><span class="line">	Index              <span class="keyword">int</span>    <span class="comment">// 当前task号（即第i个文件）</span></span><br><span class="line">	Worker_id          <span class="keyword">string</span> <span class="comment">// 当前task所属worker的id</span></span><br><span class="line">	Intermediate_files []<span class="keyword">string</span></span><br><span class="line">	Deadline           time.Time</span><br><span class="line">	Reduce_done        <span class="keyword">int</span></span><br><span class="line">	Distributed        <span class="keyword">bool</span> <span class="comment">// 是否已经分配出去</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Ask_args <span class="keyword">struct</span> &#123; <span class="comment">// worker申请时，向master发送的args</span></span><br><span class="line">	Worker_id <span class="keyword">string</span> <span class="comment">// 做申请的worker id</span></span><br><span class="line">	Task_type <span class="keyword">string</span> <span class="comment">// 上一个完成的task的类型</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Ask_reply <span class="keyword">struct</span> &#123; <span class="comment">// master收到worker申请时，回复的reply</span></span><br><span class="line">	File_name          <span class="keyword">string</span></span><br><span class="line">	Num_reduce         <span class="keyword">int</span></span><br><span class="line">	Task_op            <span class="keyword">int</span></span><br><span class="line">	Task_type          <span class="keyword">string</span></span><br><span class="line">	Task_index         <span class="keyword">int</span> <span class="comment">// map任务时，输出的文件名为mr-Task_index-0, ~-1, ..., ~-(Num_reduce-1)</span></span><br><span class="line">	Task_deadline      time.Time</span><br><span class="line">	Worker_id          <span class="keyword">string</span></span><br><span class="line">	Intermediate_files []<span class="keyword">string</span> <span class="comment">// 分配reduce任务时，对应的map中间文件名列表</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Finish_args <span class="keyword">struct</span> &#123; <span class="comment">// worker完成时，向master发送的args</span></span><br><span class="line">	Worker_id  <span class="keyword">string</span> <span class="comment">// 发送结束信号的worker进程号</span></span><br><span class="line">	Task_type  <span class="keyword">string</span> <span class="comment">// worker完成的任务类型</span></span><br><span class="line">	Task_index <span class="keyword">int</span>    <span class="comment">// 完成的task id</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Finish_reply <span class="keyword">struct</span> &#123; <span class="comment">// master收到worker完成消息时，回复的reply（不需要reply，所以为空）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Lab手册（中文版翻译）"><a href="#Lab手册（中文版翻译）" class="headerlink" title="Lab手册（中文版翻译）"></a>Lab手册（中文版翻译）</h2><p>对官网上的Lab1手册做了简要翻译，并记录了较为关键的一些rules和hints</p>
+<h3 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h3><ul>
+<li>构建MapReduce系统，实现一个worker过程——调用Map和Reduce函数，读写文件，一个协调过程——给worker分配任务，和处理失败的worker</li>
+<li>本lab用coordinator指代论文中的master</li>
+</ul>
+<h3 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h3><ul>
+<li><p>git clone</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> git://g.csail.mit.edu/6.824-golabs-2022 6.824</span><br><span class="line">$ <span class="built_in">cd</span> 6.824</span><br><span class="line">$ ls</span><br><span class="line">Makefile src</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>源码中有一个简单的mapreduce无分布执行过程（<code>src/main/mrsequential.go</code>），并由MapReduce应用，包括单词计数<code>mrapps/wc.go</code>、文本索引<code>mrapps/indexer.go</code>，运行单词计数如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> ~/6.824</span><br><span class="line">$ <span class="built_in">cd</span> src/main</span><br><span class="line">$ go build -race -buildmode=plugin ../mrapps/wc.go</span><br><span class="line">$ rm mr-out*</span><br><span class="line">$ go run -race mrsequential.go wc.so pg*.txt</span><br><span class="line">$ more mr-out-0</span><br><span class="line">A 509</span><br><span class="line">ABOUT 2</span><br><span class="line">ACT 8</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>建议使用race参数启动go的race检测器</li>
+<li><code>mrsequential.go</code>的输出为<code>mr-out-0</code>，输入文件名为<code>pg-xxx.txt</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="Your-job"><a href="#Your-job" class="headerlink" title="Your job"></a>Your job</h3><ul>
+<li><p>实现一个分布式的MapReduce，一个协调进程和一个或多个工作进程并行执行。每个worker进程将向协调进程请求一个task，从一或多个文件读取任务的输入，执行任务，并将任务的输出写入一个或多个文件</p>
+</li>
+<li><p>协调进程应该关注worker是否在合理的时间内（10s）完成任务，并将同样的任务分配给另一个worker</p>
+</li>
+<li><p>协调进程和worker进程的主要routine在<code>main/mrcoordinator.go</code>和<code>main/mrworker.go</code>，作为参考。需要在<code>mr/coordinator.go</code>, <code>mr/worker.go</code>, and <code>mr/rpc.go</code>里完成自己的代码</p>
+</li>
+<li><p>用自己的代码运行MapReduce：</p>
+<ul>
+<li><p>保证word-count plugin编译完成</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go build -race -buildmode=plugin ../mrapps/wc.go</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在main目录下，运行协调进程</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ rm mr-out*</span><br><span class="line">$ go run -race mrcoordinator.go pg-*.txt</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>mrcoordinator的pg-*.txt参数为输入文件，每个文件对应一个“split”</li>
+</ul>
+</li>
+<li><p>在一个或多个其他窗口，运行worker</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go run -race mrworker.go wc.so</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>完成后，查看mr-out-*中的输出。实验完成时输出文件的排序并集应该符合顺序输出：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cat mr-out-* | sort | more</span><br><span class="line">A 509</span><br><span class="line">ABOUT 2</span><br><span class="line">ACT 8</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>在<code>main/test-mr.sh</code>提供了一个test脚本，检查wc和indexer应用在给定pg-xxx.txt文件作为输入时是否产生正确的输出，并检查实现是否并行运行Map和Reduce任务，以及是否从崩溃的worker中恢复。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> ~/6.824/src/main</span><br><span class="line">$ bash test-mr.sh</span><br><span class="line">*** Starting wc <span class="built_in">test</span>.</span><br><span class="line">// 挂起，协调进程永远不会完成</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>在<code>mr/coordinator.go</code> 设置<code>ret := false</code> ，从而协调进程能够立刻退出</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ bash test-mr.sh</span><br><span class="line">*** Starting wc <span class="built_in">test</span>.</span><br><span class="line">sort: No such file or directory</span><br><span class="line">cmp: EOF on mr-wc-all</span><br><span class="line">--- wc output is not the same as mr-correct-wc.txt</span><br><span class="line">--- wc <span class="built_in">test</span>: FAIL</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>测试脚本期望在名为mr-out-X的文件中看到输出，每个reduce任务对应一个</li>
+<li><code>mr/coordinator.go</code>和<code>mr/worker.go</code> 尚未实现，因此因此测试失败</li>
+</ul>
+</li>
+<li><p>如果测试成功，则输出为</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ bash test-mr.sh</span><br><span class="line">*** Starting wc <span class="built_in">test</span>.</span><br><span class="line">--- wc <span class="built_in">test</span>: PASS</span><br><span class="line">*** Starting indexer <span class="built_in">test</span>.</span><br><span class="line">--- indexer <span class="built_in">test</span>: PASS</span><br><span class="line">*** Starting map parallelism <span class="built_in">test</span>.</span><br><span class="line">--- map parallelism <span class="built_in">test</span>: PASS</span><br><span class="line">*** Starting reduce parallelism <span class="built_in">test</span>.</span><br><span class="line">--- reduce parallelism <span class="built_in">test</span>: PASS</span><br><span class="line">*** Starting crash <span class="built_in">test</span>.</span><br><span class="line">--- crash <span class="built_in">test</span>: PASS</span><br><span class="line">*** PASSED ALL TESTS</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>可能会报错：<code>2019/12/16 13:27:09 rpc.Register: method &quot;Done&quot; has 1 input parameters; needs exactly three</code>，忽略即可</p>
+</li>
+</ul>
+<h3 id="A-few-rules"><a href="#A-few-rules" class="headerlink" title="A few rules"></a>A few rules</h3><ul>
+<li>map阶段应该为reduce任务把中间的键划分成nReduce个桶，其中nReduce是reduce任务的数量，为<code>main/mrcoordinator.go</code>传递给<code>MakeCoordinator()</code>的参数，因此每个mapper需要创建nReduce个中间文件，供reduce任务使用</li>
+<li>第X个reduce任务的输出放在文件mr-out-X</li>
+<li>mr-out-X文件的每行为每个Reduce函数输出。该行应该使用Go的<code>&quot;%v %v&quot;</code>格式生成，使用key和value调用——参见<code>main/mrsequential.go</code>的代码</li>
+<li>可以修改<code>mr/worker.go</code>、<code>mr/coordinator.go</code>和<code>mr/rpc.go</code>。可以临时修改其他文件进行测试，但要确保代码能够与原始版本兼容</li>
+<li>worker应该将中间Map输出放在当前目录的文件中，稍后可以将它们作为Reduce任务的输入读取</li>
+<li><code>main/mrcoordinator.go</code> 希望<code>mr/coordinator.go</code> 实现一个<code>Done()</code>函数，以返回true（如果MapReduce完成），此时 <code>mrcoordinator.go</code>会退出</li>
+<li>当job结束时，worker应当退出。一个简单的实现方法为使用<code>call()</code>的返回值，如果worker无法和coordinator联系，则会认为job完成</li>
+</ul>
+<h3 id="Hints"><a href="#Hints" class="headerlink" title="Hints"></a>Hints</h3><ul>
+<li><p>一种开始的方法是修改<code>mr/worker.go</code>的<code>Worker()</code>向coordinater发送RPC，请求执行任务。然后修改coordinator，用尚未启动map任务的文件名响应。修改worker以读取该文件，并调用应用程序映射函数，如<code>mrsequential.go</code>所示</p>
+</li>
+<li><p>应用程序Map和Reduce函数在运行时使用Go插件包从名称以结尾的文件加载。所以如果更改了<code>mr/</code>目录的任何内容，可能需要重新编译MapReduce插件：<code>go build-race-buildmode=plugin/mrapps/wc.go</code></p>
+</li>
+<li><p>worker的map存储中间键/值对，可以使用Go的<code>encoding/json</code>包，将JSON格式的键/值对写入/读取一个打开的文件:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">enc := json.NewEncoder(file)</span><br><span class="line"><span class="keyword">for</span> _, kv := ... &#123;</span><br><span class="line">  err := enc.Encode(&amp;kv)</span><br><span class="line">    </span><br><span class="line">dec := json.NewDecoder(file)</span><br><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">  <span class="keyword">var</span> kv KeyValue</span><br><span class="line">  <span class="keyword">if</span> err := dec.Decode(&amp;kv); err != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="keyword">break</span></span><br><span class="line">  &#125;</span><br><span class="line">  kva = <span class="built_in">append</span>(kva, kv)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>中间文件的合理命名是mr-X-Y，其中X是map任务号，Y是reduce任务</p>
+</li>
+<li><p>map worker可以使用<code>worker.go</code>里的<code>ihash(key)</code>来选择reduce worker</p>
+</li>
+<li><p>可以从<code>mrsequential.go</code>中摘取map输入文件读取代码、中间键值对排序代码、存储Reduce输出代码</p>
+</li>
+<li><p>lock共享数据</p>
+</li>
+<li><p>测试崩溃恢复可以使用<code>mrapps/crash.go</code></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/04/25/MapReduce-Lab1%E6%80%BB%E7%BB%93/" title="MapReduce Lab1总结">https://thomas-li-sjtu.github.io/2022/04/25/MapReduce-Lab1总结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/21/MIT6.824-1/" rel="prev" title="MIT-6.824 (1)">
+      <i class="fa fa-chevron-left"></i> MIT-6.824 (1)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/27/GFS/" rel="next" title="Google File System">
+      Google File System <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">思路整理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">关键实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#master"><span class="nav-number">2.1.</span> <span class="nav-text">master</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#worker"><span class="nav-number">2.2.</span> <span class="nav-text">worker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rpc%E9%80%9A%E4%BF%A1%E9%9C%80%E8%A6%81%E7%9A%84%E7%BB%93%E6%9E%84%E4%BD%93"><span class="nav-number">2.3.</span> <span class="nav-text">rpc通信需要的结构体</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lab%E6%89%8B%E5%86%8C%EF%BC%88%E4%B8%AD%E6%96%87%E7%89%88%E7%BF%BB%E8%AF%91%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">Lab手册（中文版翻译）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Introduction"><span class="nav-number">3.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Getting-started"><span class="nav-number">3.2.</span> <span class="nav-text">Getting started</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Your-job"><span class="nav-number">3.3.</span> <span class="nav-text">Your job</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#A-few-rules"><span class="nav-number">3.4.</span> <span class="nav-text">A few rules</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hints"><span class="nav-number">3.5.</span> <span class="nav-text">Hints</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

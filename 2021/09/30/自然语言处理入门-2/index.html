@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《自然语言处理入门》阅读笔记（2） 第三章+第四章">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自然语言处理入门（2） 二元语法与隐马尔可夫模型">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《自然语言处理入门》阅读笔记（2） 第三章+第四章">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185136550.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185201184.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185315939.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185605218.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185816130.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930191401414.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930191514896.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930191659060.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105657873.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105712040.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105811069.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105951094.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001110228198.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001112913063.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001113056317.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001113313077.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001113741150.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124008712.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124412894.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124520728.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124658379.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124758303.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124854385.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124926151.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001125112121.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001125711217.png">
+<meta property="article:published_time" content="2021-09-30T08:37:21.000Z">
+<meta property="article:modified_time" content="2021-10-28T13:55:04.204Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="自然语言处理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185136550.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>自然语言处理入门（2） 二元语法与隐马尔可夫模型 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          自然语言处理入门（2） 二元语法与隐马尔可夫模型
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-09-30 16:37:21" itemprop="dateCreated datePublished" datetime="2021-09-30T16:37:21+08:00">2021-09-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《自然语言处理入门》阅读笔记（2） 第三章+第四章</p>
+<a id="more"></a>
+
+<h2 id="二元语法"><a href="#二元语法" class="headerlink" title="二元语法"></a>二元语法</h2><ul>
+<li>语言模型：语言的数学抽象，模拟说话顺序——给定词语序列，预测下一个词语的后验概率<ul>
+<li>数据稀疏</li>
+<li>计算代价大</li>
+</ul>
+</li>
+</ul>
+<h3 id="马尔可夫链与二元语法"><a href="#马尔可夫链与二元语法" class="headerlink" title="马尔可夫链与二元语法"></a>马尔可夫链与二元语法</h3><ul>
+<li><p>马尔可夫假设：假定时间线上有一串事件按顺序发生，每个事件的发生概率只取决于前一个事件</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185136550.png" alt="image-20210930185136550"></p>
+</li>
+<li><p>二元语法模型：</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185201184.png" alt="image-20210930185201184"></p>
+</li>
+<li><p>n元语法模型以此类推</p>
+<ul>
+<li><p>n越大，数据稀疏问题越严重</p>
+</li>
+<li><p>平滑：将n元语法频次的折线平滑为曲线——线性插值法</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185315939.png" alt="image-20210930185315939"></p>
+<ul>
+<li>$\lambda$：常数，平滑因子</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="中文分词语料库"><a href="#中文分词语料库" class="headerlink" title="中文分词语料库"></a>中文分词语料库</h3><ul>
+<li>PKU：1998年《人民日报》语料库</li>
+<li>MSR：微软亚洲研究院语料库</li>
+<li>繁体中文分词语料库</li>
+<li>语料库的统计特征：词语种数、总词频</li>
+</ul>
+<h3 id="训练和预测分词"><a href="#训练和预测分词" class="headerlink" title="训练和预测分词"></a>训练和预测分词</h3><ul>
+<li><p>遍历一遍语料库即可，得到：</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185605218.png" alt="image-20210930185605218"></p>
+<ul>
+<li>@分隔开二元语法的两个单词</li>
+<li>数字表明语法频次</li>
+<li>特殊符号：始##始、末##末</li>
+</ul>
+</li>
+<li><p>对目标句子分词：以“商品和服务”为例</p>
+<ul>
+<li><p>构建“词网“</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930185816130.png" alt="image-20210930185816130"></p>
+<ul>
+<li><p>词网的创建，是扫描出句子中所有的一元语法及其位置（与词典的全切分类似）</p>
+</li>
+<li><p>起始位置相同的单词写在一行</p>
+</li>
+<li><p>词网必须保证从起点出发的所有路径都将连通到终点，如果出现一元语法中没有的词语，则需要额外添加，以保证词网连通（如第五行”务“）</p>
+</li>
+<li><p>首行、末行对应：始##始、末##末</p>
+</li>
+<li><p>词网中的元素通过行号索引</p>
+</li>
+<li><p>词网中，第$i$行词语$w$与第$i+len(w)$行的所有词相连，都能构成二元语法，从而形成词图，词图从起点到终点的每一条路径都代表句子的一种分词方式，二元语法模型的解码任务是找到最合理的路径</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930191401414.png" alt="image-20210930191401414"></p>
+</li>
+</ul>
+</li>
+<li><p>节点距离与最短路径</p>
+<ul>
+<li><p>每条边的二元语法的概率作为距离——为防止下溢，将概率取负对数，浮点数乘法转为负对数加法</p>
+</li>
+<li><p>可使用拉普拉斯平滑</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930191514896.png" alt="image-20210930191514896"></p>
+</li>
+<li><p>得到有向无环图</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20210930191659060.png" alt="image-20210930191659060"></p>
+</li>
+</ul>
+</li>
+<li><p>维特比算法计算最短路径，即为最佳分词方式</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="隐马尔可夫模型"><a href="#隐马尔可夫模型" class="headerlink" title="隐马尔可夫模型"></a>隐马尔可夫模型</h2><h3 id="序列标注问题"><a href="#序列标注问题" class="headerlink" title="序列标注问题"></a>序列标注问题</h3><ul>
+<li><p>给定一个序列$x=x_1,…,x_n$，找出序列中每个元素对应的标签$y=y_1,…,y_n$</p>
+</li>
+<li><p>中文分词：</p>
+<ul>
+<li><p>标注集为{切，过}</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105657873.png" alt="image-20211001105657873"></p>
+</li>
+<li><p>标注集为{B（词语首部），M（词中），E（词语尾部），S（单字成词）}，最近的两个BE标签内所有字符合并为一个词，S对应的字符为单字词语</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105712040.png" alt="image-20211001105712040"></p>
+</li>
+</ul>
+</li>
+<li><p>词性标注</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105811069.png" alt="image-20211001105811069"></p>
+</li>
+<li><p>命名实体识别：将单词标注为”B/M/E/S-类别“，不构成命名实体的单词标注为O</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001105951094.png" alt="image-20211001105951094"></p>
+</li>
+</ul>
+<h3 id="隐马尔可夫模型-1"><a href="#隐马尔可夫模型-1" class="headerlink" title="隐马尔可夫模型"></a>隐马尔可夫模型</h3><ul>
+<li><p>隐马尔可夫模型描述两个时序序列联合分布$p(x,y)$的概率模型</p>
+<ul>
+<li>$x$序列外部可见，为观测序列</li>
+<li>$y$序列外部不可见，为状态序列</li>
+<li>如观测$x$为单词，状态$y$为词性，需要根据单词序列猜测词性</li>
+<li>三个要素：初始状态概率向量，状态转移概率矩阵，发射概率矩阵</li>
+</ul>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001110228198.png" alt="image-20211001110228198"></p>
+</li>
+<li><p>马尔可夫假设作用于状态序列，假设当前状态只依赖前一个状态，任意时刻的观测只依赖当前时刻的状态</p>
+</li>
+<li><p>初始状态概率向量：第一个状态$y_1$为初始状态，若有N种取值，则$y_1$为独立的离散随机变量，由初始状态概率向量$\pi$描述，给定其取值分布</p>
+</li>
+<li><p>状态转移概率矩阵：从$y_t$转移到$y_{t+1}$的概率（有N种状态，则有$N\times N$的方阵</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001112913063.png" alt="image-20211001112913063"></p>
+</li>
+<li><p>发射概率矩阵：给定状态$y_t$，$x$的概率分布参数向量。由于有N种状态，参数向量构成$N\times M$的矩阵</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001113056317.png" alt="image-20211001113056317"></p>
+</li>
+<li><p>基本应用：</p>
+<ul>
+<li>样本生成问题：给定模型$\lambda=(\pi,A,B)$，生成一系列的观测序列及其对应的状态序列</li>
+<li>模型训练问题：给定训练集（一系列观测序列及状态序列），估计模型参数$\lambda=(\pi,A,B)$</li>
+<li>序列预测问题：已知模型参数$\lambda=(\pi,A,B)$，给定观测序列$x$，求最可能的状态序列$y$</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001113313077.png" alt="image-20211001113313077"></p>
+<h3 id="样本生成问题"><a href="#样本生成问题" class="headerlink" title="样本生成问题"></a>样本生成问题</h3><ul>
+<li><p>例：医疗诊断</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001113741150.png" alt="image-20211001113741150"></p>
+</li>
+<li><p>生成算法：长$T$的样本序列，其生成过程即为沿隐马尔可夫链生成$T$次</p>
+<ol>
+<li>根据初始状态率向量采样第一个时刻的状态$y_1=s_i$</li>
+<li>根据状态转移概率矩阵第$i$行采样下一时刻状态</li>
+<li>对每个状态$y_t=s_i$，根据发射概率矩阵第$i$行采样$x_t$</li>
+<li>重复2、3步骤$T-1$和$T$次，输出序列$x$、序列$y$</li>
+</ol>
+</li>
+</ul>
+<h3 id="模型训练问题"><a href="#模型训练问题" class="headerlink" title="模型训练问题"></a>模型训练问题</h3><ul>
+<li><p>根据训练集是否记录隐状态$y$，可分为完全数据（监督学习）和非完全数据（无监督学习）</p>
+</li>
+<li><p>下面均为监督学习，无监督学习使用EM算法</p>
+</li>
+<li><p>监督学习中，极大似然法来估计隐马尔可夫模型参数</p>
+</li>
+<li><p>估计转移概率矩阵</p>
+<ul>
+<li><p>样本序列在时刻$t$处于状态$s_i$，下一时刻转移到状态$s_j$，统计此类转移频次，计入矩阵元素$A_{i,j}$，通过归一化估计$s_i$到$s_j$的转移概率</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124008712.png" alt="image-20211001124008712"></p>
+</li>
+</ul>
+</li>
+<li><p>估计初始状态概率向量</p>
+<ul>
+<li><p>可视为状态转移的特例，即从BOS转移到$y_1$，用类似的方法统计和归一化</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124412894.png" alt="image-20211001124412894"></p>
+</li>
+</ul>
+</li>
+<li><p>估计发射概率矩阵</p>
+<ul>
+<li><p>统计样本中状态为$s_i$，观测为$o_j$的频次，进入矩阵元素$B_{i,j}$，则状态$s_i$发射观测$o_j$的概率为</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124520728.png" alt="image-20211001124520728"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="序列预测问题"><a href="#序列预测问题" class="headerlink" title="序列预测问题"></a>序列预测问题</h3><ul>
+<li><p>给定观测序列，求最可能的序列及其概率</p>
+</li>
+<li><p>给定观测序列$x$和状态序列$y$，估计二者的联合概率$p(x,y)$</p>
+<ul>
+<li><p>初始状态的概率由$\pi$决定：</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124658379.png" alt="image-20211001124658379"></p>
+</li>
+<li><p>之后的状态由前一个状态转移而来，转移概率由$A$决定，因此状态序列的概率为：</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124758303.png" alt="image-20211001124758303"></p>
+</li>
+<li><p>每一个状态都会发射一个观测，因此给定状态序列$y$，对应$x$的概率为：</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124854385.png" alt="image-20211001124854385"></p>
+</li>
+<li><p>由此得联合概率：</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001124926151.png" alt="image-20211001124926151"></p>
+</li>
+</ul>
+</li>
+<li><p>寻找最大概率对应的状态序列：</p>
+<ul>
+<li><p>每个状态作为有向图的节点，节点距离由转移概率决定，节点本身花费由发射概率决定</p>
+</li>
+<li><p>所有备选状态构成有向无环图，所求状态序列即为最长路径</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001125112121.png" alt="image-20211001125112121"></p>
+</li>
+<li><p>使用维特比算法搜索</p>
+<ul>
+<li><p>从起点到时刻$t$的最优路径，对时刻$t$到$T$的路径选取也是最优</p>
+</li>
+<li><p>定义二维数组$\delta_{t,i}$表示时刻$t$以$s_i$结尾的所有局部路径最大概率</p>
+</li>
+<li><p>定义二维数组$\psi_{t,i}$，存储局部最优路径最后状态$y_t$的前一个状态</p>
+</li>
+<li><p>具体过程如下图所示：</p>
+<p><img src="/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/image-20211001125711217.png" alt="image-20211001125711217"></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\13\A-Survey-Organizing-Contextualized-Encoders\" rel="bookmark">A Survey Organizing Contextualized Encoders</a></div>
+        <div class="popular-posts-excerpt"><p><p>​    综述《Which *BERT? A Survey Organizing Contextualized Encoders》（EMNLP 2020）</p>
+<p>​</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\05\04\A-Systematic-Survey-of-Prompting-Methods-in-Natural-Language-Processing\" rel="bookmark">A Systematic Survey of Prompting Methods in Natural Language Processing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Pre-train, Prompt, and Predict: A Systematic Survey of Prompting Methods in Natural Language Processing》（2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\15\ALBERT\" rel="bookmark">ALBERT A Lite BERT For Self-supervised Learning Of Language Representations</a></div>
+        <div class="popular-posts-excerpt"><p><p>《ALBERT: A LITE BERT FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS》（ALBERT ICLR 2020）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\23\BART\" rel="bookmark">BART：Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension》（BART）论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\09\16\BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding\" rel="bookmark">BERT Pre-training of Deep Bidirectional Transformers for Language Understanding</a></div>
+        <div class="popular-posts-excerpt"><p><p>2019年《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文阅读笔记</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/09/30/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-2/" title="自然语言处理入门（2） 二元语法与隐马尔可夫模型">https://thomas-li-sjtu.github.io/2021/09/30/自然语言处理入门-2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" rel="tag"><i class="fa fa-tag"></i> 自然语言处理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/29/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-1/" rel="prev" title="自然语言处理入门（1） 概述与词典分词">
+      <i class="fa fa-chevron-left"></i> 自然语言处理入门（1） 概述与词典分词
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/10/01/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%85%A5%E9%97%A8-3/" rel="next" title="自然语言处理入门（3） 感知机与条件随机场">
+      自然语言处理入门（3） 感知机与条件随机场 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E5%85%83%E8%AF%AD%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">二元语法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE%E4%B8%8E%E4%BA%8C%E5%85%83%E8%AF%AD%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">马尔可夫链与二元语法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D%E8%AF%AD%E6%96%99%E5%BA%93"><span class="nav-number">1.2.</span> <span class="nav-text">中文分词语料库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E5%92%8C%E9%A2%84%E6%B5%8B%E5%88%86%E8%AF%8D"><span class="nav-number">1.3.</span> <span class="nav-text">训练和预测分词</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">隐马尔可夫模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E6%A0%87%E6%B3%A8%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">序列标注问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B-1"><span class="nav-number">2.2.</span> <span class="nav-text">隐马尔可夫模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B7%E6%9C%AC%E7%94%9F%E6%88%90%E9%97%AE%E9%A2%98"><span class="nav-number">2.3.</span> <span class="nav-text">样本生成问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83%E9%97%AE%E9%A2%98"><span class="nav-number">2.4.</span> <span class="nav-text">模型训练问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E9%A2%84%E6%B5%8B%E9%97%AE%E9%A2%98"><span class="nav-number">2.5.</span> <span class="nav-text">序列预测问题</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

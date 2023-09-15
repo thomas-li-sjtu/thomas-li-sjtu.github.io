@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Targeted Online Password Guessing》（CCS 2016）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Targeted Online Password Guessing">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Targeted Online Password Guessing》（CCS 2016）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/1.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/2.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/3.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/4.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/5.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/6.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/10.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/11.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/12.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/13.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/8.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/7.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/9.PNG">
+<meta property="article:published_time" content="2021-12-14T16:37:08.000Z">
+<meta property="article:modified_time" content="2021-12-15T12:12:47.207Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="密码猜测">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/1.PNG">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Targeted Online Password Guessing | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Targeted Online Password Guessing
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-12-15 00:37:08" itemprop="dateCreated datePublished" datetime="2021-12-15T00:37:08+08:00">2021-12-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Targeted Online Password Guessing》（CCS 2016）</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>有针对性的在线猜测，即攻击者利用受害者的个人信息，猜测特定受害者的服务密码</li>
+<li>一个关键挑战是选择最有效的候选密码，而服务器锁定或限制机制允许的猜测次数通常非常少</li>
+<li>提出TarGuess框架，使用七个数学模型，系统地描述典型的目标猜测场景，每个模型都基于攻击者可用的各种数据</li>
+<li>在10个大型密码数据集上的实验表明了TarGuess的有效性</li>
+<li>TarGuess I∼IV捕获了四个最具代表性的场景，并且在100个猜测中：<ul>
+<li>TarGuess-I在对安全性要求较高的用户方面比最主要的同类产品高142％，对普通用户则高46％</li>
+<li>TarGuess-II在对安全性要求较高的用户方面比最主要的同类产品高169％，对普通用户则高72％</li>
+<li>TarGuess-III和IV对普通用户的成功率超过73％，对安全性较高的用户的成功率超过32％。并且TarGuess-III和IV，在给出姊妹密码和部分PII（个人验证信息）时，第一次实现跨站点在线猜测，</li>
+</ul>
+</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>一些概率猜测模型已经提出，如Markov n-grams和概率上下文无关文法（PCFG），描述了一个离线猜测攻击者的特征。攻击者主要处理泄漏的密码文件，目的是破解尽可能多的帐户</li>
+<li>离线猜测攻击，无论是拖网式攻击还是有针对性的攻击，仅在非常有限的情况下才引起真正的关注：服务器的密码文件被泄漏，泄漏未被检测到，并且密码也被适当地哈希</li>
+<li>网站应该通过安全地存储密码文件来保护用户密码不被离线猜测，而普通用户只需要选择能够在抵抗在线猜测的密码</li>
+<li>任何使用浏览器的人都可以随时针对公开服务器启动在线猜测，主要限制是允许的猜测次数<ul>
+<li>密码选择不同</li>
+<li>用户的PII具有高度的异构性</li>
+<li>用户用多种转换规则来改变密码<ul>
+<li>规则优先级不确定</li>
+<li>转换规则的选择常取决于上下文，因此上下文依赖性需要一个自适应的、语义感知的跨站点猜测模型   </li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h3><ul>
+<li>已有的跨站点破解算法，以及预测同一账户的未来密码算法，他们对于有针对性的在线猜测不是最优的<ul>
+<li>不涉及重用行为或用户PII的常用密码</li>
+<li>假设所有用户以固定的优先级使用转换规则</li>
+<li>算法没有考虑综合规则</li>
+<li>是启发式的算法</li>
+</ul>
+</li>
+<li>PCFG算法是基于长度的PII匹配和替换方法，它在捕捉用户PII使用方法上是不准确的，而TarGuess-I通过使用基于类型的PII匹配方法克服了这个问题</li>
+</ul>
+<h3 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h3><ul>
+<li>提出了TarGuess，一个用可靠的概率模型（而不是特别模型或启发式）来描述典型的有针对性的在线猜测攻击的框架。TarGuess针对七个典型的场景，每个场景中攻击者使用信息组合不同</li>
+<li>四种概率算法。算法都明显优于现有技术，并可应用于七个典型场景</li>
+<li>广泛的评估。进行了一系列的实验来证明算法的有效性和通用性。绝大多数用户的密码容易受到有针对性的在线猜测的影响</li>
+<li>新见解。<ul>
+<li>简单地将多种PII合并到算法中不会提高成功率</li>
+<li>基于类型的PII标记比基于长度的PII标记更有效</li>
+<li>猜测的成功率随着猜测列表中该猜测的等级的增加而降低</li>
+</ul>
+</li>
+</ul>
+<h2 id="前提条件与安全模型"><a href="#前提条件与安全模型" class="headerlink" title="前提条件与安全模型"></a>前提条件与安全模型</h2><h3 id="公开的个人信息"><a href="#公开的个人信息" class="headerlink" title="公开的个人信息"></a>公开的个人信息</h3><ul>
+<li>用户的个人信息是“与”这个用户相关的任何信息，比PII（个人识别信息）更广泛</li>
+<li>用户个人信息分为三类，每一类信息都有不同程度的保密性<ul>
+<li>第一类：用户PII（例如，姓名和性别）。在本地半公开，对陌生人不公开<ul>
+<li>Type-1：可以是密码的构建块</li>
+<li>Type-2：如性别和教育，可以影响用户创建密码的行为，但不直接用于密码</li>
+</ul>
+</li>
+<li>第二类：用户身份凭证。部分（如用户名）公开，部分（如密码）专用</li>
+<li>第三类：剩下的用户个人资料</li>
+</ul>
+</li>
+</ul>
+<h3 id="安全模型"><a href="#安全模型" class="headerlink" title="安全模型"></a>安全模型</h3><ul>
+<li>主要研究客户-服务器体系结构</li>
+<li>三个实体参与了有针对性的在线猜测攻击：用户U、身份验证服务器S和攻击者A</li>
+<li>S强制执行安全机制，例如可疑登录检测和锁定——A的猜测次数有限</li>
+<li>假设A可以获得所有公共信息（如泄漏的PW列表和站点策略）</li>
+<li>只考虑A最多有一个用户U的姊妹密码的情况——54756万个泄露密码帐户中，少于1.02%的账户以电子邮件用户名为依据进行多次匹配；另一份796万个账户中，只有152人（0.00191%）通过电子邮件进行了多次匹配</li>
+</ul>
+<h2 id="密码创建"><a href="#密码创建" class="headerlink" title="密码创建"></a>密码创建</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li>五个来自中文网站，五个来自英文网站，它们已被泄漏</li>
+<li>两个数据集包含各种类型的PII</li>
+<li>采用两个辅助PII数据集，以通过邮件匹配来增强密码数据集</li>
+<li>语料库是迄今收集到的最大最多样化的语料库</li>
+</ul>
+<h3 id="广泛使用的密码"><a href="#广泛使用的密码" class="headerlink" title="广泛使用的密码"></a>广泛使用的密码</h3><ul>
+<li>下表显示了来自不同服务的用户选择常用密码的频率。通过选取前十个密码，可以猜出0.79%∼10.44%的密码<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/1.PNG" alt="1"> </li>
+<li>语言和服务在塑造用户最受欢迎的密码方面都扮演着重要的角色</li>
+<li>通过数据集分析得出：<ul>
+<li>000webhost强制执行密码创建策略，要求密码同时包含字母和数字</li>
+<li>csdn要求密码长度至少为8</li>
+</ul>
+</li>
+</ul>
+<h3 id="密码重用"><a href="#密码重用" class="headerlink" title="密码重用"></a>密码重用</h3><ul>
+<li>通过匹配电子邮件，将12306与Dodonew两个数据集相交，得到新的数据集。其中每个用户有两个密码。以此得到2个相交的中文数据集，三个相交的英文数据集</li>
+<li>利用Levenshtein距离度量来度量给定用户的两个不同密码之间的相似性；最长公共子序列进行度量，得到的结果相似<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/2.PNG" alt="2"> </li>
+<li>中文用户的姊妹密码比英文用户具有更高的相似性——英文的两个网站是程序论坛，因此他们的重复使用较少</li>
+<li>修改后——一般的中英文用户具有相似的重用行为</li>
+</ul>
+<h3 id="密码包含的个人信息"><a href="#密码包含的个人信息" class="headerlink" title="密码包含的个人信息"></a>密码包含的个人信息</h3><ul>
+<li>高度异构的PII成为密码的组成部分，用户喜欢使用名称、生日及其变体</li>
+<li>一部分用户只使用自己的全名（0.75%∼1.87%）作为密码，1.00%∼5.16%的中国用户只使用自己的生日作为密码</li>
+<li>电子邮件和用户名在密码中都占主导地位，分别为0.77%到5.07%和0.54%到2.34%</li>
+<li>Type-2 PII的影响：<ul>
+<li>年龄≤24岁和年龄≥46岁的用户的密码具有非常相似的长度分布</li>
+<li>女性用户的密码更为集中</li>
+</ul>
+</li>
+<li>基于类型的PII匹配<ul>
+<li>在传统的基于PCFG的L，D，S标签外，还使用了几种PII标签（例如，N代表姓名，B代表生日）</li>
+<li>不同标签的下标表示一种特性的子类型，如生日年份等</li>
+</ul>
+</li>
+</ul>
+<h2 id="TarGuess框架"><a href="#TarGuess框架" class="headerlink" title="TarGuess框架"></a>TarGuess框架</h2><ul>
+<li>攻击者获得的信息：<ul>
+<li>I 只有Type-I PII</li>
+<li>II 一个姊妹密码</li>
+<li>III I和II的结合</li>
+<li>IV III和Type-II PII</li>
+</ul>
+</li>
+<li>对应的四种模型利用了概率的知识，如PCFG、Markov和Bayesian理论<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/3.PNG" alt="3"> </li>
+</ul>
+<h3 id="TarGuess-I"><a href="#TarGuess-I" class="headerlink" title="TarGuess-I"></a>TarGuess-I</h3><ul>
+<li>密码的组成除了L（letter），D（digit），S（symbol）外——love@123，记为L<sub>4</sub>S<sub>1</sub>D<sub>3</sub>——引入基于类型的PII标签，如N<sub>1</sub>表示全名，N<sub>2</sub>表示名字的缩写等</li>
+<li>PII的上下文无关文法的扩充：G = (V, Σ, S’, R)<ul>
+<li>S’是开始符号</li>
+<li>V是标签<ul>
+<li>N：<ul>
+<li>N<sub>3</sub>为姓</li>
+<li>N<sub>4</sub>为名</li>
+<li>N<sub>5</sub>为名的首字母+姓</li>
+<li>N<sub>6</sub>为姓+名的首字母</li>
+<li>N<sub>7</sub>为姓，且姓的首字母大写</li>
+</ul>
+</li>
+<li>B：<ul>
+<li>B<sub>1</sub>为出生年月日</li>
+<li>B<sub>2</sub>为出生月日年</li>
+<li>B<sub>3</sub>为出生日月年</li>
+<li>B<sub>4</sub>为出生月日</li>
+<li>B<sub>5</sub>为出生年</li>
+<li>B<sub>6</sub>为出生年月</li>
+<li>B<sub>7</sub>为出生月年</li>
+<li>B<sub>8</sub>为出生年份后两位+出生月日</li>
+<li>B<sub>9</sub>为出生月日+出生年份后两位</li>
+<li>B<sub>10</sub>为出生日月+出生年份后两位</li>
+</ul>
+</li>
+<li>A是账户名<ul>
+<li>A<sub>1</sub>为用户名</li>
+<li>A<sub>2</sub>为用户名的字母部分</li>
+<li>A<sub>3</sub>为用户名的数字部分</li>
+</ul>
+</li>
+<li>E是电子邮件地址<ul>
+<li>E<sub>1</sub>为完整邮件地址</li>
+<li>E<sub>2</sub>为邮件地址的字母部分</li>
+<li>E<sub>3</sub>为邮件地址的数字部分</li>
+</ul>
+</li>
+<li>P是手机号<ul>
+<li>P<sub>1</sub>为完整手机号</li>
+<li>P<sub>2</sub>为手机号前三位</li>
+<li>P<sub>3</sub>为手机号后四位</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Σ为可打印的95个ASCII码，以及空串</li>
+<li>R是产生规则</li>
+</ul>
+</li>
+<li>为了提高准确性：<ul>
+<li>使用最长前缀规则进行匹配，并且只考虑长度不小于2的PII段——john06071982 匹配到用户名 “john0607”，则分作A<sub>1</sub>B<sub>5</sub>而不是N<sub>3</sub>B<sub>2</sub></li>
+<li>只考虑月日都为两位数的表示形式，因此如果发现缩写，则先补全再查找对应标记</li>
+</ul>
+</li>
+<li>当给定该用户的电子邮件、帐户名、姓名、生日、电话号码和NID时，平均破解概率为20.26%。电子邮件、帐户名、姓名和生日对在线攻击者来说是非常有价值的</li>
+<li>Personal PCFG比TarGuess-I’多利用了两个PII属性，但效果要差得多——简单地将更多的PII信息合并到算法中并不一定会产生更好的效果。<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/4.PNG" alt="4"> </li>
+</ul>
+<h3 id="TarGuess-II"><a href="#TarGuess-II" class="headerlink" title="TarGuess-II"></a>TarGuess-II</h3><ul>
+<li>根据姊妹密码猜测：<ul>
+<li>可猜测次数少</li>
+<li>转换种类多</li>
+</ul>
+</li>
+<li>使用两个密码列表作为训练集，一个从类似目标站点的策略/服务泄漏的PWA，另一个是与姐妹密码相似的PWB。在这两个列表中通过匹配电子邮件查找相同的用户。这一步骤创建了一个新的不重复的姊妹PW对{PWA，PWB}列表，测量如何从PWA修改PWB</li>
+<li>从各种泄漏的列表中为目标服务建立一个10000项的列表，以确定PWB的较高概率的形式。L={pw |len(pw)≥ 8 and the value of P<sub>csdn</sub>(pw) ∗ P<sub>126</sub>(pw) ∗ P<sub>dodonew</sub>(pw) ranks top-10000}</li>
+<li>TarGuess-II的训练阶段，首先要确定PWB∈L<ul>
+<li>属于：PWB∈L的出现次数加1</li>
+<li>不属于：先进行结构级训练，再进行字段级训练<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/5.PNG" alt="5"> </li>
+</ul>
+</li>
+</ul>
+<h4 id="转换的规则："><a href="#转换的规则：" class="headerlink" title="转换的规则："></a>转换的规则：</h4><ul>
+<li>结构级<ul>
+<li>将PWA解析为解析具有L，D，S标签的密码</li>
+<li>六种结构级转换规则：<ul>
+<li>插入（例如，L<sub>3</sub>D<sub>3</sub>→L<sub>3</sub>D<sub>3</sub>S<sub>2</sub>）</li>
+<li>删除（例如，L<sub>3</sub>D<sub>3</sub>S<sub>2</sub>→L<sub>3</sub>D<sub>3</sub>）</li>
+<li>大写字母（C）</li>
+<li>leet（L）</li>
+<li>子串移动（SM）（例如，abc123→123abc）</li>
+<li>反向（R）（例如abc123→321cba）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>字段级<ul>
+<li>插入</li>
+<li>删除<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/6.PNG" alt="6"></li>
+</ul>
+</li>
+</ul>
+<h4 id="结构级训练"><a href="#结构级训练" class="headerlink" title="结构级训练"></a>结构级训练</h4><ul>
+<li>使用Levenshtein距离（LD）算法（仅启用插入和删除）来测量PWA和PWB之间的相似性<sub>1</sub></li>
+<li>其他四种的流行顺序：C&gt;L&gt;SM&gt;R</li>
+<li>以C，L，R，SM顺序来基于PWA获得PW’A</li>
+<li>计算d2 = LD（PW’A，PWB）。如果d2&gt; d1，则将这样的规则称为“有效”规则，然后将PWA更新为PW’A，对应规则的出现次数+1。在PW’A上执行下一条规则以产生PW’’A，并计算d3 = LD（PW’’A，PWB）。如果d3&gt; d2，则此规则“有效”并计数。</li>
+<li>假设最终获得PW’’A<ul>
+<li>若LD（PW’’A，PWB）小于某一个设定好的阈值：取消先前的计数，训练下一个密码对</li>
+<li>否则，PW’’A拆分。结构化阶段不考虑长度，因此L<sub>3</sub>D<sub>3</sub>只考虑LD。计算d3=LD（“LDS”，“LS”），并返回一个创建过程</li>
+</ul>
+</li>
+</ul>
+<h4 id="字段级训练"><a href="#字段级训练" class="headerlink" title="字段级训练"></a>字段级训练</h4><ul>
+<li>使用LD度量来度量它们各个字段的相似性</li>
+<li>与结构级训练一样，LD度量用于更新图11（b）中所有对应规则的出现</li>
+</ul>
+<h4 id="GII文法"><a href="#GII文法" class="headerlink" title="GII文法"></a>GII文法</h4><ul>
+<li>GII是一种概率上下文无关语法</li>
+<li>GII类似于G，不同的是V代表L，D，S，和一些规则</li>
+</ul>
+<p>&emsp;&emsp;当给出用户的Dodonew密码时，Das等人的算法在100次猜测中，对用户的CSDN帐户密码猜测的成功率为8.98％，而TarGuess-II的成功率为20.19％</p>
+<h3 id="TarGuess-III"><a href="#TarGuess-III" class="headerlink" title="TarGuess-III"></a>TarGuess-III</h3><ul>
+<li>TarGuess-III旨在利用用户的一个姐妹密码和一些PII，在线猜测用户的密码</li>
+<li>将基于PII的标记（TarGuess-I中）引入到TarGuess-II的语法GII中，使得TarGuess-III可以实现这一目标</li>
+<li>所有基于PII的密码段，只涉及GII中定义的六种转换规则，GIII中的所有其他内容与GII中的相同</li>
+<li>因此，GIII可以将Alice1978Yahoo解析为N<sub>4</sub>B<sub>5</sub>W<sub>1</sub>，即生成猜测Alice1978eBay的概率最高</li>
+</ul>
+<h3 id="TarGuess-IV"><a href="#TarGuess-IV" class="headerlink" title="TarGuess-IV"></a>TarGuess-IV</h3><ul>
+<li><p>主要的挑战是，不能使用任何基于PII标签的PCFG语法或Markov n-gram直接测量Type-2 PII</p>
+</li>
+<li><p>定理：</p>
+<ul>
+<li><p>令pw表示由用户U为服务选择密码pw的事件，pw’表示由U为另一项服务选择密码pw’并被泄露的事件，A<sub>i</sub>（i = 1，2，…，n） 表示一种用户PII属性，包括Type-1和Type-2。 假设A<sub>1</sub>，A<sub>2</sub>，…，A<sub>n</sub>是相互独立的，并且在事件pw’和（pw，pw’）下它们也相互独立。我们有：<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/10.PNG" alt="10"> </p>
+</li>
+<li><p>定理表明，在给定用户U的PII信息A<sub>1</sub>，A<sub>2</sub>，…，A<sub>n</sub>和另一服务下的姊妹密码pw’时，可以通过“分而治之”来解决在一个服务上预测用户U的pw的问题</p>
+</li>
+<li><p>当A<sub>i</sub>为Type-1 PII时，可以使用TarGuess-II计算Pr（pw | pw’），可以使用TarGuess-III获得Pr（pw | pw’，A<sub>i</sub>）</p>
+</li>
+</ul>
+</li>
+<li><p>A<sub>k</sub>是Type-2 PII时计算Pr（pw | pw’，A<sub>i</sub>）<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/11.PNG" alt="11"> </p>
+<ul>
+<li>使用TarGuess-II计算Pr（pw | pw’）</li>
+<li>Pr（pw’，A<sub>k</sub>）= c1是一个常数，Pr（pw’）= c2是一个常数，因为当攻击用户U时事件（pw’，A<sub>k</sub>）和（pw’）是已知的固定事实</li>
+<li>Pr（A<sub>k</sub> | pw）可以通过对训练集进行计数来计算——密码pw是根据具有属性A<sub>k</sub>的用户比例来选择的</li>
+</ul>
+</li>
+<li><p>某些PII属性在本质上是相互依赖的（例如，生日与年龄）。但大多数给出的PII属性彼此独立，定理的实用性不会受到太大影响</p>
+</li>
+<li><p>以往未考虑的Type-2 PII，确实会对攻击者A有帮助</p>
+</li>
+</ul>
+<h3 id="其他三种场景"><a href="#其他三种场景" class="headerlink" title="其他三种场景"></a>其他三种场景</h3><p>攻击者拥有：</p>
+<ul>
+<li><p>Type-2 PII<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/12.PNG" alt="12"> </p>
+<ul>
+<li>Pr(A<sub>k</sub>)是常数，其他两项在训练集中计数获得</li>
+</ul>
+</li>
+<li><p>Type-1 PII + Type-2 PII<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/13.PNG" alt="13"> </p>
+<ul>
+<li>Pr(pw|A<sub>i</sub>)可由TarGuess-I（为Type-1 PII）或前一个场景的公式（为Type-2 PII）获得</li>
+</ul>
+</li>
+<li><p>一个姐妹密码 + Type-2 PII</p>
+<ul>
+<li>TarGuess-II生成猜测列表</li>
+<li>根据定理调整猜测概率</li>
+</ul>
+</li>
+<li><p>多个姐妹密码</p>
+<ul>
+<li>以上模型不能解决</li>
+</ul>
+</li>
+<li><p>多个姐妹密码 + 一些PII</p>
+<ul>
+<li>以上模型不能解决</li>
+</ul>
+</li>
+</ul>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><ul>
+<li>9个待评估的算法：<ul>
+<li>TarGuess-I∼IV</li>
+<li>Markov[21]、</li>
+<li>PCFG和Personal PCFG</li>
+<li>Das等人的算法</li>
+<li>Trawling optimal</li>
+</ul>
+</li>
+<li>使用电子邮件地址对原始数据集进行处理，获得10个实验场景，并获得训练数据集<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/8.PNG" alt="8"> </li>
+<li>对给定测试集（攻击场景）的训练集的选择遵循三个规则：<ul>
+<li>（1）它们从不来自同一服务</li>
+<li>（2）它们具有相同的语言和密码策略</li>
+<li>（3）训练集应尽可能大</li>
+</ul>
+</li>
+</ul>
+<h3 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h3><ul>
+<li>这十个实验中，每一个实验的训练阶段都可以在不到65.3秒的时间内在一台普通PC机上完成，而每个用户1000个猜测的生成时间不到2.1秒</li>
+<li>TarGuess-I显著优于Personal-PCFG</li>
+<li>TarGuess-II性能优于Das等人的算法</li>
+<li>攻击中国用户时，TarGuess-III和IV的成功率分别为73.09%和31.61%</li>
+<li>随着猜测次数的增加，在大多数情况下，TarGuess-I∼IV的优势进一步增强</li>
+<li>TarGuess IV，可以利用受害者的一个姐妹密码以及1型和2型PII启动跨站点猜测</li>
+<li>三种猜测算法：拖网，有针对的使用PII，有针对的使用姐妹密码，均有一个递减的原则：如果收益不超过它的成本，攻击者A在某一点上停止攻击，并且会有三个这样的点对应于三种不同的攻击策略<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/7.PNG" alt="7"> </li>
+</ul>
+<h3 id="进一步验证"><a href="#进一步验证" class="headerlink" title="进一步验证"></a>进一步验证</h3><ul>
+<li>测试集是纯文本的，破解小米云密码进一步验证</li>
+<li>验证集包含5284个小米散列，这些散列是使用电子邮件将8M小米数据集与130K 12306数据集匹配后获得的</li>
+<li>在10∼1000次猜测中，TarGuessI的性能优于Personal-PCFG 70.58%∼119%；TarGuessII的性能优于Das等人的算法73.66%∼405%；TarGuess III和IV的成功率为63.61%∼73.56%。<br><img src="/2021/12/15/Targeted-Online-Password-Guessing/9.PNG" alt="9"></li>
+<li>当姐妹密码可用时，TarGuess-IV对正常用户的破解成功率可以达到77%（100次猜测里）；即使姐妹密码不可用，TarGuess-I对正常用户的成功率仍然可以达到20%（100次猜测里） </li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>TarGuess-I～IV描述了4种最具代表性的场景，并且首次很好地解决了如何建模上下文感知、语义丰富的跨站点密码猜测攻击的问题</li>
+<li>目前使用的安全机制在对付有针对性的在线猜测威胁方面基本上是无效的</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\11\03\A-Security-Analysis-of-Honeywords\" rel="bookmark">A Security Analysis of Honeywords</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Security Analysis of Honeywords》论文阅读笔记（NDSS 2018）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\25\A-Study-of-Probabilistic-Password-Models\" rel="bookmark">A Study of Probabilistic Password Models</a></div>
+        <div class="popular-posts-excerpt"><p><p>《A Study of Probabilistic Password Models》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\02\28\Chunk-Level-Password-Guessing\" rel="bookmark">Chunk-Level Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Chunk-Level Password Guessing: Towards Modeling Refined Password Composition Representations》（CCS 2021）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\22\Fast_Lean_and_Accurate_Modeling_Password_Guessability_Using_Neural_Networks\" rel="bookmark">Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Fast, Lean, and Accurate Modeling Password Guessability Using Neural Networks》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/" title="Targeted Online Password Guessing">https://thomas-li-sjtu.github.io/2021/12/15/Targeted-Online-Password-Guessing/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"><i class="fa fa-tag"></i> 密码</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E7%8C%9C%E6%B5%8B/" rel="tag"><i class="fa fa-tag"></i> 密码猜测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/10/Simple-Contrastive-Learning-of-Sentence-Embeddings/" rel="prev" title="Simple Contrastive Learning of Sentence Embeddings">
+      <i class="fa fa-chevron-left"></i> Simple Contrastive Learning of Sentence Embeddings
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/15/Understanding-Password-Choices/" rel="next" title="Understanding Password Choices：How Frequently Entered Passwords are Re-used Across Websites">
+      Understanding Password Choices：How Frequently Entered Passwords are Re-used Across Websites <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.1.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%A1%E7%8C%AE"><span class="nav-number">2.2.</span> <span class="nav-text">贡献</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%8F%90%E6%9D%A1%E4%BB%B6%E4%B8%8E%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">前提条件与安全模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E5%BC%80%E7%9A%84%E4%B8%AA%E4%BA%BA%E4%BF%A1%E6%81%AF"><span class="nav-number">3.1.</span> <span class="nav-text">公开的个人信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.2.</span> <span class="nav-text">安全模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%88%9B%E5%BB%BA"><span class="nav-number">4.</span> <span class="nav-text">密码创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">4.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%BF%E6%B3%9B%E4%BD%BF%E7%94%A8%E7%9A%84%E5%AF%86%E7%A0%81"><span class="nav-number">4.2.</span> <span class="nav-text">广泛使用的密码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E9%87%8D%E7%94%A8"><span class="nav-number">4.3.</span> <span class="nav-text">密码重用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%8C%85%E5%90%AB%E7%9A%84%E4%B8%AA%E4%BA%BA%E4%BF%A1%E6%81%AF"><span class="nav-number">4.4.</span> <span class="nav-text">密码包含的个人信息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TarGuess%E6%A1%86%E6%9E%B6"><span class="nav-number">5.</span> <span class="nav-text">TarGuess框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TarGuess-I"><span class="nav-number">5.1.</span> <span class="nav-text">TarGuess-I</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TarGuess-II"><span class="nav-number">5.2.</span> <span class="nav-text">TarGuess-II</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BD%AC%E6%8D%A2%E7%9A%84%E8%A7%84%E5%88%99%EF%BC%9A"><span class="nav-number">5.2.1.</span> <span class="nav-text">转换的规则：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E7%BA%A7%E8%AE%AD%E7%BB%83"><span class="nav-number">5.2.2.</span> <span class="nav-text">结构级训练</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E7%BA%A7%E8%AE%AD%E7%BB%83"><span class="nav-number">5.2.3.</span> <span class="nav-text">字段级训练</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GII%E6%96%87%E6%B3%95"><span class="nav-number">5.2.4.</span> <span class="nav-text">GII文法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TarGuess-III"><span class="nav-number">5.3.</span> <span class="nav-text">TarGuess-III</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TarGuess-IV"><span class="nav-number">5.4.</span> <span class="nav-text">TarGuess-IV</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E4%B8%89%E7%A7%8D%E5%9C%BA%E6%99%AF"><span class="nav-number">5.5.</span> <span class="nav-text">其他三种场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">6.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">6.1.</span> <span class="nav-text">实验结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E4%B8%80%E6%AD%A5%E9%AA%8C%E8%AF%81"><span class="nav-number">6.2.</span> <span class="nav-text">进一步验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">结论</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

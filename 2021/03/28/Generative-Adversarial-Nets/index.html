@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《Generative Adversarial Nets》论文阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Generative Adversarial Nets">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《Generative Adversarial Nets》论文阅读笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328200207075.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328200113175.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328202902308.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328203504650.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328203636627.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328204000817.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328195856014.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328192323834.png">
+<meta property="article:published_time" content="2021-03-28T06:05:55.000Z">
+<meta property="article:modified_time" content="2021-05-25T02:15:43.157Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="GAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/image-20210328200207075.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Generative Adversarial Nets | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Generative Adversarial Nets
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-28 14:05:55" itemprop="dateCreated datePublished" datetime="2021-03-28T14:05:55+08:00">2021-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87/" itemprop="url" rel="index"><span itemprop="name">论文</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Generative Adversarial Nets》论文阅读笔记</p>
+<a id="more"></a>
+
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><ul>
+<li>提出一个通过对抗过程，来估计生成模型的新框架——同时训练两个模型：捕获数据分布的生成模型 G 和估计样本来自训练数据而不是 G 的概率的判别模型 D，并且 G 在训练中最大化 D 出错的概率</li>
+<li>对应一个 minimax 问题：在任意函数 G 和 D 的空间中，存在唯一解使得 G 表征训练数据分布且 D 处处等于 0.5</li>
+<li>当 G 和 D 由多层感知器定义，系统反向传播来训练</li>
+<li>样本的训练或生成过程中，不需要任何马尔可夫链或展开的近似推理网络</li>
+</ul>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>迄今为止，深度学习中最引人注目的成功涉及到辨别模型——将高维、丰富的输入特征映射到类别标签的模型【14，22】——主要是基于反向传播和 Dropout 算法</li>
+<li>深度生成模型的成果较少，因为在最大似然估计和相关策略中难以逼近许多棘手的概率计算，并且难以利用生成环境中分段线性单元的优势</li>
+<li>提出了一种新的生成模型估计过程，以回避这些困难<ul>
+<li>生成模型与一种辨别模型对抗，后者确定样本是来自模型分布还是数据分布</li>
+<li>生成模型可以被认为类似于一群伪造者，试图生产假币并在没有被发现的情况下使用它</li>
+<li>鉴别模型类似于警察，试图检测假币</li>
+<li>竞争促使双方更新参数，直到伪数据与真实数据无法区分</li>
+</ul>
+</li>
+<li>探讨了生成模型通过多层感知器传递随机噪声来生成样本的特殊情况，判别模型也是一个多层感知器</li>
+<li>仅使用反向传播和 Dropout 算法来训练，仅使用正向传播来从生成模型中采样</li>
+</ul>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><ul>
+<li>两种模型：<ul>
+<li>具有潜在变量的有向图形模型</li>
+<li>具有潜在变量的无向图形模型，如受限玻尔兹曼机（RBMs） 【27，16】、深玻尔兹曼机（DBMs）  【26】及其众多变体<ul>
+<li>其中相互作用被表示为非标准化势函数的乘积，对随机变量的所有状态进行全局求和/积分来标准化</li>
+<li>这个量（<code>partition function</code>)和它的梯度难以处理，即使可以通过马尔可夫链蒙特卡罗（MCMC）方法来估计</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>深度信念网络（DBNs）【16]】是包含单个无向层和几个有向层的混合模型<ul>
+<li>存在一个快速近似的分层训练准则，但分布式神经网络带来了与无向和有向模型相关的计算困难</li>
+</ul>
+</li>
+<li>有人提出不近似或限制对数似然性的替代标准，如分数匹配<code>score matching</code>【18】和噪声对比估计（NCE） 【13】——二者要求学习的概率密度被解析地指定为一个归一化常数</li>
+<li>一些模型，如去噪自动编码器【30】和压缩自动编码器，其学习规则与应用于 RBMs 的分数匹配非常相似</li>
+<li>有些技术不涉及明确定义概率分布，而是训练模型从设计的分布中抽取样本<ul>
+<li>突出工作包括生成随机网络（GSN）框架【5】，该框架扩展了广义去噪自动编码器【4】</li>
+<li>两者可以被视为定义了参数化马尔可夫链，学习执行生成马尔可夫链的一个步骤的模型参数</li>
+</ul>
+</li>
+<li>通过反向传播训练生成式模型的最新例子包括自动编码变分贝叶斯【20】、随机反向传播【24】</li>
+</ul>
+<h2 id="生成网络"><a href="#生成网络" class="headerlink" title="生成网络"></a>生成网络</h2><ul>
+<li>当模型都是多层感知器时，框架最容易被应用</li>
+<li>为了学习生成器在数据 x 上的分布 $p_g$，定义一个输入噪声变量 z 的先验分布 $p_z(z)$，然后将数据空间的映射表示为 $G(z;\theta_g)$，其中 G 是由参数为 $θ_g $的多层感知器表示的可微函数</li>
+<li>定义了第二个多层感知器 $D(x;θ_d)$ 输出单个标量。$D(x)$ 代表 x 来自数据而不是生成器的概率</li>
+<li>训练 D 来最大化为训练样本和来自 G 的样本分配正确标签的概率，同时，训练 G 来最小化 $log(1-D(G(z)))$ 对数</li>
+</ul>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328200207075.png" alt="image-20210328200207075"></p>
+<ul>
+<li><p>给定 G 和 D 足够的容量时，即在非参数极限内，训练准则允许恢复生成分布的数据；在实践中，必须使用迭代的数值方法来实现。</p>
+<ul>
+<li>在训练的内部循环中优化 D 到完成在计算上是不可行的，并且在有限的数据集上会导致过拟合</li>
+<li>因此在优化 D 的 k 个步骤和优化 G 的一个步骤之间交替——此时只要 G 变化足够慢，D 能保持在其最优解附近，具体算法如下图所示</li>
+</ul>
+</li>
+<li><p>实际上，上面的式子可能无法为 G 提供足够的梯度来学习</p>
+<ul>
+<li><p>在学习初期，当 G 很差的时候，D 能有很高的置信度拒绝样本，因为它们与训练数据明显不同，此时 $log(1-D(G(z)))$ 饱和，可以训练 G 来最大化 $logD(G(z))$ ，而不是最小化 $log(1-D(G(z)))$ </p>
+</li>
+<li><p>这个目标函数导致了G和D的动力学的相同的固定点，但在学习初期提供了更强的梯度</p>
+<blockquote>
+<p>This objective function results in the same fixed point of the dynamics of G and D but provides much stronger gradients early in learning.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328200113175.png" alt="image-20210328200113175"></p>
+<h2 id="理论结果"><a href="#理论结果" class="headerlink" title="理论结果"></a>理论结果</h2><ul>
+<li>生成器 G 隐含地将概率分布 $p_g$ 定义为当 $z∼p_z$ 时获得的样本 $G(z)$ 的分布</li>
+<li>如果给出足够的参数和训练时间，希望上面收敛到一个很好的 $p_{data}$ 估计器</li>
+</ul>
+<h3 id="”生成器分布-数据分布“的全局最优性"><a href="#”生成器分布-数据分布“的全局最优性" class="headerlink" title="”生成器分布 = 数据分布“的全局最优性"></a>”生成器分布 = 数据分布“的全局最优性</h3><ul>
+<li><p>推论1：当 G 固定，最佳的鉴别器为：</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328202902308.png" alt="image-20210328202902308"></p>
+<ul>
+<li>即，D 的训练目标可以被解释为最大化对数似然，以估计条件概率 $P(Y=y|x)$，其中 Y 表明 x 来自 $p_{data}$ 还是来自 $p_g$，前面情况对应 $y=1$，后者对应 $y=0$</li>
+</ul>
+</li>
+<li><p>定理1：当且仅当 $p_g=p_{data}$ 时，才能实现最上面式子的全局最小，即为 $-log4$，即可以证明上面的式子等于：</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328203504650.png" alt="image-20210328203504650"></p>
+<p>等于：</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328203636627.png" alt="image-20210328203636627"></p>
+<p>只有当 JS 散度为 0 时，才能达到最小值</p>
+</li>
+</ul>
+<h3 id="算法收敛性"><a href="#算法收敛性" class="headerlink" title="算法收敛性"></a>算法收敛性</h3><ul>
+<li><p>推论2：如果 G 和 D 有足够的容量，并且在算法的每一步，鉴别器都能够在给定 G 的情况下达到最优，更新 $p_g$ 以改进下式，则 $p_g$ 最终能收敛到 $p_{data}$</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328204000817.png" alt="image-20210328204000817"></p>
+</li>
+<li><p>对抗网络通过函数 $G(z;\theta_g)$ 来表示有限的 $p_g$ 分布族</p>
+</li>
+</ul>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><ul>
+<li><p>在 MNIST【23】，多伦多人脸数据库（TFD）【28】，和 CIFAR-10【21】训练对抗网络</p>
+</li>
+<li><p>生成器混合了 rectifier linear 激活【19，9】和 sigmoid 激活，鉴别器网络使用 maxout【10】激活，且 Dropout【17】被用于训练鉴别器</p>
+</li>
+<li><p>理论框架允许在生成器的中间层加入 dropout 和其他噪声，但本文仅将噪声用作发生器网络最底层的输入</p>
+</li>
+<li><p>通过对 G 生成的样本拟合一个高斯帕尔森窗<code>Gaussian Parzen window</code>，计算该分布下的对数似然性，来估计测试集数据在生成器下的概率。高斯窗的 $\sigma$ 参数由验证集的交叉验证获得</p>
+<ul>
+<li><p>此方法来自 Breuleux 等人【8】，用于各种精确似然不容易处理的生成模型【25，3，5】</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328195856014.png" alt="image-20210328195856014"></p>
+</li>
+</ul>
+</li>
+<li><p>这种估计可能性的方法有一定的高方差，在高维空间中表现不佳，但它是我们所知的最佳方法</p>
+</li>
+<li><p>这种可抽样但不能估计可能性的生成模型的提出直接推动了如何评估这种模型的进一步研究</p>
+</li>
+<li><p>虽然并不认为这些生成器生成的样本比现有方法生成的样本更好，但相信这些样本至少与文献中的生成模型具有一定竞争力，并突出了对抗框架的潜力</p>
+</li>
+</ul>
+<h2 id="优点和缺点"><a href="#优点和缺点" class="headerlink" title="优点和缺点"></a>优点和缺点</h2><ul>
+<li><p>缺点主要是没有生成器对应概率函数的显式表示，并且在训练期间 D 必须与 G 很好地同步——在不更新 D 的情况下，G 不能被训练得太多，以避免“Helvetica scenario”（该情况下，G 将过多的 z 值映射成相同的 x 值）——就像玻尔兹曼机的负链必须在学习步骤之间保持最新一样</p>
+</li>
+<li><p>优点是从不需要马尔可夫链，只使用反向传播获得梯度，学习过程中不需要推理，模型中可以包含多种函数</p>
+<p><img src="/2021/03/28/Generative-Adversarial-Nets/image-20210328192323834.png" alt="image-20210328192323834"></p>
+</li>
+<li><p>可以从生成器网络中获得统计优势</p>
+<ul>
+<li><p>生成器网络不用数据实例直接更新，而只用流经鉴别器的梯度</p>
+</li>
+<li><p>输入数据的内容不会直接被生成器的参数复制</p>
+<blockquote>
+<p>This means that components of the input are not copied directly into the generator’s parameters.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>对抗网络的另一个优点是，它们可以表示非常尖锐，甚至退化的分布，而基于马尔可夫链的方法要求分布稍微模糊，以便链能够在模式之间混合</p>
+<blockquote>
+<p>Methods based on Markov chains require that the distribution be somewhat blurry in order for the chains to be able to mix between modes.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="结论与未来工作"><a href="#结论与未来工作" class="headerlink" title="结论与未来工作"></a>结论与未来工作</h2><ul>
+<li><p>条件生成模型 $p(x|c)$ 可以通过将 $c$ 作为 G 和 D 的输入获得</p>
+</li>
+<li><p>学习的近似推理可以通过训练辅助网络在给定 x 下预测 z 来实现，即生成器网络完成训练之后，可以针对固定的生成器网络来训练推理网络</p>
+</li>
+<li><p>本质上，可以使用对抗网络来实现确定性 MP-DBM 【11】的随机扩展</p>
+</li>
+<li><p>半监督学习：当只有有限的标记数据可用时，来自鉴别器或推理网络的特征可以提高分类器的性能</p>
+</li>
+<li><p>效率的提高：</p>
+<blockquote>
+<p>Training could be accelerated greatly by divising better methods for coordinating G and D or determining better distributions to sample z from during training.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Bastien, F., Lamblin, P ., Pascanu, R., Bergstra, J., Goodfellow, I. J., Bergeron, A., Bouchard, N., and Bengio, Y . (2012). Theano: new features and speed improvements. Deep Learning and Unsupervised Feature Learning NIPS 2012 Workshop.</p>
+<p>[2] Bengio, Y . (2009). Learning deep architectures for AI. Now Publishers. </p>
+<p>[3] Bengio, Y ., Mesnil, G., Dauphin, Y ., and Rifai, S. (2013a). Better mixing via deep representations. In ICML’13.</p>
+<p>[4] Bengio, Y ., Yao, L., Alain, G., and Vincent, P . (2013b). Generalized denoising auto-encoders as generative models. In NIPS26. Nips Foundation.</p>
+<p>[5] Bengio, Y ., Thibodeau-Laufer, E., and Y osinski, J. (2014a). Deep generative stochastic networks trainable by backprop. In ICML’14.</p>
+<p>[6] Bengio, Y ., Thibodeau-Laufer, E., Alain, G., and Y osinski, J. (2014b). Deep generative stochastic networks trainable by backprop. In Proceedings of the 30th International Conference on Machine Learning (ICML’14).</p>
+<p>[7] Bergstra, J., Breuleux, O., Bastien, F., Lamblin, P ., Pascanu, R., Desjardins, G., Turian, J., Warde-Farley, D., and Bengio, Y . (2010). Theano: a CPU and GPU math expression compiler. In Proceedings of the Python for Scientific Computing Conference (SciPy). Oral Presentation.</p>
+<p>[8] Breuleux, O., Bengio, Y ., and Vincent, P . (2011). Quickly generating representative samples from an RBM-derived process. Neural Computation, 23(8), 2053–2073.</p>
+<p>[9] Glorot, X., Bordes, A., and Bengio, Y . (2011). Deep sparse rectifier neural networks. In AISTATS’2011. </p>
+<p>[10] Goodfellow, I. J., Warde-Farley, D., Mirza, M., Courville, A., and Bengio, Y . (2013a). Maxout networks. In ICML’2013.</p>
+<p>[11] Goodfellow, I. J., Mirza, M., Courville, A., and Bengio, Y . (2013b). Multi-prediction deep Boltzmann machines. In NIPS’2013.</p>
+<p>[12] Goodfellow, I. J., Warde-Farley, D., Lamblin, P ., Dumoulin, V ., Mirza, M., Pascanu, R., Bergstra, J., Bastien, F., and Bengio, Y . (2013c). Pylearn2: a machine learning research library. arXiv preprint arXiv:1308.4214.</p>
+<p>[13] Gutmann, M. and Hyvarinen, A. (2010). Noise-contrastive estimation: A new estimation principle for unnormalized statistical models. In AISTATS’2010.</p>
+<p>[14] Hinton, G., Deng, L., Dahl, G. E., Mohamed, A., Jaitly, N., Senior, A., V anhoucke, V ., Nguyen, P ., Sainath, T., and Kingsbury, B. (2012a). Deep neural networks for acoustic modeling in speech recognition. IEEE Signal Processing Magazine, 29(6), 82–97.</p>
+<p>[15] Hinton, G. E., Dayan, P ., Frey, B. J., and Neal, R. M. (1995). The wake-sleep algorithm for unsupervised neural networks. Science, 268, 1558–1161.</p>
+<p>[16] Hinton, G. E., Osindero, S., and Teh, Y . (2006). A fast learning algorithm for deep belief nets. Neural Computation, 18, 1527–1554.</p>
+<p>[17] Hinton, G. E., Srivastava, N., Krizhevsky, A., Sutskever, I., and Salakhutdinov, R. (2012b). Improving neural networks by preventing co-adaptation of feature detectors. Technical report, arXiv:1207.0580.</p>
+<p>[18] Hyvärinen, A. (2005). Estimation of non-normalized statistical models using score matching. J. Machine Learning Res., 6. </p>
+<p>[19] Jarrett, K., Kavukcuoglu, K., Ranzato, M., and LeCun, Y . (2009). What is the best multi-stage architecture for object recognition? InProc. International Conference on Computer Vision (ICCV’09), pages 2146–2153. IEEE.</p>
+<p>[20] Kingma, D. P . and Welling, M. (2014). Auto-encoding variational bayes. In Proceedings of the International Conference on Learning Representations (ICLR).</p>
+<p>[21] Krizhevsky, A. and Hinton, G. (2009). Learning multiple layers of features from tiny images. Technical report, University of Toronto.</p>
+<p>[22] Krizhevsky, A., Sutskever, I., and Hinton, G. (2012). ImageNet classification with deep convolutional neural networks. In NIPS’2012.</p>
+<p>[23] LeCun, Y ., Bottou, L., Bengio, Y ., and Haffner, P . (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278–2324.</p>
+<p>[24] Rezende, D. J., Mohamed, S., and Wierstra, D. (2014). Stochastic backpropagation and approximate inference in deep generative models. Technical report, arXiv:1401.4082.</p>
+<p>[25] Rifai, S., Bengio, Y ., Dauphin, Y ., and Vincent, P . (2012). A generative process for sampling contractive auto-encoders. In ICML’12.</p>
+<p>[26] Salakhutdinov, R. and Hinton, G. E. (2009). Deep Boltzmann machines. In AISTATS’2009, pages 448–455.</p>
+<p>[27] Smolensky, P . (1986). Information processing in dynamical systems: Foundations of harmony theory. In D. E. Rumelhart and J. L. McClelland, editors, Parallel Distributed Processing, volume 1, chapter 6, pages 194–281. MIT Press, Cambridge.</p>
+<p>[28] Susskind, J., Anderson, A., and Hinton, G. E. (2010). The Toronto face dataset. Technical Report UTML TR 2010-001, U. Toronto.</p>
+<p>[29] Tieleman, T. (2008). Training restricted Boltzmann machines using approximations to the likelihood gradient. In W. W. Cohen, A. McCallum, and S. T. Roweis, editors, ICML 2008, pages 1064–1071. ACM. </p>
+<p>[30] Vincent, P ., Larochelle, H., Bengio, Y ., and Manzagol, P .-A. (2008). Extracting and composing robust features with denoising autoencoders. In ICML 2008.</p>
+<p>[31] Y ounes, L. (1999). On the convergence of Markovian stochastic algorithms with rapidly decreasing ergodicity rates. Stochastics and Stochastic Reports, 65(3), 177–228.</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\20\Deep-Learning-vs-Traditional-Probabilistic-Models\" rel="bookmark">Deep Learning vs Traditional Probabilistic Models:Case Study on Short Inputs for Password Guessing</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Deep Learning vs. Traditional Probabilistic Models: Case Study on Short Inputs for Password Guessing》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2020\11\20\GENPass-A-general-deep-learning-model-for-password-guessing-with-PCFG-rules-and-adversarial-generation\" rel="bookmark">GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation</a></div>
+        <div class="popular-posts-excerpt"><p><p>《GENPass:A general deep learning model for password guessing with PCFG rules and adversarial generation》论文阅读记录</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\08\Hands-on-ML-8\" rel="bookmark">Hands-on Machine Learning（8）</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Hands-on Machine Learning》第二部分阅读笔记（8）GAN</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\03\19\Improved-training-of-wasserstein-gans\" rel="bookmark">Improved training of wasserstein gans</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Improved training of wasserstein gans》论文阅读笔记</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\03\Improving-Password-Guessing-via-Representation-Learning\" rel="bookmark">Improving Password Guessing via Representation Learning</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Improving Password Guessing via Representation Learning》论文阅读记录</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/" title="Generative Adversarial Nets">https://thomas-li-sjtu.github.io/2021/03/28/Generative-Adversarial-Nets/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GAN/" rel="tag"><i class="fa fa-tag"></i> GAN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/27/SeqGAN-Sequence-Generative-Adversarial-Nets-with-Policy-Gradient/" rel="prev" title="SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient">
+      <i class="fa fa-chevron-left"></i> SeqGAN:Sequence Generative Adversarial Nets with Policy Gradient
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/07/A-Survey-on-Internet-of-Things-Architecture-Enabling-Technologies-Security-and-Privacy-and-Applications/" rel="next" title="A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications">
+      A Survey on Internet of Things：Architecture, Enabling Technologies, Security and Privacy, and Applications <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E7%BD%91%E7%BB%9C"><span class="nav-number">4.</span> <span class="nav-text">生成网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E7%BB%93%E6%9E%9C"><span class="nav-number">5.</span> <span class="nav-text">理论结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%80%9D%E7%94%9F%E6%88%90%E5%99%A8%E5%88%86%E5%B8%83-%E6%95%B0%E6%8D%AE%E5%88%86%E5%B8%83%E2%80%9C%E7%9A%84%E5%85%A8%E5%B1%80%E6%9C%80%E4%BC%98%E6%80%A7"><span class="nav-number">5.1.</span> <span class="nav-text">”生成器分布 &#x3D; 数据分布“的全局最优性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E6%94%B6%E6%95%9B%E6%80%A7"><span class="nav-number">5.2.</span> <span class="nav-text">算法收敛性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">6.</span> <span class="nav-text">实验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%82%B9%E5%92%8C%E7%BC%BA%E7%82%B9"><span class="nav-number">7.</span> <span class="nav-text">优点和缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA%E4%B8%8E%E6%9C%AA%E6%9D%A5%E5%B7%A5%E4%BD%9C"><span class="nav-number">8.</span> <span class="nav-text">结论与未来工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

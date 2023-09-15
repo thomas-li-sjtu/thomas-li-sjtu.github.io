@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MIT-6.824 Lab2C、2D 总结与备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Raft Lab2C-2D总结">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/05/30/Raft-Lab2C-2D%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="MIT-6.824 Lab2C、2D 总结与备忘">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-30T05:23:56.000Z">
+<meta property="article:modified_time" content="2022-05-30T07:23:32.639Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/05/30/Raft-Lab2C-2D%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Raft Lab2C-2D总结 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/05/30/Raft-Lab2C-2D%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Raft Lab2C-2D总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-30 13:23:56" itemprop="dateCreated datePublished" datetime="2022-05-30T13:23:56+08:00">2022-05-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">项目实践</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p> MIT-6.824 Lab2C、2D 总结与备忘</p>
+<a id="more"></a>
+
+<h2 id="思路整理"><a href="#思路整理" class="headerlink" title="思路整理"></a>思路整理</h2><h3 id="2C"><a href="#2C" class="headerlink" title="2C"></a>2C</h3><ul>
+<li>参考官网上Lab2C的Introduction、Hints与样本代码的实现</li>
+<li>persistence的作用：存储一些不能自动推算出的状态，在peers崩溃后恢复自身状态时读取</li>
+<li>figure2中指出，需要持久化currentTerm，votedFor，log[]三个变量，其他的状态可以通过集群传递过来的信息进行推测<ul>
+<li>readpersist和persist函数可以简单理解成：persist编码、readpersist解码</li>
+<li>重点在于，每次发生变动就把所有的状态都编码持久化一遍。其中，currentTerm, voteFor和logs三个变量一旦发生变化，就一定要在被其他goroutine感知到之前（如：释放锁之前、发送RPC之前）持久化，才能保证原子性</li>
+</ul>
+</li>
+</ul>
+<h3 id="2D"><a href="#2D" class="headerlink" title="2D"></a>2D</h3><ul>
+<li><p>引入SnapShot后，同过Index取log（或者term）的地方，都需要考虑lastSnapShotIndex的影响</p>
+</li>
+<li><p>SnapShot() 是peers主动存储Snapshot的调用接口，InstallSnapShotRPC是Leader将自己的SnapShot同步给peers的过程，是一个RPC handler——<code>SnapShot()</code>的内容和<code>InstallSnapShot</code>有挺多是相似的</p>
+</li>
+<li><p>leader向follower发送Snapshot的条件 ：<code>rf.nextIndex[follower_id]-1 &lt; rf.lastSnapShotIndex</code>——follower需要同步的下一个Entry已经被leader持久化，而持久化也表明该entry已经经过majority commit和apply，说明，当前follower的进度非常滞后，leader此时直接告知它lastSnapShotIndex前entry都已经apply了，要求follower直接全部接受</p>
+</li>
+<li><p>在处理RPC时，同样要考虑<code>rf.cur_term</code>和<code>args.Term</code>哪个更大，已经<code>rf.state</code>是否为follower（如果不是，则change state），并且要更新follower的log</p>
+</li>
+<li><p>具体如何存储，官方代码已经实现了，需要做的只是重新设定follower的<code>commit_index</code>等参数</p>
+</li>
+<li><p><code>CondInstallSnapshot</code>按照hints，无需处理</p>
+</li>
+</ul>
+<h2 id="关键代码"><a href="#关键代码" class="headerlink" title="关键代码"></a>关键代码</h2><h3 id="2C-1"><a href="#2C-1" class="headerlink" title="2C"></a>2C</h3><ul>
+<li><p>persist</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">persist</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (2C).</span></span><br><span class="line">	<span class="comment">// Example:</span></span><br><span class="line">	<span class="comment">// w := new(bytes.Buffer)</span></span><br><span class="line">	<span class="comment">// e := labgob.NewEncoder(w)</span></span><br><span class="line">	<span class="comment">// e.Encode(rf.xxx)</span></span><br><span class="line">	<span class="comment">// e.Encode(rf.yyy)</span></span><br><span class="line">	<span class="comment">// data := w.Bytes()</span></span><br><span class="line">	<span class="comment">// rf.persister.SaveRaftState(data)</span></span><br><span class="line">	data := rf.persistData()</span><br><span class="line">	rf.persister.SaveRaftState(data)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">persistData</span><span class="params">()</span> []<span class="title">byte</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Your code here (2C).</span></span><br><span class="line">	<span class="comment">// Example:</span></span><br><span class="line">	<span class="comment">// r := bytes.NewBuffer(data)</span></span><br><span class="line">	<span class="comment">// d := labgob.NewDecoder(r)</span></span><br><span class="line">	<span class="comment">// var xxx</span></span><br><span class="line">	<span class="comment">// var yyy</span></span><br><span class="line">	<span class="comment">// if d.Decode(&amp;xxx) != nil ||</span></span><br><span class="line">	<span class="comment">//    d.Decode(&amp;yyy) != nil &#123;</span></span><br><span class="line">	<span class="comment">//   error...</span></span><br><span class="line">	<span class="comment">// &#125; else &#123;</span></span><br><span class="line">	<span class="comment">//   rf.xxx = xxx</span></span><br><span class="line">	<span class="comment">//   rf.yyy = yyy</span></span><br><span class="line">	<span class="comment">// &#125;</span></span><br><span class="line">	w := <span class="built_in">new</span>(bytes.Buffer)</span><br><span class="line">	e := labgob.NewEncoder(w)</span><br><span class="line">	e.Encode(rf.cur_term)</span><br><span class="line">	e.Encode(rf.voted_for)</span><br><span class="line">	e.Encode(rf.log)</span><br><span class="line">	<span class="comment">// e.Encode(rf.lastApplied)</span></span><br><span class="line">	e.Encode(rf.last_snapshot_point_index)</span><br><span class="line">	e.Encode(rf.last_snapshot_point_term)</span><br><span class="line">	<span class="comment">//e.Encode(rf.persister.ReadSnapshot())</span></span><br><span class="line">	data := w.Bytes()</span><br><span class="line">	<span class="keyword">return</span> data</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>readpersist</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">readPersist</span><span class="params">(data []<span class="keyword">byte</span>)</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> data == <span class="literal">nil</span> || <span class="built_in">len</span>(data) &lt; <span class="number">1</span> &#123; <span class="comment">// bootstrap without any state?</span></span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// Your code here (2C).</span></span><br><span class="line">	<span class="comment">// Example:</span></span><br><span class="line">	r := bytes.NewBuffer(data)</span><br><span class="line">	d := labgob.NewDecoder(r)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> persist_currentTrem <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> persist_voteFor <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> persist_log []Entry</span><br><span class="line">	<span class="comment">//var persist_lastApplied int</span></span><br><span class="line">	<span class="keyword">var</span> persist_lastSSPointIndex <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> persist_lastSSPointTerm <span class="keyword">int</span></span><br><span class="line">	<span class="comment">//var persist_snapshot []byte</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> d.Decode(&amp;persist_currentTrem) != <span class="literal">nil</span> ||</span><br><span class="line">		d.Decode(&amp;persist_voteFor) != <span class="literal">nil</span> ||</span><br><span class="line">		d.Decode(&amp;persist_log) != <span class="literal">nil</span> ||</span><br><span class="line">		<span class="comment">//d.Decode(&amp;persist_lastApplied) != nil ||</span></span><br><span class="line">		d.Decode(&amp;persist_lastSSPointIndex) != <span class="literal">nil</span> ||</span><br><span class="line">		d.Decode(&amp;persist_lastSSPointTerm) != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">//d.Decode(&amp;persist_snapshot) != nil&#123;</span></span><br><span class="line">		DPrintf(<span class="string">&quot;%d read persister got a problem!!!!!!!!!!&quot;</span>, rf.me)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		rf.cur_term = persist_currentTrem</span><br><span class="line">		rf.voted_for = persist_voteFor</span><br><span class="line">		rf.log = persist_log</span><br><span class="line">		<span class="comment">// rf.lastApplied = persist_lastApplied</span></span><br><span class="line">		rf.last_snapshot_point_index = persist_lastSSPointIndex</span><br><span class="line">		rf.last_snapshot_point_term = persist_lastSSPointTerm</span><br><span class="line">		<span class="comment">// rf.persister.SaveStateAndSnapshot(rf.persistData(),persist_snapshot)</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用的位置：changestate、requestvote最后、start()、AppendEntries()中log append之后、AppendEntries()中收到心跳更新状态和时间戳之后</p>
+</li>
+</ul>
+<h3 id="2D-1"><a href="#2D-1" class="headerlink" title="2D"></a>2D</h3><ul>
+<li><p>调用snapshot</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(follower_id <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">			rf.mu.Lock()</span><br><span class="line">			<span class="keyword">if</span> rf.state != <span class="string">&quot;leader&quot;</span> &#123;</span><br><span class="line">				rf.mu.Unlock()</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// <span class="doctag">TODO:</span> 缺少对snapshot的处理</span></span><br><span class="line">			prevLogIndextemp := rf.next_index[follower_id] - <span class="number">1</span></span><br><span class="line">			<span class="comment">// DPrintf(&quot;[IfNeedSendSnapShot] leader %d ,lastSSPIndex %d, server %d ,prevIndex %d&quot;,rf.me,rf.lastSSPointIndex,server,prevLogIndextemp)</span></span><br><span class="line">			<span class="keyword">if</span> prevLogIndextemp &lt; rf.last_snapshot_point_index &#123;</span><br><span class="line">				<span class="keyword">go</span> rf.leaderSendSnapShot(follower_id)</span><br><span class="line">				rf.mu.Unlock()</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			entry_args := AppendEntryArgs&#123;&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>snapshot逻辑</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> raft</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;time&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> InstallSnapshotArgs <span class="keyword">struct</span> &#123;</span><br><span class="line">	Term             <span class="keyword">int</span></span><br><span class="line">	LeaderId         <span class="keyword">int</span></span><br><span class="line">	LastIncludeIndex <span class="keyword">int</span></span><br><span class="line">	LastIncludeTerm  <span class="keyword">int</span></span><br><span class="line">	Data             []<span class="keyword">byte</span></span><br><span class="line">	<span class="comment">//Done bool</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> InstallSnapshotReply <span class="keyword">struct</span> &#123;</span><br><span class="line">	Term <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// A service wants to switch to snapshot.  Only do so if Raft hasn&#x27;t</span></span><br><span class="line"><span class="comment">// have more recent info since it communicate the snapshot on applyCh.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">CondInstallSnapshot</span><span class="params">(lastIncludedTerm <span class="keyword">int</span>, lastIncludedIndex <span class="keyword">int</span>, snapshot []<span class="keyword">byte</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Your code here (2D).</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// the service says it has created a snapshot that has</span></span><br><span class="line"><span class="comment">// all info up to and including index. this means the</span></span><br><span class="line"><span class="comment">// service no longer needs the log through (and including)</span></span><br><span class="line"><span class="comment">// that index. Raft should now trim its log as much as possible.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">Snapshot</span><span class="params">(index <span class="keyword">int</span>, snapshot []<span class="keyword">byte</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (2D).</span></span><br><span class="line">	rf.mu.Lock()</span><br><span class="line">	<span class="keyword">defer</span> rf.mu.Unlock()</span><br><span class="line">	<span class="keyword">if</span> rf.last_snapshot_point_index &gt;= index || index &gt; rf.commit_index &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// snapshot the entrier form 1:index(global)</span></span><br><span class="line">	tempLog := <span class="built_in">make</span>([]Entry, <span class="number">0</span>)</span><br><span class="line">	tempLog = <span class="built_in">append</span>(tempLog, Entry&#123;&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := index + <span class="number">1</span>; i &lt;= rf.get_last_index(); i++ &#123;</span><br><span class="line">		tempLog = <span class="built_in">append</span>(tempLog, rf.get_entry(i))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// TODO fix it in lab 4</span></span><br><span class="line">	<span class="keyword">if</span> index == rf.get_last_index()+<span class="number">1</span> &#123;</span><br><span class="line">		rf.last_snapshot_point_term = rf.get_last_term()</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		rf.last_snapshot_point_term = rf.get_log_term(index)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rf.last_snapshot_point_index = index</span><br><span class="line"></span><br><span class="line">	rf.log = tempLog</span><br><span class="line">	<span class="keyword">if</span> index &gt; rf.commit_index &#123;</span><br><span class="line">		rf.commit_index = index</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> index &gt; rf.commit_index &#123;</span><br><span class="line">		rf.last_applied = index</span><br><span class="line">	&#125;</span><br><span class="line">	DPrintf(<span class="string">&quot;[SnapShot]Server %d sanpshot until index %d, term %d, loglen %d&quot;</span>, rf.me, index, rf.last_snapshot_point_term, <span class="built_in">len</span>(rf.log)<span class="number">-1</span>)</span><br><span class="line">	rf.persister.SaveStateAndSnapshot(rf.persistData(), snapshot)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// InstallSnapShot RPC Handler</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">InstallSnapShot</span><span class="params">(args *InstallSnapshotArgs, reply *InstallSnapshotReply)</span></span> &#123;</span><br><span class="line">	rf.mu.Lock()</span><br><span class="line">	<span class="comment">// DPrintf(&quot;[lock] sever %d get the lock&quot;,rf.me)</span></span><br><span class="line">	<span class="keyword">if</span> rf.cur_term &gt; args.Term &#123;</span><br><span class="line">		reply.Term = rf.cur_term</span><br><span class="line">		rf.mu.Unlock()</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rf.cur_term = args.Term</span><br><span class="line">	reply.Term = args.Term</span><br><span class="line">	<span class="keyword">if</span> rf.state != <span class="string">&quot;follower&quot;</span> &#123;</span><br><span class="line">		rf.change_state(TO_FOLLOWER, <span class="literal">true</span>)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		rf.timeout = time.Now()</span><br><span class="line">		rf.persist()</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> rf.last_snapshot_point_index &gt;= args.LastIncludeIndex &#123;</span><br><span class="line">		DPrintf(<span class="string">&quot;[HaveSnapShot] sever %d , lastSSPindex %d, leader&#x27;s lastIncludeIndex %d&quot;</span>, rf.me, rf.last_snapshot_point_index, args.LastIncludeIndex)</span><br><span class="line">		rf.mu.Unlock()</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	index := args.LastIncludeIndex</span><br><span class="line">	tempLog := <span class="built_in">make</span>([]Entry, <span class="number">0</span>)</span><br><span class="line">	tempLog = <span class="built_in">append</span>(tempLog, Entry&#123;&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := index + <span class="number">1</span>; i &lt;= rf.get_last_index(); i++ &#123;</span><br><span class="line">		tempLog = <span class="built_in">append</span>(tempLog, rf.get_entry(i))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rf.last_snapshot_point_term = args.LastIncludeTerm</span><br><span class="line">	rf.last_snapshot_point_index = args.LastIncludeIndex</span><br><span class="line"></span><br><span class="line">	rf.log = tempLog</span><br><span class="line">	<span class="keyword">if</span> index &gt; rf.commit_index &#123;</span><br><span class="line">		rf.commit_index = index</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> index &gt; rf.last_applied &#123;</span><br><span class="line">		rf.last_applied = index</span><br><span class="line">	&#125;</span><br><span class="line">	rf.persister.SaveStateAndSnapshot(rf.persistData(), args.Data)</span><br><span class="line">	<span class="comment">//rf.persist()</span></span><br><span class="line"></span><br><span class="line">	msg := ApplyMsg&#123;</span><br><span class="line">		SnapshotValid: <span class="literal">true</span>,</span><br><span class="line">		Snapshot:      args.Data,</span><br><span class="line">		SnapshotTerm:  rf.last_snapshot_point_term,</span><br><span class="line">		SnapshotIndex: rf.last_snapshot_point_index,</span><br><span class="line">	&#125;</span><br><span class="line">	rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">	rf.applyCh &lt;- msg</span><br><span class="line">	DPrintf(<span class="string">&quot;[FollowerInstallSnapShot]server %d installsnapshot from leader %d, index %d&quot;</span>, rf.me, args.LeaderId, args.LastIncludeIndex)</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">leaderSendSnapShot</span><span class="params">(server <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	rf.mu.Lock()</span><br><span class="line">	DPrintf(<span class="string">&quot;[LeaderSendSnapShot]Leader %d (term %d) send snapshot to server %d, index %d&quot;</span>, rf.me, rf.cur_term, server, rf.last_snapshot_point_index)</span><br><span class="line">	ssArgs := InstallSnapshotArgs&#123;</span><br><span class="line">		rf.cur_term,</span><br><span class="line">		rf.me,</span><br><span class="line">		rf.last_snapshot_point_index,</span><br><span class="line">		rf.last_snapshot_point_term,</span><br><span class="line">		rf.persister.ReadSnapshot(),</span><br><span class="line">	&#125;</span><br><span class="line">	ssReply := InstallSnapshotReply&#123;&#125;</span><br><span class="line">	rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">	re := rf.sendSnapShot(server, &amp;ssArgs, &amp;ssReply)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !re &#123;</span><br><span class="line">		DPrintf(<span class="string">&quot;[InstallSnapShot ERROR] Leader %d don&#x27;t recive from %d&quot;</span>, rf.me, server)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> re == <span class="literal">true</span> &#123;</span><br><span class="line">		rf.mu.Lock()</span><br><span class="line">		<span class="keyword">if</span> rf.state != <span class="string">&quot;leader&quot;</span> || rf.cur_term != ssArgs.Term &#123;</span><br><span class="line">			rf.mu.Unlock()</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ssReply.Term &gt; rf.cur_term &#123;</span><br><span class="line">			rf.change_state(TO_FOLLOWER, <span class="literal">true</span>)</span><br><span class="line">			rf.mu.Unlock()</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">        <span class="comment">// leader更新该follower的match_index和next_index</span></span><br><span class="line">		DPrintf(<span class="string">&quot;[InstallSnapShot SUCCESS] Leader %d from sever %d&quot;</span>, rf.me, server)</span><br><span class="line">		rf.match_index[server] = ssArgs.LastIncludeIndex</span><br><span class="line">		rf.next_index[server] = ssArgs.LastIncludeIndex + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">		rf.mu.Unlock()</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\04\27\GFS\" rel="bookmark">Google File System</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Google File System》（2003，SOSP）</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\04\KVRaft-Lab3A总结\" rel="bookmark">KVRaft Lab3A总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3A 总结与备忘</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\06\05\KVRaft-Lab3B总结\" rel="bookmark">KVRaft Lab3B总结</a></div>
+        <div class="popular-posts-excerpt"><p><p> MIT-6.824 Lab3B 总结与备忘</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/05/30/Raft-Lab2C-2D%E6%80%BB%E7%BB%93/" title="Raft Lab2C-2D总结">https://thomas-li-sjtu.github.io/2022/05/30/Raft-Lab2C-2D总结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/28/Raft-Lab2B%E6%80%BB%E7%BB%93/" rel="prev" title="Raft Lab2B总结">
+      <i class="fa fa-chevron-left"></i> Raft Lab2B总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/30/ZooKeeper/" rel="next" title="ZooKeeper">
+      ZooKeeper <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF%E6%95%B4%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">思路整理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2C"><span class="nav-number">1.1.</span> <span class="nav-text">2C</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2D"><span class="nav-number">1.2.</span> <span class="nav-text">2D</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E4%BB%A3%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">关键代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2C-1"><span class="nav-number">2.1.</span> <span class="nav-text">2C</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2D-1"><span class="nav-number">2.2.</span> <span class="nav-text">2D</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

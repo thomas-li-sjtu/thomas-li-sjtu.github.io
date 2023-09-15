@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《统计学习方法》 阅读笔记 主要以监督学习为主，包括分类、标注和回归问题；讨论离散变量为主">
+<meta property="og:type" content="article">
+<meta property="og:title" content="统计学习方法">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="《统计学习方法》 阅读笔记 主要以监督学习为主，包括分类、标注和回归问题；讨论离散变量为主">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/3.PNG">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/4.PNG">
+<meta property="article:published_time" content="2021-01-08T09:58:08.000Z">
+<meta property="article:modified_time" content="2021-01-23T03:45:42.019Z">
+<meta property="article:author" content="Thomas-Li">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/3.PNG">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>统计学习方法 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          统计学习方法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-08 17:58:08" itemprop="dateCreated datePublished" datetime="2021-01-08T17:58:08+08:00">2021-01-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <font face="宋体">
+<font size="3">
+
+
+
+<ul>
+<li>《统计学习方法》 阅读笔记</li>
+<li>主要以监督学习为主，包括分类、标注和回归问题；讨论离散变量为主<a id="more"></a>
+
+</li>
+</ul>
+<h1 id="1-统计学习方法概论"><a href="#1-统计学习方法概论" class="headerlink" title="1. 统计学习方法概论"></a>1. 统计学习方法概论</h1><h2 id="1-1-统计学习"><a href="#1-1-统计学习" class="headerlink" title="1.1. 统计学习"></a>1.1. 统计学习</h2><ul>
+<li>目的：对数据进行预测和分析</li>
+<li>实现方式：<ul>
+<li>训练数据集合</li>
+<li>确定所有可能的模型假设空间（学习模型）</li>
+<li>确定学习策略</li>
+<li>实现求解最优模型的算法</li>
+<li>通过学习选择模型</li>
+<li>利用模型对数据进行预测</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-2-监督学习"><a href="#1-2-监督学习" class="headerlink" title="1.2. 监督学习"></a>1.2. 监督学习</h2><ul>
+<li>输入空间，特征空间，输出空间</li>
+<li>特征空间每一维对应一个特征</li>
+<li>模型定义在特征空间中</li>
+<li>对具体输入进行预测：$P(y|x)$或$y=f(x)$</li>
+</ul>
+<h2 id="1-3-统计学习三要素"><a href="#1-3-统计学习三要素" class="headerlink" title="1.3. 统计学习三要素"></a>1.3. 统计学习三要素</h2><ul>
+<li>模型，策略（评价模型的标准），算法</li>
+<li>损失函数和风险函数（期望损失）<ul>
+<li>0-1损失函数 $L(Y,f(X))=1,Y\neq f(X)$</li>
+<li>平方损失函数 $L(Y,f(X))=(Y-f(X))^2$</li>
+<li>绝对损失函数 $L(Y,f(X))=|Y-f(X)|$</li>
+<li>对数损失函数或对数似然损失函数 $L(Y,P(Y|X))=-logP(Y|X)$<ul>
+<li>损失函数越小，模型越好</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>经验风险最小化和结构风险最小化<ul>
+<li> 经验风险为模型关于训练集的平均损失</li>
+<li> 结构风险在经验风险上加上表示模型复杂度的惩罚项——防止过拟合<h2 id="1-4-模型评估和选择"><a href="#1-4-模型评估和选择" class="headerlink" title="1.4. 模型评估和选择"></a>1.4. 模型评估和选择</h2></li>
+</ul>
+</li>
+<li>训练误差和测试误差</li>
+<li>过拟合</li>
+<li>正则化<ul>
+<li>结构风险最小化：在经验风险上加一个正则化项<br>$$min_{f\in F}\frac{1}{N}\sum_{i=1}^N L(y_i,f(x_i))+\lambda J(f)$$</li>
+<li>$\lambda$不小于零，调整二者关系的系数</li>
+<li>正则化项：可以使参数向量的$L_1$或$L_2$范数</li>
+</ul>
+</li>
+<li>交叉验证<ul>
+<li>简单交叉验证</li>
+<li>$S$折交叉验证</li>
+<li>留一交叉验证<h2 id="1-5-生成模型和判别模型"><a href="#1-5-生成模型和判别模型" class="headerlink" title="1.5. 生成模型和判别模型"></a>1.5. 生成模型和判别模型</h2></li>
+</ul>
+</li>
+<li>生成模型：<ul>
+<li>由数据学习联合概率分布$P(X,Y)$</li>
+<li>求出条件概率分布$P(Y|X)$作为预测模型</li>
+<li>朴素贝叶斯，隐马尔可夫模型</li>
+<li>可还原联合概率分布，收敛速度快</li>
+<li>存在隐变量时只能用生成方法学习</li>
+</ul>
+</li>
+<li>判别模型：<ul>
+<li>由数据直接学习决策函数$f(X)$或$P(Y|X)$</li>
+<li>对给定的输入X，应该预测什么样的输出Y</li>
+<li>$k$近邻法，感知机，决策树，逻辑斯蒂回归模型，最大熵模型，支持向量机，提升方法，条件随机场</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-6-分类问题"><a href="#1-6-分类问题" class="headerlink" title="1.6. 分类问题"></a>1.6. 分类问题</h2><ul>
+<li>监督学习</li>
+<li>从数据中学习分类模型或分类决策函数</li>
+<li>精确率，召回率，$F_1$值（精确率和召回率的调和平均）</li>
+</ul>
+<h2 id="1-7-标注问题"><a href="#1-7-标注问题" class="headerlink" title="1.7. 标注问题"></a>1.7. 标注问题</h2><ul>
+<li>监督学习，是分类问题的推广</li>
+<li>输入为一个观测序列，输出一个标记序列或状态序列——可能的标记个数是有限的</li>
+<li>隐马尔可夫模型，条件随机场</li>
+<li>评价指标同上</li>
+</ul>
+<h2 id="1-8-回归问题"><a href="#1-8-回归问题" class="headerlink" title="1.8. 回归问题"></a>1.8. 回归问题</h2><ul>
+<li>监督学习</li>
+<li>预测输入变量和输出变量的关系——等价于函数拟合——一元回归与多元回归，线性回归和非线性回归</li>
+<li>常用损失函数为 平方损失函数</li>
+</ul>
+<h1 id="2-感知机"><a href="#2-感知机" class="headerlink" title="2. 感知机"></a>2. 感知机</h1><ul>
+<li>二分分类的线性分类模型（判别模型），输出为 -1 和 +1</li>
+<li>即，将特征空间中的实例划分为正负两类的超平面</li>
+<li>梯度下降法</li>
+</ul>
+<h2 id="2-1-感知机模型"><a href="#2-1-感知机模型" class="headerlink" title="2.1. 感知机模型"></a>2.1. 感知机模型</h2><ul>
+<li>$f(x)=sign(\pmb{w}\cdot\pmb{x}+b)$，$sign(x)=+1，x\geq0$</li>
+<li>$\pmb{w}\in R^n$ 称权值向量，作内积运算，$b\in R$称偏置</li>
+<li>$\pmb{w}$是超平面的法向量，$b$是超平面的截距</li>
+</ul>
+<h2 id="2-2-感知机学习策略"><a href="#2-2-感知机学习策略" class="headerlink" title="2.2. 感知机学习策略"></a>2.2. 感知机学习策略</h2><ul>
+<li>损失函数：$M$为错误分类点的集和<br>$$L(\pmb{w},b)=-\sum_{x_i\in M}y_i(\pmb{w}\cdot\pmb{x_i}+b)$$</li>
+<li>损失函数非负，选取使损失函数最小的模型参数——即模型</li>
+</ul>
+<h2 id="2-3-感知机学习算法"><a href="#2-3-感知机学习算法" class="headerlink" title="2.3. 感知机学习算法"></a>2.3. 感知机学习算法</h2><ul>
+<li><p>误分类驱动的随机梯度下降</p>
+</li>
+<li><p>首先随意选择一个超平面，之后用梯度下降法极小化损失函数——一次随机选取一个误分类点使其梯度下降:</p>
+<ul>
+<li><p>分别计算损失函数两个参数的梯度</p>
+</li>
+<li><p>随机选择一个误分类点$(x_i,y_i)$（或训练集中选取一个点带入模型进行计算，取小于等于0的点）</p>
+</li>
+<li><p>更新参数<br>$$w \leftarrow w+\eta y_ix_i$$<br>$$b \leftarrow b+\eta y_i$$</p>
+</li>
+<li><p>重复步骤直到训练集中没有误分类的点</p>
+</li>
+</ul>
+</li>
+<li><p>当训练集线性可分时，此算法的迭代时收敛的</p>
+</li>
+<li><p>当训练集不线性可分时，不收敛，结果震荡</p>
+</li>
+<li><p>存在很多解，这些解依赖于初值的选择和过程中误分类点的选择顺序——需要对分类超平面增加约束条件，以得到唯一的超平面（此即线性支持向量机）</p>
+</li>
+<li><p>对偶形式：</p>
+<ul>
+<li><p>将参数表示为实例$x_i$和标记$y_i$的线性组合形式，通过求解系数得到参数</p>
+</li>
+<li><p>$f(x)=sign(\sum_{j=1}^N\alpha_jy_jx_j\cdot\pmb{x}+b)$</p>
+</li>
+<li><p>模型参数为$\pmb{\alpha}=(\alpha_1,…,\alpha_n)^T$和$b$，迭代前赋初值为0</p>
+</li>
+<li><p>选取数据集中的点，如果$y_i{sign(\sum_{j=1}^N\alpha_jy_jx_j\cdot\pmb{x}+b) \leq0}$：<br>$$\alpha_i \leftarrow \alpha_i+\eta $$<br>$$b \leftarrow b+\eta y_i$$</p>
+</li>
+<li><p>迭代更新直到没有误分类数据</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="3-k近邻法"><a href="#3-k近邻法" class="headerlink" title="3. k近邻法"></a>3. k近邻法</h1><ul>
+<li>不具有显式的学习过程</li>
+<li>利用训练集对特征向量空间进行划分</li>
+<li>三要素：k值的选择、距离度量、分类决策规则</li>
+<li>不同的距离度量确定的最近邻点不同</li>
+</ul>
+<h2 id="3-1-k近邻算法"><a href="#3-1-k近邻算法" class="headerlink" title="3.1. k近邻算法"></a>3.1. k近邻算法</h2><ul>
+<li><p>输入训练数据集：$T={(x_1,y_1),(x_2,y_2),…,(x_n,y_n)}$，$x_i$为实例的特征向量，$y_i$为实例的类别。输出实例$x$所属的类别$y$</p>
+</li>
+<li><p>根据给定的距离度量，在训练集中找到与$x$最近的$k$个点，覆盖这些点的$x$的邻域为$N_k(x)$</p>
+</li>
+<li><p>根据分类决策规则（如多数表决）决定类别：<br>$$y={arg,\underset {c_j}{\operatorname {max}},\sum_{x_i\in N_k(x)}I(y_i=c_j)}$$</p>
+<p>其中$I$为指示函数，相等时$I$为1，否则为0</p>
+</li>
+<li><p>多数表决等价于经验风险最小化</p>
+</li>
+</ul>
+<h2 id="3-2-更快寻找近邻点：kd树"><a href="#3-2-更快寻找近邻点：kd树" class="headerlink" title="3.2. 更快寻找近邻点：kd树"></a>3.2. 更快寻找近邻点：kd树</h2><ul>
+<li>最简单的方法是线性扫描。计算输入实例与每个训练实例的距离</li>
+<li>$kd$树为二叉树，不断用垂直于坐标轴的超平面将$k$维空间切分，使得树的每一个节点对应于一个$k$维超矩形区域</li>
+<li>构造平衡$kd$树： <ul>
+<li>输入$k$维空间数据集$T$，输出$kd$树</li>
+<li>构造根节点，根节点对应于包含$T$的$k$维空间的超矩形区域。选择第一维为坐标轴，以数据集所有实例的第一维坐标的中位数作为切分点，将根节点对应的区域切分为两个区域，切分的超平面与坐标轴垂直。从而生成深度为 1 的左右子节点，将落在中位数上的实例保存在根节点</li>
+<li>重复：对深度为$j$的结点，选择第$l$维为切分的坐标轴，其中$l=(jmodk)+1$，重复下去。生成深度为$j+1$的左右子结点。</li>
+<li>直到两个子区域没有实例存在时停止 </li>
+</ul>
+</li>
+<li>搜索算法： <ul>
+<li>输入已构造的$kd$树，目标点$x$ ，输出$x$的最近邻 </li>
+<li>在 kd 树中找出包含目标点$x$的叶结点：从根出发，递归向下访问$kd$树，若$x$当前维坐标小于切分点坐标则移动到左结点，反之右结点，直到叶子节点 </li>
+<li>以此叶节点为当前最近点</li>
+<li>递归向上回退，对每个结点：<ul>
+<li>若当前节点保存的实例点距离更近，则以当前节点的实例点为当前最近点</li>
+<li>对当前最近点检查该节点的兄弟节点，是否有更近的点：兄弟结点对应的区域，是否与以目标点为球心、以目标点和当前最近点间距离为半径的超球体相交<ul>
+<li>若相交则移动到另一个子结点进行最近邻搜索</li>
+<li>不相交则向上回退</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>回到根节点时搜索结束，最后的当前最近点为$x$的最近邻点</li>
+</ul>
+</li>
+<li>适用于训练实例数远大于空间维数时</li>
+</ul>
+<h1 id="4-朴素贝叶斯"><a href="#4-朴素贝叶斯" class="headerlink" title="4. 朴素贝叶斯"></a>4. 朴素贝叶斯</h1><h2 id="4-1-学习与分类"><a href="#4-1-学习与分类" class="headerlink" title="4.1. 学习与分类"></a>4.1. 学习与分类</h2><ul>
+<li>通过训练集学习联合概率分布$P(X,Y)$</li>
+<li>后验概率最大化，即期望风险最小化</li>
+<li>作条件独立性假设</li>
+<li>对给定的输入$x$，通过学习到的模型计算后验概率分布$P(Y=c_k|X=x)$，取后验概率最大的类作为输出<br>$$y=f(x)=arg,\underset {c_k}{\operatorname{max}},\frac{P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum_kP(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)} ，即arg,\underset {c_k}{\operatorname{max}},P(Y=c_k)\prod_j P(X^{(j)}=x^{(j)}|Y=c_k)$$</li>
+</ul>
+<h2 id="4-2-参数估计"><a href="#4-2-参数估计" class="headerlink" title="4.2. 参数估计"></a>4.2. 参数估计</h2><ul>
+<li><p>$a_{jl}$为第$j$个特征可能取的第$l$个值，$j=1,…,n$，$l=1,…,S_j$；$x_i^{(j)}$是第$i$个样本的第$j$个特征</p>
+</li>
+<li><p>计算先验概率及条件概率<br>$$P(Y=c_k)=\frac{\sum_{i=1}^NI(y_i=c_k)}{N}$$<br>$$P(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum_{i=1}^NI(x^{(j)}=a_{jl},y_i=c_k)}{\sum_{i=1}^NI(y_i=c_k)}$$</p>
+</li>
+<li><p>对于给定的实例，计算各个类的后验概率</p>
+</li>
+<li><p>取后验概率最大的作为实例$x$的类</p>
+</li>
+<li><p>拉普拉斯平滑：<br>  $$P_\lambda(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum_{i=1}^NI(x^{(j)}=a_{jl},y_i=c_k)+\lambda}{\sum_{i=1}^NI(y_i=c_k)+S_j\lambda}$$</p>
+</li>
+</ul>
+<h1 id="5-决策树"><a href="#5-决策树" class="headerlink" title="5. 决策树"></a>5. 决策树</h1><h2 id="5-1-决策树模型与学习"><a href="#5-1-决策树模型与学习" class="headerlink" title="5.1. 决策树模型与学习"></a>5.1. 决策树模型与学习</h2><ul>
+<li>内部节点表示一个特征，叶节点表示一个类</li>
+<li>损失函数通常为正则化的极大似然函数，学习策略为最小化损失函数</li>
+<li>训练集放在根节点，选择最优特征将训练集划分为子集，使子集有一个在当前条件下的最好分类。继续选择新的最优特征进行分类，直至训练子集都被正确分类</li>
+<li>剪枝</li>
+<li>生成考虑局部最优，剪枝考虑全局最优</li>
+</ul>
+<h2 id="5-2-特征选择"><a href="#5-2-特征选择" class="headerlink" title="5.2. 特征选择"></a>5.2. 特征选择</h2><ul>
+<li><p>特征选择准则：信息增益和信息增益比</p>
+</li>
+<li><p>信息增益：</p>
+<ul>
+<li><p>熵与条件熵</p>
+</li>
+<li><p>信息增益：训练集中，类与特征的互信息（$A$为一个特征）<br>$$g(D,A)=H(D)-H(D|A)$$</p>
+</li>
+<li><p>信息增益比：信息增益/训练集类的熵</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-3-决策树生成"><a href="#5-3-决策树生成" class="headerlink" title="5.3. 决策树生成"></a>5.3. 决策树生成</h2><h3 id="5-3-1-ID3"><a href="#5-3-1-ID3" class="headerlink" title="5.3.1. ID3"></a>5.3.1. ID3</h3><ul>
+<li>输入：训练集$D$，特征集$A$，阈值$\varepsilon$</li>
+<li>输出：决策树$T$</li>
+<li>若所有实例属于同一类，则为单结点树</li>
+<li>若$A$为空，则$T$为单节点树，取实例数最多的类作为该结点的类标记</li>
+<li>计算$A$中各特征对$D$的信息增益，选择信息增益最大的特征$A_g$。信息增益：<ul>
+<li>小于$\varepsilon$，则为$T$为单结点树，取实例数最多的类作为该结点的类标记</li>
+<li>不小于阈值：根据$A_g$每一可能值$a_i$，划分数据集$D_i$</li>
+</ul>
+</li>
+<li>对第$i$个子节点，以$D_i$为训练集，$A-A_g$为特征集，重复以上步骤</li>
+</ul>
+<h3 id="5-3-2-C4-5"><a href="#5-3-2-C4-5" class="headerlink" title="5.3.2. C4.5"></a>5.3.2. C4.5</h3><ul>
+<li>基本同上，用信息增益比选择特征</li>
+</ul>
+<h2 id="5-4-剪枝"><a href="#5-4-剪枝" class="headerlink" title="5.4. 剪枝"></a>5.4. 剪枝</h2><ul>
+<li><p>极小化决策树整体的损失函数</p>
+<ul>
+<li>$t$为叶结点，包含$N_t$个样本点，其中$k$类样本有$N_{tk}$个，$\alpha \geq0$控制拟合程度和模型复杂度之间的影响</li>
+</ul>
+<p>$$经验熵：H_t{(T)}=-\sum_k\frac{N_{tk}}{N_t}log\frac{N_{tk}}{N_t}$$</p>
+<p>$$损失函数：C_\alpha(T)=\sum_{t=1}^{|T|}N_tH_t{(T)}+\alpha|T|=C(T)+\alpha|T|$$</p>
+</li>
+<li><p>算法：</p>
+<ul>
+<li>计算每个结点的经验熵</li>
+<li>设一组叶结点回缩到父节点之前与之后的损失函数值分别是$C_\alpha(T_A)$与$C_\alpha(T_B)$，若前者更小，则父节点变为新的叶结点</li>
+<li>重复到不能继续</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-5-Cart"><a href="#5-5-Cart" class="headerlink" title="5.5. Cart"></a>5.5. Cart</h2><ul>
+<li>假设决策树是二叉树，内部节点特征取值为是和否</li>
+<li>回归树：平方误差最小化</li>
+<li>分类树：基尼指数最小化</li>
+</ul>
+<h1 id="6-逻辑斯蒂回归与最大熵模型"><a href="#6-逻辑斯蒂回归与最大熵模型" class="headerlink" title="6. 逻辑斯蒂回归与最大熵模型"></a>6. 逻辑斯蒂回归与最大熵模型</h1><ul>
+<li>均为对数线性回归模型</li>
+</ul>
+<h2 id="6-1-逻辑斯蒂-logistic-回归模型"><a href="#6-1-逻辑斯蒂-logistic-回归模型" class="headerlink" title="6.1. 逻辑斯蒂(logistic)回归模型"></a>6.1. 逻辑斯蒂(logistic)回归模型</h2><ul>
+<li><p>逻辑斯蒂分布</p>
+<ul>
+<li><p>$X$为连续随机变量，$\mu$为位置参数，$\gamma &gt;0$ 为形状参数</p>
+</li>
+<li><p>分布函数：<br>  $$F(X)=P(X\leq x)=\frac{1}{1+e^{-(x-\mu)/\gamma}}$$</p>
+<ul>
+<li>关于点$(\mu,\frac{1}{2})$对称</li>
+<li>形状参数越小，在中心附近增长越快</li>
+</ul>
+</li>
+<li><p>密度函数：</p>
+<p>  $$f(X)=P(X\leq x)=\frac{e^{-(x-\mu)/\gamma}}{\gamma(1+e^{-(x-\mu)/\gamma})^2}$$</p>
+<ul>
+<li>关于y轴对称</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>二项逻辑斯蒂回归模型</p>
+<ul>
+<li><p>分类模型<br>$$P(Y=1|x)=\frac{exp(w\cdot x+b)}{1+w\cdot x+b}$$<br>$$P(Y=0|x)=\frac{1}{1+w\cdot x+b}$$</p>
+</li>
+<li><p>$x$是输入，$Y\in {0,1}$是输出，$w$称权值向量，$b$称偏置</p>
+</li>
+<li><p>将实例分到概率值较大的一类</p>
+</li>
+</ul>
+</li>
+<li><p>参数估计：</p>
+<ul>
+<li>对数似然函数（训练数据有N组）</li>
+</ul>
+<p>$$L(w)=\sum_{i=1}^N[y_i(w\cdot x_i)-log(1+exp(w\cdot x_i))]$$</p>
+<ul>
+<li>对上式求极大值，得$w$的估计值</li>
+</ul>
+</li>
+<li><p>多项逻辑斯蒂回归：</p>
+<ul>
+<li>离散随机变量$Y$有$K$个取值<br>$$P(Y=k|x)=\frac{exp(w_k\cdot x+b)}{1+\sum_{k=1}^{K-1}w\cdot x+b}$$<br>$$P(Y=K|x)=\frac{1}{1+\sum_{k=1}^{K-1}w_k\cdot x+b}$$</li>
+</ul>
+</li>
+</ul>
+<h2 id="6-2-最大熵原理"><a href="#6-2-最大熵原理" class="headerlink" title="6.2. 最大熵原理"></a>6.2. 最大熵原理</h2><ul>
+<li>学习概率模型时，在所有可能的概率模型中，熵最大模型是最好的模型</li>
+<li>引入拉格朗日乘子$w_0,…,w_n$，定义拉格朗日函数，得：<ul>
+<li>$w_i$为特征的权值，$f_i(x,y)$为特征函数：当$x$和$y$满足某一事实时取值为1，否则为0<br>$$P(y|x)=\frac{1}{Z_w(x)}exp(\sum_{i=1}^nw_if_i(x,y))$$<br>$$Z_w(x)=\sum_yexp(\sum_{i=1}^nw_if_i(x,y))，规范化因子$$</li>
+</ul>
+</li>
+</ul>
+<h2 id="6-3-最优化算法"><a href="#6-3-最优化算法" class="headerlink" title="6.3. 最优化算法"></a>6.3. 最优化算法</h2><ul>
+<li><p>改进的迭代尺度法</p>
+<ul>
+<li><p>最大熵模型的对数似然函数：$L(w)=\sum_{x,y}\widetilde{P}(x,y)\sum_{i=1}^nw_if_i(x,y)-\sum_x\widetilde{P}(x)logZ_w(x)$</p>
+</li>
+<li><p>$\widetilde{P}(x,y)$为训练数据的经验概率分布</p>
+</li>
+<li><p>希望找到新的参数向量$\pmb{w}=(w_1,…,w_n)^T$，使得模型的对数似然函数值增大</p>
+</li>
+<li><p>算法：</p>
+<ul>
+<li><p>输入：特征函数$f_1,…,f_n$；经验分布$\widetilde{P}(x,y)$；模型$P_w(y|x)$</p>
+</li>
+<li><p>输出：最优参数值${w_i}^*$，最优模型$P_{w^*}$</p>
+</li>
+<li><p>取初值$w_i=0$</p>
+</li>
+<li><p>$\delta_i$是方程$\sum_{x,y}\widetilde{P}(x)P(y|x)f_i(x,y)exp(\delta_i\sum_{i=1}^nf_i(x,y))=\sum_{x,y}\widetilde{P}(x,y)f_i(x,y)$的解</p>
+</li>
+<li><p>更新$w_i\leftarrow w_i+\delta_i$</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>拟牛顿法</p>
+</li>
+<li><p>梯度下降法</p>
+</li>
+</ul>
+<h1 id="7-支持向量机"><a href="#7-支持向量机" class="headerlink" title="7. 支持向量机"></a>7. 支持向量机</h1><ul>
+<li>训练数据线性可分：硬间隔最大化，学习线性分类器</li>
+<li>训练数据近似线性可分：软间隔最大化，学习线性分类器</li>
+<li>训练数据线性不可分：核技巧和软间隔最大化，学习非线性支持向量机</li>
+<li>核函数：输入空间为欧氏空间或离散集合，特征空间为希尔伯特空间，将输入映射成的特征向量之间的内积</li>
+</ul>
+<h2 id="7-1-线性可分支持向量机与硬间隔最大化"><a href="#7-1-线性可分支持向量机与硬间隔最大化" class="headerlink" title="7.1. 线性可分支持向量机与硬间隔最大化"></a>7.1. 线性可分支持向量机与硬间隔最大化</h2><h3 id="7-1-1-线性可分支持向量机"><a href="#7-1-1-线性可分支持向量机" class="headerlink" title="7.1.1. 线性可分支持向量机"></a>7.1.1. 线性可分支持向量机</h3><ul>
+<li>二类分类问题</li>
+<li>假设输入空间和特征空间的元素一一对应，支持向量机将输入映射为特征向量——在特征空间进行学习，希望找到一个超平面</li>
+<li>训练数据集：$T={(x_1,y_1),(x_2,y_2),…,(x_N,y_N)}$，$x_i$为第$i$个特征向量，$y_i$为类标记</li>
+<li>数据集线性可分：存在某个超平面将数据集的正实例点和负实例点完全正确地划分到超平面两侧</li>
+<li>线性可分支持向量机：<ul>
+<li>分类超平面 $w^* \cdot x + b^*=0$</li>
+<li>分类决策函数$f(x)=sign(w^<em>\cdot x+b^</em>)$</li>
+<li>将两类数据正确划分且间隔最大</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-1-2-函数间隔与几何间隔"><a href="#7-1-2-函数间隔与几何间隔" class="headerlink" title="7.1.2. 函数间隔与几何间隔"></a>7.1.2. 函数间隔与几何间隔</h3><ul>
+<li>函数间隔：给定训练集和超平面，定义函数间隔为$\hat{y_i}=y_i(w\cdot x_i+b)$，超平面关于训练集的函数间隔为所有关于样本点的函数间隔最小值 </li>
+<li>几何间隔：给定训练集和超平面，<ul>
+<li>超平面关于样本点的几何间隔为：$\gamma_i=y_i(\frac{w}{||w||}\cdot x_i+\frac{b}{||w||})$，$||w||$为$w$的$L_2$范数</li>
+<li>超平面关于训练集的几何间隔为所有关于样本点几何间隔的最小值</li>
+</ul>
+</li>
+</ul>
+<h2 id="7-2-间隔最大化"><a href="#7-2-间隔最大化" class="headerlink" title="7.2. 间隔最大化"></a>7.2. 间隔最大化</h2><ul>
+<li><p>输入：线性可分数据集</p>
+</li>
+<li><p>输出：最大间隔分离超平面和分类决策函数</p>
+</li>
+<li><p>求解约束最优化问题：<br>$$\underset{w,b}{min} \frac{1}{2}||w||^2，s.t.y_i(w\cdot x_i+b)-1\geq 0$$<br>得最优解$w^*$、$b^*$</p>
+</li>
+<li><p>支持向量：线性可分时，样本点与超平面距离最近的样本点实例（使等号成立的点）</p>
+</li>
+<li><p>利用拉格朗日乘子法，构造并求解约束最优化问题：<br>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i\cdot x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，\alpha_i\geq 0$$</p>
+<p>求得最优解$\alpha^*=(\alpha_1^*,…,\alpha_N^*)^T$</p>
+<ul>
+<li>$w^* = \sum_{i=1}^N\alpha_i^* y_ix_i$，并选择一个$\alpha^*$的一个正分量$\alpha_j^* $计算$b^*=y_j-\sum_{i=1}^N\alpha_i^* y_i(x_i \cdot x_j)$</li>
+</ul>
+</li>
+</ul>
+<h2 id="7-3-线性支持向量机与软间隔最大化"><a href="#7-3-线性支持向量机与软间隔最大化" class="headerlink" title="7.3. 线性支持向量机与软间隔最大化"></a>7.3. 线性支持向量机与软间隔最大化</h2><h3 id="7-3-1-线性支持向量机"><a href="#7-3-1-线性支持向量机" class="headerlink" title="7.3.1. 线性支持向量机"></a>7.3.1. 线性支持向量机</h3><p>将数据中的一些特异点取出，剩余的样本点线性可分  </p>
+<ul>
+<li><p>由对样本点引入松弛变量 $\xi_i\geq0$，约束条件：<br>$$y_i(w\cdot x_i+b\geq1-\xi_i)$$</p>
+</li>
+<li><p>同样的，对每个松弛变量支付一个代价，目标函数变为<br>$$\frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i$$</p>
+</li>
+<li><p>$C$为惩罚参数，较大时对误分类的惩罚增加</p>
+</li>
+<li><p>即：$\underset{w,b,\xi}{min} \frac{1}{2}||w||^2+C\sum_{i=1}^N\xi_i，s.t.y_i(w\cdot x_i+b\geq1-\xi_i)$</p>
+</li>
+</ul>
+<h3 id="7-3-2-学习算法"><a href="#7-3-2-学习算法" class="headerlink" title="7.3.2. 学习算法"></a>7.3.2. 学习算法</h3><ul>
+<li><p>选择惩罚参数$C$，构造二次规划问题：</p>
+<p>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_j(x_i\cdot x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，C\geq \alpha_i\geq 0$$</p>
+<p>求得最优解$\alpha^*=(\alpha_1^*,…,\alpha_N^*)^T$</p>
+</li>
+<li><p>$w^* = \sum_{i=1}^N\alpha_i^* y_ix_i$，选择一个$\alpha^*$的一个分量$0&lt;\alpha_j^* &lt;C$计算$b^* = y_j-\sum_{i=1}^N\alpha_i^* y_i(x_i\cdot x_j)$</p>
+</li>
+</ul>
+<h2 id="7-4-非线性支持向量机与核函数"><a href="#7-4-非线性支持向量机与核函数" class="headerlink" title="7.4. 非线性支持向量机与核函数"></a>7.4. 非线性支持向量机与核函数</h2><h3 id="7-4-1-核技巧"><a href="#7-4-1-核技巧" class="headerlink" title="7.4.1. 核技巧"></a>7.4.1. 核技巧</h3><ul>
+<li>通过非线性变换将输入空间对应于一个特征空间，超曲面模型对应于超平面模型，通过在特征空间中求解线性支持向量机</li>
+<li>核函数：存在一个从欧氏空间$X$到希尔伯特空间$H$的映射函数$\phi(x)$，函数$K(x,z)=\phi(x)\cdot \phi(z)$，所有$x,z\in X$，则$K(x,z)$为核函数</li>
+</ul>
+<h3 id="7-4-2-正定核"><a href="#7-4-2-正定核" class="headerlink" title="7.4.2. 正定核"></a>7.4.2. 正定核</h3><ul>
+<li>设$K$是对称函数，$K(x,z)$为正定核函数$&lt;=&gt;$对应的 Gram 矩阵$K=[K(x_i,x_j)]_{m\times n}$为半正定矩阵</li>
+</ul>
+<h3 id="7-4-3-常用核函数"><a href="#7-4-3-常用核函数" class="headerlink" title="7.4.3. 常用核函数"></a>7.4.3. 常用核函数</h3><ul>
+<li>多项式核函数</li>
+<li>高斯核函数</li>
+<li>字符串核函数</li>
+<li>将线性支持向量机对偶形式中的内积换成核函数</li>
+</ul>
+<h2 id="7-5-序列最小最优化算法"><a href="#7-5-序列最小最优化算法" class="headerlink" title="7.5. 序列最小最优化算法"></a>7.5. 序列最小最优化算法</h2><ul>
+<li><p>解此问题：</p>
+<p>$$\underset{\alpha}{min} \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N\alpha_i\alpha_jy_iy_jK(x_i,x_j)-\sum_{i=1}^N\alpha_i，s.t.\sum_{i=1}^N\alpha_iy_i=0，C\geq \alpha_i\geq 0$$</p>
+</li>
+<li><p>变量是拉格朗日乘子，一个变量对应一个样本点</p>
+</li>
+<li><p>SMO算法：</p>
+<ul>
+<li>输入：训练集，精度$\varepsilon$</li>
+<li>输出：近似解$\hat{\alpha}$</li>
+</ul>
+<ol>
+<li>取初值$\alpha^{(0)}=0$，令$k=0$</li>
+<li>取优化变量 $\alpha_1^{(k)},\alpha_2^{(k)}$，解析求解两个变量的最优化问题，得到最优解$\alpha_1^{(k+1)},\alpha_2^{(k+1)}$，更新$\alpha$为$\alpha^{(k+1)}$</li>
+<li>若在精度范围内满足：<br>$$\sum_{i=1}^N\alpha_iy_i=0 \ y_i\cdot g(x_i)\geq 1,{x_i|\alpha_i=0}  =1, \ {x_i|0&lt;\alpha_i&lt;C}\leq1, \ {x_i|\alpha_i=C} \ g(x_i)=\sum_{j=1}^N\alpha_jy_jK(x_j,x_i)+b$$<br>则取$\hat{\alpha} =\alpha^{(k+1)}$</li>
+</ol>
+</li>
+</ul>
+<h1 id="8-提升方法"><a href="#8-提升方法" class="headerlink" title="8. 提升方法"></a>8. 提升方法</h1><ul>
+<li>改变训练样本的权重，学习多个分类器并进行线性组合，提高分类性能</li>
+</ul>
+<h2 id="8-1-AdaBoost算法"><a href="#8-1-AdaBoost算法" class="headerlink" title="8.1. AdaBoost算法"></a>8.1. AdaBoost算法</h2><ul>
+<li><p>二分类的训练数据集，从训练数据中学习一系列弱分类器或基本分类器，并将其线性组合成一个强分类器</p>
+</li>
+<li><p>算法：</p>
+<ul>
+<li>输入：二分类训练集，弱学习算法</li>
+<li>输出：最终分类器$G(x)$</li>
+</ul>
+<ol>
+<li><p>初始化训练数据的权值分布$D_1=(w_{11},…,w_{1N}),w_{1i}=\frac{1}{N}$</p>
+</li>
+<li><p>对$m=1,…,M$:</p>
+<ol>
+<li>使用具有权值分布$D_m$的训练集学习，得基本分类器$G_m(x)$</li>
+<li>计算$G_m(x)$在训练集上的分类误差率$e_m=P(G_m(x_i)\neq y_i)$</li>
+<li>$G_m(x)$系数$\alpha_m=\frac{1}{2}log\frac{1-e_m}{e_m}$，底数为自然对数</li>
+<li>更新权值分布$D_{m+1}=(w_{m+1,1},…w_{m+1,N})$，$w_{m+1,i}=\frac{w_{mi}}{Z_m}exp(-\alpha_my_iG_m(x_i))$，其中$Z_m=\sum_{i=1}^Nw_{mi}exp(-\alpha_my_iG_m(x_i))$为规范化因子</li>
+</ol>
+</li>
+<li><p>得到最终分类器$G(x)=sign(\sum_{m=1}^M\alpha_mG_m(x))$</p>
+</li>
+</ol>
+<ul>
+<li>$w_{m+1,i}=\begin{Bmatrix} \frac{w_{mi}}{Z_m}e^{-\alpha_m},G_m(x_i)=y_i \ \frac{w_{mi}}{Z_m}e^{\alpha_m},G_m(x_i)\neq y_i\ \end{Bmatrix}\quad$</li>
+</ul>
+</li>
+</ul>
+<h2 id="8-2-提升树"><a href="#8-2-提升树" class="headerlink" title="8.2. 提升树"></a>8.2. 提升树</h2><ul>
+<li>以分类树或回归树为基本分类器</li>
+<li>表示为$M$个决策树的加法模型$f_M(x)=\sum_{m=1}^MT(x;\theta_m)$，其中$T(x;\theta_m)$为决策树，$\theta_m$为决策树参数</li>
+</ul>
+<h3 id="8-2-1-提升树算法"><a href="#8-2-1-提升树算法" class="headerlink" title="8.2.1. 提升树算法"></a>8.2.1. 提升树算法</h3><ul>
+<li><p>采用前向分步算法。初始提升树$f_0(x)=0$</p>
+</li>
+<li><p>第$m$步模型为$f_m(x)=f_{m-1}(x)+T(x;\theta_m)$</p>
+</li>
+<li><p>通过经验风险最小化确定下一棵决策树的参数$\hat{\theta_m}=arg\underset{\theta_m}{min} \sum_{i=1}^NL(y_i,f_{m-1}(x_i)+T(x_i;\theta_m))$</p>
+</li>
+<li><p>回归问题的提升树算法</p>
+<ul>
+<li>输入：训练数据</li>
+<li>输出：提升树$f_M(x)$</li>
+</ul>
+<ol>
+<li>计算残差$r_{mi}=y_i-f_{m-1}(x_i),i=1,…,N$</li>
+<li>拟合残差得回归树$T(x;\theta_m)$</li>
+<li>更新$f_m(x)=f_{m-1}(x)+T(x;\theta_m)$</li>
+</ol>
+</li>
+</ul>
+<h3 id="8-2-2-梯度提升"><a href="#8-2-2-梯度提升" class="headerlink" title="8.2.2. 梯度提升"></a>8.2.2. 梯度提升</h3><ul>
+<li><p>对一般的损失函数进行优化</p>
+</li>
+<li><p>算法：</p>
+<ul>
+<li>输入：训练集($N$个数据)，损失函数$L(y,f(x))$</li>
+<li>输出：回归树$f(x)$</li>
+</ul>
+<ol>
+<li><p>初始化<br>$$f_0(x)=arg\underset{c}{min} \sum_{i=1}^NL(y_i,c)$$ </p>
+</li>
+<li><p>对$m=1,…,M$</p>
+<ol>
+<li><p>对$i=1,…,N$</p>
+<p>   $$r_{mi}=-[\frac{\partial L(y_i,f(x_i))}{\partial f(x_i)}]<em>{f(x)=f</em>{m-1}(x)}$$</p>
+</li>
+<li><p>对$r_{mi}$拟合一个回归树，得第$m$棵树的叶结点区域$R_{mj},j=1,…,J$</p>
+</li>
+<li><p>对$j$<br>   $c_{mj}=arg\underset{c}{min} \sum_{x_i\in R_{mj}}L(y_i,f_{m-1}(x_i)+c)$</p>
+</li>
+<li><p>更新$f_m(x)=f_{m-1}(x)+\sum_{j=1}^Jc_{mj}I(x\in R_{mj})$</p>
+</li>
+<li><p>得回归树$\hat{f(x)}=\sum_{m=1}^M\sum_{j=1}^Jc_{mj}I(x\in R_{mj})$</p>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li><p>初始化，估计使损失函数极小化的常数值；计算损失函数的负梯度在当前模型的值，作为残差得估计；估计回归树叶结点区域，以拟合残差近似值；利用线性搜索估计叶结点区域的值，最小化损失函数；更新回归树</p>
+</li>
+</ul>
+<h1 id="9-EM算法及其推广"><a href="#9-EM算法及其推广" class="headerlink" title="9. EM算法及其推广"></a>9. EM算法及其推广</h1><ul>
+<li>用于含有隐变量的概率模型参数的极大似然估计</li>
+<li>求期望，求极大</li>
+</ul>
+<h2 id="9-1-EM算法"><a href="#9-1-EM算法" class="headerlink" title="9.1. EM算法"></a>9.1. EM算法</h2><ul>
+<li>三硬币模型：先抛硬币A，由A决定抛B或C，记录抛B或C的结果，如何估计三硬币正面出现的概率？</li>
+<li>$Y$代表观测随机变量的数据（也称不完全数据），$Z$代表隐随机变量的数据（不可观测），$\theta$为需要估计的模型参数，则对数似然函数为$L(\theta)=logP(Y|\theta)$，联合概率分布$P(Y,Z|\theta)$，完全数据对数似然函数$logP(Y,Z|\theta)$</li>
+<li>EM算法<ul>
+<li>迭代求$L(\theta)=logP(Y|\theta)$</li>
+<li>输入：观测变量数据$Y$，隐变量数据$Z$，联合分布$P(Y,Z|\theta)$，条件分布$P(Z|Y,\theta)$</li>
+<li>输出：模型参数$\theta$</li>
+</ul>
+<ol>
+<li>选择参数初值$\theta^{(0)}$</li>
+<li>E步：记$\theta_{(i)}$为第$i$次迭代参数$\theta$的估计值，在第$i+1$步迭代时：<br>$$Q(\theta,\theta^{(i)})=E_Z[logP(Y,Z|\theta)|Y,\theta^{(i)}]=\sum_ZlogP(Y,Z|\theta)P(Z|Y,\theta^{(i)})$$这里$P(Z|Y,\theta^{(i)})$为给定观测数据$Y$和当前参数估计$\theta_{(i)}$下隐变量数据的条件概率分布</li>
+<li>M步：$\theta_{(i+1)}=arg\underset{\theta}{max} Q(\theta,\theta^{(i)})$</li>
+<li>重复直到收敛</li>
+</ol>
+</li>
+<li>$Q$函数：$Q(\theta,\theta^{(i)})$是核心</li>
+<li>EM算法对初值敏感</li>
+<li>一般停止迭代的条件为$||\theta_{(i+1)}-\theta_{(i)}||&lt;\varepsilon_1$</li>
+</ul>
+<h2 id="9-2-学习高斯混合模型"><a href="#9-2-学习高斯混合模型" class="headerlink" title="9.2. 学习高斯混合模型"></a>9.2. 学习高斯混合模型</h2><ul>
+<li><p>高斯混合模型指如下形式的概率分布模型：$P(y|\theta)=\sum_{k=1}^K\alpha_k\phi(y|\theta_k)$其中$\alpha_k\geq0$是系数，$\sum_{(k=1)}^K\alpha_k=1$,$\phi(y|\theta_k)$为高斯分布密度，称为第$k$个分模型，$\theta_k=(\mu_k,\sigma_k^2)$</p>
+</li>
+<li><p>一般的混合 模型可以用任意的概率分布密度代替高斯分布密度</p>
+</li>
+<li><p>高斯混合模型参数估计的EM算法</p>
+<ul>
+<li>明确隐变量</li>
+<li>确定$Q$函数</li>
+<li>确定 M 步</li>
+<li>算法：<ul>
+<li>输入：观测数据$y_1,…,y_N$，高斯混合模型</li>
+<li>输出：高斯混合模型的参数</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li><p>取参数初始值迭代</p>
+</li>
+<li><p>E步：依据当前模型参数，得分模型$k$对观测数据$y_j$的响应度$\hat{\gamma}_{jk} =\frac{\alpha_k\phi(y_j|\theta_k)}{\sum_{k=1}^K\alpha_k\phi  (y_j|\theta_k)},j=1,…,N;k=1,…,K$</p>
+</li>
+<li><p>M步：新一轮迭代的模型参数<br> $$\hat{\mu}<em>k = \frac{\sum</em>{j=1}^N\hat{\gamma}<em>{jk}y_j}{\sum_{j=1}^N\hat{\gamma}</em>{jk}},k=1,…,K$$</p>
+<p> $$\hat{\sigma}<em>k^2=\frac{\sum</em>{j=1}^N\hat{\gamma}<em>{jk}(y_j-\mu_k)^2}{\sum</em>{j=1}^N\hat{\gamma}_{jk}},k=1,…,K$$</p>
+<p> $$\hat{\alpha}<em>k=\frac{\sum</em>{j=1}^N\hat{\gamma}_{jk}}{N}$$</p>
+</li>
+<li><p>重复，直到收敛</p>
+</li>
+</ol>
+</li>
+</ul>
+<h2 id="9-3-EM算法的推广"><a href="#9-3-EM算法的推广" class="headerlink" title="9.3. EM算法的推广"></a>9.3. EM算法的推广</h2><ul>
+<li><p>$F$函数：$F(\widetilde{P},\theta)=E_{\widetilde{P}}[logP(Y,Z|\theta)]+H(\widetilde{P})$</p>
+<ul>
+<li>隐变量数据$Z$的概率分布为$\widetilde{P}(Z)$，参数为$\theta$</li>
+<li>$H(\widetilde{P})$是分布$\widetilde{P}(Z)$的熵</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-3-1-GEM算法"><a href="#9-3-1-GEM算法" class="headerlink" title="9.3.1. GEM算法"></a>9.3.1. GEM算法</h3><ul>
+<li><p>$GEM$算法1</p>
+<ul>
+<li>输入：观测数据，$F$函数</li>
+<li>输出：模型参数</li>
+</ul>
+<ol>
+<li>初始化参数$\theta^{(0)}$</li>
+<li>第$i+1$次迭代<ol>
+<li>记$\theta^{(i)}$为参数的估计值，$\hat{P}^{(i)}$为$\hat{P}$的估计，求$\hat{P}^{(i+1)}$使$\hat{P}$极大化$F(\hat{P},\theta^{(i)})$</li>
+<li>求$\theta^{(i+1)}$使$F(\hat{P}^{(i+1)},\theta)$极大化</li>
+</ol>
+</li>
+<li>重复，直到收敛</li>
+</ol>
+</li>
+<li><p>$GEM$算法2</p>
+<ul>
+<li>不直接求极大化$Q(\theta,\theta^{(i)})$的$\theta$，而是逐步逼近</li>
+<li>输入：观测数据，$Q$函数</li>
+<li>输出：模型参数</li>
+</ul>
+<ol>
+<li>初始化参数$\theta^{(0)}$</li>
+<li>第$i+1$次迭代<ol>
+<li>记$\theta^{(i)}$为参数的估计值，$Q(\theta,\theta^{(i)})=\sum_ZP(Z|Y,\theta^{(i)})logP(Y,Z|\theta)$</li>
+<li>求$\theta^{(i+1)}$使$Q(\theta^{(i+1)},\theta^{(i)})&gt;Q(\theta^{(i)},\theta^{(i)})$</li>
+</ol>
+</li>
+<li>重复，直到收敛</li>
+</ol>
+</li>
+<li><p>$GEM$算法3</p>
+<ul>
+<li>当参数维度$d\geq2$时，采用新的算法，将EM算法的M步分解为$d$次条件极大化，每次其他分量不变，只改变一个分量</li>
+<li>输入：观测数据，$Q$函数</li>
+<li>输出：模型参数</li>
+</ul>
+<ol>
+<li><p>初始化参数$\theta^{(0)}=(\theta_1^{(0)},…,\theta_d^{(0)})$</p>
+</li>
+<li><p>第$i+1$次迭代<br> 1.记$\theta^{(i)}=(\theta^{(i)}_1,…,\theta^{(i)}_d)$为参数的估计值，$Q(\theta,\theta^{(i)})=\sum_ZP(Z|Y,\theta^{(i)})logP(Y,Z|\theta)$ </p>
+<ol start="2">
+<li>进行$d$次条件极大化：求使$Q(\theta,\theta^{(i)})$极大的$\theta^{(i+1)}_1$，之后固定$\theta^{(i+1)}_1$，求使$Q(\theta,\theta^{(i)})$极大的$\theta^{(i+1)}_2$，…，得到$\theta^{(i+1)}$使$Q(\theta^{(i+1)},\theta^{(i)})&gt;Q(\theta^{(i)},\theta^{(i)})$</li>
+</ol>
+</li>
+<li><p>重复，直到收敛</p>
+</li>
+</ol>
+</li>
+</ul>
+<h1 id="10-隐马尔可夫模型"><a href="#10-隐马尔可夫模型" class="headerlink" title="10. 隐马尔可夫模型"></a>10. 隐马尔可夫模型</h1><h2 id="10-1-隐马尔可夫模型的基本概念"><a href="#10-1-隐马尔可夫模型的基本概念" class="headerlink" title="10.1. 隐马尔可夫模型的基本概念"></a>10.1. 隐马尔可夫模型的基本概念</h2><ul>
+<li>隐马尔可夫模型：<ul>
+<li>关于时序的概率模型，描述由一个马尔科夫链随机生成不可观测的状态随机序列，再由各个状态生成一个观测得到观测随机序列</li>
+<li>序列每一个位置可看作一个时刻</li>
+<li>模型由初始概率分布、状态转移概率分布、观测概率分布确定</li>
+<li>设$Q={q_1,…,q_N}$是所有可能的状态集合，$V={v_1,…,v_M}$是所有可能的观测的集合,$I=(i_1,…,i_T)$是长度为$T$的状态序列，$O=(o_1,…,o_T)$是对应的观测序列</li>
+<li>状态转移矩阵$A=[a_{ij}]<em>{N\times N},a</em>{ij}=P(i_{t+1}=q_j|i_t=q_i)$为时刻$t$处于状态$q_i$条件下在时刻$t+1$转移到状态$q_j$的概率，观测矩阵$B=[b_j(k)]_{N\times M},b_j(k)=P(o_{t}=v_k|i_t=q_i)$为时刻$t$处于状态$q_j$条件下生成观测$v_k$的概率，$\pi=(\pi_i),\pi_i=P(i_i=q_i)$为时刻$t=1$处于状态$q_i$的概率</li>
+<li>模型$\lambda=(A,B,\pi)$</li>
+<li>$A$与$\pi$确定隐藏的马尔可夫链，$B$确定了如何从状态生成观测</li>
+</ul>
+</li>
+<li>观测序列生成过程<ul>
+<li>输入：模型$\lambda=(A,B,\pi)$，观测序列长度$T$</li>
+<li>输出：观测序列$O$</li>
+</ul>
+<ol>
+<li>按照初始状态分布$\pi$生成状态$i_1$</li>
+<li>$t=1$</li>
+<li>按照状态$i_t$的观测概率分布$b_{i_t}(k)$生成$o_t$</li>
+<li>按照状态$i_t$的状态转移概率分布${a_{i_ti_{t+1}}}$产生状态$i_{t+1}$</li>
+<li>$t=t+1$，重复</li>
+</ol>
+</li>
+<li>三个问题：<ul>
+<li>计算观测序列概率：给定模型$\lambda$和观测序列$O$，计算模型下观测序列出现的概率$P(O|\lambda)$</li>
+<li>已知观测序列$O$，估计模型$\lambda$参数，使$P(O|\lambda)$最大</li>
+<li>已知模型$\lambda$和观测序列$O$，求对给定观测序列条件概率$P(I|O)$最大的状态序列$I=(i_1,…,i_T)$，即给定观测序列求最有可能的对应状态序列</li>
+</ul>
+</li>
+</ul>
+<h2 id="10-2-概率计算算法"><a href="#10-2-概率计算算法" class="headerlink" title="10.2. 概率计算算法"></a>10.2. 概率计算算法</h2><h3 id="10-2-1-前向算法"><a href="#10-2-1-前向算法" class="headerlink" title="10.2.1. 前向算法"></a>10.2.1. 前向算法</h3><ul>
+<li>前向概率：给定模型$\lambda$，定义到时刻$t$部分观测序列为$(o_1,…,o_t)$且状态为$q_t$的概率为前向概率：$\alpha_t(i)=P(o_1,o_2,…,i_t=q_t|\lambda)$</li>
+<li>前向算法<ul>
+<li>输入：模型$\lambda$，观测序列$O$</li>
+<li>输出：观测序列概率$P(O|\lambda)$</li>
+</ul>
+<ol>
+<li>初值：初始化前向概率，为初始时刻$i_1=q_i$和观测$o_1$的联合概率，$\alpha_1(i)=\pi_ib_i(o_i),i=1,…,N$</li>
+<li>递推：$\alpha_{i+1}(i)=[\sum_{j=1}^N\alpha_t(j)a_{ji}]b_i(o_{t+1}),i=1,…,N$</li>
+<li>终止：$P(O|\lambda)=\sum_{i=1}^N\alpha_T(i)$</li>
+</ol>
+<ul>
+<li>举例：<br><img src="/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/3.PNG"></li>
+</ul>
+</li>
+</ul>
+<h3 id="10-2-2-后向算法"><a href="#10-2-2-后向算法" class="headerlink" title="10.2.2. 后向算法"></a>10.2.2. 后向算法</h3><ul>
+<li>后向概率：定义时刻$t$状态为$q_t$的条件下，从$t+1$到$T$的部分观测序列为$(o_{t+1},…,o_T)$的概率，即$\beta_t(i)=P(o_{t+1},…,o_T|i_t=q_i,\lambda)$</li>
+<li>后向算法<ul>
+<li>输入：模型$\lambda$，观测序列$O$</li>
+<li>输出：观测序列概率$P(O|\lambda)$</li>
+</ul>
+<ol>
+<li>$\beta_T(i)=1,i=1,…,N$</li>
+<li>对$t=T-1,T-2,…,1$，$\beta_t(i)=\sum_{j=1}^Na_{ij}b_j(o_{t+1})\beta_{t+1}(j),i=1,…,N$</li>
+<li>$P(O|\lambda)=\sum_{i=1}^N\pi_ib_i(o_1)\beta_1(i)$</li>
+</ol>
+</li>
+</ul>
+<h2 id="10-3-学习算法"><a href="#10-3-学习算法" class="headerlink" title="10.3. 学习算法"></a>10.3. 学习算法</h2><h3 id="10-3-1-监督学习方法"><a href="#10-3-1-监督学习方法" class="headerlink" title="10.3.1. 监督学习方法"></a>10.3.1. 监督学习方法</h3><ul>
+<li><p>训练集包含$S$个长度相同的观测序列和对应状态序列${(O_1,I_1),…,(O_s,I_s)}$，利用极大似然估计发估计马尔可夫模型参数</p>
+</li>
+<li><p>转移概率$a_{ij}$估计：$\hat{a}<em>{ij}=\frac{A_ij}{\sum_{j=1}^NA</em>{ij}}$，其中$A_{ij}$为样本中时刻$t$处于状态$i$且时刻$t+1$转移到状态$j$的频数</p>
+</li>
+<li><p>观测概率$b_j(k)$的估计：设样本中状态$j$观测为$k$的频数为$B_{jk}$，则$\hat{b}<em>j(k)=\frac{B</em>{jk}}{\sum_{k=1}^MB_{jk}}$,j=1,…,N;k=1,…,M$</p>
+</li>
+<li><p>初始状态概率$\pi_i$估计为$S$个样本中初始状态为$q_i$的频率</p>
+</li>
+<li><p>人工标注训练数据代价较高</p>
+</li>
+</ul>
+<h3 id="10-3-2-Baum-Welch算法"><a href="#10-3-2-Baum-Welch算法" class="headerlink" title="10.3.2. Baum-Welch算法"></a>10.3.2. Baum-Welch算法</h3><ul>
+<li>给定训练集只有$S$个长度为$T$的观测序列${O_1,…,O_S}$没有状态序列</li>
+<li>将状态序列数据看作不可观测的隐数据$I$</li>
+<li>$P(O|\lambda)=\sum_IP(O|I,\lambda)P(I|\lambda)$</li>
+<li>参数估计：<ul>
+<li>$\pi=\frac{P(O,i_1=i|\bar{\lambda})}{P(O|\lambda)}$</li>
+<li>$a_{ij}=\frac{\sum_{t=1}^{T-1}P(O,i_t=i,i_{t+1}=j|\bar{\lambda})}{\sum_{t=1}^{T-1}P(O,i_t=1|\bar{\lambda})}$</li>
+<li>$b_j(k)=\frac{\sum_{t=1}^TP(O,i_t=j|\bar{\lambda})I(o_t=v_k)}{\sum_{t=1}^TP(O,i_t=j|\bar{\lambda})}$</li>
+</ul>
+</li>
+</ul>
+<h2 id="10-4-预测算法"><a href="#10-4-预测算法" class="headerlink" title="10.4. 预测算法"></a>10.4. 预测算法</h2><ul>
+<li>维特比算法<ul>
+<li>动态规划求概率最大路径，一个路径对应一个状态序列<br><img src="/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/4.PNG"></li>
+</ul>
+</li>
+</ul>
+</font>
+</font>
+    </div>
+
+    
+    
+    
+      
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2021/01/08/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/" title="统计学习方法">https://thomas-li-sjtu.github.io/2021/01/08/统计学习方法/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/06/FlaskWeb%E5%BC%80%E5%8F%91-3/" rel="prev" title="FlaskWeb开发（3）Flask实例">
+      <i class="fa fa-chevron-left"></i> FlaskWeb开发（3）Flask实例
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/08/OMEN-Faster-Password-Guessing-Using-an-Ordered-Markov-Enumerator/" rel="next" title="Faster Password Guessing Using an Ordered Markov Enumerator">
+      Faster Password Guessing Using an Ordered Markov Enumerator <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA"><span class="nav-number">1.</span> <span class="nav-text">1. 统计学习方法概论</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.1.</span> <span class="nav-text">1.1. 统计学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.2.</span> <span class="nav-text">1.2. 监督学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E4%B8%89%E8%A6%81%E7%B4%A0"><span class="nav-number">1.3.</span> <span class="nav-text">1.3. 统计学习三要素</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E5%92%8C%E9%80%89%E6%8B%A9"><span class="nav-number">1.4.</span> <span class="nav-text">1.4. 模型评估和选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-%E7%94%9F%E6%88%90%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%88%A4%E5%88%AB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.5.</span> <span class="nav-text">1.5. 生成模型和判别模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-6-%E5%88%86%E7%B1%BB%E9%97%AE%E9%A2%98"><span class="nav-number">1.6.</span> <span class="nav-text">1.6. 分类问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-7-%E6%A0%87%E6%B3%A8%E9%97%AE%E9%A2%98"><span class="nav-number">1.7.</span> <span class="nav-text">1.7. 标注问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-8-%E5%9B%9E%E5%BD%92%E9%97%AE%E9%A2%98"><span class="nav-number">1.8.</span> <span class="nav-text">1.8. 回归问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%84%9F%E7%9F%A5%E6%9C%BA"><span class="nav-number">2.</span> <span class="nav-text">2. 感知机</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E6%84%9F%E7%9F%A5%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">2.1. 感知机模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E7%AD%96%E7%95%A5"><span class="nav-number">2.2.</span> <span class="nav-text">2.2. 感知机学习策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95"><span class="nav-number">2.3.</span> <span class="nav-text">2.3. 感知机学习算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-k%E8%BF%91%E9%82%BB%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">3. k近邻法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-k%E8%BF%91%E9%82%BB%E7%AE%97%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">3.1. k近邻算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E6%9B%B4%E5%BF%AB%E5%AF%BB%E6%89%BE%E8%BF%91%E9%82%BB%E7%82%B9%EF%BC%9Akd%E6%A0%91"><span class="nav-number">3.2.</span> <span class="nav-text">3.2. 更快寻找近邻点：kd树</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF"><span class="nav-number">4.</span> <span class="nav-text">4. 朴素贝叶斯</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%88%86%E7%B1%BB"><span class="nav-number">4.1.</span> <span class="nav-text">4.1. 学习与分类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-%E5%8F%82%E6%95%B0%E4%BC%B0%E8%AE%A1"><span class="nav-number">4.2.</span> <span class="nav-text">4.2. 参数估计</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E5%86%B3%E7%AD%96%E6%A0%91"><span class="nav-number">5.</span> <span class="nav-text">5. 决策树</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-%E5%86%B3%E7%AD%96%E6%A0%91%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%AD%A6%E4%B9%A0"><span class="nav-number">5.1.</span> <span class="nav-text">5.1. 决策树模型与学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9"><span class="nav-number">5.2.</span> <span class="nav-text">5.2. 特征选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-3-%E5%86%B3%E7%AD%96%E6%A0%91%E7%94%9F%E6%88%90"><span class="nav-number">5.3.</span> <span class="nav-text">5.3. 决策树生成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-1-ID3"><span class="nav-number">5.3.1.</span> <span class="nav-text">5.3.1. ID3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-2-C4-5"><span class="nav-number">5.3.2.</span> <span class="nav-text">5.3.2. C4.5</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-4-%E5%89%AA%E6%9E%9D"><span class="nav-number">5.4.</span> <span class="nav-text">5.4. 剪枝</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-5-Cart"><span class="nav-number">5.5.</span> <span class="nav-text">5.5. Cart</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-%E9%80%BB%E8%BE%91%E6%96%AF%E8%92%82%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.</span> <span class="nav-text">6. 逻辑斯蒂回归与最大熵模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-%E9%80%BB%E8%BE%91%E6%96%AF%E8%92%82-logistic-%E5%9B%9E%E5%BD%92%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.1.</span> <span class="nav-text">6.1. 逻辑斯蒂(logistic)回归模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-2-%E6%9C%80%E5%A4%A7%E7%86%B5%E5%8E%9F%E7%90%86"><span class="nav-number">6.2.</span> <span class="nav-text">6.2. 最大熵原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-3-%E6%9C%80%E4%BC%98%E5%8C%96%E7%AE%97%E6%B3%95"><span class="nav-number">6.3.</span> <span class="nav-text">6.3. 最优化算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="nav-number">7.</span> <span class="nav-text">7. 支持向量机</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#7-1-%E7%BA%BF%E6%80%A7%E5%8F%AF%E5%88%86%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E4%B8%8E%E7%A1%AC%E9%97%B4%E9%9A%94%E6%9C%80%E5%A4%A7%E5%8C%96"><span class="nav-number">7.1.</span> <span class="nav-text">7.1. 线性可分支持向量机与硬间隔最大化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-1-%E7%BA%BF%E6%80%A7%E5%8F%AF%E5%88%86%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="nav-number">7.1.1.</span> <span class="nav-text">7.1.1. 线性可分支持向量机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-2-%E5%87%BD%E6%95%B0%E9%97%B4%E9%9A%94%E4%B8%8E%E5%87%A0%E4%BD%95%E9%97%B4%E9%9A%94"><span class="nav-number">7.1.2.</span> <span class="nav-text">7.1.2. 函数间隔与几何间隔</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-2-%E9%97%B4%E9%9A%94%E6%9C%80%E5%A4%A7%E5%8C%96"><span class="nav-number">7.2.</span> <span class="nav-text">7.2. 间隔最大化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-3-%E7%BA%BF%E6%80%A7%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E4%B8%8E%E8%BD%AF%E9%97%B4%E9%9A%94%E6%9C%80%E5%A4%A7%E5%8C%96"><span class="nav-number">7.3.</span> <span class="nav-text">7.3. 线性支持向量机与软间隔最大化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-1-%E7%BA%BF%E6%80%A7%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="nav-number">7.3.1.</span> <span class="nav-text">7.3.1. 线性支持向量机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-2-%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95"><span class="nav-number">7.3.2.</span> <span class="nav-text">7.3.2. 学习算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-4-%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E4%B8%8E%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="nav-number">7.4.</span> <span class="nav-text">7.4. 非线性支持向量机与核函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-1-%E6%A0%B8%E6%8A%80%E5%B7%A7"><span class="nav-number">7.4.1.</span> <span class="nav-text">7.4.1. 核技巧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-2-%E6%AD%A3%E5%AE%9A%E6%A0%B8"><span class="nav-number">7.4.2.</span> <span class="nav-text">7.4.2. 正定核</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-3-%E5%B8%B8%E7%94%A8%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="nav-number">7.4.3.</span> <span class="nav-text">7.4.3. 常用核函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-5-%E5%BA%8F%E5%88%97%E6%9C%80%E5%B0%8F%E6%9C%80%E4%BC%98%E5%8C%96%E7%AE%97%E6%B3%95"><span class="nav-number">7.5.</span> <span class="nav-text">7.5. 序列最小最优化算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#8-%E6%8F%90%E5%8D%87%E6%96%B9%E6%B3%95"><span class="nav-number">8.</span> <span class="nav-text">8. 提升方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#8-1-AdaBoost%E7%AE%97%E6%B3%95"><span class="nav-number">8.1.</span> <span class="nav-text">8.1. AdaBoost算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-2-%E6%8F%90%E5%8D%87%E6%A0%91"><span class="nav-number">8.2.</span> <span class="nav-text">8.2. 提升树</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-1-%E6%8F%90%E5%8D%87%E6%A0%91%E7%AE%97%E6%B3%95"><span class="nav-number">8.2.1.</span> <span class="nav-text">8.2.1. 提升树算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-2-%E6%A2%AF%E5%BA%A6%E6%8F%90%E5%8D%87"><span class="nav-number">8.2.2.</span> <span class="nav-text">8.2.2. 梯度提升</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#9-EM%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%8E%A8%E5%B9%BF"><span class="nav-number">9.</span> <span class="nav-text">9. EM算法及其推广</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#9-1-EM%E7%AE%97%E6%B3%95"><span class="nav-number">9.1.</span> <span class="nav-text">9.1. EM算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-2-%E5%AD%A6%E4%B9%A0%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88%E6%A8%A1%E5%9E%8B"><span class="nav-number">9.2.</span> <span class="nav-text">9.2. 学习高斯混合模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-3-EM%E7%AE%97%E6%B3%95%E7%9A%84%E6%8E%A8%E5%B9%BF"><span class="nav-number">9.3.</span> <span class="nav-text">9.3. EM算法的推广</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9-3-1-GEM%E7%AE%97%E6%B3%95"><span class="nav-number">9.3.1.</span> <span class="nav-text">9.3.1. GEM算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#10-%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B"><span class="nav-number">10.</span> <span class="nav-text">10. 隐马尔可夫模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#10-1-%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">10.1.</span> <span class="nav-text">10.1. 隐马尔可夫模型的基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-2-%E6%A6%82%E7%8E%87%E8%AE%A1%E7%AE%97%E7%AE%97%E6%B3%95"><span class="nav-number">10.2.</span> <span class="nav-text">10.2. 概率计算算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#10-2-1-%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95"><span class="nav-number">10.2.1.</span> <span class="nav-text">10.2.1. 前向算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-2-2-%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95"><span class="nav-number">10.2.2.</span> <span class="nav-text">10.2.2. 后向算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-3-%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95"><span class="nav-number">10.3.</span> <span class="nav-text">10.3. 学习算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#10-3-1-%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95"><span class="nav-number">10.3.1.</span> <span class="nav-text">10.3.1. 监督学习方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-3-2-Baum-Welch%E7%AE%97%E6%B3%95"><span class="nav-number">10.3.2.</span> <span class="nav-text">10.3.2. Baum-Welch算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-4-%E9%A2%84%E6%B5%8B%E7%AE%97%E6%B3%95"><span class="nav-number">10.4.</span> <span class="nav-text">10.4. 预测算法</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:04</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
