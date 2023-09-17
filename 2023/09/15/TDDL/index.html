@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="TDDL 分布式数据库中间件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TDDL中间件">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="TDDL 分布式数据库中间件">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694918699507.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694928739993.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694929025800.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694929417696.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694930972807.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694933712049.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694933773131.png">
+<meta property="article:published_time" content="2023-09-15T06:26:12.000Z">
+<meta property="article:modified_time" content="2023-09-17T07:31:04.646Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="中间件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/1694918699507.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>TDDL中间件 | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TDDL中间件
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-15 14:26:12" itemprop="dateCreated datePublished" datetime="2023-09-15T14:26:12+08:00">2023-09-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%A1%86%E6%9E%B6/" itemprop="url" rel="index"><span itemprop="name">框架</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>TDDL 分布式数据库中间件</p>
+<a id="more"></a>
+
+<h2 id="分布式数据库"><a href="#分布式数据库" class="headerlink" title="分布式数据库"></a>分布式数据库</h2><img src="/2023/09/15/TDDL/1694918699507.png" alt="1694918699507" style="zoom:50%;">
+
+<ul>
+<li>单库单表：数据库中的业务表是一张对应业务的完整的表</li>
+<li>读写分离：数据库 Master 的基础上增加一个备用数据库 Slave，备库只提供读服务，不提供写服务<ul>
+<li>数据复制问题：短期的数据不一致性，没有什么特别好的办法，主要依赖于数据库提供的数据复制机制（主从复制）</li>
+<li>数据源选择问题：程序中应该根据 SQL 来判断出是读操作还是写操作，进而选择要访问的数据库</li>
+</ul>
+</li>
+<li>垂直分库：根据业务特点考虑将数据库垂直拆分，把数据库中不同的业务单元的数据划分到不同的数据库里面<ul>
+<li>ACID 被打破：数据分到不同的数据库之后，原来的事务操作将会受很大影响。例如，注册账户的时候需要在用户表和用户信息表中插入一条数据，多机情况下会变得比较麻烦</li>
+<li>Join 操作困难</li>
+<li>外键约束受影响</li>
+</ul>
+</li>
+<li>水平分表：把一张表内大量的数据拆分成多张子表——会在垂直分库的基础上带来更多的影响<ul>
+<li>自增主键会有影响：不能产生唯一的 ID 了，因为逻辑上来说多个分表其实都属于一张表，自增主键无法标识每一条数据</li>
+<li>有些单表查询会变成多表：例如count操作，从多张分表中共同查询才能得到结果</li>
+</ul>
+</li>
+</ul>
+<h2 id="TDDL"><a href="#TDDL" class="headerlink" title="TDDL"></a>TDDL</h2><ul>
+<li><p>作用：</p>
+<ul>
+<li>系统容灾</li>
+<li>运维管理—— 直接连接单机数据库时，无法动态的切换数据源 </li>
+<li>单一数据库无法满足性能要求</li>
+</ul>
+</li>
+<li><p>模型：</p>
+<img src="/2023/09/15/TDDL/1694928739993.png" alt="1694928739993" style="zoom:50%;">
+*  主要部署在ibatis、mybatis或者其他ORM框架之下，JDBC Driver之上 
+*  可以将Tddl当做普通数据源实例并且注入到各种ORM框架中使用 
+</li>
+<li><p>分布式数据库物理结构</p>
+<img src="/2023/09/15/TDDL/1694929025800.png" alt="1694929025800" style="zoom:50%;">
+*  为了解决每一层所要应对的问题，tddl自上而下也分了三层，分别是 Matrix 层、Group层以及 Atom 层 
+  * 最顶层要进行分库分表，因此分库分表所带来的问题是在 Matrix 层解决，包括SQL解释、优化和执行
+  * 中间层要进行读写分离和主备切换，因此由 Group 层解决
+  * Atom 面对的是实实在在数据库，需要管理对数据库的连接，比如当数据库的 IP 地址发生改变时，Atom 层要动态感知，以免连接找不到地址
+</li>
+<li><p>三层结构：</p>
+<img src="/2023/09/15/TDDL/1694929417696.png" alt="1694929417696" style="zoom:50%;">
+*  TDDL作为中间件，根据路由规则，将sql路由到正确的分库、分表上去执行，再将结果进行汇总，返回给用户。用户不需要了解TDDL的原理，可以像使用单库单表一样去使用分布式数据库 
+
+<ul>
+<li><p>Matrix层</p>
+<ul>
+<li><p>分库分表路由，SQL语句的解释、优化和执行，事务的管理规则的管理，各个子表查询出来结果集的Merge等 </p>
+</li>
+<li><p>数据访问路由算法： 规定了数据的存储位置，同样也由它来指明该去哪里查询数据 </p>
+<ul>
+<li><p>固定哈希算法——根据某个字段对分库的数量或者分表的数量进行取模 </p>
+<ul>
+<li>基本能保证数据均匀分布 </li>
+<li>TDDL 的默认路由算法 </li>
+<li>数据迁移的成本高，增加数据库时大多数数据需要迁移</li>
+</ul>
+</li>
+<li><p>一致性哈希算法：</p>
+<img src="/2023/09/15/TDDL/1694930972807.png" alt="1694930972807" style="zoom:50%;">
+
+<ul>
+<li> 计算出 key 的 hashcode 之后对 2^32 取模，放到最近的机器上（机器的唯一标识同样取模）</li>
+<li> node2 与 node4 之间增加一台机器 node5，需要迁移的数据只分布在 node2 与 node5 之间 </li>
+</ul>
+</li>
+<li><p>虚拟节点：解决”数据集中在某一热点“的问题</p>
+<ul>
+<li>一个物理节点复制出多个虚拟节点，均匀分布在环上，那么即使数据再集中，其实也会存储在不同的节点上 </li>
+</ul>
+</li>
+<li><p>自定义路由规则</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Group层</p>
+<ul>
+<li>作用：<ul>
+<li>数据库读写分离，基本上主数据库负责读写，备份数据库只负责读；主备切换状态对调后备库变为主库，主库变为备库 </li>
+<li>数据保护：数据库挂掉后的线程保护</li>
+<li>权重选择：根据权重去读某些库</li>
+</ul>
+</li>
+<li>读写分离时的数据复制<ul>
+<li>镜像复制：主库和从库的数据结构一模一样的，根据主库上的日志变化，在从库中执行相同的操作</li>
+<li>非对称复制：主库与备库以不同的方式分库，结构虽然相同，但是主备库中存储的记录是不相同的——查询条件不同时，把请求分发到更加适合的库去操作<ul>
+<li>对于订单数据库，买家会根据自己的 ID 去查自己的交易记录，主库可以用买家 ID 分库，保证单个买家的记录在同一个数据库中</li>
+<li>卖家如果想看交易记录可能得从多个库中查询，这时候利用卖家 ID 进行分库作为备库，此时主备库的复制不能简单的镜像复制，进行复制操作之前还需要进行路由</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Atom层</p>
+<ul>
+<li>和物理数据库交互，提供数据库配置动态修改能力</li>
+<li>负责动态创建，添加，减少数据源</li>
+<li>底层对物理数据库做了代理，对单库的JDBC做了一层封装，执行底层单库的SQL</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h2><img src="/2023/09/15/TDDL/1694933712049.png" alt="1694933712049" style="zoom:67%;">
+* client发送一条SQL的执行语句，会优先传递给Matrix层。由Martix 解释 SQL语句，优化，并根据查询条件路由到各个group，转发sql进行查询；各个group根据权重选择其中一个Atom进行查询，各个Atom再将结果返回给Matrix，Matrix将结果合并返回给client 
+
+  <img src="/2023/09/15/TDDL/1694933773131.png" alt="1694933773131" style="zoom:67%;">    
+
+<ul>
+<li><p>Matrix层</p>
+<ul>
+<li>Sql的解析。将Sql语句解析成一颗抽象语法树(Abstract Syntax Tree)，解析一个好处理的结构</li>
+<li>规则的匹配与计算。基于上一步创建的语法树查找匹配的规则，根据规则去确定分库分表的结果<ul>
+<li>规则可以简单的看做是定义数据库怎么进行分库分表，要分成几张库几张表，库名和表名的命名是怎么样的。规则的匹配就是根据SQL的语句确定，具体查询的子表是哪几张</li>
+</ul>
+</li>
+<li>表名替换。对于开发人员来说，它查询的表直接就是select * from A.B limit 10(A为数据库名,B为数据表名)。但底层会把这些表名替换成类似select * from A_000.B_001，select * from A_000.B_002，select * from A_001.TABLE_001的形式。表名替换把总表的名称替换为这些子表</li>
+<li>Sql的转发。将生成的各个sql语句转发到对应的Group进行执行。以上例，转发给Group0的查询为where id=3，转发给group1的查询为where id =2——查询的条件会发生一定修改</li>
+<li>综上，对原始的Sql进行分解，将原本单库单表的查询语句，转发到多库多表并行执行，提高了数据库读写的性能 </li>
+</ul>
+</li>
+<li><p>Group层</p>
+<ul>
+<li>根据权重选择AtomDs。通常会在主节点和副节点上读取数据，只在主节点上写入数据</li>
+<li>具有重试的策略地在AtomDs上执行SQL。防止单个的AtomDs发生故障，以确保尽可能多的数据访问可以在正常数据库中访问</li>
+</ul>
+</li>
+<li><p>Atom层</p>
+<ul>
+<li>读写数控制、线程并发数控制</li>
+<li>执行sql，返回结果集。Atom底层利用druid管理连接池，具体查询还对JDBC做了封装。执行完Sql后结果返回给Matrix</li>
+</ul>
+</li>
+</ul>
+<h2 id="全局唯一id"><a href="#全局唯一id" class="headerlink" title="全局唯一id"></a>全局唯一id</h2><ul>
+<li>基于tddl进行分库分表后，原本一个数据库上的自增id的结果，在分库分表下并不是全局唯一的。所以，分库分表后需要有一种技术可以生成全局的唯一id</li>
+<li>方案：<ol>
+<li>oracle sequence：基于第三方oracle的SEQ.NEXTVAL来获取一个ID<ul>
+<li>简单可用</li>
+<li>需要依赖第三方数据库oracle</li>
+</ul>
+</li>
+<li>mysql ID区间隔离：不同分库设置不同的起始值和步长，比如2台mysql，就可以设置一台只生成奇数，另一台生成偶数；或者1台用0<del>10亿，另一台用10</del>20亿.。<ul>
+<li>利用mysql自增id</li>
+<li>运维成本比较高，数据扩容时需要重新设置步长</li>
+</ul>
+</li>
+<li>基于数据库更新＋内存分配：在数据库中维护一个ID，获取下一个ID时，会对数据库进行ID=ID+100 WHERE ID=XX，拿到100个ID后，在内存中进行分配<ul>
+<li>简单高效</li>
+<li>无法保证自增顺序</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>tddl基于方案三<ul>
+<li>只要生成id的数据库不全部挂掉，均可以顺畅提供服务</li>
+<li>生成id的数据库数量不定，按照应用对容灾的需求指定不同机架不同机房的数据库</li>
+</ul>
+</li>
+<li>举例：<ul>
+<li>sample_group_0-sample_group_3是我们生成全局唯一id的4个数据库，每个数据库对于同一个id有一个起始值，比如间隔是1000 </li>
+<li>应用真正启动的时候，可能某一台机器上去取id，随机取到了sample_group_1，那么这台机器上的应用会拿到1000-1999这一千个id，下次从sample_group_1上取得的id变成4000-4999—— sample_group_1会永远只会取到1000-1999，4000-4999，8000-8999，12000-12999等</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\04\15\RocketMQ\" rel="bookmark">RocketMQ</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ 整理</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\04\30\RocketMQ源码分析\" rel="bookmark">RocketMQ源码分析</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ源码阅读</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\10\01\Docker\" rel="bookmark">Docker 核心概念</a></div>
+        <div class="popular-posts-excerpt"><p><p>Docker 核心概念总结</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2023/09/15/TDDL/" title="TDDL中间件">https://thomas-li-sjtu.github.io/2023/09/15/TDDL/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+              <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag"><i class="fa fa-tag"></i> 中间件</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/09/15/hexo%E5%8D%9A%E5%AE%A2%E8%BF%81%E7%A7%BB/" rel="prev" title="hexo博客迁移">
+      <i class="fa fa-chevron-left"></i> hexo博客迁移
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">分布式数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TDDL"><span class="nav-number">2.</span> <span class="nav-text">TDDL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">执行流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E5%94%AF%E4%B8%80id"><span class="nav-number">4.</span> <span class="nav-text">全局唯一id</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">184</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.7m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">25:07</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
