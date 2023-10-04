@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"thomas-li-sjtu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="​    牛客网、leetcode面经整理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面经整理(3) Redis，Zookeeper">
+<meta property="og:url" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/index.html">
+<meta property="og:site_name" content="More Than Code">
+<meta property="og:description" content="​    牛客网、leetcode面经整理">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221217135711115.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219170926552.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221194851061.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221195201900.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221217142650656.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221195355432.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221195517354.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221234003132.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221234216091.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221162422544.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218184400247.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221233303475.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221233542370.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219171226737.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219171125253.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221217150918385.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221234333382.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219175704579.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219180153047.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218123720755.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218124239162.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221161728520.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230222205519815.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218155230713.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219201428011.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230223232815262.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230223232949371.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230223233243894.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221212162750065.png">
+<meta property="og:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221212165236197.png">
+<meta property="article:published_time" content="2022-04-15T12:05:05.000Z">
+<meta property="article:modified_time" content="2023-10-01T08:32:24.271Z">
+<meta property="article:author" content="Thomas-Li">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221217135711115.png">
+
+<link rel="canonical" href="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>面经整理(3) Redis，Zookeeper | More Than Code</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/thomas-li-sjtu" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">More Than Code</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Thomas-Li">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="More Than Code">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面经整理(3) Redis，Zookeeper
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-15 20:05:05" itemprop="dateCreated datePublished" datetime="2022-04-15T20:05:05+08:00">2022-04-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1/" itemprop="url" rel="index"><span itemprop="name">面试八股</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>35k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>32 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>​    牛客网、leetcode面经整理</p>
+<a id="more"></a>
+
+<h2 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ul>
+<li><p>为什么用redis：高性能、高并发</p>
+</li>
+<li><p>为什么快：</p>
+<ul>
+<li><p>基于内存</p>
+</li>
+<li><p>基于 Reactor 模式设计一套事件处理模型，包括单线程事件循环和IO多路复用</p>
+</li>
+<li><p>内置多种优化过后的数据结构实现</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221217135711115.png" alt="image-20221217135711115" style="zoom:50%;">
+</li>
+</ul>
+</li>
+<li><p>和Memcached的异同：</p>
+<ul>
+<li>基于内存，有过期策略</li>
+<li>Redis除了基本的k-v外，支持更丰富的数据类型；支持数据的持久化，能够灾难恢复；内存使用完之后，可以将不用的数据放到磁盘；支持集群模式；单线程的多路 IO 复用模型，而Memcached是多线程非阻塞IO复用网络模型；Redis 支持发布订阅模型、事务等；Redis对过期数据删除使用了惰性删除与定期删除</li>
+</ul>
+</li>
+<li><p>redis 的负载因子是 1（负载因子：存储元素的个数/数组的长度）</p>
+</li>
+<li><p>其他应用：</p>
+<ul>
+<li><p>分布式锁：基于Redis的扩展Redisson<a target="_blank" rel="noopener" href="https://javaguide.cn/distributed-system/distributed-lock.html">分布式锁详解open in new window</a> </p>
+</li>
+<li><p>限流：通过 Redis + Lua 脚本的方式实现限流。相关阅读：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/kyFAWH3mVNJvurQDt4vchA">《我司用了 6 年的 Redis 分布式限流器，可以说是非常厉害了！》open in new window</a></p>
+</li>
+<li><p>消息队列：自带的 list 可以作为一个简单的队列使用。5.0增加的 Stream 类型的数据结构也适合做消息队列，类似于 Kafka：<a target="_blank" rel="noopener" href="https://javakeeper.starfish.ink/data-management/Redis/Redis-MQ.html">Redis 消息队列的三种方案（List、Streams、Pub/Sub）</a></p>
+<ul>
+<li>支持发布-订阅模式</li>
+<li>按照消费者组进行消费</li>
+<li>支持消息持久化（RDB、AOF）以及 ACK 机制</li>
+</ul>
+</li>
+<li><p>业务场景：</p>
+<ul>
+<li>String 类型的应用场景：缓存对象、常规计数、分布式锁、共享 session 信息等。</li>
+<li>List 类型的应用场景：消息队列（但是有两个问题：1. 生产者需要自行实现全局唯一 ID；2. 不能以消费组形式消费数据）等。</li>
+<li>Hash 类型：缓存对象、购物车等。</li>
+<li>Set 类型：聚合计算（并集、交集、差集）场景，比如点赞、共同关注、抽奖活动等。</li>
+<li>Zset 类型：排序场景，比如排行榜、电话和姓名排序等。</li>
+</ul>
+<p>Redis 后续版本又支持四种数据类型，它们的应用场景如下：</p>
+<ul>
+<li>BitMap（2.2 版新增）：二值状态统计的场景，比如签到、判断用户登陆状态、连续签到用户总数等；</li>
+<li>HyperLogLog（2.8 版新增）：海量数据基数统计的场景，比如百万级网页 UV 计数等；</li>
+<li>GEO（3.2 版新增）：存储地理位置信息的场景，比如滴滴叫车；</li>
+<li>Stream（5.0 版新增）：消息队列，相比于基于 List 类型实现的消息队列，有这两个特有的特性：自动生成全局唯一消息ID，支持以消费组形式消费数据</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><ul>
+<li><p>5 种基础数据结构 ：String（字符串）、List（列表）、Set（集合）、Hash（散列）、Zset（有序集合）</p>
+</li>
+<li><p>3 种特殊数据结构 ：HyperLogLogs（基数统计）、Bitmap（位存储）、Geospatial (地理位置)</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219170926552.png" alt="image-20230219170926552" style="zoom:67%;">
+
+</li>
+</ul>
+<h4 id="Redis结构"><a href="#Redis结构" class="headerlink" title="Redis结构"></a>Redis结构</h4><p><img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221194851061.png" alt="image-20230221194851061"></p>
+<ul>
+<li><p>redisDb：Redis 数据库的结构，结构体存放指向 dict 结构的指针</p>
+</li>
+<li><p>dict 结构：存放 2 个哈希表——见扩容和缩容</p>
+</li>
+<li><p>ditctht 结构：哈希表的结构，存放哈希表数组，数组中的每个元素是指向一个哈希表节点结构（dictEntry）的指针</p>
+</li>
+<li><p>dictEntry 结构：哈希表节点的结构，存放 void *key 和 void *value 指针，key 和 value 都指向 Redis 对象</p>
+</li>
+<li><p>对象都由 redisObject 结构表示</p>
+<ul>
+<li>type：标识该对象的类型</li>
+<li>encoding：标识该对象的底层数据结构</li>
+<li>ptr：指向底层数据结构的指针</li>
+</ul>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221195201900.png" alt="image-20230221195201900" style="zoom:50%;">
+
+</li>
+</ul>
+<h4 id="String"><a href="#String" class="headerlink" title="String"></a>String</h4><ul>
+<li><p>String底层原理：SDS（Simple Dynamic String）</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221217142650656.png" alt="image-20221217142650656" style="zoom: 50%;">
+
+<ul>
+<li><p>Redis根据初始化的长度决定使用哪种类型的SDS</p>
+</li>
+<li><p>数据结构：</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221195355432.png" alt="image-20230221195355432" style="zoom: 33%;">
+</li>
+<li><p>对比C中的字符串：</p>
+<ul>
+<li>避免缓冲区溢出：SDS 被修改时，先根据 len 属性检查空间大小是否满足要求</li>
+<li>获取字符串长度方便：无需遍历字符串，读取len属性即可</li>
+<li>二进制安全：C中字符串以空字符 <code>\0</code> 结尾，无法正确保存图片、视频等二进制文件。SDS用len属性判断字符串是否结束，能够存储此类文件</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>编码：</p>
+<ul>
+<li>保存整数值，且可以用<code>long</code>类型表示，则会将将字符串对象的编码设置为<code>int</code></li>
+<li>保存一个字符串，用一个SDS保存：<ul>
+<li>字符申的长度小于等于 32 字节（redis 2.+版本），设置对象编码为<code>embstr</code></li>
+<li>字符串的长度大于 32 字节（redis 2.+版本），设置对象编码为<code>raw</code></li>
+</ul>
+</li>
+<li>阈值跟版本有关</li>
+</ul>
+</li>
+<li><p>应用：</p>
+<ul>
+<li>存储对象：<ul>
+<li>直接缓存对象的json</li>
+<li>用mset存储，分离为<code>user:id:属性</code>，例如<code>user:1:name li  user:1:age 24</code></li>
+</ul>
+</li>
+<li>分布式锁：见后文</li>
+</ul>
+</li>
+</ul>
+<h4 id="List"><a href="#List" class="headerlink" title="List"></a>List</h4><ul>
+<li><p>List 底层结构：压缩列表或双向链表（取决于列表的元素个数），支持反向查找和遍历</p>
+<ul>
+<li><p>压缩列表：见Zset</p>
+</li>
+<li><p>双向链表：list结构体、listNode结构体，dup（节点复制函数）、free（节点释放函数）、match（节点值比较函数）</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221195517354.png" alt="image-20230221195517354" style="zoom:33%;">
+</li>
+</ul>
+</li>
+<li><p>Redis3.2后，由 quicklist 实现</p>
+<ul>
+<li><p>一个 quicklist 是一个链表，链表中的每个元素是一个压缩列表——<strong>控制每个链表节点中的压缩列表的元素个数，规避连锁更新</strong></p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221234003132.png" alt="image-20230221234003132" style="zoom:67%;">
+</li>
+<li><p>添加一个元素的时候，检查插入位置的压缩列表是否能容纳该元素，能容纳则直接保存，不能容纳时才新建一个新的 quicklistNode</p>
+</li>
+</ul>
+</li>
+<li><p>应用：</p>
+<ul>
+<li>消息队列：见后文</li>
+</ul>
+</li>
+</ul>
+<h4 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h4><ul>
+<li><p>底层结构：</p>
+<ul>
+<li>ziplist：当保存的键和值字符串长度都小于64字节、键值对数量小于512，采用ziplist编码，将所有的key及value都当成一个元素，顺序存入到ziplist中</li>
+<li>hashtable：类似于 JDK1.8 前的 <code>HashMap</code>，内部实现也差不多(数组 + 链表)，field为String类型</li>
+</ul>
+</li>
+<li><p>Redis7之后，由listpack实现。没有压缩列表中记录前一个节点长度的字段，向 listpack 加入一个新元素不会影响其他节点的长度字段</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221234216091.png" alt="image-20230221234216091" style="zoom:67%;">
+</li>
+<li><p>应用：</p>
+<ul>
+<li><p>存储对象：一般对象用 String + Json 存储，对象中频繁变化的属性可以用 Hash 存储</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221162422544.png" alt="image-20230221162422544" style="zoom:50%;">
+</li>
+<li><p>购物车：用户id为key，商品id为field，商品数量为value（清空购物车直接删除对应的 key ）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h4><ul>
+<li>底层结构：最多可以存储 <code>2^32-1</code> 个元素<ul>
+<li>整数集合：理解为数组，要求满足：元素个数不少于默认值 512，元素用整型表示。查询时采用二分查找<ul>
+<li>保存元素的容器是一个数组</li>
+<li>当将一个新元素（int32_t）加入到整数集合（）里，需要先按新元素类型扩展数组的空间大小，再将新元素加入到整数集合，并需要维持底层数组的有序性</li>
+<li>不支持降级操作</li>
+</ul>
+</li>
+<li>hashtable：类似 JDK 中的<code>HashSet</code>，value为null</li>
+</ul>
+</li>
+<li>应用：<ul>
+<li>点赞：保证一个用户只点赞一次</li>
+<li>共同关注：通过交集运算获得（交集运算复杂度高，建议由从库完成，或者只交付原始数据给客户端）</li>
+<li>抽奖（重复和不重复）：<code>SPOP key count</code>（随机移除并获取集合中一个或多个元素，适合不允许重复中奖的场景）；<code>SRANDMEMBER key count</code>（随机获取集合中指定数量的元素，适合允许重复中奖的场景）</li>
+</ul>
+</li>
+</ul>
+<h4 id="Zset"><a href="#Zset" class="headerlink" title="Zset"></a>Zset</h4><ul>
+<li><p>底层结构：</p>
+<ul>
+<li><p>类似于Java的<code>Map&lt;String, Map&lt;String, Double&gt;&gt;</code>和TreeSet，分值可以重复</p>
+</li>
+<li><p>ziplist：</p>
+<p><img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218184400247.png" alt="image-20221218184400247" style="zoom:50%;">****</p>
+<ul>
+<li><p>元素数量小于默认值128个、所有元素的长度小于默认值64字节</p>
+</li>
+<li><p>表头：</p>
+<ul>
+<li>zlbytes：压缩列表占用对内存字节数</li>
+<li>zltail：尾节点偏移量</li>
+<li>zllen：包含的节点数</li>
+</ul>
+</li>
+<li><p>节点：三个字段</p>
+<ul>
+<li>prevlen：前一个节点的长度，以实现从后向前遍历</li>
+<li>encoding：当前节点实际数据的「类型和长度」</li>
+<li>data：当前节点的实际数据</li>
+</ul>
+</li>
+<li><p>当新插入的元素较大，可能导致后续元素的 prevlen 占用空间都发生变化，引起「连锁更新」</p>
+</li>
+<li><p>每个集合元素使用两个紧挨在一起的压缩列表节点来保存，第一个节点保存value，第二个节点为score</p>
+</li>
+<li><p>Redis7之后，由listpack实现</p>
+</li>
+</ul>
+</li>
+<li><p>哈希表+跳跃表：哈希表只用于以常数复杂度获取元素权重</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221233303475.png" alt="image-20230221233303475" style="zoom:67%;">
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zset</span> &#123;</span></span><br><span class="line">    <span class="comment">// 字典，键为value，值为score</span></span><br><span class="line">    <span class="comment">// 用于支持 O(1) 复杂度的按成员取分值操作</span></span><br><span class="line">    dict *dict;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 跳跃表，按分值排序成员</span></span><br><span class="line">    <span class="comment">// 用于支持平均复杂度为 O(log N) 的按分值定位成员操作</span></span><br><span class="line">    <span class="comment">// 以及范围操作</span></span><br><span class="line">    zskiplist *zsl;</span><br><span class="line">&#125; zset;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>dict关联value和score，保证value唯一，通过value找相应score</p>
+</li>
+<li><p>跳跃表：给value排序，并根据score的范围获取元素列表（robj指针指向具体元素，这个指针和dict中的key指针指向同一个元素）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplist</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">header</span>, *<span class="title">tail</span>;</span>  <span class="comment">// 表头节点和表尾节点</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> length;  <span class="comment">// 表中节点的数量</span></span><br><span class="line">    <span class="keyword">int</span> level;  <span class="comment">// 表中层数最大的节点的层数</span></span><br><span class="line">&#125; zskiplist;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> &#123;</span></span><br><span class="line">    robj *obj; <span class="comment">// 成员对象</span></span><br><span class="line">    <span class="keyword">double</span> score;  <span class="comment">// 分值</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">backward</span>;</span> <span class="comment">// 后退指针</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistLevel</span> &#123;</span> <span class="comment">// 层</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">forward</span>;</span> <span class="comment">// 前进指针</span></span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">int</span> span; <span class="comment">// 跨度</span></span><br><span class="line">    &#125; level[];</span><br><span class="line">&#125; zskiplistNode;</span><br></pre></td></tr></table></figure>
+
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221233542370.png" alt="image-20230221233542370" style="zoom:67%;">
+</li>
+<li><p>跳表创建节点时，生成范围为[0-1]的随机数，如果小于 0.25 层数就加 1 层，继续生成下一个随机数，直到随机数的结果大于 0.25，最终确定该节点的层数</p>
+</li>
+<li><p>为什么不用平衡树？</p>
+<ul>
+<li>经常需要执行 ZRANGE 或 ZREVRANGE 命令，作为链表遍历跳表——<strong>在做范围查找的时候，跳表比平衡树操作要简单</strong></li>
+<li>平衡树的插入和删除操作可能引发子树的调整，跳表的插入和删除只需要修改相邻节点的指针</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>应用：</p>
+<ul>
+<li>排行榜：相关命令包括<code>ZRANGE</code>（从小到大排序）、 <code>ZREVRANGE</code> （从大到小排序）、<code>ZREVRANK</code> （指定元素排名）</li>
+<li>电话排序、姓名排序</li>
+</ul>
+</li>
+</ul>
+<h4 id="BitMap"><a href="#BitMap" class="headerlink" title="BitMap"></a>BitMap</h4><ul>
+<li>一个 bit 数组</li>
+<li>应用：<ul>
+<li>签到统计</li>
+<li>判断用户登录状态：用一个bitmap存储所有用户，用户id为offset</li>
+<li>连续签到的用户：七天连续签到，则对应7个bitmap的offset上均为1</li>
+</ul>
+</li>
+</ul>
+<h4 id="HyperLogLogs"><a href="#HyperLogLogs" class="headerlink" title="HyperLogLogs"></a>HyperLogLogs</h4><ul>
+<li>底层结构：略，不精确的去重计数（输入元素很多时，计算基数所需的内存空间固定）</li>
+<li>应用：百万级以上的网页 UV 的场景，将访问指定页面的每个用户 ID 添加到 <code>HyperLogLog</code> 中，然后统计该页面的UV</li>
+</ul>
+<h4 id="Geo"><a href="#Geo" class="headerlink" title="Geo"></a>Geo</h4><ul>
+<li>直接使用 Sorted Set 集合类型</li>
+<li>GeoHash 编码方法实现经纬度到 Sorted Set 中元素权重分数的转换——关键机制是「对二维地图做区间划分」和「对区间进行编码」。一组经纬度落在某个区间后，用区间的编码值来表示，并把编码值作为 Sorted Set 元素的权重分数，根据“按权重进行有序范围查找”的特性实现“搜索附近”</li>
+<li>应用：搜索附近的人</li>
+</ul>
+<h4 id="Stream"><a href="#Stream" class="headerlink" title="Stream"></a>Stream</h4><ul>
+<li>支持消息队列</li>
+<li>应用：消息队列</li>
+</ul>
+<h3 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h3><ul>
+<li><p>Redis对读写是单线程模型。4.0后引入多线程执行大键值对的异步删除操作，6.0后引入多线程处理网络请求</p>
+</li>
+<li><p>Pipeline模式：客户端可以一次性发送多个命令，无需等待服务端返回，将多次I/O往返的时间缩短为一次。集群无法使用pipeline</p>
+</li>
+<li><p>单线程模型：</p>
+<ul>
+<li>基于 Reactor 模式的事件处理模型，即Redis 中的文件事件处理器（file event handler）</li>
+</ul>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219171226737.png" alt="image-20230219171226737" style="zoom:67%;">
+
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219171125253.png" alt="image-20230219171125253" style="zoom:67%;">
+
+<ul>
+<li>使用 I/O 多路复用程序同时监听多个套接字，根据套接字目前执行的任务为套接字关联不同的事件处理器</li>
+<li>被监听的套接字准备执行连接应答（accept）、读取（read）、写入（write）、关闭（close）等操作时，会产生对应的文件事件，此时文件事件处理器调用套接字关联的事件处理器来处理它们</li>
+<li>redis初始化时：<ul>
+<li>调用 epoll_create() 创建一个 epoll 对象</li>
+<li>调用 socket() 创建一个服务端 socket</li>
+<li>调用 bind() 绑定端口，调用 bind() 绑定端口</li>
+<li>调用 epoll_ctl() 将 listen socket 加入 epoll，注册连接事件处理函数</li>
+</ul>
+</li>
+<li>事件循环函数：<ul>
+<li>先调用<strong>处理发送队列函数</strong>，如果发送队列里有发送任务，通过 write 函数将发送缓存区的数据发给客户端。否则，注册写事件处理函数，等待 epoll_wait 发现可写后再处理 </li>
+<li>调用 epoll_wait 函数等待事件到来<ul>
+<li>连接事件：调用<strong>连接事件处理函数</strong>——调用 accpet 获取已连接的 socket -&gt; 调用 epoll_ctl 将已连接的 socket 加入 epoll -&gt; 注册读事件处理函数</li>
+<li>读事件：调用<strong>读事件处理函数</strong>——调用 read 获取客户端发送的数据 -&gt; 解析命令 -&gt; 处理命令 -&gt; 将客户端对象添加到发送队列 -&gt; 将执行结果写到发送缓存区等待发送</li>
+<li>写事件：调用<strong>写事件处理函数</strong>——如果发送队列里有发送任务，通过 write 函数将发送缓存区的数据发给客户端。否则，注册写事件处理函数，等待 epoll_wait 发现可写后再处理 </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>以单线程方式运行但使用 I/O 多路复用监听多个套接字，实现高性能的网络通信模型，并且能够与服务器中其他以单线程方式运行的模块对接，保持redis单线程设计的简单性</li>
+</ul>
+</li>
+<li><p>文件事件处理器（file event handler）包含 4 个部分：</p>
+<ul>
+<li>多个socket（客户端连接）</li>
+<li>IO 多路复用程序（支持多个客户端连接的关键）</li>
+<li>文件事件分派器（将 socket 关联到相应的事件处理器）</li>
+<li>事件处理器（连接应答处理器、命令请求处理器、命令回复处理器、主从连接处理器等）</li>
+</ul>
+</li>
+<li><p>之前不使用多线程：</p>
+<ul>
+<li>单线程的编程和维护简单</li>
+<li>性能瓶颈不在 CPU ，主要在内存和网络（单个线程处理网络读写的速度跟不上底层网络硬件的速度）</li>
+<li>多线程会存在死锁、线程上下文切换等问题，可能影响性能</li>
+</ul>
+</li>
+<li><p>引入多线程：<strong>提高网络IO读写性能，改善瓶颈；多线程只在网络数据读写这类耗时操作上使用，执行命令仍然是单线程顺序执行</strong>。开启需要设置IO线程数 &gt; 1，需要修改 redis 配置文件 <code>redis.conf</code>的<code>io-threads</code>，开启后默认只使用多线程IO writes，即发送数据给客户端。开启多线程读需要再改一个配置字段——官网描述开启多线程读并不能有太大的性能提升</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221217150918385.png" alt="image-20221217150918385" style="zoom:50%;">
+
+</li>
+</ul>
+<h3 id="内存管理与内存淘汰"><a href="#内存管理与内存淘汰" class="headerlink" title="内存管理与内存淘汰"></a>内存管理与内存淘汰</h3><ul>
+<li><p>给缓存数据设置过期时间，防止OOM，或者需要某个数据只在某一时间段内存在</p>
+</li>
+<li><p>除了字符串类型有设置过期时间的命令 <code>setex</code> 外，其他类型用 <code>expire key x</code>设置过期时间 。 <code>persist</code> 命令能移除一个键的过期时间</p>
+</li>
+<li><p>原理：</p>
+<ul>
+<li><p>通过过期字典（一个hash表）保存数据过期时间——查询一个键，先看是否在过期字典，以及是否过期</p>
+</li>
+<li><p>key指向redis的某个key，value是一个long long类型的整数，保存相应key的过期时间（毫秒精度的 UNIX 时间戳）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">redisDb</span> &#123;</span></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    dict *dict;     <span class="comment">//数据库键空间,保存着数据库中所有键值对</span></span><br><span class="line">    dict *expires   <span class="comment">// 过期字典,保存着键的过期时间</span></span><br><span class="line">    ...</span><br><span class="line">&#125; redisDb;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221234333382.png" alt="image-20230221234333382" style="zoom:67%;">
+</li>
+<li><p>删除策略</p>
+<ul>
+<li><strong>惰性删除</strong>：只在取出 key 时进行过期检查。对 CPU 友好，但对内存不友好——可能太多过期 key 没有被删除</li>
+<li><strong>定期删除</strong>： 每隔一段时间抽取一批 key 检查并删除过期的key。底层通过限制删除操作执行的时长和频率来减少删除操作对 CPU 时间的影响</li>
+<li>redis二者都用，即访问或者修改 key 之前都会检查是否过期，每轮抽查时随机选 20 个 key 判断是否过期（如果过期的占比超过0.25且检查过程没有超过25ms，则再选20个key判断，）</li>
+</ul>
+</li>
+<li><p>进一步，如果内存满了：内存淘汰机制：（MySQL 里有 2000w 数据，Redis 中只存 20w 的数据，如何保证 Redis 中的数据都是热点数据？redis内存满了怎么办？）</p>
+<ul>
+<li>volatile-lru（least recently used）：从已设置过期时间的数据集（server.db[i].expires）中淘汰最近最少使用的数据</li>
+<li>volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中淘汰将要过期的数据</li>
+<li>volatile-random：从已设置过期时间的数据集（server.db[i].expires）中淘汰任意数据</li>
+<li>allkeys-lru（least recently used）：内存不足时，键空间中移除最近最少使用的 key（这个是最常用的）</li>
+<li>allkeys-random：从数据集（server.db[i].dict）中淘汰任意数据</li>
+<li>no-eviction：禁止驱逐数据。内存不足时新写入操作报错</li>
+</ul>
+<p>4.0后增加：</p>
+<ul>
+<li>volatile-lfu（least frequently used）：从已设置过期时间的数据集（server.db[i].expires）中淘汰最不经常使用的数据</li>
+<li>allkeys-lfu（least frequently used）：内存不足时，键空间中淘汰最不经常使用的 key</li>
+</ul>
+</li>
+<li><p>LRU不会准确的删除所有键中最近最少使用的键，而是随机抽取5个键删除最少使用（具体数目由参数决定）——不用在每次数据访问时都移动链表项，也不用维护一个大的链表</p>
+</li>
+</ul>
+<h3 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h3><ul>
+<li><p>用于数据恢复。快照（snapshotting，RDB），只追加文件（append-only file，AOF）</p>
+</li>
+<li><p>RDB：Redis 默认，全量快照</p>
+<ul>
+<li>内存的数据在某个时间点上的副本</li>
+<li>xxmin后，xxx个key发生变化时拍摄快照</li>
+<li><code>save</code> : 主线程执行，会阻塞主线程；</li>
+<li><code>bgsave</code> : 子线程执行，不会阻塞主线程，默认选项（写时复制COW，子进程和父进程共享同一片内存数据）<ul>
+<li>主线程执行读操作和 bgsave 子进程互不影响</li>
+<li>主线程执行写操作，被修改的数据复制一份副本，bgsave 子进程把该副本数据写入 RDB 文件</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>AOF：实时性更好，主流方案</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219175704579.png" alt="image-20230219175704579" style="zoom: 50%;">
+
+<ul>
+<li><p>每执行一条更改 Redis 数据的命令，就将该命令写入到内存缓存 <code>server.aof_buf</code> ，根据 <code>appendfsync</code> 配置决定何时同步到硬盘的 AOF 文件。三种策略只是控制 <code>fsync()</code> 函数的调用时机——Always 策略每次写入 AOF 文件数据后就执行 fsync() ，Everysec 策略会创建一个异步任务执行 fsync() ，No 策略永不执行 fsync() </p>
+</li>
+<li><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">appendfsync</span> always    <span class="comment">#每次有数据修改发生时都会写入AOF文件,这样会严重降低Redis的速度</span></span><br><span class="line">appendfsync everysec  <span class="comment">#每秒钟同步一次，显式地将多个写命令同步到硬盘</span></span><br><span class="line">appendfsync <span class="literal">no</span>        <span class="comment">#让操作系统决定何时进行同步</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>执行完命令之后再记录日志</strong>——避免额外的语法检查开销，不会阻塞当前的命令执行。风险：数据可能丢失</p>
+</li>
+<li><p>AOF重写：</p>
+<ul>
+<li><p>自动重写 AOF 产生一个新的 AOF 文件，体积更小</p>
+</li>
+<li><p>在重写时，读取当前数据库中的所有键值对，然后将每一个键值对用一条命令记录到新的 AOF 文件，程序无须对现有 AOF 文件进行任何读入、分析或者写入操作</p>
+</li>
+<li><p>重写 AOF 过程由后台子进程 bgrewriteaof 完成</p>
+<ul>
+<li>子进程进行 AOF 重写期间，主进程可以继续处理命令请求</li>
+<li>子进程带有主进程的数据副本（<code>fork</code> 系统调用生成子进程时，主进程的页表会复制给子进程），如果使用线程，多线程间会共享内存，修改共享内存数据需要加锁来保证数据的安全，性能下降</li>
+</ul>
+</li>
+<li><p>为了解决重写期间主进程的写入和重写日志的数据不一致问题，服务器会维护一个 AOF 重写缓冲区，该缓冲区会在子进程创建新 AOF 文件期间，记录服务器执行的所有写命令，之后追加到新的AOF文件末尾</p>
+<ul>
+<li><p>重写期间，主进程将：</p>
+<ul>
+<li>执行客户端发来的命令；</li>
+<li>将执行后的写命令追加到 「AOF 缓冲区」</li>
+<li>将执行后的写命令追加到 「AOF 重写缓冲区」</li>
+</ul>
+</li>
+<li><p>当子进程完成 AOF 重写工作后，向主进程发送一条信号，主进程收到该信号后会调用一个信号处理函数，将 AOF 重写缓冲区中的所有内容追加到新的 AOF 的文件中，使得新旧两个 AOF 文件所保存的数据库状态一致，并重命名新 AOF 文件名，覆盖现有的 AOF 文件</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219180153047.png" alt="image-20230219180153047" style="zoom: 50%;">
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>RDB优势：文件很小，直接解析即可还原数据</p>
+</li>
+<li><p>AOF优势：安全性好，能够实时或者秒级持久化数据；RDB 文件是以特定的二进制格式保存，存在兼容问题；AOF 的格式易于理解和解析</p>
+</li>
+<li><p>4.0后可以混合持久化，AOF 重写时直接把 RDB 的内容写到 AOF 文件开头</p>
+</li>
+<li><p>COW：</p>
+<ul>
+<li>执行bgsave或重写AOF由子进程负责，子进程复制父进程的页表，二者虚拟内存不同但物理内存一致。父进程或者子进程向这个内存发起写操作时，CPU 触发<strong>写保护中断</strong>，操作系统在「写保护中断处理函数」里进行<strong>物理内存的复制</strong>，重新设置其内存映射关系</li>
+<li>两个阶段中父进程阻塞：<ul>
+<li>创建子进程中，要复制父进程的页表等数据结构</li>
+<li>写时复制会拷贝物理内存，拷贝越多阻塞时间越长</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>过期的数据：</p>
+<ul>
+<li><p>RDB：</p>
+<ul>
+<li>生成阶段：从内存状态持久化成 RDB（文件）的时候，会对 key 进行过期检查，过期的键「不会」被保存到新的 RDB 文件中</li>
+<li>加载阶段：<ul>
+<li>主服务器在载入 RDB 文件时，过期键「不会」被载入</li>
+<li>从服务器在载入 RDB 文件时，不论键是否过期都会被载入到数据库中——主从服务器在之后数据同步时，从服务器的数据会被清空</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>AOF：</p>
+<ul>
+<li>AOF 文件写入阶段：如果某个过期键还没被删除，AOF 文件会保留此过期键。当此过期键被删除，Redis 向 AOF 文件追加一条 DEL 命令来显式地删除该键值</li>
+<li>AOF 重写阶段：已过期的键不会被保存到重写后的 AOF 文件中</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><ul>
+<li>通过 <code>MULTI</code>，<code>EXEC</code>，<code>DISCARD</code> 和 <code>WATCH</code> 等命令实现事务：开始事务（<code>MULTI</code>）；命令入队；执行事务(<code>EXEC</code>)</li>
+<li>通过<code>DISCARD</code> 取消事务，通过 <code>WATCH</code> 监听指定的key，如果该key被其他客户端或会话修改，整个事务不会执行，而若被监视的 Key 的修改操作发生同一session且在事务内部。则执行成功</li>
+<li>Redis 事务在运行错误的情况下，除了出错的命令外，其他命令都能正常执行。并且不支持回滚（roll back），因此不是原子的</li>
+<li>事务中的每条命令都会与 Redis 服务器进行网络交互，因此浪费资源</li>
+<li>缺陷弥补：利用 Lua 脚本来批量执行多条 Redis 命令。脚本被提交到服务器一次性完成，且脚本执行过程中不会有其他脚本或 Redis 命令同时执行。虽然脚本运行时出错，后面命令不会执行，但不会回滚，因此也不是原子的</li>
+</ul>
+<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><ul>
+<li>bigkey：一个 key 对应的 value 所占用的内存比较大，例如超过10kb，复合类型的value包含的元素超过5000个<ul>
+<li>通过 Redis 自带的 <code>--bigkeys</code> 参数来查找：<code>redis-cli -p 6379 --bigkeys</code>，但只能找出每种数据结构 top 1 bigkey</li>
+<li>分析 RDB 文件</li>
+</ul>
+</li>
+<li>key集中过期：此时客户端必须等待定期清理过期 key 任务线程执行完成，使得请求不能被及时处理<ul>
+<li>给 key 设置随机过期时间</li>
+<li>开启 lazy-free（惰性删除/延迟释放）：Redis 异步延迟释放 key 使用的内存。该操作交给单独的子线程处理，避免阻塞主线程</li>
+</ul>
+</li>
+</ul>
+<h3 id="扩容与缩容"><a href="#扩容与缩容" class="headerlink" title="扩容与缩容"></a>扩容与缩容</h3><ul>
+<li><p>源码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">redisDb</span> &#123;</span></span><br><span class="line">    dict *dict;                 <span class="comment">/* The keyspace for this DB */</span></span><br><span class="line">    dict *expires;              <span class="comment">/* Timeout of keys with a timeout set */</span></span><br><span class="line">    dict *blocking_keys;        <span class="comment">/* Keys with clients waiting for data (BLPOP)*/</span></span><br><span class="line">    dict *ready_keys;           <span class="comment">/* Blocked keys that received a PUSH */</span></span><br><span class="line">    dict *watched_keys;         <span class="comment">/* WATCHED keys for MULTI/EXEC CAS */</span></span><br><span class="line">    <span class="keyword">int</span> id;                     <span class="comment">/* Database ID */</span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> avg_ttl;          <span class="comment">/* Average TTL, just for stats */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> expires_cursor; <span class="comment">/* Cursor of the active expire cycle. */</span></span><br><span class="line">    <span class="built_in">list</span> *defrag_later;         <span class="comment">/* List of key names to attempt to defrag one by one, gradually. */</span></span><br><span class="line">&#125; redisDb;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dict</span> &#123;</span></span><br><span class="line">    dictType *type;</span><br><span class="line">    <span class="keyword">void</span> *privdata;</span><br><span class="line">    dictht ht[<span class="number">2</span>]; <span class="comment">// 存储所有的数据，是一个散列表</span></span><br><span class="line">    <span class="keyword">long</span> rehashidx; <span class="comment">/* rehashing not in progress if rehashidx == -1 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> iterators; <span class="comment">/* number of iterators currently running */</span></span><br><span class="line">&#125; dict;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictht</span> &#123;</span></span><br><span class="line">    dictEntry **table;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> size;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> sizemask;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> used;</span><br><span class="line">&#125; dictht;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>哈希冲突：通过链表方式进行连接</p>
+</li>
+<li><p>扩容：翻倍扩容</p>
+<ul>
+<li>如果正在 fork （在 rdb、aof 复写以及 rdb-aof 混用情况下），会阻止扩容；但是若负载因子 &gt; 5，马上扩容——<strong>写时复制</strong>原理，只有在不得不复制数据内容时才去复制数据内容</li>
+<li>rehash的key存储的index要么在oldIndex，要么在oldIndex+oldSize</li>
+</ul>
+</li>
+<li><p>rehashindex就是已经index&lt; rehashindex的下标对应的链表已经迁移过了，迁移到 ht[1] 上，index &gt; rehashindex 还没迁移，index = rehashindex正在迁移</p>
+</li>
+<li><p>缩容：负载因子 &lt; 0.1（如果阈值是1，会造成频繁的扩缩容）</p>
+<ul>
+<li>假如此时数组存储元素个数为 9，则缩容为16</li>
+</ul>
+</li>
+<li><p>渐进式rehash：</p>
+<ul>
+<li>redis是一个数据库，里面存储的数据非常多，不能一次性 rehash 到ht[1]</li>
+<li>步骤：<ul>
+<li>为ht[1]分配空间，字典同时持有ht[0]和ht[1]两个哈希表</li>
+<li>rehashindex设置为0，表示rehash工作正式开始</li>
+<li>rehash期间，每次对字典执行增删改查操作，程序执行指定的操作外，还顺带将ht[0]哈希表在rehashindex索引上的所有键值对rehash到ht[1]。rehash工作完成后，rehashindex的值+1</li>
+<li>随着字典操作的不断执行，在某一时间段上ht[0]的所有键值对都会被rehash到ht[1]，将rehashindex的值设置为-1，表示rehash操作结束</li>
+<li>都迁移到了 ht[1] 后 （ht[0] 变为空表），释放 ht[0] ，ht[1] 设置为 ht[0] ，ht[1] 新建⼀个空哈希表， 为下⼀次 rehash 做准备</li>
+</ul>
+</li>
+<li>分而治之的方式，将rehash的操作分摊在每一个的访问中，避免集中式rehash而带来的庞大计算量</li>
+</ul>
+</li>
+</ul>
+<h3 id="生产问题"><a href="#生产问题" class="headerlink" title="生产问题"></a>生产问题</h3><h4 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h4><ul>
+<li><p>大量请求的 key 是不合理的，<strong>不存在于缓存中，也不存在于数据库</strong> ，导致这些请求直接到了数据库造成压力</p>
+</li>
+<li><p>方案：</p>
+<ul>
+<li>参数校验，对不合法的参数请求直接抛出异常信息</li>
+<li>缓存无效的key：此类数据写一个到redis并设置过期时间（一般比较短）。可以解决请求的 key 变化不频繁的情况</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">getObjectInclNullById</span><span class="params">(Integer id)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 从缓存中获取数据</span></span><br><span class="line">    Object cacheValue = cache.get(id);</span><br><span class="line">    <span class="comment">// 缓存为空</span></span><br><span class="line">    <span class="keyword">if</span> (cacheValue == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 从数据库中获取</span></span><br><span class="line">        Object storageValue = storage.get(key);</span><br><span class="line">        <span class="comment">// 缓存空对象</span></span><br><span class="line">        cache.set(key, storageValue);</span><br><span class="line">        <span class="comment">// 如果存储数据为空，需要设置一个过期时间(300秒)</span></span><br><span class="line">        <span class="keyword">if</span> (storageValue == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 必须设置过期时间，否则有被攻击的风险</span></span><br><span class="line">            cache.expire(key, <span class="number">60</span> * <span class="number">5</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> storageValue;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cacheValue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>所有可能存在的请求的值都存放在布隆过滤器中，先判断用户的请求的值是否存在于布隆过滤器<ul>
+<li>布隆过滤器：判断一个给定数据是否存在于海量数据中<ul>
+<li>加入过滤器：计算元素的哈希，根据hash值设置bit数组相应下标值为1</li>
+<li>判断：计算哈希，看相应位置是否为1</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a>缓存击穿</h4><ul>
+<li><p>缓存中某个热点数据过期，导致瞬时大量的请求直接访问数据库</p>
+</li>
+<li><p>方案：</p>
+<ul>
+<li>热点数据永不过期或者过期时间较长</li>
+<li>热点数据过期前，提前通知后台线程更新缓存以及重新设置过期时间</li>
+<li>数据库写数据到缓存之前，先获取互斥锁，保证只有一个请求会落到数据库上</li>
+</ul>
+</li>
+</ul>
+<h4 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h4><ul>
+<li><p>缓存在同一时间大面积的失效，导致大量的请求都直接落到数据库，对数据库造成巨大压力</p>
+</li>
+<li><p>可能原因：redis服务不可用，或者大量缓存失效（不只是某个热点数据不在缓存中）</p>
+</li>
+<li><p>方案：</p>
+<ul>
+<li>采用 Redis 集群或者 redis 服务限流</li>
+<li>随机设置缓存时间</li>
+</ul>
+</li>
+</ul>
+<h4 id="缓存预热"><a href="#缓存预热" class="headerlink" title="缓存预热"></a>缓存预热</h4><ul>
+<li>系统上线时，缓存内还没有数据，如果直接提供给用户使用，每个请求都会穿过缓存去访问底层数据库</li>
+<li>方案：<ul>
+<li>定时刷新缓存</li>
+<li>需要看当天的具体访问情况，试试统计出频率较高的热数据</li>
+</ul>
+</li>
+</ul>
+<h4 id="缓存和数据库数据一致性"><a href="#缓存和数据库数据一致性" class="headerlink" title="缓存和数据库数据一致性"></a>缓存和数据库数据一致性</h4><ul>
+<li><p>当数据发生更新时，不仅要操作数据库，还要一并操作缓存——更新数据库+更新缓存会带来顺序上的问题</p>
+<ul>
+<li>先更新数据库，后更新缓存——缓存更新成功，但数据库更新失败，那么当缓存过期，数据又是旧值</li>
+<li>先更新缓存，后更新数据库——数据库更新成功，但缓存更新失败，那么只有当缓存过期才能得到新值</li>
+<li>缓存中的值并不是与数据库中的值一一对应，可能有计算过程</li>
+<li>并发更新时，即使都成功，数据库和缓存中的值可能是不同的</li>
+</ul>
+</li>
+<li><p>更新数据库+删除缓存：</p>
+<ul>
+<li><p>并发问题：</p>
+<ul>
+<li>先删除缓存，后更新数据库：当存在读+写并发时，仍然存在不一致（A写的时候删除了缓存，B读的时候读取数据库旧值，A更新数据库后B向缓存写入旧值）<ul>
+<li>解决：可以延迟双删——先淘汰缓存，再写数据库（这两步和原来一样），过1秒再次淘汰缓存</li>
+<li>第二次可以用另一个线程异步删除，从而写请求就不用沉睡一段时间后再返回，从而提高吞吐量</li>
+<li>重试机制解决删除缓存失败的问题</li>
+</ul>
+</li>
+<li>先更新数据库，后删除缓存：缓存刚好失效（不失效的话A不会向缓存写入旧值），A读取数据库旧值，B更新数据库并删除缓存，A向缓存写入旧值——但这要求缓存失效、读写并发、更新数据库+删除缓存的速度快于读数据库+写缓存，而写数据库更慢，因此保证数据一致</li>
+</ul>
+</li>
+<li><p>通过异步重试（MQ），保证第二步发生失败后，能够重连实现一致（旁路缓存模式）</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218123720755.png" alt="image-20221218123720755" style="zoom:30%;">
+</li>
+<li><p>订阅数据库变更日志（bin log），再操作缓存。此时只需修改数据库，无需操作缓存（拿到具体操作的数据，然后再根据这条数据去删除对应的缓存）</p>
+</li>
+</ul>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218124239162.png" alt="image-20221218124239162" style="zoom:30%;">
+</li>
+<li><p>Cache Aside Pattern（旁路缓存模式）：更新 DB，直接删除 cache</p>
+<ul>
+<li>如果更新数据库成功，而删除缓存这一步失败的情况的话，可以每隔一段时间重试。如果多次重试仍旧失败，则将更新失败的key放入队列。redis可用后再根据该队列删除缓存中的key</li>
+<li>延迟失效：写请求开始前给缓存设置1s过期时间</li>
+</ul>
+</li>
+<li><p>Read/Write Through Pattern（读写穿透）：把 cache 视为主要数据存储，从中读取数据并将数据写入其中。cache 服务将此数据读取和写入 db（redis没有提供这个功能）</p>
+<ul>
+<li>写：先查 cache，cache 未命中则直接更新 db。命中则先更新 cache，cache 服务自己更新 db</li>
+<li>读：从 cache 中读取数据，命中则直接返回 。未命中则从 db 加载，写入 cache 后返回</li>
+</ul>
+</li>
+<li><p>Write Back Pattern（异步缓存写入）：更新数据的时候，只更新缓存，同时将缓存数据设置为脏的，然后立马返回，并不会更新数据库。对于数据库的更新，会通过批量异步更新的方式进行。适合数据经常变化又对数据一致性要求没那么高的场景，比如浏览量、点赞量</p>
+</li>
+</ul>
+<h4 id="缓存降级"><a href="#缓存降级" class="headerlink" title="缓存降级"></a>缓存降级</h4><ul>
+<li>当访问量剧增、服务出现问题（如响应时间慢或不响应）或非核心服务影响到核心流程的性能时，即使是有损部分其他服务，仍然需要保证主服务可用</li>
+</ul>
+<h4 id="分布式锁的实现"><a href="#分布式锁的实现" class="headerlink" title="分布式锁的实现"></a>分布式锁的实现</h4><ul>
+<li><p>有些场景中为了保证数据一致，要保证某一方法/共享资源同一时刻只能被一个线程访问（高并发下争夺共享资源）</p>
+</li>
+<li><p>要满足：</p>
+<ul>
+<li>互斥 ：任意一个时刻锁只能被一个客户端获取锁</li>
+<li>高可用 ：锁服务是高可用的。即使客户端释放锁的代码出现问题，锁还是会被释放</li>
+<li>可重入：一个客户端获取锁之后，还可以再次获取锁</li>
+</ul>
+</li>
+<li><p><code>SETNX</code> 命令实现互斥地获取锁——如果key不存在，才设置key的值，否则啥也不做； <code>DEL</code> 命令删除对应的锁（通过lua脚本保证解锁的原子性，需要先比较锁对应地value值是否相等，防止误删）</p>
+</li>
+<li><p>为避免锁无法被释放，需要给锁设置过期时间（加锁和设置过期时间要为一个原子操作）</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> lockKey <span class="comment">uniqueValue EX 3 NX</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>lockKey ：加锁的锁名；</li>
+<li>uniqueValue ：能够唯一标示锁的随机字符串；（释放锁时先检查这个标识，看这个锁是否是当前进程的锁）</li>
+<li>NX ：只有当 lockKey 对应的 key 值不存在的时候才能 SET 成功；</li>
+<li>EX ：过期时间设置（秒为单位）。PX以毫秒为单位</li>
+</ul>
+</li>
+<li><p>锁的续期：Redisson提供了一个监控和续期锁的 Watch Dog，如果操作共享资源的线程还未执行完成，调用 Lua 脚本实现续期（原子性）——只有未指定锁超时时间，才会使用 Watch Dog 自动续期</p>
+</li>
+<li><p>集群下分布式锁的可靠性：Redlock算法</p>
+<ul>
+<li>对于Redis的主从结构中出现的主服务器宕机情况（单点故障），客户端A已经获取到锁，但是主服务器还没来得及将键复制到从服务器，并且从服务器晋升为了主服务器，这时客户端B也可以获取锁，锁互斥效果失效</li>
+<li><strong>客户端向 Redis 集群中多个独立的 Redis 依次请求加锁，如果和半数以上的实例完成加锁操作，那么客户端获得分布式锁，否则加锁失败</strong><ul>
+<li>第一步，客户端获取当前时间（t1）</li>
+<li>第二步，客户端按顺序向 N 个 Redis 节点执行加锁操作</li>
+<li>第三步，一旦客户端从超过半数（大于等于 N/2+1）的 Redis 节点上成功获取到了锁，再次获取当前时间（t2），计算加锁过程的总耗时（t2-t1）。如果 t2-t1 &lt; 锁的过期时间，认为客户端加锁成功，否则认为加锁失败</li>
+<li>加锁失败，客户端向<strong>所有 Redis 节点发起释放锁的操作</strong></li>
+</ul>
+</li>
+<li>和zk的区别：zk不需要设置过期时间，它通过watcher机制和临时节点来使得锁自动释放；redlock的性能高于zk，但需要假设多个节点机器时钟都是一致的；redlock中的实例，指的是主服务器，因此需要至少三台主服务器</li>
+</ul>
+</li>
+</ul>
+<h4 id="共享Session"><a href="#共享Session" class="headerlink" title="共享Session"></a>共享Session</h4><ul>
+<li><p>无论请求发送到哪个服务器，都去同一个 Redis 获取Session信息</p>
+</li>
+<li><p>redis再借助集群实现可用</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230221161728520.png" alt="image-20230221161728520" style="zoom:50%;">
+
+</li>
+</ul>
+<h4 id="消息队列的实现"><a href="#消息队列的实现" class="headerlink" title="消息队列的实现"></a>消息队列的实现</h4><ul>
+<li><p>利用 高效可靠 的 消息传递机制 进行与平台无关的 数据交流，基于数据通信实现分布式系统的集成</p>
+</li>
+<li><p>特点：</p>
+<ul>
+<li>生产者、消费者、消息处理中心</li>
+<li>异步处理：生产者将消息发送到消息队列，无须等待响应。消费者订阅或监听该通道，取出消息。互不干扰，不需要同时在线</li>
+<li>可靠性：消息不丢失、不重复消费、顺序性保证</li>
+</ul>
+</li>
+<li><p>List实现消息队列：（点对点的消息模型）</p>
+<ul>
+<li>列表是简单的字符串列表，按照插入顺序排序。可以添加一个元素到列表的头部（左边）或者尾部（右边）</li>
+<li>需要延后处理的任务结构体序列化成字符串塞进 Redis 列表，另一个线程从这个列表中轮询数据进行处理——保证消息有序<ul>
+<li><code>LPUSH</code>、<code>RPUSH</code>、<code>RPOP</code>、<code>LPOP</code>、<code>BLPOP</code>、<code>BRPOP</code> （阻塞式读取，客户端在没有读到队列数据时，自动阻塞，直到有新的数据写入队列，不需要消费者循环调用POP）</li>
+<li>在消费数据时，同一个消息不会同时被多个 <code>consumer</code> 消费掉——Redis单线程</li>
+</ul>
+</li>
+<li>ack机制（读取消息的可靠性）：<ul>
+<li>消费者向队列报告消息已收到或已处理（上面的命令，如果消费者崩溃，则消息无法还原）</li>
+<li>通过<code>RPOPLPUSH</code>、<code>BRPOPLPUSH</code> （阻塞），从一个 list 中获取消息，并把这条消息复制到另一个 list 里（可以当做备份）。在业务流程安全结束后，再删除队列元素</li>
+</ul>
+</li>
+<li>重复消息处理：自行为每个消息生成一个全局唯一的id</li>
+<li>缺陷：<strong>不支持多个消费者消费同一条消息</strong></li>
+</ul>
+</li>
+<li><p>订阅与发布：（消息多播），没有ack机制，没有持久化——没有基于任何数据类型实现，发布/订阅机制的相关操作不会写入到 RDB 和 AOF 中，当 Redis 宕机重启，发布/订阅机制的数据也会全部丢失</p>
+<ul>
+<li><p>通过 <code>PUBLISH</code> 、 <code>SUBSCRIBE</code> 等命令实现了订阅与发布模式</p>
+<ul>
+<li><p>发布到频道：频道可以理解为一个 Redis 的 key </p>
+<ul>
+<li><pre><code>subscribe frame
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* ```</span><br><span class="line">  publish frame a</span><br></pre></td></tr></table></figure></code></pre>
+</li>
+<li><p>此时订阅的客户端会收到三个参数的消息：消息种类、频道名称、实际的消息</p>
+</li>
+</ul>
+</li>
+<li><p>发布到模式：模式可以理解为一个类似正则匹配的 key，一次性订阅多个频道</p>
+<ul>
+<li><pre><code>psubscribe frame.*
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* ```</span><br><span class="line">  publish frame.x a</span><br></pre></td></tr></table></figure></code></pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>streams实现消息队列：消息能够被持久化，任何客户端访问任何时刻的数据</p>
+<ul>
+<li>是个仅追加内容的消息链表，消息链表有唯一的名称（key），把所有加入的消息都串起来，每个消息都有一个唯一的 ID 和对应的内容</li>
+<li>消息保序：XADD/XREAD</li>
+<li>当没有数据时，阻塞住：调用 XRAED 时设定 BLOCK 配置项，实现类似于 BRPOP 的阻塞读取操作</li>
+<li>消息唯一：在使用 XADD 命令时，自动生成全局唯一 ID</li>
+<li>消息可靠性：使用 PENDING List 自动保存消息，消费者在重启后，用 XPENDING 查看已读取但尚未确认处理完成的消息</li>
+</ul>
+</li>
+<li><p>缺陷：</p>
+<ul>
+<li>Redis 本身可能会丢数据，例如AOF时宕机</li>
+<li>面对消息挤压，内存资源紧张</li>
+</ul>
+</li>
+</ul>
+<h4 id="延迟队列"><a href="#延迟队列" class="headerlink" title="延迟队列"></a>延迟队列</h4><ul>
+<li>把当前要做的事情，往后推迟一段时间再做。例如，取消订单</li>
+<li>使用有序集合（ZSet），Score 属性存储延迟执行的时间</li>
+<li>使用 zadd score1 value1 命令往内存中生产消息。用 zrangebysocre 查询符合条件的所有待处理的任务， 通过循环执行队列任务即可</li>
+</ul>
+<h4 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h4><ul>
+<li><p>计数器：内通过原子类计数器<code>AtomicInteger</code>、<code>Semaphore</code>信号量来做简单的限流</p>
+</li>
+<li><p>lua脚本（原子操作）：检查一个key对应的value是否小于limit，如果小于则value+1，设置过期时间为一秒后，如果大于则拒绝</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 获取调用脚本时传入的第一个key值（用作限流的 key）</span></span><br><span class="line"><span class="keyword">local</span> key = KEYS[<span class="number">1</span>]</span><br><span class="line"><span class="comment">-- 获取调用脚本时传入的第一个参数值（限流大小）</span></span><br><span class="line"><span class="keyword">local</span> limit = <span class="built_in">tonumber</span>(ARGV[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 获取当前流量大小</span></span><br><span class="line"><span class="keyword">local</span> curentLimit = <span class="built_in">tonumber</span>(redis.call(<span class="string">&#x27;get&#x27;</span>, key) <span class="keyword">or</span> <span class="string">&quot;0&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 是否超出限流</span></span><br><span class="line"><span class="keyword">if</span> curentLimit + <span class="number">1</span> &gt; limit <span class="keyword">then</span></span><br><span class="line">    <span class="comment">-- 返回(拒绝)</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="comment">-- 没有超出 value + 1</span></span><br><span class="line">    redis.call(<span class="string">&quot;INCRBY&quot;</span>, key, <span class="number">1</span>)</span><br><span class="line">    <span class="comment">-- 设置过期时间为1秒钟以后</span></span><br><span class="line">    redis.call(<span class="string">&quot;EXPIRE&quot;</span>, key, <span class="number">2</span>)</span><br><span class="line">    <span class="comment">-- 返回(放行)</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="动态缓存热点数据"><a href="#动态缓存热点数据" class="headerlink" title="动态缓存热点数据"></a>动态缓存热点数据</h4><ul>
+<li>通过数据最新访问时间来做排名，过滤掉不常访问的数据，只留下经常访问的数据</li>
+<li>Top 1000 的商品：先存一个排序队列，定期过滤队列中排名最后的 200 个商品，数据库随机读取出 200 个商品加入队列</li>
+</ul>
+<h4 id="去重"><a href="#去重" class="headerlink" title="去重"></a>去重</h4><ul>
+<li>基于set去重（如果元素个数很大，消耗内存太多）</li>
+<li>基于bitmap去重（要求元素能否简单映射为位偏移）</li>
+<li>基于Hyperloglog去重（实现超大数据量精确的近似唯一计数——HyperLogLog Counting）</li>
+<li>基于布隆过滤器去重（利用类似位图或者位集合数据结构来存储数据，需要插件）</li>
+</ul>
+<h3 id="Redis集群"><a href="#Redis集群" class="headerlink" title="Redis集群"></a>Redis集群</h3><ul>
+<li>单机模式</li>
+<li>主从模式：master 节点挂掉后，需要手动指定新的 master，可用性不高</li>
+<li>哨兵模式：master 节点挂掉后，哨兵进程主动选举新的 master，可用性高，每个节点存储的数据相同</li>
+<li>Redis cluster：所有主节点的容量总和是Redis cluster可缓存的数据容量</li>
+</ul>
+<h4 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h4><ul>
+<li><p>支持多个数据库之间的数据同步。主数据库可以进行读写操作，从数据库一般是只读</p>
+</li>
+<li><p>不是强一致，主服务器在本地执行完命令就会向客户端返回结果</p>
+</li>
+<li><p>服务器B执行<code>replicaof &lt;服务器 A 的 IP 地址&gt; &lt;服务器 A 的 Redis 端口号&gt;</code>，成为A的从服务器</p>
+</li>
+<li><p>过程：</p>
+<ul>
+<li><p>启动一个从节点时，它会发送一个 PSYNC 命令给主节点（主服务器的runid和自己的复制进度）</p>
+</li>
+<li><p>如果是从节点初次连接到主节点，会触发一次全量复制。主节点启动一个后台线程，生成一份 RDB 快照文件，client 新收到的写命令缓存在内存</p>
+</li>
+<li><p>主节点将 RDB 文件发送给从节点</p>
+</li>
+<li><p>从节点先将 RDB 文件写入本地磁盘，再从本地磁盘加载到内存</p>
+</li>
+<li><p>主节点将缓存的写命令发送到从节点，从节点同步</p>
+</li>
+<li><p>从节点跟主节点之间网络出现故障，会自动重连，主节点仅将缺失的数据同步给从节点</p>
+</li>
+<li><p>后续双方维护一个TCP长连接，保持状态一致</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230222205519815.png" alt="image-20230222205519815" style="zoom: 67%;">
+</li>
+</ul>
+</li>
+<li><p>全量复制如上。当二者断开一段时间重新连接时，进行增量复制：</p>
+<ul>
+<li>快照一致，并将offset后面的内容的修改命令发给slave（此时psync中的offset不是-1）</li>
+<li>主节点维护一个环形缓冲区，以及缓冲区的同步进度（主节点有 master_repl_offset 记录「<em>写</em>」到的位置，从节点有 slave_repl_offset 记录「<em>读</em>」到的位置）</li>
+<li>当从节点重新连上主节点，从节点通过 psync 将复制偏移量 slave_repl_offset 发送给主节点，主节点根据 master_repl_offset 和 slave_repl_offset 之间的差距，来决定对从节点执行哪种同步操作——从节点要读取的数据还在缓冲区，则增量复制，否则全量复制</li>
+</ul>
+</li>
+<li><p>过期的数据：从库不会进行过期扫描，即使从库中的 key 过期，客户端也可以得到 key 对应的值；主节点通过淘汰算法淘汰了一个key，则发送一条del命令给从节点</p>
+</li>
+<li><p>Redis 主节点每次收到写命令之后，先写到内部的缓冲区，然后异步发送给从节点</p>
+</li>
+<li><p>Redis如何判断节点是否工作：</p>
+<ul>
+<li>主节点默认每 10 秒对从节点发送 ping 命令，判断从节点的存活性和连接状态</li>
+<li>从节点每 1 秒发送 replconf ack{offset} 命令，上报自身的复制偏移量</li>
+</ul>
+</li>
+<li><p>数据丢失：</p>
+<ul>
+<li>同步时丢失：主节点先写入，然后返回响应给客户端，再将写请求同步给从节点。如果此时断电，则主节点的数据丢失<ul>
+<li>有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过 min-slaves-max-lag，主节点会拒绝接收任何请求</li>
+<li>该参数为10s，则能将 master 和 slave 数据差控制在10s内</li>
+</ul>
+</li>
+<li>脑裂：<ul>
+<li>当主节点发现「从节点下线的数量太多」，或者「网络延迟太大」的时候，那么主节点会禁止写操作，直接把错误返回给客户端</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="哨兵：主从节点故障转移"><a href="#哨兵：主从节点故障转移" class="headerlink" title="哨兵：主从节点故障转移"></a>哨兵：主从节点故障转移</h4><img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221218155230713.png" alt="image-20221218155230713" style="zoom:50%;">
+
+<ul>
+<li>自动切换主从节点。客户端先连接哨兵，哨兵告知主节点的地址，客户端再进行操作</li>
+<li>原理：<ul>
+<li><strong>监控</strong>：每个 Sentinel 每秒钟向所知道的Master、Slave、其他 Sentinel 实例发送PING命令，如果某个实例最后一次有效回复的时间超过指定值， 实例被 Sentinel 标记为主观下线——需要哨兵集群，防止哨兵出问题</li>
+<li>如果一个 Master 被标记为主观下线，该sentinal询问其他sentinel对主节点的判断。 当有超过<code>quorum</code>个 Sentinel （大于等于配置文件指定值）在指定的时间范围内确认 Master 主观下线，Master 会被标记为客观下线。若 Master 重新向 Sentinel 的 PING 命令返回有效回复，主观下线状态被移除</li>
+<li><strong>选举</strong>：哨兵节点会选举哨兵 leader，负责故障转移——哪个哨兵节点判断主节点为「客观下线」，哪个就是候选者<ul>
+<li>每个哨兵节点只有一票</li>
+<li>要拿到半数以上的赞成票，且票数大于等于quorum </li>
+</ul>
+</li>
+<li><strong>通知</strong>：哨兵 leader 会推选出某个表现良好的从节点成为新的主节点，然后通知其他从节点更新主节点信息</li>
+</ul>
+</li>
+<li>选举哨兵leader：<ul>
+<li>用Raft协议实现Sentinel间选举Leader的算法</li>
+<li>一个Sentinel节点确认redis集群的主节点客观下线后，让其他Sentinel节点将自己选举为Leader</li>
+<li>得票超过quorum且超过Sentinel节点数一半时，成为leader</li>
+<li>如果此过程选举出了多个领导者，那么重新进行选举</li>
+</ul>
+</li>
+<li>选举新的master：按照如下顺序选择新的master<ul>
+<li>较低的slave_priority（在配置文件中指定，默认配置为100）</li>
+<li>较大的replication offset（每个slave在与master同步后offset自动增加，offset表明主从复制偏移量）</li>
+<li>较小的runid（每个redis实例启动后会有一个随机的runid）</li>
+<li>看哪个slave节点处理之前master发送的command多</li>
+</ul>
+</li>
+<li>故障转移过程：<ul>
+<li>sentinel leader从slave中选举出合适的从节点进行故障转移</li>
+<li>选取的slave执行slave of no one</li>
+<li>更新应用程序端的链接到新的主节点（通过 Redis 的发布者/订阅者机制来实现。每个哨兵节点提供发布者/订阅者机制，客户端可以从哨兵订阅消息）</li>
+<li>对其他从节点变更master为新的节点（向从服务器发送SLAVEOF命令）</li>
+<li>修复原来的master并将其设置为新master的slave</li>
+<li>执行一次全量复制</li>
+</ul>
+</li>
+<li>哨兵节点之间通过 Redis 的发布者/订阅者机制来相互发现。主节点有一个名为<code>__sentinel__:hello</code>的频道，哨兵 A 把自己的 IP 和端口发布到<code>__sentinel__:hello</code> 频道，哨兵 B 和 C 订阅该频道后可以从这个频道直接获取 A 的 IP 和端口号</li>
+</ul>
+<h4 id="切片集群"><a href="#切片集群" class="headerlink" title="切片集群"></a>切片集群</h4><ul>
+<li><p>所有主节点的容量总和就是Redis cluster可缓存的数据容量</p>
+</li>
+<li><p>无中心架构，支持动态扩容； 节点间数据共享，可动态调整数据分布； 高可用性，能够实现自动故障转移，用投票机制完成 Slave 到 Master 的角色转换（集群中所有master参与投票，半数以上master与一个master节点通信超时）</p>
+</li>
+<li><p>cluster实现Redis的分布式存储，节点最小配置6个节点以上（3主3从），主节点提供读写操作，从节点作为备用节点只作为故障转移</p>
+</li>
+<li><p>Redis cluster采用哈希槽处理数据和节点的映射关系，所有的键根据哈希函数映射到0～16383个整数槽，每个节点维护一部分槽以及槽所映射的键值数据</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230219201428011.png" alt="image-20230219201428011" style="zoom:67%;">
+</li>
+<li><p>哈希槽如何映射到 Redis 实例上？</p>
+<ul>
+<li> 对键值对的 key 使用 crc16 算法计算一个16bit结果</li>
+<li>结果对 16384 取余（&amp; 16383），得到 key 对应的哈希槽，根据该槽信息定位对应的实例</li>
+</ul>
+</li>
+<li><p>节点之间如何通信？</p>
+<ul>
+<li>建立TCP连接，使用gossip协议——master节点彼此不断通信交换信息，一段时间后集群所有的节点都会有完整的（集群）信息</li>
+</ul>
+</li>
+<li><p>16384：</p>
+<ul>
+<li><code>CRC16</code>算法产生的hash值有16bit，有2的16次方65536个值</li>
+<li>节点通信时，消息头中会带有一个bitmap，每一个位代表一个槽，如果该位为1，表示这个槽属于这个节点，如果槽位时65536，则消息头为8k。浪费带宽</li>
+<li>redis的集群主节点数量基本不可能超过1000个</li>
+<li>16374/8/1024刚好为2，即此时消息头为2kb</li>
+</ul>
+</li>
+<li><p>缺点： </p>
+<ul>
+<li>不支持批量操作（pipeline）</li>
+<li>数据通过异步复制，不保证数据的强一致性</li>
+<li>事务操作支持有限，只支持多 key 在同一节点上的事务操作</li>
+<li>key 作为数据分区的最小粒度，不能将一个很大的键值对象如 hash 、 list 等映射到不同的节点</li>
+</ul>
+</li>
+<li><p>脑裂问题：</p>
+<ul>
+<li>问题发生：<ul>
+<li>主节点和从节点、哨兵失联，客户端向主节点发送写请求</li>
+<li>哨兵选择新的leader后连上旧leader，旧leader成为从节点后和新leader同步，原先的写入数据丢失</li>
+</ul>
+</li>
+<li>解决方案：当主节点发现从节点下线或者通信超时的总数量小于阈值时，禁止主节点写数据，直接把错误返回给客户端</li>
+</ul>
+</li>
+</ul>
+<h3 id="一致性哈希"><a href="#一致性哈希" class="headerlink" title="一致性哈希"></a>一致性哈希</h3><ul>
+<li><p>redis使用哈希槽不用一致性哈希，为什么？</p>
+<ul>
+<li>Hash slot 可以做到数据分配更均匀——有 N 个节点，每个节点准确地承担 1/N 的容量</li>
+<li>Hash slot 更便捷的新增/删除节点——新增 R4 节点，只需要从 R1、R2、R3 挪一部分 slot 到 R4 上，删除 R1 节点，只需将 R1 中 slot 移到 R2 和 R3 节点上, 节点之间的槽移动不会停止服务</li>
+<li>一致性哈希的节点分布基于圆环，无法很好的手动控制数据分布，比如有些节点的硬件差，希望少存一点数据，这种很难操作（还得通过虚拟节点映射，总之较繁琐）；哈希槽位空间可以用户手动自定义分配的，类似于 windows 盘分区的概念，手动控制大小</li>
+</ul>
+</li>
+<li><p>一致性哈希：</p>
+<ul>
+<li><p>用于负载均衡，将客户请求分配到多个节点上</p>
+</li>
+<li><p>如果用一般的哈希算法，则当节点扩容，必须迁移改变了映射关系的数据，否则会出现查询不到数据的问题</p>
+</li>
+<li><p>原理：</p>
+<ul>
+<li>一致性哈希对 $2^{32}$ 取模，把取模运算的结果组织成一个圆环（<strong>哈希环</strong>），对存储节点进行哈希计算，数据进行存储或访问时，对数据进行哈希映射——<strong>一致性哈希是指将「存储节点」和「数据」都映射到一个首尾相连的哈希环上</strong></li>
+<li>映射的结果值往<strong>顺时针的方向的找到第一个节点</strong>，就是存储该数据的节点</li>
+<li>一致哈希算法中，增加或者移除一个节点仅影响该节点在哈希环上顺时针相邻的后继节点，其它数据不受影响</li>
+</ul>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230223232815262.png" alt="image-20230223232815262" style="zoom: 50%;">
+</li>
+<li><p>缺陷：不保证节点能够在哈希环上分布均匀，会有大量的请求集中在一个节点上。如果节点A移除，B的数据量、访问量会急速增加，一旦超过B的处理上限，B崩溃，进而导致“雪崩”</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230223232949371.png" alt="image-20230223232949371" style="zoom: 50%;">
+</li>
+<li><p>解决：不将真实节点映射到哈希环上，而是将虚拟节点映射到哈希环上，并将虚拟节点映射到实际节点——「两层」映射关系</p>
+<ul>
+<li><p>例如，A、B、C都映射为三个虚拟节点，交叉分布</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20230223233243894.png" alt="image-20230223233243894" style="zoom: 50%;">
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><h3 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h3><ul>
+<li>CAP：对于一个分布式系统，当设计读写操作时只能同时满足两个（一般都是cp和ap，Eureka为ap）：<ul>
+<li><strong>一致性（Consistency）</strong> : 所有节点访问同一份最新的数据副本</li>
+<li><strong>可用性（Availability）</strong>: 非故障的节点在合理的时间内返回合理的响应（不是错误或者超时的响应）</li>
+<li><strong>分区容错性（Partition Tolerance）</strong> : 分布式系统出现网络分区的时候，仍然能够对外提供服务</li>
+<li>三选二：（三种特性都是范围类型）<ul>
+<li>满足C，所有的机器上的数据都是一样：每当一个新数据新增到其中一个服务器上，这个数据要同步到其它服务器，这样才可以保证C</li>
+<li>满足A：用户随时都在访问，都能在可控的时间内返回正确的数据</li>
+<li>满足P：非常可靠，必须是机器越多越可靠，为啥？我有1亿台服务器，挂了几万台，完全没影响</li>
+<li>满足C和A，那么P能不能满足呢？<ul>
+<li>满足C需要所有的服务器的数据要一样，也就是说要实现数据的同步，同步也要时间，并且机器越多，同步的时间肯定越慢，这里问题就来了，我们同时也满足了A，也就是说，我要同步时间短才行。这样的话，机器就不能太多了，也就是说P是满足不了的</li>
+</ul>
+</li>
+<li>满足C和P，那么A能不能满足呢？<ul>
+<li>满足P需要很多服务器，假设有1000台服务器，同时满足了C，也就是说要保证每台机器的数据都一样，那么同步的时间可就很大，在这种情况下，我们肯定是不能保证用户随时访问每台服务器获取到的数据都是最新的，想要获取最新的，可以，你就等吧，等全部同步完了，你就可以获取到了，但是我们的A要求短时间就可以拿到想要的数据啊，这不就是矛盾了，所以说这里A是满足不了了</li>
+</ul>
+</li>
+<li>满足A和P，那么C能不能满足呢？<ul>
+<li>满足P的话，需要多台服务器，而满足C的话，只有一台服务器才可以满足，这和P矛盾。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>一个开源的分布式协调服务（CP，任何时刻对 ZooKeeper 的读请求都能得到一致性的结果，不保证每次请求的可用性，比如可能在选举或者半数以上的机器不可用），将数据保存在内存</li>
+<li>特点：<ul>
+<li>顺序一致性： 同一客户端发起的事务请求会按照顺序被应用到 ZooKeeper</li>
+<li>原子性： 要么整个集群中所有的机器都成功应用了某一个事务，要么都没有应用</li>
+<li>单一系统映像 ： 客户端连到任意一个zk服务器，看到的服务端数据模型一致</li>
+<li>可靠性： 一旦更改请求被应用，更改的结果会被持久化，直到被下一次更改覆盖</li>
+</ul>
+</li>
+</ul>
+<h3 id="Zookeeper数据模型"><a href="#Zookeeper数据模型" class="headerlink" title="Zookeeper数据模型"></a>Zookeeper数据模型</h3><ul>
+<li><p>层次化的多叉树形结构，每个节点都可以存储数据（数字、字符串、二级制序列），根节点以“/”来代表。数据节点为 znode（最大为1M），每个 znode 都有一个唯一的路径标识</p>
+<img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221212162750065.png" alt="image-20221212162750065" style="zoom:67%;">
+
+</li>
+</ul>
+<h3 id="znode"><a href="#znode" class="headerlink" title="znode"></a>znode</h3><ul>
+<li>类型：<ul>
+<li>持久（PERSISTENT）节点 ：一旦创建就一直存在，直到将其删除</li>
+<li>临时（EPHEMERAL）节点 ：生命周期与客户端会话（session） 绑定，会话消失则节点消失 。只能做叶子节点 ，不能创建子节点</li>
+<li>持久顺序（PERSISTENT_SEQUENTIAL）节点 ：持久节点，且子节点名具有顺序性。如 <code>/node1/app01</code> 、<code>/node1/app02</code> </li>
+<li>临时顺序（EPHEMERAL_SEQUENTIAL）节点 ：临时节点，节点名为自增的数字</li>
+</ul>
+</li>
+<li>数据结构：stat ：状态信息 + data ： 节点存放的数据的具体内容<ul>
+<li>stat：myid、节点创建时的事务id、节点被修改时最新事务 ID（mZxid）、节点创建时间（time ）、子节点个数（numChildren）、当前 znode 节点的版本号（dataVersion）、当前 znode 子节点的版本（cversion）、当前 znode 的 ACL 的版本（aclVersion）</li>
+<li>每更新一次节点内容值增加 1、当前节点的子节点每次变化时值增加 1、节点 ACL 信息变更次数</li>
+</ul>
+</li>
+</ul>
+<h3 id="ACL：AccessControlLists"><a href="#ACL：AccessControlLists" class="headerlink" title="ACL：AccessControlLists"></a>ACL：AccessControlLists</h3><ul>
+<li>类似unix的权限控制：<ul>
+<li>CREATE：能创建子节点</li>
+<li>READ：能获取节点数据和列出子节点</li>
+<li>WRITE：能设置/更新节点数据</li>
+<li>DELETE：能删除子节点</li>
+<li>ADMIN：能设置节点 ACL 的权限</li>
+</ul>
+</li>
+<li>身份认证方式：<ul>
+<li>world：默认，所有用户可无条件访问</li>
+<li>auth：不使用任何 id，代表任何已认证的用户</li>
+<li>digest：用户名:密码认证</li>
+<li>ip：对指定 ip 做限制</li>
+</ul>
+</li>
+</ul>
+<h3 id="Watcher：事件监听器"><a href="#Watcher：事件监听器" class="headerlink" title="Watcher：事件监听器"></a>Watcher：事件监听器</h3><ul>
+<li>用户在指定节点上注册，一些特定事件触发时，ZooKeeper 服务端将事件通知到感兴趣的客户端</li>
+<li>一次性</li>
+</ul>
+<h3 id="Session：会话"><a href="#Session：会话" class="headerlink" title="Session：会话"></a>Session：会话</h3><ul>
+<li>ZooKeeper 服务器与客户端的一个 TCP 长连接</li>
+<li>客户端通过heartbeat与服务器保持会话，并向zk服务器发送请求接受响应，以及接收来自服务器的 Watcher 事件通知</li>
+<li><code>sessionTimeout</code> 属性：会话的超时时间。当由于服务器压力太大、网络故障或是客户端主动断开连接等各种原因导致客户端连接断开时，只要在<code>sessionTimeout</code>规定的时间内能够重新连接上集群中任意一台服务器，之前创建的会话仍然有效</li>
+<li> <code>sessionID</code>属性：为客户端创建会话前，服务端为每个客户端分配一个id，务必保证全局唯一</li>
+</ul>
+<h3 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h3><img src="/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/image-20221212165236197.png" alt="image-20221212165236197" style="zoom:67%;">
+
+<ul>
+<li><p>Server 代表 ZK 服务的服务器。在内存维护当前的服务器状态，服务器之间保持通信。集群间通过 ZAB 协议（ZooKeeper Atomic Broadcast）保持数据一致性</p>
+</li>
+<li><p>不使用Master/Slave 模式（主备模式）：Master 服务器提供写服务，Slave 服务器异步复制 Master 最新的数据提供读服务</p>
+</li>
+<li><p>Leader、Follower 和 Observer</p>
+<ul>
+<li><p>集群的机器通过 Leader 选举选定 Leader，为客户端提供写和读服务</p>
+</li>
+<li><p>Follower 和 Observer（3.3新增） 提供读。写请求会转发给leader。Observer 机器不参与 Leader 的选举过程，不参与写操作的“过半写成功”策略，因此 Observer 在不影响写性能的情况下提升集群的读性能</p>
+</li>
+<li><p>选票数据结构：</p>
+<ul>
+<li>logicClock 每个服务器会维护一个自增的整数，表示这是该服务器发起的第多少轮投票</li>
+<li>state 当前服务器状态</li>
+<li><strong>self_id 当前服务器的myid</strong></li>
+<li><strong>self_zxid 当前服务器上的最大zxid</strong></li>
+<li>vote_id 被推举的服务器的myid</li>
+<li>vote_zxid 被推举的服务器的最大zxid</li>
+</ul>
+</li>
+<li><p>Leader发生网络中断、重启等异常时，进入 Leader 选举</p>
+<ul>
+<li>Leader election（选举阶段）：只要有一个节点得到超半数节点的票数，可以当选准 leader（初始化时，id小的服务器给id大的服务器投票；重新投票，则选择事务id大的）</li>
+<li>Discovery（发现阶段）：followers 跟准 leader 进行通信，同步 followers 最近接收的事务id</li>
+<li>Synchronization（同步阶段）：利用 leader 前一阶段获得的最新提议历史，同步集群中所有的副本。同步完成之后准 leader 成为真正的 leader</li>
+<li>Broadcast（广播阶段）：集群对外提供事务服务，leader 可以进行消息广播。如果有新的节点加入，对新节点进行同步</li>
+</ul>
+</li>
+<li><p>服务器状态：</p>
+<ul>
+<li>LOOKING ：寻找 Leader</li>
+<li>LEADING ：Leader 状态，该节点为 Leader</li>
+<li>FOLLOWING ：Follower 状态，节点为 Follower</li>
+<li>OBSERVING ：Observer 状态，节点为 Observer，不参与 Leader 选举</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>奇数台服务器：2n+1台和2n+2台的容灾能力相同，都是允许n台机器宕机，减少成本</p>
+</li>
+<li><p>过半机制防止脑裂：不可能产生 2 个 leader</p>
+</li>
+</ul>
+<h3 id="Zab协议（ZooKeeper-Atomic-Broadcast-原子广播）"><a href="#Zab协议（ZooKeeper-Atomic-Broadcast-原子广播）" class="headerlink" title="Zab协议（ZooKeeper Atomic Broadcast 原子广播）"></a>Zab协议（ZooKeeper Atomic Broadcast 原子广播）</h3><ul>
+<li><p>Paxos 算法是一种通用的分布式一致性算法</p>
+</li>
+<li><p>实现分布式数据一致性。实现一种主备模式的系统架构保持集群中各个副本的数据一致性</p>
+</li>
+<li><p>崩溃恢复模式：服务启动，或者重新选择leader时的模式。当有了新 Leader，并且有过半机器完成状态（数据）同步后，退出恢复模式</p>
+<ul>
+<li>初始化选举过程：（假设三台机器）<ul>
+<li>启动 <code>server1</code> ，投票给自己 ，发出的投票为 (1,0)，它票数不够不能作为 <code>Leader</code> ，整个集群处于 <code>Looking</code> 状态</li>
+<li> <code>server2</code> 启动，投票给自己(2,0)，广播投票信息，<code>server1</code> 在收到 <code>server2</code> 的投票信息后比较 <code>ZXID</code> ，如果相同则比较 <code>myid</code>，<code>myid</code> 大的优先作为 <code>Leader</code></li>
+<li><code>server1</code> 将自己的投票信息更改为(2,0)再广播出去，<code>server2</code> 收到后发现和自己的一样无需更改，并且投票过半，则确定 <code>server2</code> 为 <code>Leader</code>，<code>server1</code> 设置为  <code>Follower</code>，服务器从 <code>Looking</code> 变为正常状态</li>
+<li> <code>server3</code> 启动发现集群没有处于 <code>Looking</code> 状态时，直接以 <code>Follower</code> 的身份加入集群</li>
+</ul>
+</li>
+<li>重新选举leader：<ul>
+<li> <code>server2</code> 挂了，两个 <code>Follower</code> 将状态 从 <code>Following</code> 变为 <code>Looking</code>  ，每个 <code>server</code> 首先给自己投票， <code>server1</code> 给自己投票(1,99)并广播，<code>server3</code> 给自己投票(3,95)并广播</li>
+<li><code>server1</code> 和 <code>server3</code> 收到彼此的投票，比较自己的投票和收到的投票（<code>zxid</code> 大的优先，如果相同那么就 <code>myid</code> 大的优先）</li>
+<li><code>server3</code> 收到 <code>server1</code> 投票结果后更改投票为(1,99)并广播</li>
+<li> <code>server1</code> 自己设为 <code>Leader</code>，<code>server3</code> 变为 <code>Follower</code></li>
+</ul>
+</li>
+<li>各个服务器都维护自己的选票箱，保存其他服务器的投票结果。因此如果一个leader选出来后，无需像raft通过心跳通知</li>
+<li>需要确保已经被Leader提交的提案最终能够被所有的Follower提交，跳过已经被丢弃的提案<ul>
+<li> <code>Leader (server2)</code> 发送 <code>commit</code> 请求，发送给 <code>server3</code>，发给 <code>server1</code> 的时候突然挂了，此时根据上述过程，<code>server3</code> 的 <code>ZXID</code> 肯定比 <code>server1</code> 的大，之后<code>server3</code>通过再同步，使得被所有follower提交</li>
+<li><code>Leader (server2)</code> 发送 <code>commit</code> 请求前挂了，选举出新leader后又上线，此时新leader没有该记录，原先提案要被废弃</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>消息广播模式：新服务器加入到集群时，新服务器进入数据恢复模式，然后参与到消息广播中</p>
+<ul>
+<li><p>写：</p>
+<ul>
+<li>客户端向Leader发起写请求</li>
+<li>Leader将写请求以Proposal的形式发给所有Follower并等待ACK</li>
+<li>Follower收到Leader的Proposal后返回ACK（Leader不需要得到Observer的ACK）</li>
+<li>Leader得到过半数的ACK（Leader对自己默认有一个ACK）后向所有的Follower和Observer发送Commit</li>
+<li>Leader将处理结果返回给客户端</li>
+<li>如果为follower，则将写请求转发给Leader处理，最后follower返回客户端处理结果</li>
+</ul>
+</li>
+<li><p>顺序性：<code>ZAB</code> 让 <code>Follower</code> 和 <code>Observer</code> 保证顺序性 ，后者处理请求的顺序要和leader发送的一致</p>
+<ul>
+<li>leader为每个其他的 <code>zkServer</code> 准备一个队列 ，FIFO发送消息，和TCP协议一起保证消息的发送顺序性和接受顺序性，此时即使follower挂了，重启后也能顺序收到请求</li>
+<li>事务ID <code>ZXID</code>： 64位long型，高32位表示 <code>epoch</code> 年代，低32位表示事务id。一个 <code>Leader</code> 挂了，新的 <code>Leader</code> 上位时，年代（<code>epoch</code>）更改。每个 <code>proposal</code> 在 <code>Leader</code> 中生成后需要先通过其 <code>ZXID</code> 来进行排序</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://dbaplus.cn/news-141-1875-1.html">实例详解ZooKeeper ZAB协议、分布式锁与领导选举</a></p>
+</li>
+</ul>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><h4 id="客户端集群选取其集群的master"><a href="#客户端集群选取其集群的master" class="headerlink" title="客户端集群选取其集群的master"></a>客户端集群选取其集群的master</h4><ul>
+<li>zk能够在高并发的情况下保证节点创建的全局唯一性（创建节点，即写请求，由leader控制，而同一路径下的节点名称不能重复）</li>
+<li>让多个客户端创建一个指定的临时节点 ，创建成功的就是 <code>master</code>，其他不是 <code>master</code> 的节点监听节点的状态（可以是该临时节点的父节点）</li>
+<li>如果这个 <code>master</code> 挂了，该会话断开，该临时节点删除，父节点的stat改变，watcher机制会触发回调函数，使得客户端集群重新选举 </li>
+</ul>
+<h4 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h4><ul>
+<li><p>分布式锁的实现方式： <code>Redis</code> 、数据库（在唯一索引对应字段，insert一行，insert成功则获取锁） 、<code>zookeeper</code> </p>
+</li>
+<li><p>zk在高并发的情况下保证节点创建的全局唯一性，可以实现互斥锁</p>
+</li>
+<li><p>同样利用临时节点的创建来实现——多个客户端同时创建一个临时节点，创建成功说明获取到了锁 。没有获取到锁的客户端创建一个 <code>watcher</code> 监听节点状态</p>
+</li>
+<li><p>共享锁：</p>
+<ul>
+<li>使用有序临时节点</li>
+<li>读请求（要获取共享锁），要求没有比自己更小的节点，或比自己小的节点都是读请求，则可以获取到读锁</li>
+<li>若比自己小的节点中有写请求 ，则当前客户端无法获取到读锁</li>
+</ul>
+</li>
+<li><p>独占锁：没有比自己更小的节点 ，则表示当前客户端可以直接获取到写锁，对数据进行修改。若有比自己更小的节点，当前客户端无法获取到锁 </p>
+</li>
+<li><p>让等待的节点只监听他们前面的节点（读请求监听比自己小的最后一个写请求节点，写请求只监听比自己小的最后一个节点），避免羊群效应</p>
+</li>
+</ul>
+<h3 id="Raft、Paxos、Zab"><a href="#Raft、Paxos、Zab" class="headerlink" title="Raft、Paxos、Zab"></a>Raft、Paxos、Zab</h3><ul>
+<li><p>Raft和Zab的相似之处：单M架构、两者都要先写入leader、都为CP</p>
+</li>
+<li><p>Raft和Zab的区别：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>ZAB</th>
+<th>RAFT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>节点状态</td>
+<td>looking：选举状态，无主、leading、 following、 observing：不参与选举</td>
+<td>leader、 follower、 candidate：不认leader的node</td>
+</tr>
+<tr>
+<td>选举机制</td>
+<td>默认FastLeaderElection： 节点启动直接投自己，然后开始给其他节点发请求，在每个朝代（epoch，raft里是term）中，节点先收到其他提案（proposal），然后本地battle（zxid, myid） 大小后再发出选票给所有node，一个朝代中每个节点可以发多次投票，一个节点收到半数以上选票则当选leader</td>
+<td>每个candidate具备随机时钟（election  timeout），到时间了先投自己，然后发消息给其他所有node，收到消息的candidate变为follower并回复，当半数原则满足后leader确立，leader再通告所有节点你们的leader出现了，停下手里的针线活吧。但每个朝代一个节点只能投票一次，而且candidate只响应大于自己term的请求，否则保持选举状态。</td>
+</tr>
+<tr>
+<td>选举机制优劣</td>
+<td>不存在分区、有利于选出有最新数据的node| battle次数过多造成选举时间长、首次启动会有myid节点大概率成为leader</td>
+<td>选举速度快| 可能因为随机时钟差不多造成每个node的票数都没过半，发生投票分区，那只能进入下一个周期再选举</td>
+</tr>
+<tr>
+<td>选主依据</td>
+<td>1. epoch选举朝代、  2.ZXID：64BIT正整数，高32为epoch，低32为顺序自增的事务ID、 3. 机器myid</td>
+<td>1. term朝代每一轮选举都增加、 2. 日志条目  3. election timeout</td>
+</tr>
+<tr>
+<td>定时心跳</td>
+<td>双方检测。 leader向所有follower发送定期心跳，心跳返回不过半则导致leader退位。follower没有收到来自leader的心跳会导致进入looking状态</td>
+<td>单方检测。 follower定时没有接到心跳则变为candidate状态，自增term并准备选举</td>
+</tr>
+<tr>
+<td>新节点加入</td>
+<td>新节点启动先给所有node发消息，然后自己内部做选主依据信息battle</td>
+<td>直接接到leader的append entry消息，就知道谁是leader了</td>
+</tr>
+<tr>
+<td>写消息流程</td>
+<td>两阶段：client请求followerA、followerA发请求给leader，leader对众follower发送proposal，过半后返回后再发commit，当followerA commit后返回客户端。</td>
+<td>非两阶段：client请求follower，follower把消息转到leader后，leader写日志并向其他节点发AppendEntries，大多数返回后leader就向客户端返回。（之后的commit隐含在心跳和后续AppendRpc中）</td>
+</tr>
+<tr>
+<td>消息一致性（线性顺序）</td>
+<td>zab利用client、leader、follower的多端努力，以自增的zxid为依据，保证写入强一致性（线性一致性）。若收到非顺序的zxid则禁止写入或节点退出。</td>
+<td>相同的 term 和 index的节点之前内容肯定一样。选举时candidate携带最新 (term, index)，如果对家小于自己则拒绝投票，所以选出来的leader肯定是大多节点里最新的。外加，提交也要过半成功。两者组合实现了一致性</td>
+</tr>
+<tr>
+<td>消息顺序性</td>
+<td>follower必须按顺序接收zxid和提交，否则退出进入恢复。</td>
+<td>leader每次都发当前的消息和上一条消息，如果follower找不到上一条消息就不复制，再要求leader发上一条消息，直到定位到缺失消息。</td>
+</tr>
+<tr>
+<td>残留消息一致性（follower有较新的未提交消息）</td>
+<td>新leader上台后，leader尝试commit未提交的消息，没commit的proposal都会被丢弃</td>
+<td>STRONG LEADER，非持有uncommitted log的新leader，会强制follower复制自己的日志解决一致性。</td>
+</tr>
+<tr>
+<td>脏读</td>
+<td>存在但几率低，leader 发proposal过半后再发commit，接收follower commit后才返回客户端</td>
+<td><strong>存在，leader 发消息过半ack后就返回client请求了，可能follower没有commit就没了、或者leader没发现自己丧失领导权等</strong></td>
+</tr>
+<tr>
+<td>持久性</td>
+<td>WAL实现，zk将其优化为每个64MB的预占文件。snapshot压缩数据日志</td>
+<td>类似zab，也是WAL +  snapshot committed log</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>raft的leader在commit了一条日志后，立刻挂了，其他节点如何处理这条日志？不存在commit log数组或uncommit log数组，都在log数组中，新leader一定是有这个log的，因为新leader在收到appendrpc的follower中选出，新leader会重新commit（节点存有变量commit_index）并应用到本地的状态机中</p>
+</li>
+<li><p>raft防止脑裂：</p>
+<ol>
+<li>过半选举</li>
+<li>raft选举时参考最后一个log的term和index，而非candidate的term，保证leader的log一定是最新的（脑裂时一方会不停增大自己的term）</li>
+</ol>
+</li>
+</ul>
+<h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><h3 id="七大原则"><a href="#七大原则" class="headerlink" title="七大原则"></a>七大原则</h3><ol>
+<li>单一职责原则（Single Responsibility Principle）——一个类只负责一项职</li>
+<li>开放-关闭原则（Open-Closed Principle）——软件实体 (类、模块、函数等等) 应该是可以被扩展的，但是不可被修改</li>
+<li>里氏替换原则（Liskov Substitution Principle）——使用继承时候，类 B 继承类 A 时，除添加新的方法完成新增功能，尽量不要修改父类方法预期的行为</li>
+<li>依赖倒转原则（Dependence Inversion Principle）——高层模块不应该依赖低层模块（面向接口编程）</li>
+<li>接口隔离原则（Interface Segregation Principle）——客户端不应该依赖它不需要的接口；一个类对另一个类的依赖应该建立在最小的接口上</li>
+<li>迪米特法则，又称为最少知道原则（Law Of Demeter）——一个对象应该对其它对象保持最少的了解。通俗来说就是，只与直接的朋友通信</li>
+<li>组合/聚合复用原则（Composite/Aggregate Reuse Principle）——在一个新的对象里面使用一些已有的对象，使之成为新对象的一部分; 新的对象通过向这些对象的委派达到复用已有功能的目的</li>
+</ol>
+<h3 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h3><ul>
+<li><p>一个类仅有一个实例，并提供一个访问它的全局访问点</p>
+</li>
+<li><p>几种实现方法，常用的是什么？</p>
+<ul>
+<li><p>饿汉式：浪费内存，线程安全（基于 classloader 机制避免了多线程的同步问题），不管你用的用不上，一开始就建立这个单例对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance = <span class="keyword">new</span> Singleton();  </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span> <span class="params">()</span></span>&#123;&#125;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">return</span> instance;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>懒汉式：单线程下有效，多线程下不安全（真正用到的时候才去建这个单例对象）</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton &#123;  </span><br><span class="line">    private static Singleton<span class="built_in"> instance; </span> </span><br><span class="line">    private Singleton ()&#123;&#125;  </span><br><span class="line">  </span><br><span class="line">    public static Singleton getInstance() &#123;  </span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="literal">null</span>) &#123;  </span><br><span class="line">           <span class="built_in"> instance </span>= new Singleton();  </span><br><span class="line">        &#125;  </span><br><span class="line">        return<span class="built_in"> instance; </span> </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>懒汉式且线程安全（加锁，影响效率）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;  </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span> <span class="params">()</span></span>&#123;&#125;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;  </span><br><span class="line">            instance = <span class="keyword">new</span> Singleton();  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="keyword">return</span> instance;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SingleObject</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="comment">//创建 SingleObject 的一个对象</span></span><br><span class="line">   <span class="keyword">private</span> <span class="keyword">static</span> SingleObject instance = <span class="keyword">new</span> SingleObject();</span><br><span class="line"> </span><br><span class="line">   <span class="comment">//让构造函数为 private，这样该类就不会被实例化</span></span><br><span class="line">   <span class="function"><span class="keyword">private</span> <span class="title">SingleObject</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line">   <span class="comment">//获取唯一可用的对象</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SingleObject <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">      <span class="keyword">return</span> instance;</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">showMessage</span><span class="params">()</span></span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Hello World!&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h3><ul>
+<li>在创建对象时不会对客户端暴露创建逻辑，通过使用一个共同的接口来指向新创建的对象</li>
+</ul>
+<ul>
+<li>明确地计划不同条件下创建不同实例时使用，让子类自己决定实例化哪一个工厂类</li>
+</ul>
+<h4 id="一般的工厂模式"><a href="#一般的工厂模式" class="headerlink" title="一般的工厂模式"></a>一般的工厂模式</h4><ul>
+<li><p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ShapeFactory</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">   <span class="comment">//使用 getShape 方法获取形状类型的对象</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> Shape <span class="title">getShape</span><span class="params">(String shapeType)</span></span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(shapeType == <span class="keyword">null</span>)&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">      &#125;        </span><br><span class="line">      <span class="keyword">if</span>(shapeType.equalsIgnoreCase(<span class="string">&quot;CIRCLE&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> Circle();</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span>(shapeType.equalsIgnoreCase(<span class="string">&quot;RECTANGLE&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> Rectangle();</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span>(shapeType.equalsIgnoreCase(<span class="string">&quot;SQUARE&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> Square();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 要创建的类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Rectangle</span> <span class="keyword">implements</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Inside Rectangle::draw() method.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Square</span> <span class="keyword">implements</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Inside Square::draw() method.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="抽象工厂"><a href="#抽象工厂" class="headerlink" title="抽象工厂"></a>抽象工厂</h4><ul>
+<li><p>提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的类</p>
+</li>
+<li><p>系统的产品有多于一个的产品族，而系统只消费其中某一族的产品</p>
+</li>
+<li><p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Square</span> <span class="keyword">implements</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Inside Square::draw() method.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Square</span> <span class="keyword">implements</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Inside Square::draw() method.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Color</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">fill</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Green</span> <span class="keyword">implements</span> <span class="title">Color</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fill</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Inside Green::fill() method.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Red</span> <span class="keyword">implements</span> <span class="title">Color</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fill</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Inside Red::fill() method.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractFactory</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> Color <span class="title">getColor</span><span class="params">(String color)</span></span>;</span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> Shape <span class="title">getShape</span><span class="params">(String shape)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ShapeFactory</span> <span class="keyword">extends</span> <span class="title">AbstractFactory</span> </span>&#123;</span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> Shape <span class="title">getShape</span><span class="params">(String shapeType)</span></span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(shapeType == <span class="keyword">null</span>)&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">      &#125;        </span><br><span class="line">      <span class="keyword">if</span>(shapeType.equalsIgnoreCase(<span class="string">&quot;CIRCLE&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> Circle();</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span>(shapeType.equalsIgnoreCase(<span class="string">&quot;RECTANGLE&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> Rectangle();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColorFactory</span> <span class="keyword">extends</span> <span class="title">AbstractFactory</span> </span>&#123;  </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> Color <span class="title">getColor</span><span class="params">(String color)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(color == <span class="keyword">null</span>)&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">      &#125;        </span><br><span class="line">      <span class="keyword">if</span>(color.equalsIgnoreCase(<span class="string">&quot;RED&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> Red();</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span>(color.equalsIgnoreCase(<span class="string">&quot;GREEN&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> Green();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 工厂创造器/生成器类，通过传递形状或颜色信息来获取工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FactoryProducer</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> AbstractFactory <span class="title">getFactory</span><span class="params">(String choice)</span></span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(choice.equalsIgnoreCase(<span class="string">&quot;SHAPE&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> ShapeFactory();</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span>(choice.equalsIgnoreCase(<span class="string">&quot;COLOR&quot;</span>))&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">new</span> ColorFactory();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h3><ul>
+<li><p>向一个现有的对象添加新的功能，同时又不改变其结构——作为现有的类的一个包装</p>
+</li>
+<li><p>就增加功能来说，装饰器模式相比生成子类更为灵活（是继承的一个替代模式，可以动态扩展一个实现类的功能）</p>
+</li>
+<li><p>代码：</p>
+<ul>
+<li><p>准备：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Rectangle</span> <span class="keyword">implements</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Shape: Rectangle&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建实现了 <em>Shape</em> 接口的抽象装饰类和实体装饰类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ShapeDecorator</span> <span class="keyword">implements</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">   <span class="keyword">protected</span> Shape decoratedShape;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">ShapeDecorator</span><span class="params">(Shape decoratedShape)</span></span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.decoratedShape = decoratedShape;</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span></span>&#123;</span><br><span class="line">      decoratedShape.draw();</span><br><span class="line">   &#125;  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedShapeDecorator</span> <span class="keyword">extends</span> <span class="title">ShapeDecorator</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">RedShapeDecorator</span><span class="params">(Shape decoratedShape)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">super</span>(decoratedShape);     </span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      decoratedShape.draw();         </span><br><span class="line">      setRedBorder(decoratedShape);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 增加的装饰功能</span></span><br><span class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setRedBorder</span><span class="params">(Shape decoratedShape)</span></span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Border Color: Red&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="模板方法模式"><a href="#模板方法模式" class="headerlink" title="模板方法模式"></a>模板方法模式</h3><ul>
+<li><p>一个抽象类公开定义了执行它的方法的方式/模板。它的子类可以按需要重写方法实现，但调用将以抽象类中定义的方式进行</p>
+</li>
+<li><p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 模板方法被设置为 final</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Game</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">()</span></span>;</span><br><span class="line">   <span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">startPlay</span><span class="params">()</span></span>;</span><br><span class="line">   <span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">endPlay</span><span class="params">()</span></span>;</span><br><span class="line"> </span><br><span class="line">   <span class="comment">//模板</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">play</span><span class="params">()</span></span>&#123;</span><br><span class="line"> </span><br><span class="line">      <span class="comment">//初始化游戏</span></span><br><span class="line">      initialize();</span><br><span class="line"> </span><br><span class="line">      <span class="comment">//开始游戏</span></span><br><span class="line">      startPlay();</span><br><span class="line"> </span><br><span class="line">      <span class="comment">//结束游戏</span></span><br><span class="line">      endPlay();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Cricket</span> <span class="keyword">extends</span> <span class="title">Game</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">endPlay</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Cricket Game Finished!&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">initialize</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Cricket Game Initialized! Start playing.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">startPlay</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Cricket Game Started. Enjoy the game!&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h3><ul>
+<li><p>一个类代表另一个类的功能，为其他对象提供一种代理以控制对这个对象的访问</p>
+</li>
+<li><p>通常，如果想在访问一个类时做一些控制，可以增加一个中间层</p>
+</li>
+<li><p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Image</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RealImage</span> <span class="keyword">implements</span> <span class="title">Image</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="keyword">private</span> String fileName;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">RealImage</span><span class="params">(String fileName)</span></span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.fileName = fileName;</span><br><span class="line">      loadFromDisk(fileName);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Displaying &quot;</span> + fileName);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadFromDisk</span><span class="params">(String fileName)</span></span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Loading &quot;</span> + fileName);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 当被请求时，使用 ProxyImage 来获取 RealImage 类的对象</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyImage</span> <span class="keyword">implements</span> <span class="title">Image</span></span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="keyword">private</span> RealImage realImage;</span><br><span class="line">   <span class="keyword">private</span> String fileName;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">ProxyImage</span><span class="params">(String fileName)</span></span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.fileName = fileName;</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(realImage == <span class="keyword">null</span>)&#123;</span><br><span class="line">         realImage = <span class="keyword">new</span> RealImage(fileName);</span><br><span class="line">      &#125;</span><br><span class="line">      realImage.display();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="场景题"><a href="#场景题" class="headerlink" title="场景题"></a>场景题</h2><ul>
+<li>40亿条数据去重（长度相同）：<ul>
+<li>布隆过滤器</li>
+<li>基于第一个字符分桶，建立树结构</li>
+</ul>
+</li>
+<li>网页上打开个二维码，手机扫描登录这个过程如何实现？</li>
+<li>线上服务 CPU 占用过高怎么排查（JVM调优）</li>
+<li>A 和 B 进行 TCP 传输，B 的网线被拔了，A会怎么做</li>
+<li>设计一个分布式文件系统</li>
+<li>当数据量非常多，读不进来内存，如何排序</li>
+<li>秒杀，如何设计一个 redis+mysql 的结构，让其能承载很高的 qps 而不被打<ul>
+<li>设计本地缓存+redis 缓存的多级缓存</li>
+<li>如何保证 redis 和 mysql 的一致性</li>
+<li>如果 redis 挂了咋办？如果mysql挂了咋办</li>
+</ul>
+</li>
+<li>存一个 key-value 数据类型，查询的时候使用模糊查询，应该怎么设计数据结构？（前缀树）</li>
+<li>redis 中当数据量逐渐变大时，底层是怎么优化数据结构的？（sds、rehash、跳表）</li>
+<li>Dockerfile 关键字有哪些，说几个重要的以及含义</li>
+<li>有一亿个随机数，只有 1k 的内存可以用，找中位数</li>
+<li>微博上某个大 V 突然发个什么结婚啊离婚的声明，经常挂掉，是吧？你有什么好的措施来 预防这个问题呢？</li>
+<li>高峰期，想保证买家尽可能在半小时收到外卖，你有什么优化思路</li>
+<li>怎么保证 Redis 的高可用性</li>
+<li>查询上万条数据中某个字段在某个范围内的记录，怎么优化，假如查出来有上千条上万条，怎么处理</li>
+<li>Redis 中的数据能做到绝对可靠不丢失嘛？能。如何做到？还是要丢失性能换取可靠，让 AOF 时 刻刷盘并同步</li>
+<li>如何实现群聊功能</li>
+<li>我牛客是如何实现视频连线面试的</li>
+</ul>
+<h3 id="算法题"><a href="#算法题" class="headerlink" title="算法题"></a>算法题</h3><ul>
+<li>找 N 叉树最长的连续节点</li>
+<li>实现一个哈希表</li>
+<li>反转链表该怎么实现</li>
+<li>讲讲排序算法，他们的稳定性</li>
+<li>z 字形打印二叉树</li>
+<li>链表增删改查</li>
+<li>假设有一万个数，如何找出出现次数等于 10 的数（数字大小：1~20 万）</li>
+<li>数组中出现次数超过一半的元素</li>
+<li>二分查找</li>
+<li>手写快排，并给出最坏情况</li>
+<li>无序数组的前 K 小的数字</li>
+<li>高精度大数乘法，大数乘大数 <a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/multiply-strings/">https://leetcode-cn.com/problems/multiply-strings/</a></li>
+<li>最小覆盖子串</li>
+<li>字符串分隔 s=abcd，dict={ab, c, d, cd}，s 只能切割为 dict 中存在的子串，返回所有合法的分割方法</li>
+<li>子树中最大路径和</li>
+<li>实现一个循环队列， 基于数组实现， 实现其中的入队，出队方法， size =5</li>
+<li>合并两条升序链表</li>
+<li>最长公共子序列</li>
+<li>数组逆序对</li>
+<li>连续整数之和为 1000，有多少组</li>
+<li>三层的二叉树多少种？</li>
+<li>合并 K 个有序链表</li>
+<li>电梯的调度算法</li>
+<li>链表中删除重复元素</li>
+<li>约瑟夫问题</li>
+<li>给定一个无序数组，求出需要排序的最短子数组的长度  arr={1,5,3,4,2,6,7}返回 4，因为只有[5,3,4,2]需要排序</li>
+<li>一个未排序数组里面有有一个数只出现一次，其余的都出现三次，怎么找到这个数</li>
+</ul>
+<h2 id="Spring"><a href="#Spring" class="headerlink" title="Spring"></a>Spring</h2><ul>
+<li><p>Spring ioc，bean生命周期</p>
+</li>
+<li><p>Springboot的优势</p>
+</li>
+<li><p>spring 事务传播机制</p>
+</li>
+<li><p>.springMVC 各层作用，和数据库交互用哪个，怎么使用，dao 层全称是什</p>
+</li>
+<li><p>spring 的特性，以及使用场景</p>
+</li>
+<li><p>git 发生冲突时候怎么处理</p>
+</li>
+</ul>
+<p>为什么要二级缓存——多级缓存的实现</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2022\10\01\Docker\" rel="bookmark">Docker 核心概念</a></div>
+        <div class="popular-posts-excerpt"><p><p>Docker 核心概念总结</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-1\" rel="bookmark">Dubbo</a></div>
+        <div class="popular-posts-excerpt"><p><p>Dubbo基本概念和使用</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2023\05\03\Dubbo-2\" rel="bookmark">RocketMQ+Dubbo案例</a></div>
+        <div class="popular-posts-excerpt"><p><p>RocketMQ+Dubbo+Zookeeper，实现下单和支付业务</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://github.com/xvmingyuan/shop">xvmingyuan/shop: SpringBoot Dubbo RocketMQ订单支付系统 (github.com)</a></p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\01\25\Java核心技术卷I-1\" rel="bookmark">Java核心技术卷I （1）基本结构与类</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Java核心技术卷I》阅读笔记——基本结构与类</p></p></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\2021\02\02\Java核心技术卷I-2\" rel="bookmark">Java核心技术卷I （2）继承、接口、异常</a></div>
+        <div class="popular-posts-excerpt"><p><p>《Java核心技术卷I》阅读笔记 ——继承、接口与异常</p></p></div>
+    </li>
+  </ul>
+
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="Thomas-Li 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="Thomas-Li 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Thomas-Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://thomas-li-sjtu.github.io/2022/04/15/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-3/" title="面经整理(3) Redis，Zookeeper">https://thomas-li-sjtu.github.io/2022/04/15/面经整理-3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <div>
+      
+        
+      
+      </div>
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/15/ALBERT/" rel="prev" title="ALBERT A Lite BERT For Self-supervised Learning Of Language Representations">
+      <i class="fa fa-chevron-left"></i> ALBERT A Lite BERT For Self-supervised Learning Of Language Representations
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/16/%E9%9D%A2%E7%BB%8F%E6%95%B4%E7%90%86-4/" rel="next" title="面经整理(4)">
+      面经整理(4) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <!-- require APlayer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+      <!-- require MetingJS-->
+      <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script> 
+      <!--������-->   
+      <meting-js
+        server="netease"
+        id="2655164600"
+        type="playlist" 
+        mini="false"
+        fixed="false"
+        list-folded="true"
+        autoplay="false"
+        volume="0.4"
+        theme="#FADFA3"
+        order="random"
+        loop="all"
+        preload="auto"
+        mutex="true">
+      </meting-js>
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis"><span class="nav-number">1.</span> <span class="nav-text">Redis</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Redis%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.1.</span> <span class="nav-text">Redis结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#String"><span class="nav-number">1.2.2.</span> <span class="nav-text">String</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#List"><span class="nav-number">1.2.3.</span> <span class="nav-text">List</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Hash"><span class="nav-number">1.2.4.</span> <span class="nav-text">Hash</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Set"><span class="nav-number">1.2.5.</span> <span class="nav-text">Set</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zset"><span class="nav-number">1.2.6.</span> <span class="nav-text">Zset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BitMap"><span class="nav-number">1.2.7.</span> <span class="nav-text">BitMap</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HyperLogLogs"><span class="nav-number">1.2.8.</span> <span class="nav-text">HyperLogLogs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Geo"><span class="nav-number">1.2.9.</span> <span class="nav-text">Geo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Stream"><span class="nav-number">1.2.10.</span> <span class="nav-text">Stream</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.3.</span> <span class="nav-text">线程模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E4%B8%8E%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0"><span class="nav-number">1.4.</span> <span class="nav-text">内存管理与内存淘汰</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-number">1.5.</span> <span class="nav-text">持久化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1"><span class="nav-number">1.6.</span> <span class="nav-text">事务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="nav-number">1.7.</span> <span class="nav-text">性能优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A9%E5%AE%B9%E4%B8%8E%E7%BC%A9%E5%AE%B9"><span class="nav-number">1.8.</span> <span class="nav-text">扩容与缩容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E4%BA%A7%E9%97%AE%E9%A2%98"><span class="nav-number">1.9.</span> <span class="nav-text">生产问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="nav-number">1.9.1.</span> <span class="nav-text">缓存穿透</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF"><span class="nav-number">1.9.2.</span> <span class="nav-text">缓存击穿</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9"><span class="nav-number">1.9.3.</span> <span class="nav-text">缓存雪崩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%A2%84%E7%83%AD"><span class="nav-number">1.9.4.</span> <span class="nav-text">缓存预热</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E5%92%8C%E6%95%B0%E6%8D%AE%E5%BA%93%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.9.5.</span> <span class="nav-text">缓存和数据库数据一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%99%8D%E7%BA%A7"><span class="nav-number">1.9.6.</span> <span class="nav-text">缓存降级</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.9.7.</span> <span class="nav-text">分布式锁的实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B1%E4%BA%ABSession"><span class="nav-number">1.9.8.</span> <span class="nav-text">共享Session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.9.9.</span> <span class="nav-text">消息队列的实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E9%98%9F%E5%88%97"><span class="nav-number">1.9.10.</span> <span class="nav-text">延迟队列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%99%90%E6%B5%81"><span class="nav-number">1.9.11.</span> <span class="nav-text">限流</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E7%BC%93%E5%AD%98%E7%83%AD%E7%82%B9%E6%95%B0%E6%8D%AE"><span class="nav-number">1.9.12.</span> <span class="nav-text">动态缓存热点数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%BB%E9%87%8D"><span class="nav-number">1.9.13.</span> <span class="nav-text">去重</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E9%9B%86%E7%BE%A4"><span class="nav-number">1.10.</span> <span class="nav-text">Redis集群</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="nav-number">1.10.1.</span> <span class="nav-text">主从复制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%93%A8%E5%85%B5%EF%BC%9A%E4%B8%BB%E4%BB%8E%E8%8A%82%E7%82%B9%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB"><span class="nav-number">1.10.2.</span> <span class="nav-text">哨兵：主从节点故障转移</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%87%E7%89%87%E9%9B%86%E7%BE%A4"><span class="nav-number">1.10.3.</span> <span class="nav-text">切片集群</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C"><span class="nav-number">1.11.</span> <span class="nav-text">一致性哈希</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zookeeper"><span class="nav-number">2.</span> <span class="nav-text">Zookeeper</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%A7%88"><span class="nav-number">2.1.</span> <span class="nav-text">概览</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zookeeper%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.2.</span> <span class="nav-text">Zookeeper数据模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#znode"><span class="nav-number">2.3.</span> <span class="nav-text">znode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ACL%EF%BC%9AAccessControlLists"><span class="nav-number">2.4.</span> <span class="nav-text">ACL：AccessControlLists</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Watcher%EF%BC%9A%E4%BA%8B%E4%BB%B6%E7%9B%91%E5%90%AC%E5%99%A8"><span class="nav-number">2.5.</span> <span class="nav-text">Watcher：事件监听器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%EF%BC%9A%E4%BC%9A%E8%AF%9D"><span class="nav-number">2.6.</span> <span class="nav-text">Session：会话</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4"><span class="nav-number">2.7.</span> <span class="nav-text">集群</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%EF%BC%88ZooKeeper-Atomic-Broadcast-%E5%8E%9F%E5%AD%90%E5%B9%BF%E6%92%AD%EF%BC%89"><span class="nav-number">2.8.</span> <span class="nav-text">Zab协议（ZooKeeper Atomic Broadcast 原子广播）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8"><span class="nav-number">2.9.</span> <span class="nav-text">应用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%9B%86%E7%BE%A4%E9%80%89%E5%8F%96%E5%85%B6%E9%9B%86%E7%BE%A4%E7%9A%84master"><span class="nav-number">2.9.1.</span> <span class="nav-text">客户端集群选取其集群的master</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="nav-number">2.9.2.</span> <span class="nav-text">分布式锁</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Raft%E3%80%81Paxos%E3%80%81Zab"><span class="nav-number">2.10.</span> <span class="nav-text">Raft、Paxos、Zab</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">设计模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%83%E5%A4%A7%E5%8E%9F%E5%88%99"><span class="nav-number">3.1.</span> <span class="nav-text">七大原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">单例模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">工厂模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E8%88%AC%E7%9A%84%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.3.1.</span> <span class="nav-text">一般的工厂模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82"><span class="nav-number">3.3.2.</span> <span class="nav-text">抽象工厂</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.4.</span> <span class="nav-text">装饰器模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.5.</span> <span class="nav-text">模板方法模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.6.</span> <span class="nav-text">代理模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%BA%E6%99%AF%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">场景题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E9%A2%98"><span class="nav-number">4.1.</span> <span class="nav-text">算法题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring"><span class="nav-number">5.</span> <span class="nav-text">Spring</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Thomas-Li"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Thomas-Li</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">189</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/thomas-li-sjtu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;thomas-li-sjtu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/thomasli2017" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;thomasli2017" rel="noopener" target="_blank"><i class="fa fa-csdn fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://rooki3ray.github.io/" title="https:&#x2F;&#x2F;rooki3ray.github.io&#x2F;" rel="noopener" target="_blank">rooki3ray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://entropy2333.github.io/" title="https:&#x2F;&#x2F;entropy2333.github.io&#x2F;" rel="noopener" target="_blank">entropy2333</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://schenk75.github.io/" title="https:&#x2F;&#x2F;schenk75.github.io&#x2F;" rel="noopener" target="_blank">Schenk75</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://ainevsia.github.io/" title="https:&#x2F;&#x2F;ainevsia.github.io&#x2F;" rel="noopener" target="_blank">Ainevsia</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Thomas-Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.8m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">27:09</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div class="moon-menu-item" onclick="back2bottom()">
+      <i class='fa fa-chevron-down'></i>    </div>
+    
+    <div class="moon-menu-item" onclick="back2top()">
+      <i class='fa fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button" onclick="moonMenuClick()">
+    <svg class="moon-menu-svg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+      <g class="moon-menu-points">
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy="-.8rem"></circle>
+        <circle class="moon-menu-point" r=".2rem"></circle>
+        <circle class="moon-menu-point" r=".2rem" cx="0" cy=".8rem"></circle>
+      </g>
+    </svg>
+    <div class="moon-menu-icon">
+    </div>
+    <div class="moon-menu-text">
+    </div>
+  </div>
+</div>
+<script src="/js/injector.js"></script>
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
